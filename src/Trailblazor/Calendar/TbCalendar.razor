@@ -17,7 +17,7 @@
             <TbIconButton Icon="BuiltInIcons.ChevronStart" AriaLabel="@PreviousLabel" Size="Size.Small"
                           Variant="Trailblazor.Variant.Text" Disabled="@(Disabled || Paged(-1) is null)"
                           FocusableWhenDisabled="!Disabled" data-part="previous"
-                          OnClick="() => PageAsync(-1)" class="tb-calendar__flip" />
+                          BusyWhileRunning="false" OnClick="() => PageAsync(-1)" class="tb-calendar__flip" />
             @* The years view has no wider view, but its title stays a button so focus on it isn't lost. *@
             <button type="button" data-part="title" aria-label="@(_view == View.Years ? null : ZoomOutLabel)"
                     aria-disabled="@(_view == View.Years ? "true" : null)" disabled="@Disabled"
@@ -31,7 +31,7 @@
             <TbIconButton Icon="BuiltInIcons.ChevronEnd" AriaLabel="@NextLabel" Size="Size.Small"
                           Variant="Trailblazor.Variant.Text" Disabled="@(Disabled || Paged(1) is null)"
                           FocusableWhenDisabled="!Disabled" data-part="next"
-                          OnClick="() => PageAsync(1)" class="tb-calendar__flip" />
+                          BusyWhileRunning="false" OnClick="() => PageAsync(1)" class="tb-calendar__flip" />
         </div>
         <span class="tb-visually-hidden" aria-live="polite">@Title</span>
         @RequiredDescription

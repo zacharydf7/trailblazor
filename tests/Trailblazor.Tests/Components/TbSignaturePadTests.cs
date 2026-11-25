@@ -1,6 +1,7 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web;
 using Trailblazor.Testing;
 
 namespace Trailblazor.Tests.Components;
@@ -111,6 +112,22 @@ public class TbSignaturePadTests : BunitContext
         Assert.Equal(new SignaturePoint(10, 20), Signed!.Strokes.Single().Points[0]);
         await pad.UndoAsync();
         Assert.Null(Signed);
+    }
+
+    [Fact]
+    public void Undo_ShouldTakeBackAStrokeOnEachPress_WhenValueChangedIsStillRunning()
+    {
+        // Undo takes every press, even while the app is still saving the signature before.
+        var saving = new TaskCompletionSource();
+        var cut = Render<TbSignaturePad>(parameters => parameters.Add(pad => pad.Label, "Signature")
+            .Add(pad => pad.Value, new Signature([new SignatureStroke([new(10, 20), new(30, 40)]),
+                new SignatureStroke([new(100, 20), new(130, 40)])]))
+            .Add(pad => pad.ValueChanged, (Signature _) => saving.Task));
+
+        _ = cut.Find("[data-part=undo]").ClickAsync(new MouseEventArgs());
+        _ = cut.Find("[data-part=undo]").ClickAsync(new MouseEventArgs());
+
+        Assert.Equal("Signature, nothing drawn", SurfaceLabel(cut));
     }
 
     [Fact]

@@ -48,7 +48,7 @@
         </div>
     }
     <div data-part="actions" class="tb-signature-pad__actions">
-        <TbButton Variant="Variant.Text" Size="Size.Small" data-part="undo" OnClick="UndoAsync"
+        <TbButton Variant="Variant.Text" Size="Size.Small" data-part="undo" BusyWhileRunning="false" OnClick="UndoAsync"
                   Disabled="@(CantChange || ReadOnly || Strokes.Count == 0)">
             @(Labels.Undo ?? Localizer[TbStrings.SignaturePadUndo])
         </TbButton>

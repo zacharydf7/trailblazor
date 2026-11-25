@@ -2365,7 +2365,8 @@ public sealed class TbButtonDriver
 
     internal TbButtonDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
 
-    /// <summary>Whether the button is busy, as <c>Loading</c> makes it; a busy button ignores clicks.</summary>
+    /// <summary>Whether the button is busy, as <c>Loading</c> or a click still running makes it; a busy button ignores
+    /// clicks.</summary>
     public bool Busy => _find().GetAttribute("aria-busy") == "true";
 
     /// <summary>Whether a toggle button is pressed.</summary>
@@ -2382,7 +2383,8 @@ public sealed class TbButtonDriver
         var button = _find();
         if (button.GetAttribute("aria-busy") == "true")
         {
-            throw new InvalidOperationException("The button is busy, so it ignores clicks until its Loading ends.");
+            throw new InvalidOperationException("The button is busy, so it ignores clicks until its Loading, its "
+                + "form's submit or its running click ends.");
         }
 
         if (Choices.IsDisabled(button))

@@ -49,6 +49,23 @@ public class ButtonTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Button_ShouldCallOnClickOnceAndShowItsSpinner_WhenDoubleClickedWhileTheClickRuns(string browser)
+    {
+        var page = await OpenAsync(browser, "/button-busy");
+        var send = page.GetByRole(AriaRole.Button, new() { Name = "Send code" });
+
+        await send.DblClickAsync();
+
+        await Expect(send.Locator("[data-part=spinner]")).ToBeVisibleAsync();
+        await Expect(send).ToHaveAttributeAsync("aria-busy", "true");
+        await Expect(send).Not.ToHaveAttributeAsync("aria-busy", "true");
+        Assert.Equal("1", await page.GetByLabel("Sent").TextContentAsync());
+        // The helper waits for the handler, as for any click.
+        await page.Tb().Button("Send code").ClickAsync();
+        Assert.Equal("2", await page.GetByLabel("Sent").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldRefuseADisabledButton_WhenAskedToClickIt(string browser)
     {
         var page = await OpenAsync(browser, "/button-busy");

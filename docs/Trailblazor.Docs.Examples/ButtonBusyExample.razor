@@ -1,0 +1,6 @@
+<TbButton OnClick="BookAsync">Book the hut</TbButton>
+
+@code {
+    // Stands in for booking somewhere slow. The button is busy until it returns.
+    private static Task BookAsync() => Task.Delay(1500);
+}

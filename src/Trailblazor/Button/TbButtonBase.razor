@@ -17,7 +17,7 @@
                    aria-disabled="@(Off || Busy ? "true" : null)" aria-busy="@(Busy ? "true" : null)"
                    data-clicks="@Clicks" data-static="@StaticMark"
                    class="@RootClass(extraClass)" style="@Style" @onclick="OnClickAsync"
-                   @onclick:preventDefault="Busy">
+                   @onclick:preventDefault="Ignores">
                     @content
                 </a>
             }
@@ -31,7 +31,7 @@
                         aria-pressed="@(Toggles ? (Mixed ? "mixed" : Pressed ? "true" : "false")
                                           : Theirs("aria-pressed"))"
                         class="@RootClass(extraClass)" style="@Style" @onclick="OnClickAsync"
-                        @onclick:preventDefault="Inert">
+                        @onclick:preventDefault="Inert || _running">
                     @content
                 </button>
             }

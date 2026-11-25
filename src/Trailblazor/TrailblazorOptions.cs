@@ -18,6 +18,13 @@ public sealed class TrailblazorOptions
     /// <summary>How long tooltips wait before they appear and disappear.</summary>
     public TooltipSettings Tooltips { get; } = new();
 
+    /// <summary>Whether buttons count as busy while their click is still running.</summary>
+    public ButtonSettings Buttons { get; } = new();
+
+    /// <summary>How long a busy state, such as a button's spinner, waits before it shows, and how long it then stays.
+    /// </summary>
+    public BusySettings Busy { get; } = new();
+
     /// <summary>Whether the components report what people see and use through the <c>Trailblazor</c> meter.</summary>
     public TelemetrySettings Telemetry { get; } = new();
 

@@ -46,11 +46,13 @@
             {
                 <TbIconButton Icon="PreviousIcon"
                               AriaLabel="@Text(Labels.Previous, TbStrings.LightboxPrevious)" Variant="Variant.Filled"
-                              Disabled="@(!CanGoBack)" FocusableWhenDisabled OnClick="() => GoToAsync(Current - 1)"
-                              Class="tb-lightbox__previous" data-part="previous" />
+                              Disabled="@(!CanGoBack)" FocusableWhenDisabled BusyWhileRunning="false"
+                              OnClick="() => GoToAsync(Current - 1)" Class="tb-lightbox__previous"
+                              data-part="previous" />
                 <TbIconButton Icon="NextIcon" AriaLabel="@Text(Labels.Next, TbStrings.LightboxNext)"
                               Variant="Variant.Filled" Disabled="@(!CanGoOn)" FocusableWhenDisabled
-                              OnClick="() => GoToAsync(Current + 1)" Class="tb-lightbox__next" data-part="next" />
+                              BusyWhileRunning="false" OnClick="() => GoToAsync(Current + 1)" Class="tb-lightbox__next"
+                              data-part="next" />
             }
             <div class="tb-lightbox__footer" data-part="footer">
                 @if (image.Caption is not null)

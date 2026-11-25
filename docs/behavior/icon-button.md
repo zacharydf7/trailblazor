@@ -13,7 +13,7 @@ Familiar apps: the icon bars in Gmail and Google Docs, GitHub's issue actions
 
 ## Pointer
 
-- [x] A click runs `OnClick`, and a disabled or loading one ignores it. `TbButtonBase.cs`
+- [x] A click runs `OnClick`. As with a button, a disabled or loading one ignores it, and so does one whose last click is still running. `TbButtonBase.cs`, `TbButtonBusyTests.Click_ShouldCallOnClickOnce_WhenClickedTwiceWhileTheHandlerRuns`
 - [x] A loading one shows a spinner in place of its icon and keeps its name. `TbIconButtonTests.Render_ShouldShowTheSpinnerInsteadOfTheIcon_WhenLoading`
 - [x] With `ShowTooltip`, resting on it shows its name after a short delay. `TooltipTests.Tooltip_ShouldWaitBeforeAppearing_WhenThePointerArrives`
 - [x] Without `ShowTooltip`, no tooltip shows. `TbIconButtonTests.Render_ShouldShowNoTooltip_WhenShowTooltipIsNotSet`

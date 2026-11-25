@@ -247,7 +247,9 @@
             focusable, so focus isn't lost. The form drops a second submit meanwhile, so the handler needs no flag of
             its own.
             <code>@@bind-IsSubmitting</code> lets the page follow it, such as to turn off a cancel button, and
-            <code>ShowSubmitting="false"</code> leaves the buttons as they are. When the save finishes, say so: an
+            <code>ShowSubmitting="false"</code> leaves the buttons as they are. Any other button, such as a dialog's
+            Save outside a form, is busy by itself while its <code>OnClick</code> awaits the work, so it needs no flag
+            either. When the save finishes, say so: an
             <code>output</code> element reads out changes to its text, or use the
             <a href="guides/announcements">announcer</a>.
         </TbText>

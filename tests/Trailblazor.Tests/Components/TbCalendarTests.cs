@@ -295,6 +295,21 @@ public class TbCalendarTests : BunitContext
     }
 
     [Fact]
+    public void Next_ShouldPageOnEachPress_WhenMonthChangedIsStillRunning()
+    {
+        // Paging buttons take every press, even while the app is still loading the month before.
+        var loading = new TaskCompletionSource();
+        var cut = Render<TbCalendar<DateOnly>>(parameters => parameters.Add(calendar => calendar.Value, June3)
+            .Add(calendar => calendar.Label, "Hike date").Add(calendar => calendar.Culture, English)
+            .Add(calendar => calendar.MonthChanged, (DateOnly? month) => loading.Task));
+
+        _ = cut.Find("[data-part=next]").ClickAsync(new MouseEventArgs());
+        _ = cut.Find("[data-part=next]").ClickAsync(new MouseEventArgs());
+
+        Assert.Equal("August 2026", cut.Find("[data-part=title]").TextContent.Trim());
+    }
+
+    [Fact]
     public void Month_ShouldShowTheGivenMonth_WhenTheParentSetsIt()
     {
         var cut = RenderCalendar(June3, parameters => parameters.Add(calendar => calendar.Month, new DateOnly(2026, 9, 20)));

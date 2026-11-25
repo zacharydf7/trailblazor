@@ -1,6 +1,6 @@
 @inject IDialogService Dialogs
 
-<TbButton Variant="Variant.Text" OnClick="EditBesideAsync">Edit beside the page</TbButton>
+<TbButton Variant="Variant.Text" BusyWhileRunning="false" OnClick="EditBesideAsync">Edit beside the page</TbButton>
 <TbText class="tb-mt-3">@_status</TbText>
 
 @code {

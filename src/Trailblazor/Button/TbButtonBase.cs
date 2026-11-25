@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Trailblazor;
 
@@ -15,6 +16,11 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     private bool _givenVariant;
     private bool _givenTone;
     private bool _givenSize;
+    // Whether a click's OnClick task is still running, whether its spinner shows, and since when.
+    private bool _running;
+    private bool _busyShown;
+    private DateTimeOffset _busyShownAt;
+    private ITimer? _busyTimer;
 
     /// <summary>How strongly the button is drawn.</summary>
     [Parameter]
@@ -75,10 +81,19 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     [Parameter]
     public ButtonType Type { get; set; } = ButtonType.Button;
 
-    /// <summary>Raised when the button is clicked, unless it is disabled or loading, or it is a submit button whose
-    /// form is handling a submit.</summary>
+    /// <summary>Raised when the button is clicked, unless it is disabled or loading, its last click is still running,
+    /// or it is a submit button whose form is handling a submit. Await the work in it, so the button stays busy until
+    /// the work is done.</summary>
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>Whether the button counts as busy while the task its <see cref="OnClick"/> returned is still running:
+    /// it ignores clicks, stays focusable, and after a moment shows its spinner, as with <see cref="Loading"/>. Toggle
+    /// buttons and links never do. Defaults to the app's <see cref="ButtonSettings.BusyWhileRunning"/>, which
+    /// defaults to true.
+    /// </summary>
+    [Parameter]
+    public bool? BusyWhileRunning { get; set; }
 
     /// <summary>A label this button's use is counted under, such as <c>"export-csv"</c>, so the app can count how often
     /// people see it and use it through the <c>Trailblazor</c> meter. Controls that share a label count together; a
@@ -109,8 +124,17 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     private bool Off => Disabled || Group?.Disabled == true
         || (OwnForm(FormDisabled, form => form.Disabled) && Type is ButtonType.Submit or ButtonType.Reset);
 
-    private protected bool Busy => Loading || (OwnForm(FormSubmitting, form => form.ShowsSubmitting)
+    private protected bool Busy => Loading || _busyShown || (OwnForm(FormSubmitting, form => form.ShowsSubmitting)
         && Type is ButtonType.Submit);
+
+    // Busy, or running a click that hasn't shown its spinner yet: clicks are ignored either way.
+    private bool Ignores => Busy || _running;
+
+    private TrailblazorOptions Options => Services.GetRequiredService<IOptions<TrailblazorOptions>>().Value;
+
+    private TimeProvider Time => Services.GetService<TimeProvider>() ?? TimeProvider.System;
+
+    private bool RunsBusy => !Toggles && Href is null && (BusyWhileRunning ?? Options.Buttons.BusyWhileRunning);
 
     private string? FormId => Theirs("form") as string;
 
@@ -182,6 +206,7 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        _busyTimer?.Dispose();
         if (_hearsForms)
         {
             Registry!.Changed -= OnFormChanged;
@@ -211,8 +236,15 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
 
     private async Task HandleClickAsync(MouseEventArgs args)
     {
-        if (Off || Busy)
+        if (Off)
         {
+            return;
+        }
+
+        if (Ignores)
+        {
+            // Many of these point to a slow handler.
+            Telemetry.Used(TelemetryName, "ignored_busy");
             return;
         }
 
@@ -224,6 +256,51 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
             await PressedChanged.InvokeAsync(Pressed);
         }
 
-        await OnClick.InvokeAsync(args);
+        if (!RunsBusy)
+        {
+            await OnClick.InvokeAsync(args);
+            return;
+        }
+
+        _running = true;
+        SetBusyTimer(ShowBusy, Options.Busy.ShowDelay);
+        try
+        {
+            await OnClick.InvokeAsync(args);
+        }
+        finally
+        {
+            _running = false;
+            var left = _busyShownAt + Options.Busy.Minimum - Time.GetUtcNow();
+            if (_busyShown && left > TimeSpan.Zero)
+            {
+                SetBusyTimer(HideBusy, left);
+            }
+            else
+            {
+                _busyTimer?.Dispose();
+                _busyShown = false;
+            }
+        }
     }
+
+    private void SetBusyTimer(Action then, TimeSpan after)
+    {
+        _busyTimer?.Dispose();
+        _busyTimer = Time.CreateTimer(_ => _ = InvokeAsync(() =>
+        {
+            then();
+            StateHasChanged();
+        }), null, after, Timeout.InfiniteTimeSpan);
+    }
+
+    private void ShowBusy()
+    {
+        if (_running)
+        {
+            (_busyShown, _busyShownAt) = (true, Time.GetUtcNow());
+        }
+    }
+
+    private void HideBusy() => _busyShown = false;
 }

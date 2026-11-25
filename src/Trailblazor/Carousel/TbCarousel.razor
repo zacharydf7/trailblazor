@@ -19,11 +19,13 @@
         }
         <TbIconButton Icon="PreviousIcon" AriaLabel="@Text(Labels.Previous, TbStrings.CarouselPrevious)"
                       Variant="Variant.Text" Size="Size.Small" Disabled="@(!Loop && Current == 0)" FocusableWhenDisabled
-                      OnClick="() => StepAsync(-1)" aria-controls="@_slidesId" data-part="previous" />
+                      BusyWhileRunning="false" OnClick="() => StepAsync(-1)" aria-controls="@_slidesId"
+                      data-part="previous" />
         <TbIconButton Icon="NextIcon" AriaLabel="@Text(Labels.Next, TbStrings.CarouselNext)"
                       Variant="Variant.Text" Size="Size.Small" Disabled="@(!Loop && Current == _slides.Count - 1)"
                       FocusableWhenDisabled
-                      OnClick="() => StepAsync(1)" aria-controls="@_slidesId" data-part="next" />
+                      BusyWhileRunning="false" OnClick="() => StepAsync(1)" aria-controls="@_slidesId"
+                      data-part="next" />
     </div>
     @* Screen readers hear a slide the user brought in, but not each one that turns by itself. *@
     @* While a move runs, data-move numbers it and the script reports its end, when the leaving slide is hidden. *@

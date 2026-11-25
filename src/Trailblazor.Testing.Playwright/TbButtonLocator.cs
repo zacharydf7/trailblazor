@@ -10,7 +10,8 @@ public sealed class TbButtonLocator(ILocator scope, string name)
     public ILocator Button => scope.GetByRole(AriaRole.Button, new() { Name = name, Exact = true })
         .Or(scope.GetByRole(AriaRole.Link, new() { Name = name, Exact = true })).And(scope.Locator(".tb-button"));
 
-    /// <summary>Whether the button is busy, as <c>Loading</c> makes it; a busy button ignores clicks.</summary>
+    /// <summary>Whether the button is busy, as <c>Loading</c> or a click still running makes it; a busy button ignores
+    /// clicks.</summary>
     public async Task<bool> BusyAsync() => await Button.GetAttributeAsync("aria-busy") == "true";
 
     /// <summary>Whether a toggle button is pressed.</summary>

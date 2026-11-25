@@ -1720,6 +1720,8 @@ Trailblazor.TbButton.StartIcon.get -> Trailblazor.Icon?
 Trailblazor.TbButton.StartIcon.set -> void
 Trailblazor.TbButton.TbButton() -> void
 Trailblazor.TbButtonBase
+Trailblazor.TbButtonBase.BusyWhileRunning.get -> bool?
+Trailblazor.TbButtonBase.BusyWhileRunning.set -> void
 Trailblazor.TbButtonBase.Disabled.get -> bool
 Trailblazor.TbButtonBase.Disabled.set -> void
 Trailblazor.TbButtonBase.Dispose() -> void
@@ -2967,6 +2969,8 @@ Trailblazor.TbToolbar.TbToolbar() -> void
 Trailblazor.TbToolbar.Vertical.get -> bool
 Trailblazor.TbToolbar.Vertical.set -> void
 Trailblazor.TbToolbarButton
+Trailblazor.TbToolbarButton.BusyWhileRunning.get -> bool?
+Trailblazor.TbToolbarButton.BusyWhileRunning.set -> void
 Trailblazor.TbToolbarButton.Disabled.get -> bool
 Trailblazor.TbToolbarButton.Disabled.set -> void
 Trailblazor.TbToolbarButton.Dispose() -> void
@@ -3295,6 +3299,18 @@ Trailblazor.TrailblazorOptions.Telemetry.get -> Trailblazor.TelemetrySettings!
 Trailblazor.TrailblazorOptions.Theme.get -> Trailblazor.ThemeSettings!
 Trailblazor.TrailblazorOptions.Toasts.get -> Trailblazor.ToastSettings!
 Trailblazor.TrailblazorOptions.Tooltips.get -> Trailblazor.TooltipSettings!
+Trailblazor.TrailblazorOptions.Buttons.get -> Trailblazor.ButtonSettings!
+Trailblazor.ButtonSettings
+Trailblazor.ButtonSettings.ButtonSettings() -> void
+Trailblazor.TrailblazorOptions.Busy.get -> Trailblazor.BusySettings!
+Trailblazor.BusySettings
+Trailblazor.BusySettings.BusySettings() -> void
+Trailblazor.BusySettings.Minimum.get -> System.TimeSpan
+Trailblazor.BusySettings.Minimum.set -> void
+Trailblazor.BusySettings.ShowDelay.get -> System.TimeSpan
+Trailblazor.BusySettings.ShowDelay.set -> void
+Trailblazor.ButtonSettings.BusyWhileRunning.get -> bool
+Trailblazor.ButtonSettings.BusyWhileRunning.set -> void
 Trailblazor.TrailblazorOptions.TrailblazorOptions() -> void
 Trailblazor.TrailblazorOptions.WarnAboutUnlayeredStyles.get -> bool
 Trailblazor.TrailblazorOptions.WarnAboutUnlayeredStyles.set -> void
@@ -7499,6 +7515,8 @@ Trailblazor.TbRibbon.ChildContent.get -> Microsoft.AspNetCore.Components.RenderF
 Trailblazor.TbRibbon.ChildContent.set -> void
 Trailblazor.TbRibbon.TbRibbon() -> void
 Trailblazor.TbRibbonButton
+Trailblazor.TbRibbonButton.BusyWhileRunning.get -> bool?
+Trailblazor.TbRibbonButton.BusyWhileRunning.set -> void
 Trailblazor.TbRibbonButton.Disabled.get -> bool
 Trailblazor.TbRibbonButton.Disabled.set -> void
 Trailblazor.TbRibbonButton.Icon.get -> Trailblazor.Icon?

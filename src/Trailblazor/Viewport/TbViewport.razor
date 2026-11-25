@@ -12,7 +12,7 @@
         <div data-part="controls" class="tb-viewport__controls">
             <TbIconButton Icon="BuiltInIcons.Minus" AriaLabel="@(Labels.ZoomOut ?? Localizer[TbStrings.ViewportZoomOut])"
                           Size="Size.Small" Variant="Variant.Text" data-part="zoom-out" Disabled="_zoom <= MinZoom"
-                          FocusableWhenDisabled OnClick="ZoomOutAsync" />
+                          FocusableWhenDisabled BusyWhileRunning="false" OnClick="ZoomOutAsync" />
             @* The menu's name says what the percent on its button is. *@
             <TbMenu Align="PlacementAlign.End" data-part="zoom-menu">
                 <Trigger>
@@ -39,7 +39,7 @@
             </TbMenu>
             <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="@(Labels.ZoomIn ?? Localizer[TbStrings.ViewportZoomIn])"
                           Size="Size.Small" Variant="Variant.Text" data-part="zoom-in" Disabled="_zoom >= MaxZoom"
-                          FocusableWhenDisabled OnClick="ZoomInAsync" />
+                          FocusableWhenDisabled BusyWhileRunning="false" OnClick="ZoomInAsync" />
         </div>
     }
     @* The box is a stop for Tab, so the keys reach it even when nothing inside can take focus. *@

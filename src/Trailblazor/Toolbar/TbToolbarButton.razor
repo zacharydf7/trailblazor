@@ -7,15 +7,15 @@
 {
     <TbTooltip Text="@AriaLabel" Placement="Placement.Bottom" data-toolbar-item="@Id">
         <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@AriaLabel" Variant="Variant"
-                      Size="ShownSize" Disabled="Disabled" OnClick="OnClick" TelemetryName="@TelemetryName"
-                      Class="@Class" Style="@Style" />
+                      Size="ShownSize" Disabled="Disabled" BusyWhileRunning="BusyWhileRunning" OnClick="OnClick"
+                      TelemetryName="@TelemetryName" Class="@Class" Style="@Style" />
     </TbTooltip>
 }
 else
 {
     <TbButton @attributes="AdditionalAttributes" Variant="Variant" Size="ShownSize" Disabled="Disabled"
-              OnClick="OnClick" TelemetryName="@TelemetryName" data-toolbar-item="@Id" Class="@Class"
-              Style="@Style">
+              BusyWhileRunning="BusyWhileRunning" OnClick="OnClick" TelemetryName="@TelemetryName"
+              data-toolbar-item="@Id" Class="@Class" Style="@Style">
         @Label
     </TbButton>
 }
@@ -49,6 +49,11 @@ else
     /// <summary>Turns the button, and its item in the overflow menu, off.</summary>
     [Parameter]
     public bool Disabled { get; set; }
+
+    /// <summary>Whether the button counts as busy while the task its <c>OnClick</c> returned is still running, as a
+    /// <see cref="TbButton"/> does. Defaults to the app's <see cref="ButtonSettings.BusyWhileRunning"/>.</summary>
+    [Parameter]
+    public bool? BusyWhileRunning { get; set; }
 
     /// <summary>Raised when the button, or its item in the overflow menu, is chosen.</summary>
     [Parameter]

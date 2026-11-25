@@ -292,7 +292,9 @@ public static class ExampleCatalog
         "With a `TelemetryName`, such as `\"export-csv\"`, it counts `trailblazor.control.shown` once as it first "
             + "renders interactively, and `trailblazor.control.used` for each click it acts on, as a button or as a "
             + $"link. Both are tagged with the name and `trailblazor.component` `{component}`.",
-        "A disabled or loading button counts as shown but not used. Without a `TelemetryName` it counts nothing.",
+        "A disabled button counts as shown but not used. A click it ignores because it is loading, its form is "
+            + "submitting, or its last click is still running counts as `trailblazor.control.used` with the action "
+            + "`ignored_busy`; many of those point to a slow handler. Without a `TelemetryName` it counts nothing.",
     ];
 
     private const string InlineClickNote = "Blazor matches parameter names regardless of case, so `onclick` binds to "
@@ -1589,8 +1591,19 @@ public static class ExampleCatalog
                     + "`Start` and `End` slots hold other content, such as a badge. An icon adds nothing to the "
                     + "button's name, and slot content adds to it only if it has text of its own.",
                     typeof(ButtonIconExample)),
-                new("loading", "Loading", "`Loading` shows a spinner and ignores clicks, so a slow action can't run "
-                    + "twice. The button stays focusable, so focus isn't lost while it waits. A `TbForm`'s submit "
+                new("busy", "Busy while it runs", "A button is busy by itself while the task its `OnClick` "
+                    + "returned is still running: it ignores clicks and stays focusable, and after 200 milliseconds "
+                    + "shows its spinner for at least 400, so a quick click doesn't flash it. Await the work in "
+                    + "`OnClick`, and no flag is needed. `BusyWhileRunning=\"false\"` turns this off for a button "
+                    + "whose presses should all count, such as a stepper. In `AddTrailblazor`, "
+                    + "`options.Buttons.BusyWhileRunning` sets it for the app, and `options.Busy.ShowDelay` and "
+                    + "`Minimum` the timing. Toggles and links are never busy this way. A button whose `OnClick` "
+                    + "awaits a dialog's answer stays busy while the dialog is open, which suits a modal one; for a "
+                    + "non-modal window, turn it off.", typeof(ButtonBusyExample)),
+                new("loading", "Loading", "`Loading` shows the same spinner and ignores clicks for as long as the "
+                    + "app sets it, such as when the button's text changes while it saves. The button stays focusable, "
+                    + "so "
+                    + "focus isn't lost while it waits. A `TbForm`'s submit "
                     + "button, in the form or naming it with `form`, shows the same by itself while the form handles "
                     + "a submit. On a static page, where "
                     + "there's no handler to wait for, it does the same while its post is on its way, for up to "
@@ -1616,7 +1629,7 @@ public static class ExampleCatalog
                 new("long-labels", "Long labels", "Long text wraps inside the button, and the button grows to fit.",
                     typeof(ButtonLongExample)),
             ],
-            Api = [typeof(TbButton), typeof(ButtonClasses)],
+            Api = [typeof(TbButton), typeof(ButtonClasses), typeof(ButtonSettings), typeof(BusySettings)],
             Keyboard =
             [
                 new(["Enter", "Space"], "Presses it.") { When = "As a button" },
@@ -1631,12 +1644,12 @@ public static class ExampleCatalog
             ],
             Announcements =
             [
-                "`Loading` marks it `aria-busy`.",
+                "`Loading`, or a click still running once its spinner shows, marks it `aria-busy`.",
                 "With `@bind-Pressed`, its state is announced through `aria-pressed`.",
             ],
             Accessibility =
             [
-                "A `Loading` button, or a `Disabled` one with `FocusableWhenDisabled`, is marked `aria-disabled` and "
+                "A busy button, or a `Disabled` one with `FocusableWhenDisabled`, is marked `aria-disabled` and "
                     + "stays a tab stop.",
                 "With `PressedLook.Quiet`, the bar under a pressed toggle stands out by at least 3:1 from its tint, "
                     + "the page, and a hovered or selected row, in every palette, light and dark.",
@@ -1668,7 +1681,8 @@ public static class ExampleCatalog
                 new("start", "The start icon or content, before the label."),
                 new("icon", "An icon button's icon."),
                 new("label", "The button's text."),
-                new("spinner", "The spinner shown while the button is loading."),
+                new("spinner", "The spinner shown while the button is busy: loading, submitting its form, or "
+                    + "still running a click."),
                 new("end", "The end icon or content, after the label."),
             ],
             Scenario = new("submit", "it tries to send a trail report with no trail name, checks that nothing is "
@@ -1684,9 +1698,15 @@ public static class ExampleCatalog
                     + "the submit, so the fields' errors can be read straight after the click.",
                 "`BusyAsync()` reads whether the button is busy, and `PressedAsync()` and `MixedAsync()` whether a "
                     + "toggle is pressed or mixed.",
+                "A button stays busy up to `options.Busy.Minimum` after its `OnClick` ends. The Playwright "
+                    + "`ClickAsync()` waits for it to end before it clicks; a `BusyAsync()` read straight after a "
+                    + "click can still be true.",
+                "In bUnit, register a `FakeTimeProvider` as `TimeProvider` to step through a running click's "
+                    + "spinner delay and minimum. A second click in its first 200 milliseconds is ignored without "
+                    + "throwing, since the button isn't marked busy yet.",
                 "In bUnit, `cut.Tb().Button(\"Save\").ClickAsync()` throws while the button is busy instead of "
                     + "waiting, and `Busy`, `Pressed` and `Mixed` read the same states.",
-                "By hand, check a toggle with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")` and a `Loading` "
+                "By hand, check a toggle with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")` and a busy "
                     + "button with `ToHaveAttributeAsync(\"aria-busy\", \"true\")`.",
                 "By hand, check a disabled button with `ToBeDisabledAsync()`, which also passes for `aria-disabled`.",
                 "To move focus to a button from code, `@ref` it and call `FocusAsync()`.",
@@ -1728,7 +1748,9 @@ public static class ExampleCatalog
                     + "again.",
                     typeof(IconButtonMixedExample)),
                 new("links", "Links", "`Href` renders a link drawn as an icon button.", typeof(IconButtonLinkExample)),
-                new("loading", "Loading", "`Loading` shows a spinner in place of the icon and ignores clicks.",
+                new("loading", "Loading", "`Loading` shows a spinner in place of the icon and ignores clicks. An "
+                    + "icon button is busy the same way by itself while its `OnClick` runs, as a "
+                    + "[button](components/button#busy) is.",
                     typeof(IconButtonLoadingExample)),
                 new("disabled", "Disabled", "`Disabled` turns the button off and takes it out of the tab order. With "
                     + "`FocusableWhenDisabled` it stays a tab stop, so its tooltip can still be read.",
@@ -1750,12 +1772,12 @@ public static class ExampleCatalog
             [
                 "The tooltip repeats the name, so it isn't added as a description, and screen readers hear the name "
                     + "once.",
-                "`Loading` marks it `aria-busy`.",
+                "`Loading`, or a click still running once its spinner shows, marks it `aria-busy`.",
                 "With `@bind-Pressed`, its state is announced through `aria-pressed`.",
             ],
             Accessibility =
             [
-                "A `Loading` icon button, or a `Disabled` one with `FocusableWhenDisabled`, is marked `aria-disabled` "
+                "A busy icon button, or a `Disabled` one with `FocusableWhenDisabled`, is marked `aria-disabled` "
                     + "and stays a tab stop, as a button does.",
                 "With `PressedLook.Quiet`, the bar under a pressed toggle stands out by at least 3:1 from its tint, "
                     + "the page, and a hovered or selected row, in every palette, light and dark.",
@@ -1779,7 +1801,7 @@ public static class ExampleCatalog
             DataParts =
             [
                 new("icon", "The icon the button shows."),
-                new("spinner", "The spinner shown in place of the icon while loading."),
+                new("spinner", "The spinner shown in place of the icon while the button is busy."),
             ],
             Scenario = new("mixed", "it checks that the Bold button shows that only some words are bold, presses it, "
                 + "and checks that every word is bold."),
@@ -1922,6 +1944,8 @@ public static class ExampleCatalog
             [
                 "A floating button is a `button`. A speed dial's trigger is a button with `aria-haspopup=\"menu\"` "
                     + "and `aria-expanded`, and its actions are `menuitem`s in a `menu`.",
+                "While its `OnClick` is still running, a floating button ignores clicks, and after a moment shows a "
+                    + "spinner and is marked `aria-busy`, as a [button](components/button#busy) does.",
             ],
             Accessibility =
             [
@@ -1948,6 +1972,7 @@ public static class ExampleCatalog
             DataParts =
             [
                 new("icon", "The button's icon, and each action's."),
+                new("spinner", "The spinner shown in place of the icon while the button is busy."),
                 new("label", "An extended button's text, and each action's."),
                 new("trigger", "The button that opens a speed dial."),
                 new("menu", "A speed dial's list of actions."),
@@ -5479,7 +5504,8 @@ public static class ExampleCatalog
             WhenNotToUse =
             [
                 "For content that's loading into a known shape, use a [skeleton](components/skeleton).",
-                "For a button waiting on its own action, use the [button](components/button)'s `Loading`.",
+                "A button waiting on its own action shows its own spinner; see the "
+                    + "[button](components/button#busy).",
             ],
             Related = ["skeleton", "button", "alert"],
             Sections =
@@ -10816,9 +10842,10 @@ public static class ExampleCatalog
                     + "header stay in view and only the rows scroll. With actions, such a dialog's body lays its "
                     + "content out in a column, so put text in a `TbText` rather than straight in the body.",
                     typeof(DialogFullWindowExample)),
-                new("saving", "Saving and errors", "While a dialog saves, set `Loading` on its button, and "
-                    + "`CanDismiss` can keep it open until the work ends. Show a failure in the dialog with an alert, "
-                    + "so the user keeps what they typed and can try again.", typeof(DialogSavingExample)),
+                new("saving", "Saving and errors", "While a dialog saves, its button is busy by itself as long as "
+                    + "its `OnClick` awaits the work, and `CanDismiss` can keep the dialog open until the work ends. "
+                    + "Show a failure in the dialog with an alert, so the user keeps what they typed and can try "
+                    + "again.", typeof(DialogSavingExample)),
                 new("non-modal", "Non-modal dialogs", "`Modal = false` leaves the page usable and undimmed. Such a "
                     + "dialog can be `Draggable` by its header and `Resizable` by its bottom-end grip. Neither needs "
                     + "dragging: the header gains a Move button whose menu picks a place, and the grip is a Resize "

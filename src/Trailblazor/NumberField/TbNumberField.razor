@@ -13,11 +13,11 @@
     before: HideStepButtons ? null : @<TbIconButton Icon="BuiltInIcons.Minus"
                   AriaLabel="@(Labels.Decrease ?? Localizer[TbStrings.NumberFieldDecrease])" Size="Size.Small"
                   tabindex="-1" data-part="decrement" Disabled="@(Disabled || ReadOnly || !CanStep(-1))"
-                  OnClick="() => StepAsync(-1)" />,
+                  BusyWhileRunning="false" OnClick="() => StepAsync(-1)" />,
     after: HideStepButtons ? null : @<TbIconButton Icon="BuiltInIcons.Plus"
                   AriaLabel="@(Labels.Increase ?? Localizer[TbStrings.NumberFieldIncrease])" Size="Size.Small"
                   tabindex="-1" data-part="increment" Disabled="@(Disabled || ReadOnly || !CanStep(1))"
-                  OnClick="() => StepAsync(1)" />)
+                  BusyWhileRunning="false" OnClick="() => StepAsync(1)" />)
 
 @code {
     private ElementReference _input;

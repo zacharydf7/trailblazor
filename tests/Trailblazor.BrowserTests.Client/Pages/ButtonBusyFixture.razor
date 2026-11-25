@@ -1,14 +1,16 @@
 @page "/button-busy"
 
-@* A button that's busy while it saves, one renamed while it publishes, and one that starts busy and frees up a moment
-   after the page loads. *@
+@* A button that's busy while it saves, one renamed while it publishes, one that starts busy and frees up a moment
+   after the page loads, and one busy only because its click is still running. *@
 <TbButton Loading="_saving" OnClick="SaveAsync">Save</TbButton>
 <TbButton Loading="_publishing" OnClick="PublishAsync">@(_publishing ? "Publishing" : "Publish")</TbButton>
 <TbButton Loading="_loading" OnClick="() => _refreshed++">Refresh</TbButton>
 <TbButton Disabled>Delete</TbButton>
+<TbButton OnClick="SendAsync">Send code</TbButton>
 <output aria-label="Saved">@_saved</output>
 <output aria-label="Published">@_published</output>
 <output aria-label="Refreshed">@_refreshed</output>
+<output aria-label="Sent">@_sent</output>
 
 @code {
     private bool _saving;
@@ -17,6 +19,13 @@
     private bool _loading = true;
     private int _saved;
     private int _refreshed;
+    private int _sent;
+
+    private async Task SendAsync()
+    {
+        await Task.Delay(600);
+        _sent++;
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
