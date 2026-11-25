@@ -9,6 +9,7 @@
         <TbTableOfContentsItem TargetId="bunit-dialogs" Text="Test dialogs in bUnit" />
         <TbTableOfContentsItem TargetId="announcements" Text="Test what screen readers hear" />
         <TbTableOfContentsItem TargetId="promises" Text="What every component promises" />
+        <TbTableOfContentsItem TargetId="browser-only" Text="What only a browser shows" />
         <TbTableOfContentsItem TargetId="playwright" Text="Drive components in Playwright" />
         <TbTableOfContentsItem TargetId="waiting" Text="Wait for the page" />
         <TbTableOfContentsItem TargetId="slow-link" Text="Test over a slow link" />
@@ -943,6 +944,258 @@
             value types: date and slider ranges, the grid's state, sorts and filters, and a query builder's query.
         </TbText>
         <CodeBlock Label="Checking your own component" Code="@Contract" />
+
+        <DocsHeading Id="browser-only" Text="What only a browser shows" Class="docs-section" />
+        <TbText>
+            Some state is set by a component's script, never by the server's render. bUnit runs no script, so it shows
+            what the server rendered: nothing, or a value the script would replace. Only a browser shows the real state,
+            so assert it in Playwright. Where the bUnit kit has a stand-in, the table lists it.
+        </TbText>
+        <div class="docs-api" tabindex="0" role="region" aria-label="State only a browser shows">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Component</th>
+                        <th scope="col">What its script sets</th>
+                        <th scope="col">In bUnit</th>
+                        <th scope="col">In Playwright</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">Select, multi-select</th>
+                        <td>
+                            The combobox's <code>aria-expanded</code> (the server always renders <code>"false"</code>)
+                            and <code>aria-activedescendant</code>, the active option's <code>data-active</code>, and
+                            the options a filter hides. A filterable select's filter takes focus on open, and the
+                            combobox takes it back on close.
+                        </td>
+                        <td>
+                            <code>Select(label).IsOpen</code> reads <code>data-open</code>, which
+                            <code>OpenAsync()</code> and <code>CloseAsync()</code> change. <code>aria-expanded</code>
+                            stays <code>"false"</code>.
+                        </td>
+                        <td>
+                            <code>Select(label).IsOpenAsync()</code>, or <code>ToHaveAttributeAsync("aria-expanded",
+                            "true")</code> on the combobox.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">List box</th>
+                        <td>
+                            <code>aria-activedescendant</code>, the active option's <code>data-active</code>, and the
+                            options a filter hides.
+                        </td>
+                        <td>Nothing.</td>
+                        <td>
+                            <code>ToBeHiddenAsync()</code> on an option, or <code>GetByRole(AriaRole.Option)</code>,
+                            which skips hidden ones.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Autocomplete, cascader, mention input</th>
+                        <td>
+                            The input's <code>aria-expanded</code> (rendered <code>"false"</code>; a mention input has
+                            it only on one line) and <code>aria-activedescendant</code>, the active suggestion's
+                            <code>data-active</code>, and a mention list's <code>aria-busy</code>.
+                        </td>
+                        <td>Nothing for these attributes.</td>
+                        <td>
+                            <code>ToHaveAttributeAsync</code> on the input and on the list.
+                            <code>SuggestionsAsync()</code> or <code>ResultsAsync()</code> read the open list.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Command palette</th>
+                        <td>
+                            A command's <code>aria-selected</code> (always rendered <code>"false"</code>) and
+                            <code>data-active</code>, and the search box's <code>aria-activedescendant</code>.
+                        </td>
+                        <td>Nothing for these attributes; <code>Results</code> lists the matches.</td>
+                        <td><code>ToHaveAttributeAsync("aria-selected", "true")</code> on the command.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            Popover, and what opens one: popconfirm, date, date-time and color pickers, tree select
+                        </th>
+                        <td>
+                            The trigger's <code>aria-expanded</code> (rendered <code>"false"</code>). Focus goes into
+                            the panel on open and back to the trigger on close.
+                        </td>
+                        <td>
+                            <code>Popover(trigger).OpenAsync()</code> and <code>CloseAsync()</code> change whether it's
+                            open, not <code>aria-expanded</code>.
+                        </td>
+                        <td>
+                            <code>Popover(trigger).OpenAsync()</code> and <code>CloseAsync()</code>, which wait on
+                            <code>aria-expanded</code>, and <code>TreeSelect(label).IsOpenAsync()</code>, which reads
+                            it. For the others, <code>ToHaveAttributeAsync</code> on the trigger.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Menu, submenu, context menu</th>
+                        <td>
+                            A menu's trigger's <code>aria-expanded</code>, which the server leaves out, and a submenu's,
+                            rendered <code>"false"</code>. The first item takes focus on open, and focus goes back on
+                            close; hover and typing move it between items. A context menu, which has no trigger, has
+                            only the focus moves.
+                        </td>
+                        <td><code>Menu(...).IsOpen</code> reads <code>data-open</code>.</td>
+                        <td>
+                            <code>Menu(...).IsOpenAsync()</code> and <code>OpenAsync()</code>;
+                            <code>ToBeFocusedAsync()</code> for a context menu.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Tabs, dock manager</th>
+                        <td>
+                            A shown panel's <code>tabindex</code>: with <code>FocusablePanels</code> at its default,
+                            <code>Auto</code>, the server renders <code>0</code> on it, and the script takes it away
+                            when the panel starts with a control. Arrow keys move focus between tabs.
+                        </td>
+                        <td><code>PanelElement</code> shows the server's <code>tabindex="0"</code>.</td>
+                        <td><code>PanelElement(tab)</code> with <code>ToHaveAttributeAsync("tabindex", ...)</code>.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Accordion</th>
+                        <td>
+                            An item's <code>data-state</code>, which the server leaves at <code>"opening"</code> or
+                            <code>"closing"</code> and the script settles to <code>"open"</code> or
+                            <code>"closed"</code>. Arrow keys move focus between headers.
+                        </td>
+                        <td><code>aria-expanded</code> is right; <code>data-state</code> never settles.</td>
+                        <td><code>ExpandAsync()</code> and <code>CollapseAsync()</code>, which wait for it.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Toolbar, toggle group, menubar, ribbon, virtual list, chat</th>
+                        <td>
+                            Which item is the one tab stop, as <code>tabindex</code> <code>0</code> and <code>-1</code>,
+                            and arrow keys moving focus. A toolbar's <code>data-overflowed</code> items and its More
+                            button; a ribbon's <code>data-collapsed</code> groups and their buttons'
+                            <code>aria-expanded</code>; a chat's <code>data-away</code>.
+                        </td>
+                        <td>
+                            Nothing: the server renders no <code>tabindex</code> on the items, or <code>-1</code> on
+                            every virtual list item and chat message.
+                        </td>
+                        <td><code>ToHaveAttributeAsync("tabindex", "0")</code> and <code>ToBeFocusedAsync()</code>.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Calendar, tree view</th>
+                        <td>
+                            The one tab stop as arrow keys move it, and in a tree, the end-slot controls'
+                            <code>tabindex</code>, <code>0</code> in the row that holds the stop.
+                        </td>
+                        <td>The server's first tab stop shows; moves made with arrow keys don't.</td>
+                        <td><code>ToHaveAttributeAsync("tabindex", "0")</code> and <code>ToBeFocusedAsync()</code>.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Data grid</th>
+                        <td>
+                            With cell navigation, one cell's <code>tabindex="0"</code> and <code>-1</code> on the
+                            controls in cells. The scroll box's own tab stop, which the script gives it only while the
+                            rows overflow. A tree row's <code>aria-expanded</code>, which the script changes on the Left
+                            and Right arrow keys before the server renders it again.
+                        </td>
+                        <td><code>ExpandAsync()</code> reads the server's <code>aria-expanded</code>.</td>
+                        <td>
+                            <code>CellAsync(row, column)</code> with <code>ToHaveAttributeAsync("tabindex", "0")</code>
+                            or <code>ToBeFocusedAsync()</code>.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Splitter, dock manager</th>
+                        <td>
+                            A separator's <code>aria-valuenow</code> while it's dragged; a splitter's
+                            <code>data-stacked</code>.
+                        </td>
+                        <td>
+                            <code>Splitter(...).Size</code> reads the server's <code>aria-valuenow</code> after
+                            <code>ResizeAsync()</code>; nothing for stacking.
+                        </td>
+                        <td>
+                            Their helpers, which read <code>aria-valuenow</code>;
+                            <code>ToHaveAttributeAsync("data-stacked", "")</code> for stacking.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Dialog, drawer, dialogs from <code>IDialogService</code></th>
+                        <td>
+                            A dialog's <code>data-window-state</code>; with <code>TopLayer</code> off,
+                            <code>inert</code> on the rest of the page; and for both, focus moving into it on open and
+                            back on close.
+                        </td>
+                        <td>
+                            <code>Dialog(...).WindowState</code> reads the state the component was told, not the
+                            attribute.
+                        </td>
+                        <td><code>WindowStateAsync()</code>, and <code>ToBeFocusedAsync()</code>.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Overlay, focus scope</th>
+                        <td>
+                            With <code>Blocking</code>, <code>inert</code> on the rest of the page; with
+                            <code>Trapped</code>, a scope's <code>data-trapped</code>; and focus moving in and back.
+                        </td>
+                        <td>Nothing.</td>
+                        <td><code>ToHaveAttributeAsync("inert", "")</code> and <code>ToBeFocusedAsync()</code>.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Tooltip, and text with <code>ShowFullText</code></th>
+                        <td>
+                            The trigger's <code>aria-describedby</code>, which gains the bubble's id; the server never
+                            links them.
+                        </td>
+                        <td><code>Tooltip(...).Text</code> reads the bubble.</td>
+                        <td>
+                            <code>TextAsync()</code>, or <code>ToHaveAccessibleDescriptionAsync()</code> on the trigger.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Rich text editor</th>
+                        <td>
+                            The toolbar buttons' <code>aria-pressed</code> (always rendered <code>"false"</code>), the
+                            find bar's <code>hidden</code>, the editor's <code>data-empty</code>, and focus going back
+                            to the text after a command.
+                        </td>
+                        <td>Nothing for these attributes.</td>
+                        <td>
+                            <code>ToHaveAttributeAsync("aria-pressed", "true")</code> on a button,
+                            <code>ToBeVisibleAsync()</code> on the find bar.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Back to top</th>
+                        <td><code>data-shown</code>, once the page scrolls far enough.</td>
+                        <td>The button is always there.</td>
+                        <td><code>IsShownAsync()</code>.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Text</th>
+                        <td>
+                            Whether <code>MaxLines</code> cuts the text off, and where a middle cut falls so the text
+                            fits its box.
+                        </td>
+                        <td>
+                            <code>SetCutAsync(true)</code> stands in for the measurement; <code>ShownText</code> reads
+                            what rendered.
+                        </td>
+                        <td><code>IsCutAsync()</code> and <code>ShownTextAsync()</code>.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <TbText>
+            Focus that a script moves can't be seen in bUnit at all: in a tag input after a tag is removed, a chip group
+            after a chip is removed, an in-place editor's first control, a form's first invalid field, a field with
+            <code>AutoFocus</code>, the toasts that F8 reaches, and a sortable list's handle after a move. bUnit's
+            <code>JSInterop.VerifyFocusAsyncInvoke()</code> only sees focus a component moves from .NET. In
+            Playwright, assert it with <code>ToBeFocusedAsync()</code>.
+        </TbText>
+        <TbText>
+            Where a script sets <code>data-ready</code> itself, as on the accordion, select, menu, popover and tooltip,
+            bUnit never shows it; the Playwright helpers wait for it.
+        </TbText>
 
         <DocsHeading Id="playwright" Text="Drive components in Playwright" Class="docs-section" />
         <TbText>
