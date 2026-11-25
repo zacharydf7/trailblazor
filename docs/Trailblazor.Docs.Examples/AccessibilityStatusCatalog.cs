@@ -133,6 +133,7 @@ public static class AccessibilityStatusCatalog
         new("table-of-contents", NotYet, NotYet, Tested),
         new("link", Tested, Tested, None),
         new("async-content", None, NotYet, NotYet),
+        new("countdown", None, None, None),
         new("empty-state", None, None, None),
         new("skeleton", None, Tested, Tested),
         new("toast", Tested, NotYet, Tested),

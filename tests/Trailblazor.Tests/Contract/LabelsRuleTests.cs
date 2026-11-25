@@ -34,6 +34,8 @@ public partial class LabelsRuleTests
         ["DateHintDay"] = "a date format's hint letters, such as DD, read the same everywhere",
         ["DateHintMonth"] = "a date format's hint letters, such as MM, read the same everywhere",
         ["DateHintYear"] = "a date format's hint letters, such as YYYY, read the same everywhere",
+        ["CountdownSeconds"] = "words for a number of seconds read the same in every countdown",
+        ["CountdownMinutes"] = "words for a number of minutes read the same in every countdown",
     };
 
     // Components with a Labels record that doesn't yet word every string, and why.

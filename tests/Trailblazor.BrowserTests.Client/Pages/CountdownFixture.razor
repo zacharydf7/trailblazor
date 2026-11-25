@@ -1,0 +1,7 @@
+@page "/countdown"
+
+@* A countdown long enough not to end during a test, and a button outside it to take focus. *@
+<TbButton>Outside</TbButton>
+<div style="margin-block-start: 4rem">
+    <TbCountdown Duration="TimeSpan.FromMinutes(5)" Text="Going to sign in in {0}." OnElapsed="() => { }" />
+</div>

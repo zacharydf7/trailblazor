@@ -7849,3 +7849,52 @@ override Trailblazor.TbDescriptionItem.OnParametersSet() -> void
 override Trailblazor.TbDescriptionList.OnParametersSet() -> void
 ~override Trailblazor.TbDescriptionItem.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbDescriptionList.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.CountdownLabels
+Trailblazor.CountdownLabels.<Clone>$() -> Trailblazor.CountdownLabels!
+Trailblazor.CountdownLabels.CountdownLabels() -> void
+Trailblazor.CountdownLabels.Equals(Trailblazor.CountdownLabels? other) -> bool
+Trailblazor.CountdownLabels.GoNow.get -> string?
+Trailblazor.CountdownLabels.GoNow.init -> void
+Trailblazor.CountdownLabels.Stay.get -> string?
+Trailblazor.CountdownLabels.Stay.init -> void
+Trailblazor.CountdownLabels.Stayed.get -> string?
+Trailblazor.CountdownLabels.Stayed.init -> void
+Trailblazor.TbCountdown
+Trailblazor.TbCountdown.Dispose() -> void
+Trailblazor.TbCountdown.Duration.get -> System.TimeSpan
+Trailblazor.TbCountdown.Duration.set -> void
+Trailblazor.TbCountdown.ExtendText.get -> string?
+Trailblazor.TbCountdown.ExtendText.set -> void
+Trailblazor.TbCountdown.Href.get -> string?
+Trailblazor.TbCountdown.Href.set -> void
+Trailblazor.TbCountdown.Labels.get -> Trailblazor.CountdownLabels!
+Trailblazor.TbCountdown.Labels.set -> void
+Trailblazor.TbCountdown.OnElapsed.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.CountdownEnd>
+Trailblazor.TbCountdown.OnElapsed.set -> void
+Trailblazor.TbCountdown.OnExtend.get -> Microsoft.AspNetCore.Components.EventCallback
+Trailblazor.TbCountdown.OnExtend.set -> void
+Trailblazor.TbCountdown.TbCountdown() -> void
+Trailblazor.TbCountdown.TelemetryName.get -> string?
+Trailblazor.TbCountdown.TelemetryName.set -> void
+Trailblazor.TbCountdown.Text.get -> string!
+Trailblazor.TbCountdown.Text.set -> void
+const Trailblazor.TbStrings.CountdownGoNow = "Countdown.GoNow" -> string!
+const Trailblazor.TbStrings.CountdownMinutes = "Countdown.Minutes" -> string!
+const Trailblazor.TbStrings.CountdownMinutesOne = "Countdown.MinutesOne" -> string!
+const Trailblazor.TbStrings.CountdownSeconds = "Countdown.Seconds" -> string!
+const Trailblazor.TbStrings.CountdownSecondsOne = "Countdown.SecondsOne" -> string!
+const Trailblazor.TbStrings.CountdownStay = "Countdown.Stay" -> string!
+const Trailblazor.TbStrings.CountdownStayed = "Countdown.Stayed" -> string!
+override Trailblazor.CountdownLabels.Equals(object? obj) -> bool
+override Trailblazor.CountdownLabels.GetHashCode() -> int
+override Trailblazor.CountdownLabels.ToString() -> string!
+override Trailblazor.TbCountdown.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbCountdown.OnParametersSet() -> void
+static Trailblazor.CountdownLabels.operator !=(Trailblazor.CountdownLabels? left, Trailblazor.CountdownLabels? right) -> bool
+static Trailblazor.CountdownLabels.operator ==(Trailblazor.CountdownLabels? left, Trailblazor.CountdownLabels? right) -> bool
+~override Trailblazor.TbCountdown.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbCountdown.ShowStay.get -> bool
+Trailblazor.TbCountdown.ShowStay.set -> void
+Trailblazor.CountdownEnd
+Trailblazor.CountdownEnd.GoNow = 1 -> Trailblazor.CountdownEnd
+Trailblazor.CountdownEnd.TimeRanOut = 0 -> Trailblazor.CountdownEnd

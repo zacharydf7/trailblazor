@@ -1,0 +1,44 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* The ticking text is no live region; screen readers hear it as it starts and when it's extended, and again near
+   the end of a long one. *@
+<div @ref="_root" @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-countdown", Class)" style="@Style"
+     tabindex="-1" data-state="@DataState" @onfocusin="FocusIn"
+     @onfocusout="FocusOut" @onpointerenter="PointerEnter" @onpointerleave="PointerLeave">
+    @if (_state == CountdownState.Stayed)
+    {
+        <span data-part="text" class="tb-countdown__text">@StayedText</span>
+    }
+    else
+    {
+        <span data-part="text" class="tb-countdown__text">@LeftText</span>
+        @if (_state == CountdownState.Running)
+        {
+            <span data-part="actions" class="tb-countdown__actions">
+                @if (!RendererInfo.IsInteractive)
+                {
+                    @if (Href is not null)
+                    {
+                        <TbButton Href="@Href" Variant="Variant.Text" Size="Size.Small">@GoNowText</TbButton>
+                    }
+                }
+                else
+                {
+                    @if (Acts)
+                    {
+                        <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="GoNowAsync">@GoNowText</TbButton>
+                    }
+                    @if (OnExtend.HasDelegate)
+                    {
+                        <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="ExtendAsync">@ExtendText</TbButton>
+                    }
+                    @if (ShowStay)
+                    {
+                        <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="StayAsync">@StayText</TbButton>
+                    }
+                }
+            </span>
+        }
+    }
+</div>

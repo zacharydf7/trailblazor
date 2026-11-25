@@ -108,11 +108,12 @@ public class DisposeContractTests : BunitContext
 
     // Components whose timers or script callbacks only start with a setting get that setting: a carousel set to turn
     // and an overlay that closes on a click hand the browser a callback, and an autocomplete given a search waits
-    // before calling it, and each call is counted.
+    // before calling it, and each call is counted. A countdown given OnExtend needs words for its button.
     private Dictionary<string, object> Settings(Type component) => component switch
     {
         _ when component == typeof(TbCarousel) => new() { ["AutoPlayInterval"] = TimeSpan.FromSeconds(5) },
         _ when component == typeof(TbOverlay) => new() { ["CloseOnClick"] = true },
+        _ when component == typeof(TbCountdown) => new() { ["ExtendText"] = "Stay signed in" },
         _ when component == typeof(TbAutocomplete<string>) => new()
         {
             ["Search"] = (Func<string, CancellationToken, Task<IEnumerable<string>>>)((_, _) =>

@@ -1,0 +1,31 @@
+@* After a password reset, the app goes to sign in by itself. An app passes Href="/sign-in"; this page stays instead,
+   and shows a button where the countdown was, standing in for the sign-in page. *@
+@if (_gone)
+{
+    <TbButton @ref="_again" Variant="Variant.Text" OnClick="() => _gone = false">Start the countdown again</TbButton>
+}
+else
+{
+    <TbBanner Tone="Tone.Success" Title="Your password is reset">
+        <TbCountdown Duration="TimeSpan.FromSeconds(30)" Text="Going to sign in in {0}." OnElapsed="Go" />
+    </TbBanner>
+}
+
+@code {
+    private bool _gone;
+    private bool _moveFocus;
+    private TbButton? _again;
+
+    private void Go(CountdownEnd end) => (_gone, _moveFocus) = (true, end == CountdownEnd.GoNow);
+
+    // Go now goes with the countdown, so focus moves to what takes its place. When the time runs out, focus was
+    // elsewhere, and stays there.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_moveFocus && _again is not null)
+        {
+            _moveFocus = false;
+            await _again.FocusAsync();
+        }
+    }
+}

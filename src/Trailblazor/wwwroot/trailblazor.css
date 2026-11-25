@@ -2023,6 +2023,24 @@
         overflow-wrap: anywhere;
     }
 
+    /* The buttons wrap under the sentence where it's narrow; the time left doesn't shift as its digits change. */
+    .tb-countdown {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--tb-space-1) var(--tb-space-3);
+    }
+
+    .tb-countdown__text {
+        font-variant-numeric: tabular-nums;
+    }
+
+    .tb-countdown__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--tb-space-1);
+    }
+
     /* The region keeps its place while it loads; a reload's bar sits over the top of the content. */
     .tb-async-content {
         position: relative;
@@ -10217,14 +10235,16 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     .tb-tree__item--match > .tb-tree__content > :is(.tb-tree__text, [data-part="text"]),
     .tb-tree__item--match > .tb-tree__content > * > [data-part="text"]:not(.tb-label__text, .tb-barcode__text,
-        .tb-breadcrumbs__text, .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text) {
+        .tb-breadcrumbs__text, .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text,
+        .tb-countdown__text) {
         font-weight: var(--tb-font-weight-medium);
     }
 
     /* Text in deeper wrappers, down to a tree inside the row, whose rows are its own. */
     @scope (.tb-tree__item--match > .tb-tree__content) to (.tb-tree) {
         :scope > * > * [data-part="text"]:not(.tb-label__text, .tb-barcode__text,
-            .tb-breadcrumbs__text, .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text) {
+            .tb-breadcrumbs__text, .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text,
+            .tb-countdown__text) {
             font-weight: var(--tb-font-weight-medium);
         }
     }
@@ -10282,7 +10302,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     /* The wrapped text is cut off within its wrapper. Other components' text parts are left alone, so add a new
        component's text part to this list, to the match rule's and to the deeper rules' below. */
     .tb-tree__content > * > [data-part="text"]:not(.tb-label__text, .tb-barcode__text,
-        .tb-breadcrumbs__text, .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text) {
+        .tb-breadcrumbs__text, .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text,
+        .tb-countdown__text) {
         display: inline-block;
         max-inline-size: 100%;
         overflow: hidden;
@@ -10295,12 +10316,14 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
        row, whose rows are that tree's own, with their own least width and their own matches. */
     @scope (.tb-tree__content) to (.tb-tree) {
         :scope :has([data-part="text"]:not(.tb-label__text, .tb-barcode__text,
-            .tb-breadcrumbs__text, .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text)) {
+            .tb-breadcrumbs__text, .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text,
+            .tb-countdown__text)) {
             min-width: 0;
         }
 
         :scope > * > * [data-part="text"]:not(.tb-label__text, .tb-barcode__text,
-            .tb-breadcrumbs__text, .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text) {
+            .tb-breadcrumbs__text, .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text,
+            .tb-countdown__text) {
             display: inline-block;
             max-inline-size: 100%;
             overflow: hidden;

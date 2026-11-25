@@ -1,0 +1,38 @@
+@* A session about to time out. Staying on the page wouldn't keep it, so the countdown offers to extend it instead. *@
+<TbBanner Tone="Tone.Warning" Title="Your session is ending">
+    @if (_signedOut)
+    {
+        <span @ref="_message" tabindex="-1">You were signed out. Your trip plan was saved.</span>
+        <TbButton Variant="Variant.Text" OnClick="() => _signedOut = false">Sign in again</TbButton>
+    }
+    else
+    {
+        <TbCountdown Duration="TimeSpan.FromMinutes(2)" Text="Signing you out in {0}." OnElapsed="SignOut"
+                     OnExtend="StaySignedIn" ExtendText="Stay signed in" ShowStay="false"
+                     Labels="SignOutLabels" />
+    }
+</TbBanner>
+<p>Times the session was kept: @_kept</p>
+
+@code {
+    private bool _signedOut;
+    private bool _moveFocus;
+    private int _kept;
+    private ElementReference _message;
+    private static readonly CountdownLabels SignOutLabels = new() { GoNow = "Sign out now" };
+
+    // An app refreshes its session here, such as with a call to its server.
+    private void StaySignedIn() => _kept++;
+
+    private void SignOut(CountdownEnd end) => (_signedOut, _moveFocus) = (true, end == CountdownEnd.GoNow);
+
+    // Sign out now goes with the countdown, so focus moves to the message that takes its place.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_moveFocus)
+        {
+            _moveFocus = false;
+            await _message.FocusAsync();
+        }
+    }
+}

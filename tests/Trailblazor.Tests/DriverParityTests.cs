@@ -69,6 +69,7 @@ public class DriverParityTests
         ["TbMenuSeparator"] = "part of TbMenu", ["TbSubMenu"] = "part of TbMenu",
         ["TbModelField"] = "draws nothing; it changes a TbModelFields field",
         ["TbTimestamp"] = "it is text, which a test reads with the time element's datetime",
+        ["TbCountdown"] = "it is a sentence and buttons, which a test finds by role and name",
         ["TbDescriptionItem"] = "part of TbDescriptionList",
         ["TbModelFields"] = "its fields have drivers",
         ["TbNavGroup"] = "part of TbNavMenu", ["TbNavLink"] = "part of TbNavMenu", ["TbOption"] = "part of TbSelect",

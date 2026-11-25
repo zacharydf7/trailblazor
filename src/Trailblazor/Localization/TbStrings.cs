@@ -312,6 +312,7 @@ public static class TbStrings
     /// <summary>"UTC{0}": a timestamp's zone when the app has no abbreviation for it; {0} is the offset, such as "−5",
     /// or nothing at UTC itself.</summary>
     public const string TimestampZone = "Timestamp.Zone";
+
     /// <summary>"just now": a relative timestamp less than 45 seconds from now, either way.</summary>
     public const string TimestampJustNow = "Timestamp.JustNow";
 
@@ -384,6 +385,29 @@ public static class TbStrings
 
     /// <summary>"in 1 year": the one-form of <see cref="TimestampInYears"/>.</summary>
     public const string TimestampInYearsOne = "Timestamp.InYearsOne";
+
+    /// <summary>"Go now": the button that runs a countdown's action at once.</summary>
+    public const string CountdownGoNow = "Countdown.GoNow";
+
+    /// <summary>"Stay on this page": the button that stops a countdown.</summary>
+    public const string CountdownStay = "Countdown.Stay";
+
+    /// <summary>"Stayed on this page": shown in place of a countdown that was stopped.</summary>
+    public const string CountdownStayed = "Countdown.Stayed";
+
+    /// <summary>"{0} seconds": the time a countdown has left, under a minute; {0} is how many. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="CountdownSecondsOne"/> as its one-form.</summary>
+    public const string CountdownSeconds = "Countdown.Seconds";
+
+    /// <summary>"1 second": the one-form of <see cref="CountdownSeconds"/>.</summary>
+    public const string CountdownSecondsOne = "Countdown.SecondsOne";
+
+    /// <summary>"{0} minutes": the time a countdown has left, a minute or more, rounded up; {0} is how many. Asked
+    /// for through <see cref="ITbLocalizer.Plural"/>, with <see cref="CountdownMinutesOne"/> as its one-form.</summary>
+    public const string CountdownMinutes = "Countdown.Minutes";
+
+    /// <summary>"1 minute": the one-form of <see cref="CountdownMinutes"/>.</summary>
+    public const string CountdownMinutesOne = "Countdown.MinutesOne";
 
     /// <summary>"{0} can't be chosen.": shown when a typed date is outside Min and Max, or IsDateDisabled rules it
     /// out; {0} is the date as typed.</summary>
@@ -1858,6 +1882,8 @@ public static class TbStrings
         [TimestampInMonths] = TimestampInMonthsOne,
         [TimestampYearsAgo] = TimestampYearsAgoOne,
         [TimestampInYears] = TimestampInYearsOne,
+        [CountdownSeconds] = CountdownSecondsOne,
+        [CountdownMinutes] = CountdownMinutesOne,
     }.ToFrozenDictionary();
 
     private static readonly FrozenDictionary<string, string> EnglishText = new Dictionary<string, string>
@@ -1980,6 +2006,13 @@ public static class TbStrings
         [TimestampYearsAgoOne] = "1 year ago",
         [TimestampInYears] = "in {0} years",
         [TimestampInYearsOne] = "in 1 year",
+        [CountdownGoNow] = "Go now",
+        [CountdownStay] = "Stay on this page",
+        [CountdownStayed] = "Stayed on this page",
+        [CountdownSeconds] = "{0} seconds",
+        [CountdownSecondsOne] = "1 second",
+        [CountdownMinutes] = "{0} minutes",
+        [CountdownMinutesOne] = "1 minute",
         [DatePickerUnavailable] = "{0} can't be chosen.",
         [TimePickerOutOfRange] = "Choose a time from {0} to {1}.",
         [TimePickerAtLeast] = "Choose {0} or later.",

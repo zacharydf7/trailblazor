@@ -14071,6 +14071,114 @@ public static class ExampleCatalog
                     + "or not it has a `TelemetryName`. Nothing it loads is ever recorded.",
             ],
         },
+        new("countdown", "Countdown", ExampleCategory.Feedback,
+            "A timed redirect or action, such as going to sign in after a password reset, that the user can see "
+                + "coming, stop, speed up or extend.")
+        {
+            WhenToUse =
+            [
+                "Use it when the page will act on its own after a while, such as going to sign in once a password is "
+                    + "reset, or signing out an idle session.",
+            ],
+            WhenNotToUse =
+            [
+                "For a message that goes away by itself, use a [toast](components/toast).",
+                "For a date or time that has passed or is coming, use a [timestamp](components/timestamp) with "
+                    + "`Format=\"TimestampFormat.Relative\"`.",
+            ],
+            Related = ["banner", "timestamp", "toast"],
+            Sections =
+            [
+                new("basic", "Going to another page", "`Duration` sets how long it waits, and `Text` is the sentence it "
+                    + "shows, with `{0}` for the time left: seconds under a minute, and whole minutes, rounded up, from "
+                    + "a minute on. When the time runs out, or Go now is pressed, it goes to `Href` and runs "
+                    + "`OnElapsed`, which gets `CountdownEnd.TimeRanOut` or `CountdownEnd.GoNow`. Here `OnElapsed` "
+                    + "stands in for `Href`, so this page stays. \"Stay on this page\" stops it for good and says so. "
+                    + "While focus or the pointer is on it, it pauses.", typeof(CountdownExample)),
+                new("extend", "Extending a session", "`OnExtend` adds a button, named by `ExtendText`, that runs "
+                    + "the handler, such as refreshing the session, and starts the countdown over. Staying on the "
+                    + "page wouldn't keep a session, so `ShowStay=\"false\"` hides that button. It's allowed only "
+                    + "with `OnExtend`. `Labels.GoNow` renames Go now.", typeof(CountdownExtendExample)),
+            ],
+            Api = [typeof(TbCountdown), typeof(CountdownLabels), typeof(CountdownEnd)],
+            Labeling =
+            [
+                "`Text` is what everyone reads and hears. The countdown itself has no role or name; its buttons are "
+                    + "named by their words.",
+            ],
+            Announcements =
+            [
+                "As it starts, it says the sentence politely once, through the [announcer](guides/announcements), "
+                    + "such as \"Going to sign in in 30 seconds.\". A countdown longer than 40 seconds says it once "
+                    + "more with 20 seconds left. The time ticking down on screen isn't read out.",
+                "Extending it says the sentence again, with the time it starts over from.",
+                "\"Stay on this page\" moves focus to the countdown, which then reads \"Stayed on this page\".",
+            ],
+            Accessibility =
+            [
+                "With a `Duration` of 20 seconds or more, it meets WCAG 2.2.1, Timing Adjustable: \"Stay on this "
+                    + "page\" turns the time limit off and the `OnExtend` button extends it, and it can't render "
+                    + "without one of them.",
+                "It pauses while keyboard focus or the pointer is inside it, so no one is taken away while reading "
+                    + "it or reaching for a button.",
+                "It handles no keys of its own; its buttons are ordinary buttons.",
+            ],
+            AppDuties =
+            [
+                "Show it where it's seen as the page loads, such as in a [banner](components/banner) at the top, and "
+                    + "give enough time to read it and act: 20 seconds at the least.",
+                "When `OnElapsed` replaces the countdown without leaving the page, move focus to what takes its "
+                    + "place after `CountdownEnd.GoNow`, since the Go now button, which had focus, goes with it, as "
+                    + "both examples do. When the time runs out, focus is elsewhere, so leave it there.",
+            ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
+            BeforeInteractive =
+            [
+                "On a static page it shows the sentence with the full time and, with an `Href`, Go now as a link; it "
+                    + "doesn't count down or act.",
+                "While a page prerenders it shows the same, and starts counting once the page is interactive.",
+            ],
+            Notes =
+            [
+                new("Don't put it in a live region, such as an [alert](components/alert), which would read the time "
+                    + "out every second. A [banner](components/banner) isn't one.") { Pitfall = true },
+                new("Don't put it where focus lands on one of its buttons first, such as at the start of a dialog: it "
+                    + "pauses while focus is inside, so it would never count down.") { Pitfall = true },
+                new("Give it an `Href` or an `OnElapsed`; without either it has no Go now and does nothing when the "
+                    + "time runs out. Once it acts its buttons go, so replace it if the page stays."),
+                new("It pauses while focus or the pointer is on it, so for a session that ends on the server, refresh "
+                    + "the session in `OnExtend`, and treat the countdown as the warning, not the clock."),
+                new("Its strings are `Countdown.GoNow`, `Countdown.Stay` and `Countdown.Stayed`, which `Labels` "
+                    + "replaces for one countdown, and `Countdown.Seconds` and `Countdown.Minutes`, each with a "
+                    + "one-form such as `Countdown.SecondsOne`, for the time left."),
+            ],
+            Target = new("button", "Stay on this page"),
+            Blocks = ["tb-countdown"],
+            DataParts =
+            [
+                new("text", "The sentence with the time left, or \"Stayed on this page\"."),
+                new("actions", "The buttons, while it counts down."),
+            ],
+            Scenario = new("basic", "it presses \"Stay on this page\" and checks that the countdown says it stayed "
+                + "and takes focus."),
+            TestingTips =
+            [
+                "In bUnit, register a `FakeTimeProvider` as the `TimeProvider` and advance it a second at a time; "
+                    + "the countdown starts once it has rendered.",
+                "Its buttons are `TbButton`s: press them with `Tb().Button(\"Stay on this page\")`. They render once "
+                    + "the page is interactive.",
+                "By hand, find it with `Locator(\".tb-countdown\")`, its sentence in `[data-part=text]`, and its "
+                    + "state in `data-state`: `running`, also before it starts, `paused`, `stayed` or `done`.",
+                "The time runs on the app's `TimeProvider`, which a browser's clock can't move under Blazor Server, "
+                    + "so in Playwright test what the user does: Stay, Go now or Extend.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"reset-redirect\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders interactively, and `trailblazor.control.used` with the action `go_now`, `stay`, "
+                    + "`extend` or `elapsed`. Its sentence is never recorded.",
+            ],
+        },
         new("empty-state", "Empty state", ExampleCategory.Feedback,
             "A message that takes the place of content that isn't there yet, such as an empty list, with a way to add "
                 + "it.")

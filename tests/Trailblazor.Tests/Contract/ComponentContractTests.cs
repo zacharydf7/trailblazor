@@ -299,6 +299,7 @@ public class ComponentContractTests : BunitContext
             {
                 var type when type == typeof(string) => "Sample",
                 var type when type == typeof(int) => 3,
+                var type when type == typeof(TimeSpan) => TimeSpan.FromMinutes(1),
                 var type when type == typeof(Icon) => new Icon("<path d=\"M4 4h16v16H4z\" />"),
                 var type when type == typeof(IEnumerable<string>) => Array.Empty<string>(),
                 var type when type == typeof(IReadOnlyList<string>) => Array.Empty<string>(),
