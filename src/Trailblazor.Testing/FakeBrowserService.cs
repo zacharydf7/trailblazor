@@ -39,6 +39,9 @@ public sealed class FakeBrowserService : IBrowserService
     /// <summary>The elements scrolled into view and how, oldest first.</summary>
     public IReadOnlyList<ScrollRequest> ScrolledTo => _scrolledTo;
 
+    /// <summary>The browser's time zone, which <see cref="GetTimeZoneAsync"/> answers. Defaults to UTC.</summary>
+    public TimeZoneInfo? TimeZone { get; set; } = TimeZoneInfo.Utc;
+
     /// <summary>The viewport, 1280 by 720 until <see cref="ResizeAsync"/> changes it.</summary>
     public Viewport Viewport { get; private set; } = new(1280, 720);
 
@@ -102,6 +105,9 @@ public sealed class FakeBrowserService : IBrowserService
         _scrolledTo.Add(new ScrollRequest(element, alignment, smooth));
         return Task.CompletedTask;
     }
+
+    /// <inheritdoc />
+    public Task<TimeZoneInfo?> GetTimeZoneAsync() => Task.FromResult<TimeZoneInfo?>(TimeZone);
 
     /// <inheritdoc />
     public Task<Viewport> GetViewportAsync() => Task.FromResult(Viewport);

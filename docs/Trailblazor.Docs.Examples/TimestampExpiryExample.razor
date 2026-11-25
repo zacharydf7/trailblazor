@@ -1,0 +1,18 @@
+@* Each pass says whether it has expired, against the clock; the last one turns over as you watch. *@
+<TbStack Gap="2">
+    @foreach (var (name, expires) in _passes)
+    {
+        <TbText>
+            @name: <TbTimestamp Value="expires" FutureText="Expires {0}" PastText="Expired {0}" />
+        </TbText>
+    }
+</TbStack>
+
+@code {
+    private readonly (string Name, DateTimeOffset Expires)[] _passes =
+    [
+        ("Day pass", DateTimeOffset.UtcNow.AddDays(-2)),
+        ("Season pass", DateTimeOffset.UtcNow.AddMonths(4)),
+        ("Parking", DateTimeOffset.UtcNow.AddSeconds(20)),
+    ];
+}

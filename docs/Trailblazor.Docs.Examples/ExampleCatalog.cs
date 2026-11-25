@@ -465,6 +465,77 @@ public static class ExampleCatalog
                 "Keys have no role of their own; find them by their text, as `GetByText(\"Ctrl\")`.",
             ],
         },
+        new("timestamp", "Timestamp", ExampleCategory.Content,
+            "A date and time shown in the app's time zone and the user's culture, such as when a pass expires.")
+        {
+            WhenToUse =
+            [
+                "Use it wherever a page shows when something happened or will, so every date shows in one zone and "
+                    + "one style, with a `time` element machines can read.",
+            ],
+            WhenNotToUse =
+            [
+                "For a date someone enters, use a [date picker](components/date-picker) or a "
+                    + "[date and time picker](components/date-time-picker).",
+            ],
+            Related = ["text", "date-time-picker", "timeline", "chat", "data-grid"],
+            Sections =
+            [
+                new("basic", "Timestamp", "`Value` is a `DateTimeOffset`, shown with the current culture's short "
+                    + "pattern for `Format`: `Date`, `Time`, or `DateTime`, the default. `FormatString` takes any .NET "
+                    + "format instead. A null value shows a dash, which screen readers hear as \"Not set\".",
+                    typeof(TimestampExample)),
+                new("zones", "Time zones", "A timestamp shows its moment in its own `TimeZone`, else a "
+                    + "`TimeZoneInfo` cascaded around it, else `options.Times.TimeZone` from `AddTrailblazor`, else "
+                    + "the `TimeProvider`'s local zone, which on Blazor Server is the server's. Here the chosen zone "
+                    + "is cascaded, as an app would cascade each user's. `ShowZone` adds the UTC offset, such as UTC+9, "
+                    + "or an abbreviation the app names in `options.Times.Abbreviations`. The chat, the timeline and "
+                    + "the data grid's `DateTimeOffset` columns follow the same zone; the date pickers show a value as "
+                    + "it is written. The [time zones guide](guides/time-zones) says how to find each user's.",
+                    typeof(TimestampZoneExample)),
+                new("expiry", "Before and after a moment", "`FutureText` and `PastText` put words around the "
+                    + "moment, with `{0}` for it: `FutureText` while it's ahead and `PastText` once it has passed, "
+                    + "such as \"Expires {0}\" and \"Expired {0}\". The timestamp switches as the moment passes, as "
+                    + "the parking pass here does.", typeof(TimestampExpiryExample)),
+            ],
+            Api = [typeof(TbTimestamp), typeof(TimeSettings), typeof(TimeZoneAbbreviation)],
+            Announcements =
+            [
+                "A missing value reads \"Not set\".",
+                "The switch from `FutureText` to `PastText` isn't announced; the text changes in place, as a clock's "
+                    + "does.",
+            ],
+            Accessibility =
+            [
+                "It renders a `time` element with the moment in ISO 8601 in its `datetime`, so screen readers read "
+                    + "the text shown and machines read the exact moment.",
+                "It handles no keys of its own.",
+            ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
+            BeforeInteractive =
+            [
+                "Before the page is interactive it shows the zone the server resolves. Once it is interactive, a "
+                    + "zone the app reads from the browser takes over, and on WebAssembly so does the browser's own "
+                    + "local zone.",
+                "`FutureText` turns into `PastText` as the moment passes only on an interactive page; a static page "
+                    + "keeps the words it rendered with.",
+            ],
+            Notes =
+            [
+                new("Its words come from the app's localizer alone: `Value.Empty` (\"Not set\") and `Timestamp.Zone` "
+                    + "(\"UTC{0}\"). `FutureText` and `PastText` word each use."),
+            ],
+            Target = null,
+            Blocks = ["tb-timestamp"],
+            Scenario = new("zones", "it checks that the departure shows Tokyo's offset and its exact moment in its "
+                + "`datetime`.") { WithoutHelpers = true },
+            TestingTips =
+            [
+                "Read its text and its `datetime` attribute; it has no helper. Register a `FakeTimeProvider` as the "
+                    + "`TimeProvider` to fix the current time for `FutureText` and `PastText`, and cascade a "
+                    + "`TimeZoneInfo` to fix the zone.",
+            ],
+        },
         new("highlight", "Highlight", ExampleCategory.Content,
             "Text with the parts that match a search marked, for search results and filtered lists.")
         {
@@ -689,8 +760,9 @@ public static class ExampleCatalog
             [
                 new("basic", "Events", "Each `TbTimelineItem` has a `Title` and, with `Time`, the moment it happened. "
                     + "`TimeFormat` sets how the time is shown in the current culture, and it sits in a `time` element "
-                    + "that machines can read. A time is shown in its own offset, so convert it to the reader's time "
-                    + "zone first. Its content goes under the title. `Tone` colors its dot.", typeof(TimelineExample)),
+                    + "that machines can read. It shows in the shared time zone, as timestamps and chat times do, "
+                    + "which the [time zones guide](guides/time-zones) explains. Its content goes under the title. "
+                    + "`Tone` colors its dot.", typeof(TimelineExample)),
                 new("progress", "Progress", "`Icon` puts an icon in an event's dot, such as a check for a step that's "
                     + "done. Say in the title which event is the current one, since the color alone doesn't reach "
                     + "everyone.", typeof(TimelineProgressExample)),
@@ -983,8 +1055,9 @@ public static class ExampleCatalog
             Sections =
             [
                 new("basic", "Chat", "`Messages` holds the conversation, oldest first, as `ChatMessage` records, and "
-                    + "`CurrentAuthorId` marks the user's own, which sit at the end of the line. `OnSend` gets what "
-                    + "the user wrote; Enter sends it and Shift+Enter starts a new line. `TypingAuthors` names who is "
+                    + "`CurrentAuthorId` marks the user's own, which sit at the end of the line, and each shows its "
+                    + "time in the chat's `TimeZone`, else the [shared time zone](guides/time-zones). `OnSend` gets "
+                    + "what the user wrote; Enter sends it and Shift+Enter starts a new line. `TypingAuthors` names who is "
                     + "typing, and a message with `IsStreaming` grows as its text arrives, as Robin's reply does here. "
                     + "`AllowAttachments` adds a button that chooses files to send, and a message's `Attachments` "
                     + "show as links. `ShowComposer=\"false\"` leaves out the box for a chat people only read.",
@@ -12580,8 +12653,9 @@ public static class ExampleCatalog
                     + "different minimum for any column, and a date or a time stays on one line. In a grid with "
                     + "`VirtualizeColumns`, only a column the user can resize has a minimum. Without `Align`, "
                     + "numbers line up at the end and everything else at the start. `Format` writes a value, such as "
-                    + "`\"d\"` for a short date; without one, an enum's value reads its name in words, such as \"All "
-                    + "year\", and `\"G\"` keeps the name. True and false read \"Yes\" and \"No\". `SortBy` sorts by "
+                    + "`\"d\"` for a short date; a `DateTimeOffset` shows, filters and exports in the [shared time "
+                    + "zone](guides/time-zones). Without a format, an enum's value reads its name in words, such as "
+                    + "\"All year\", and `\"G\"` keeps the name. True and false read \"Yes\" and \"No\". `SortBy` sorts by "
                     + "something other than what the column shows, such as a rank, and `Sorts` sets the sort the grid "
                     + "starts with.", typeof(DataGridColumnsExample)),
                 new("row-classes", "Row classes", "`RowClass` gives a row a class of your own, from its item. Say the "

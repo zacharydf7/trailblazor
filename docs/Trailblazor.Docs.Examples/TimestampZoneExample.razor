@@ -1,0 +1,21 @@
+@* The zone chosen here is cascaded around both timestamps, as an app would cascade each user's own. *@
+<TbStack Gap="3" Style="max-inline-size: 26rem">
+    <TbSelect TValue="string" Label="Show times in" @bind-Value="_zoneId">
+        <TbOption Value="@("Asia/Tokyo")">Tokyo</TbOption>
+        <TbOption Value="@("Europe/Berlin")">Berlin</TbOption>
+        <TbOption Value="@("America/New_York")">New York</TbOption>
+    </TbSelect>
+    <CascadingValue Value="Zone">
+        <TbText>Departs <TbTimestamp Value="Departure" ShowZone /></TbText>
+        <TbText>Lands <TbTimestamp Value="Arrival" ShowZone /></TbText>
+    </CascadingValue>
+</TbStack>
+
+@code {
+    private static readonly DateTimeOffset Departure = new(2026, 12, 4, 14, 30, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset Arrival = new(2026, 12, 5, 2, 45, 0, TimeSpan.Zero);
+
+    private string? _zoneId = "Asia/Tokyo";
+
+    private TimeZoneInfo Zone => TimeZoneInfo.FindSystemTimeZoneById(_zoneId ?? "Asia/Tokyo");
+}

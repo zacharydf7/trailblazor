@@ -1,0 +1,120 @@
+@page "/guides/time-zones"
+
+<PageTitle>Time zones · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="which-zone" Text="Which zone" />
+        <TbTableOfContentsItem TargetId="server-and-webassembly" Text="Server and WebAssembly" />
+        <TbTableOfContentsItem TargetId="the-browsers-zone" Text="The browser's zone" />
+        <TbTableOfContentsItem TargetId="abbreviations" Text="Abbreviations" />
+        <TbTableOfContentsItem TargetId="testing" Text="Testing" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Time zones</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            The dates and times Trailblazor shows follow one zone: a timestamp, a chat message's time, a timeline
+            event and a data grid's <code>DateTimeOffset</code> column, in its cells, filter and exports. Set the zone
+            once and they all follow it. The date pickers show a value as it is written, with the date and time
+            picker's own <code>TimeZone</code> giving a new value its offset.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="which-zone" Text="Which zone" Class="docs-section" />
+        <TbText>A date shows in the first of these that is set:</TbText>
+        <ol>
+            <li>The component's own <code>TimeZone</code>, on a timestamp or a chat.</li>
+            <li>A <code>TimeZoneInfo</code> cascaded around it, such as the signed-in user's zone.</li>
+            <li><code>options.Times.TimeZone</code> in <code>AddTrailblazor</code>, for an app that shows one zone.</li>
+            <li>The <code>TimeProvider</code>'s local zone.</li>
+        </ol>
+        <CodeBlock Label="Cascading each user's zone" Code="@Cascade" />
+        <TbText>An app that shows one zone to everyone sets it once instead.</TbText>
+        <CodeBlock Label="One zone for everyone" Code="@OneZone" />
+
+        <DocsHeading Id="server-and-webassembly" Text="Server and WebAssembly" Class="docs-section" />
+        <TbText>
+            On WebAssembly the local zone is the browser's, so dates show in the user's zone with nothing set. On Blazor
+            Server, and while a page renders on the server, the local zone is the server's, which is rarely the
+            user's. Give those apps a zone, from the user's profile or from the browser. A cascaded value doesn't
+            cross into an interactive part of a page from a static layout, so cascade it inside the interactive part:
+            in <code>Routes.razor</code> when the whole app is interactive, or around each interactive page or
+            component otherwise.
+        </TbText>
+
+        <DocsHeading Id="the-browsers-zone" Text="The browser's zone" Class="docs-section" />
+        <TbText>
+            <code>IBrowserService.GetTimeZoneAsync()</code> reads the browser's zone, such as America/New_York, once
+            the page is interactive. It returns null when .NET doesn't know the zone.
+        </TbText>
+        <CodeBlock Label="Reading the browser's zone" Code="@Browser" />
+
+        <DocsHeading Id="abbreviations" Text="Abbreviations" Class="docs-section" />
+        <TbText>
+            A timestamp with <code>ShowZone</code> adds its UTC offset, such as UTC−5. .NET has no abbreviations such as
+            EST, since they differ by place and some are shared, so name the ones your users know.
+        </TbText>
+        <CodeBlock Label="Program.cs" Code="@Abbreviations" />
+
+        <DocsHeading Id="testing" Text="Testing" Class="docs-section" />
+        <TbText>
+            In bUnit, cascade a <code>TimeZoneInfo</code> around the component, or set
+            <code>options.Times.TimeZone</code>, so a test reads the same text on every machine. Register a
+            <code>FakeTimeProvider</code> as the <code>TimeProvider</code> to fix the current time. The fake browser
+            service's <code>TimeZone</code> answers <code>GetTimeZoneAsync()</code>. In Playwright, a context's
+            <code>TimezoneId</code> sets the browser's zone, which on Blazor Server changes only what
+            <code>GetTimeZoneAsync()</code> returns, not the dates the server renders.
+        </TbText>
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li><a href="components/timestamp">Timestamp</a>: a date and time in the app's zone.</li>
+            <li>
+                <a href="guides/browser">Browser</a>: reading the browser's zone, and the rest of the browser service.
+            </li>
+            <li><a href="guides/right-to-left">Right-to-left and culture</a>: how dates follow the current culture.</li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+
+@code {
+    private const string Cascade = """
+        <CascadingValue Value="_zone">
+            <Router AppAssembly="typeof(Program).Assembly">...</Router>
+        </CascadingValue>
+
+        @code {
+            private TimeZoneInfo? _zone;
+        }
+        """;
+
+    private const string Browser = """
+        @inject IBrowserService BrowserService
+
+        @code {
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender)
+                {
+                    _zone = await BrowserService.GetTimeZoneAsync();
+                    StateHasChanged();
+                }
+            }
+        }
+        """;
+
+    private const string OneZone = """
+        builder.Services.AddTrailblazor(options =>
+            options.Times.TimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Chicago"));
+        """;
+
+    private const string Abbreviations = """
+        builder.Services.AddTrailblazor(options =>
+        {
+            options.Times.Abbreviations["America/New_York"] = new("EST", "EDT");
+            options.Times.Abbreviations["America/Chicago"] = new("CST", "CDT");
+        });
+        """;
+}

@@ -14,6 +14,8 @@ public partial class LabelsRuleTests
         ["TbPopconfirm"] = "ConfirmText and CancelText are usually set per use, such as \"Delete\", so they stay flat "
             + "parameters",
         ["TbRoot"] = "it holds the app's one toast region, so the app's localizer words it",
+        ["TbTimestamp"] = "its words, such as Not set and the UTC offset, read the same in every timestamp, and "
+            + "PastText and FutureText word each use",
     };
 
     // Keys a part falls back to from a Labels member it's handed under another name, as ItemMover's moved, and why.

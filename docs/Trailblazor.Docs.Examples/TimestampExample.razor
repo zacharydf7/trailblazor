@@ -1,0 +1,12 @@
+@* One moment in each format, in the app's time zone, and a return date that isn't set. *@
+<TbStack Gap="2">
+    <TbText>Date: <TbTimestamp Value="Departure" Format="TimestampFormat.Date" /></TbText>
+    <TbText>Time: <TbTimestamp Value="Departure" Format="TimestampFormat.Time" /></TbText>
+    <TbText>Date and time: <TbTimestamp Value="Departure" /></TbText>
+    <TbText>Its own format: <TbTimestamp Value="Departure" FormatString="dddd, MMMM d 'at' h:mm tt" /></TbText>
+    <TbText>Returns: <TbTimestamp Value="null" /></TbText>
+</TbStack>
+
+@code {
+    private static readonly DateTimeOffset Departure = new(2026, 12, 4, 14, 30, 0, TimeSpan.Zero);
+}

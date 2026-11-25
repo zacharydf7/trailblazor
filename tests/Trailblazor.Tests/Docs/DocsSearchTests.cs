@@ -92,9 +92,9 @@ public class DocsSearchTests
         "Overlay" })]
     [InlineData("guides",
         new[] { "Getting started", "Forms and validation", "Accessibility", "Theming", "Palettes", "Spacing",
-            "Browser", "Announcements", "Rich text", "Icons", "Localization", "Right-to-left and culture", "Testing",
-            "Migrating tests", "Plain bUnit and Playwright, and the helpers", "Wrapping components", "Upgrading",
-            "Analyzers", "Telemetry" })]
+            "Browser", "Announcements", "Rich text", "Icons", "Localization", "Right-to-left and culture",
+            "Time zones", "Testing", "Migrating tests", "Plain bUnit and Playwright, and the helpers",
+            "Wrapping components", "Upgrading", "Analyzers", "Telemetry" })]
     public void Find_ShouldRankEverythingInACategoryAsATitleMatch_WhenGivenItsName(string category, string[] titles)
     {
         var results = DocsSearch.Find(category);

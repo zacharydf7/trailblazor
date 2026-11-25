@@ -1,0 +1,12 @@
+@page "/browser-time-zone"
+@inject IBrowserService Browser
+
+@* Reads the browser's time zone, which the test sets on its browser context. *@
+<TbButton OnClick="ReadAsync">Read the zone</TbButton>
+<output>@_zone</output>
+
+@code {
+    private string? _zone;
+
+    private async Task ReadAsync() => _zone = (await Browser.GetTimeZoneAsync())?.Id ?? "unknown";
+}

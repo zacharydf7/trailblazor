@@ -1976,6 +1976,11 @@
         text-align: center;
     }
 
+    /* Times in a column line up digit for digit. */
+    .tb-timestamp {
+        font-variant-numeric: tabular-nums;
+    }
+
     /* The region keeps its place while it loads; a reload's bar sits over the top of the content. */
     .tb-async-content {
         position: relative;

@@ -51,7 +51,8 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     /// for a number with two decimals, in the current culture. Without one, an enum's value reads its name in words,
     /// such as "All year" for <c>AllYear</c>, and <c>"G"</c> keeps the name. True and false read "Yes" and "No", as
     /// the grid's <see cref="DataGridLabels.FilterYes"/> and <see cref="DataGridLabels.FilterNo"/> word them, with or
-    /// without a format.</summary>
+    /// without a format. A <see cref="DateTimeOffset"/> is shown, filtered and exported in the shared time zone, as
+    /// timestamps and chat times are, which <see cref="TimeSettings.TimeZone"/> describes.</summary>
     [Parameter]
     public string? Format { get; set; }
 
@@ -385,7 +386,12 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
 
     internal object? SortValueOf(TItem item) => SortBy is not null ? SortBy(item) : ValueOf(item);
 
-    internal object? FilterValueOf(TItem item) => FilterBy is not null ? FilterBy(item) : ValueOf(item);
+    internal object? FilterValueOf(TItem item) => InShownZone(FilterBy is not null ? FilterBy(item) : ValueOf(item));
+
+    // A DateTimeOffset is the same moment in any zone, so filtering and exporting it in the shown one keeps its day
+    // the day the cell shows.
+    internal object? InShownZone(object? value) =>
+        value is DateTimeOffset moment ? TimeZoneInfo.ConvertTime(moment, Grid.ShownTimeZone) : value;
 
     // A FilterBy value's type isn't known until it is read.
     internal Type? FilterType => FilterBy is null ? ValueType : null;
@@ -435,6 +441,7 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     internal string? TextOf(object? value) => value switch
     {
         null => null,
+        DateTimeOffset moment => ((DateTimeOffset)InShownZone(moment)!).ToString(Format, CultureInfo.CurrentCulture),
         IFormattable formattable when Format is not null => formattable.ToString(Format, CultureInfo.CurrentCulture),
         bool yes => Grid.YesNo(yes),
         Enum choice => string.Join(", ", choice.ToString().Split(", ").Select(NameWords.Of)),

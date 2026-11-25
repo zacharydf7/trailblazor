@@ -25,6 +25,9 @@ public sealed class TrailblazorOptions
     /// </summary>
     public BusySettings Busy { get; } = new();
 
+    /// <summary>The time zone dates and times show in, and the abbreviations a timestamp shows for it.</summary>
+    public TimeSettings Times { get; } = new();
+
     /// <summary>Whether the components report what people see and use through the <c>Trailblazor</c> meter.</summary>
     public TelemetrySettings Telemetry { get; } = new();
 

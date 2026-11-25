@@ -129,7 +129,7 @@ public partial class TbDataGrid<TItem>
         IReadOnlyList<TItem> items) =>
         items.Select(item => columns.Select(column =>
         {
-            var value = column.ValueOf(item);
+            var value = column.InShownZone(column.ValueOf(item));
             return new ExportCell(value, column.TextOf(value));
         }));
 

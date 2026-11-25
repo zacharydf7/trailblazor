@@ -75,10 +75,14 @@ public partial class TbChat
     [Parameter]
     public bool Disabled { get; set; }
 
-    /// <summary>The time zone each message's time shows in. Without it, times show in the app's
-    /// <see cref="TimeProvider"/>'s zone, which on a server is the server's.</summary>
+    /// <summary>The time zone each message's time shows in. Left null, it uses a <see cref="TimeZoneInfo"/> cascaded
+    /// around the chat, then <see cref="TimeSettings.TimeZone"/>, then the <see cref="TimeProvider"/>'s local zone,
+    /// which on Blazor Server is the server's.</summary>
     [Parameter]
     public TimeZoneInfo? TimeZone { get; set; }
+
+    [CascadingParameter]
+    private TimeZoneInfo? CascadedTimeZone { get; set; }
 
     /// <summary>Replaces the words the chat shows and says to screen readers.</summary>
     [Parameter]
@@ -102,15 +106,12 @@ public partial class TbChat
     [Inject]
     private IServiceProvider Services { get; set; } = default!;
 
-    [Inject]
-    private TimeProvider Clock { get; set; } = default!;
-
     private ControlTelemetry Telemetry => field ??= new(Services, GetType());
 
     private string Text(string? given, string key) => given ?? Localizer[key];
 
-    private string Time(DateTimeOffset sent) =>
-        TimeZoneInfo.ConvertTime(sent, TimeZone ?? Clock.LocalTimeZone).ToString("t", CultureInfo.CurrentCulture);
+    private string Time(DateTimeOffset sent) => TimeZoneInfo.ConvertTime(sent,
+        ShownTime.Zone(TimeZone, CascadedTimeZone, Services)).ToString("t", CultureInfo.CurrentCulture);
 
     private string? TypingText => TypingAuthors.Count switch
     {

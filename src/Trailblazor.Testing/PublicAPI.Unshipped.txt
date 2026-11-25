@@ -634,3 +634,6 @@ Trailblazor.Testing.TbAsyncContentDriver.RetryAsync() -> System.Threading.Tasks.
 Trailblazor.Testing.TbAsyncContentDriver.State.get -> Trailblazor.AsyncContentState
 Trailblazor.Testing.TbAsyncContentDriver.WaitUntilLoadedAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.AsyncContent(string? label = null) -> Trailblazor.Testing.TbAsyncContentDriver!
+Trailblazor.Testing.FakeBrowserService.GetTimeZoneAsync() -> System.Threading.Tasks.Task<System.TimeZoneInfo?>!
+Trailblazor.Testing.FakeBrowserService.TimeZone.get -> System.TimeZoneInfo?
+Trailblazor.Testing.FakeBrowserService.TimeZone.set -> void

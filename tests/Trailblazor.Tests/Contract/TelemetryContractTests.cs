@@ -29,6 +29,7 @@ public class TelemetryContractTests : BunitContext
         ["TbLabel"] = "it names another control, which counts itself",
         ["TbSkeleton"] = "it stands in for content until it loads, and the content counts itself",
         ["TbText"] = "it is text inside other components",
+        ["TbTimestamp"] = "it only shows a date",
         ["TbHighlight"] = "it is text inside other components, such as search results, which count themselves",
         ["TbDialogContentHost"] = "it shows content the app wrote, whose own controls count themselves",
         ["TbTooltip"] =

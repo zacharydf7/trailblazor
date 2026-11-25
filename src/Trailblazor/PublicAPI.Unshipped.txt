@@ -7753,3 +7753,50 @@ static Trailblazor.AsyncContentFailure.operator ==(Trailblazor.AsyncContentFailu
 static Trailblazor.AsyncContentLabels.operator !=(Trailblazor.AsyncContentLabels? left, Trailblazor.AsyncContentLabels? right) -> bool
 static Trailblazor.AsyncContentLabels.operator ==(Trailblazor.AsyncContentLabels? left, Trailblazor.AsyncContentLabels? right) -> bool
 ~override Trailblazor.TbAsyncContent.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+
+Trailblazor.IBrowserService.GetTimeZoneAsync() -> System.Threading.Tasks.Task<System.TimeZoneInfo?>!
+Trailblazor.TbTimestamp
+Trailblazor.TbTimestamp.Dispose() -> void
+Trailblazor.TbTimestamp.Format.get -> Trailblazor.TimestampFormat
+Trailblazor.TbTimestamp.Format.set -> void
+Trailblazor.TbTimestamp.FormatString.get -> string?
+Trailblazor.TbTimestamp.FormatString.set -> void
+Trailblazor.TbTimestamp.FutureText.get -> string?
+Trailblazor.TbTimestamp.FutureText.set -> void
+Trailblazor.TbTimestamp.PastText.get -> string?
+Trailblazor.TbTimestamp.PastText.set -> void
+Trailblazor.TbTimestamp.ShowZone.get -> bool
+Trailblazor.TbTimestamp.ShowZone.set -> void
+Trailblazor.TbTimestamp.TbTimestamp() -> void
+Trailblazor.TbTimestamp.TimeZone.get -> System.TimeZoneInfo?
+Trailblazor.TbTimestamp.TimeZone.set -> void
+Trailblazor.TbTimestamp.Value.get -> System.DateTimeOffset?
+Trailblazor.TbTimestamp.Value.set -> void
+Trailblazor.TimeSettings
+Trailblazor.TimeSettings.Abbreviations.get -> System.Collections.Generic.IDictionary<string!, Trailblazor.TimeZoneAbbreviation!>!
+Trailblazor.TimeSettings.TimeSettings() -> void
+Trailblazor.TimeSettings.TimeZone.get -> System.TimeZoneInfo?
+Trailblazor.TimeSettings.TimeZone.set -> void
+Trailblazor.TimeZoneAbbreviation
+Trailblazor.TimeZoneAbbreviation.<Clone>$() -> Trailblazor.TimeZoneAbbreviation!
+Trailblazor.TimeZoneAbbreviation.Daylight.get -> string!
+Trailblazor.TimeZoneAbbreviation.Daylight.init -> void
+Trailblazor.TimeZoneAbbreviation.Deconstruct(out string! Standard, out string! Daylight) -> void
+Trailblazor.TimeZoneAbbreviation.Equals(Trailblazor.TimeZoneAbbreviation? other) -> bool
+Trailblazor.TimeZoneAbbreviation.Standard.get -> string!
+Trailblazor.TimeZoneAbbreviation.Standard.init -> void
+Trailblazor.TimeZoneAbbreviation.TimeZoneAbbreviation(string! Standard, string! Daylight) -> void
+Trailblazor.TimestampFormat
+Trailblazor.TimestampFormat.Date = 0 -> Trailblazor.TimestampFormat
+Trailblazor.TimestampFormat.DateTime = 2 -> Trailblazor.TimestampFormat
+Trailblazor.TimestampFormat.Time = 1 -> Trailblazor.TimestampFormat
+Trailblazor.TrailblazorOptions.Times.get -> Trailblazor.TimeSettings!
+const Trailblazor.TbStrings.EmptyValue = "Value.Empty" -> string!
+const Trailblazor.TbStrings.TimestampZone = "Timestamp.Zone" -> string!
+override Trailblazor.TbTimestamp.OnParametersSet() -> void
+override Trailblazor.TimeZoneAbbreviation.Equals(object? obj) -> bool
+override Trailblazor.TimeZoneAbbreviation.GetHashCode() -> int
+override Trailblazor.TimeZoneAbbreviation.ToString() -> string!
+static Trailblazor.TimeZoneAbbreviation.operator !=(Trailblazor.TimeZoneAbbreviation? left, Trailblazor.TimeZoneAbbreviation? right) -> bool
+static Trailblazor.TimeZoneAbbreviation.operator ==(Trailblazor.TimeZoneAbbreviation? left, Trailblazor.TimeZoneAbbreviation? right) -> bool
+~override Trailblazor.TbTimestamp.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

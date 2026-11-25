@@ -26,7 +26,8 @@ public static class GuideCatalog
         new("guides/spacing", "Spacing",
             "Pad, space and push apart your own markup with tb-* classes on the components' spacing scale."),
         new("guides/browser", "Browser",
-            "Copy to the clipboard, download and save files, pick colors, scroll, and follow the viewport from C#.")
+            "Copy to the clipboard, download and save files, pick colors, scroll, follow the viewport, and read the "
+                + "time zone from C#.")
         {
             Api = [typeof(IBrowserService)],
         },
@@ -52,6 +53,9 @@ public static class GuideCatalog
         },
         new("guides/right-to-left", "Right-to-left and culture",
             "Mirror layouts and arrow keys for right-to-left languages, and show numbers and dates in each culture."),
+        new("guides/time-zones", "Time zones",
+            "Show timestamps, chat, timeline and data grid dates in each user's time zone, on Blazor Server as "
+                + "on WebAssembly."),
         new("guides/testing", "Testing",
             "Test pages built with Trailblazor in bUnit and Playwright, and find components the way users do."),
         new("guides/migrating-tests", "Migrating tests",

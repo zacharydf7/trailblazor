@@ -17,9 +17,7 @@
     <div class="tb-timeline__body">
         @if (Time is { } time)
         {
-            @* HTML allows at most three digits of a second, where .NET's round-trip "o" format writes seven. *@
-            <time datetime="@time.ToString("yyyy-MM-ddTHH:mm:ss.fffzzz", CultureInfo.InvariantCulture)" data-part="time"
-                  class="tb-timeline__time">@time.ToString(TimeFormat, CultureInfo.CurrentCulture)</time>
+            <time datetime="@ShownTime.Iso(time)" data-part="time" class="tb-timeline__time">@ShownText(time)</time>
         }
         @if (Title is not null)
         {
@@ -37,8 +35,9 @@
     [Parameter]
     public string? Title { get; set; }
 
-    /// <summary>When it happened, shown in a <c>time</c> element that machines can read too. It is shown in its own
-    /// offset, so convert it to the reader's time zone first, or add the zone to <see cref="TimeFormat"/>.</summary>
+    /// <summary>When it happened, shown in a <c>time</c> element that machines can read too, in a
+    /// <see cref="TimeZoneInfo"/> cascaded around the timeline, else <see cref="TimeSettings.TimeZone"/>, else the
+    /// <see cref="TimeProvider"/>'s local zone.</summary>
     [Parameter]
     public DateTimeOffset? Time { get; set; }
 
@@ -60,4 +59,13 @@
     /// <summary>More about the event, under its title.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    [CascadingParameter]
+    private TimeZoneInfo? CascadedTimeZone { get; set; }
+
+    private string ShownText(DateTimeOffset time) => TimeZoneInfo.ConvertTime(time,
+        ShownTime.Zone(null, CascadedTimeZone, Services)).ToString(TimeFormat, CultureInfo.CurrentCulture);
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
 }

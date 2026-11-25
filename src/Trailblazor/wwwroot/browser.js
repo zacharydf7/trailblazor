@@ -82,6 +82,10 @@ export function scrollIntoView(element, block, smooth) {
     element.scrollIntoView({ block, inline: 'nearest', behavior: smooth && !reduced ? 'smooth' : 'instant' });
 }
 
+export function getTimeZone() {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
 export function getViewport() {
     return { width: innerWidth, height: innerHeight };
 }

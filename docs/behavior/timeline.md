@@ -22,6 +22,7 @@ Nothing of its own.
 
 - [x] Screen readers hear a list of events in order, each by its time, title and content, without the dots. `TbTimelineTests.Render_ShouldListTheEventsInOrder_WhenGivenEvents`
 - [x] A time is in a `time` element whose `datetime` is ISO 8601, whatever the culture. `TbTimelineTests.Render_ShouldShowTheTimeInTheCurrentCultureForPeopleAndInIsoForMachines_WhenGivenATime`
+- [x] A time shows in the shared time zone: a cascaded `TimeZoneInfo`, else the app's, else the clock's local zone. `TbTimestampTests.TimelineItem_ShouldShowItsTimeInTheCascadedTimeZone_WhenOneIsCascaded`
 
 ## Not applicable
 

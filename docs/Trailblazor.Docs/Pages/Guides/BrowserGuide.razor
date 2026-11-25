@@ -23,8 +23,9 @@
         <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Browser</TbText>
         <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
             <code>IBrowserService</code> reaches browser features from C#: the clipboard, downloads and saves, the
-            eyedropper, scrolling, and the viewport's size. <code>AddTrailblazor()</code> registers it, so inject it
-            where you need it.
+            eyedropper, scrolling, the viewport's size, and the browser's time zone, which the
+            <a href="guides/time-zones">time zones guide</a> puts to use. <code>AddTrailblazor()</code> registers it,
+            so inject it where you need it.
         </TbText>
     </Header>
     <ChildContent>
@@ -136,7 +137,10 @@
         </TbText>
         <ul>
             <li>Check what a component copied, downloaded, saved or scrolled to.</li>
-            <li>Set what the browser answers, such as the color the user picks or the viewport's size.</li>
+            <li>
+                Set what the browser answers, such as the color the user picks, the viewport's size, or its
+                <code>TimeZone</code>, which is UTC unless set.
+            </li>
         </ul>
         <TbText>Register your own <code>IBrowserService</code> first to use a mock instead.</TbText>
         <CodeBlock Label="A bUnit test" Code="@Test" />

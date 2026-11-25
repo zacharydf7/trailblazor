@@ -493,6 +493,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Inject]
     private IBrowserService Browser { get; set; } = default!;
 
+    [CascadingParameter]
+    private TimeZoneInfo? CascadedTimeZone { get; set; }
+
+    // The zone a column shows a DateTimeOffset in, the same as every other date the library shows.
+    internal TimeZoneInfo ShownTimeZone => ShownTime.Zone(null, CascadedTimeZone, Services);
+
     [Inject]
     private ITbLocalizer Localizer { get; set; } = default!;
 

@@ -37,6 +37,12 @@ public interface IBrowserService
     Task ScrollIntoViewAsync(ElementReference element, ScrollAlignment alignment = ScrollAlignment.Nearest,
         bool smooth = false);
 
+    /// <summary>The browser's time zone, such as America/New_York, to show a user dates in their own zone on Blazor
+    /// Server, where the app's local zone is the server's. Cascade it around the components that show dates.
+    /// </summary>
+    /// <returns>The zone, or null when .NET doesn't know the browser's.</returns>
+    Task<TimeZoneInfo?> GetTimeZoneAsync();
+
     /// <summary>The viewport's size now, and the breakpoint it falls in.</summary>
     Task<Viewport> GetViewportAsync();
 

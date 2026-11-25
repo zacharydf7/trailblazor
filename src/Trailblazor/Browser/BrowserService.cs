@@ -32,6 +32,10 @@ internal sealed class BrowserService(JsModuleLoader modules, ILogger<BrowserServ
         await (await ImportAsync()).InvokeVoidAsync("scrollIntoView", element, alignment.ToString().ToLowerInvariant(),
             smooth);
 
+    public async Task<TimeZoneInfo?> GetTimeZoneAsync() =>
+        TimeZoneInfo.TryFindSystemTimeZoneById(await (await ImportAsync()).InvokeAsync<string>("getTimeZone"),
+            out var zone) ? zone : null;
+
     public async Task<Viewport> GetViewportAsync() => await (await ImportAsync()).InvokeAsync<Viewport>("getViewport");
 
     public Task<IAsyncDisposable> ObserveViewportAsync(Func<Viewport, Task> onChange) =>

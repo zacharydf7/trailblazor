@@ -67,6 +67,7 @@ public class DriverParityTests
         ["TbMenuRadioGroup"] = "part of TbMenu", ["TbMenuRadioItem"] = "part of TbMenu",
         ["TbMenuSeparator"] = "part of TbMenu", ["TbSubMenu"] = "part of TbMenu",
         ["TbModelField"] = "draws nothing; it changes a TbModelFields field",
+        ["TbTimestamp"] = "it is text, which a test reads with the time element's datetime",
         ["TbModelFields"] = "its fields have drivers",
         ["TbNavGroup"] = "part of TbNavMenu", ["TbNavLink"] = "part of TbNavMenu", ["TbOption"] = "part of TbSelect",
         ["TbOptionGroup"] = "part of TbSelect", ["TbRadio"] = "part of TbRadioGroup",

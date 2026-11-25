@@ -306,6 +306,13 @@ public static class TbStrings
     /// <summary>"Y": the letter for a year in a date format hint, such as the Y in MM/DD/YYYY; German uses J.</summary>
     public const string DateHintYear = "Date.HintYear";
 
+    /// <summary>"Not set": what screen readers hear for a value that's missing, shown as a dash.</summary>
+    public const string EmptyValue = "Value.Empty";
+
+    /// <summary>"UTC{0}": a timestamp's zone when the app has no abbreviation for it; {0} is the offset, such as "−5",
+    /// or nothing at UTC itself.</summary>
+    public const string TimestampZone = "Timestamp.Zone";
+
     /// <summary>"{0} can't be chosen.": shown when a typed date is outside Min and Max, or IsDateDisabled rules it
     /// out; {0} is the date as typed.</summary>
     public const string DatePickerUnavailable = "DatePicker.Unavailable";
@@ -1868,6 +1875,8 @@ public static class TbStrings
         [DateHintDay] = "D",
         [DateHintMonth] = "M",
         [DateHintYear] = "Y",
+        [EmptyValue] = "Not set",
+        [TimestampZone] = "UTC{0}",
         [DatePickerUnavailable] = "{0} can't be chosen.",
         [TimePickerOutOfRange] = "Choose a time from {0} to {1}.",
         [TimePickerAtLeast] = "Choose {0} or later.",
