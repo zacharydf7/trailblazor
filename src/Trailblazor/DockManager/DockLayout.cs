@@ -94,7 +94,9 @@ public sealed record DockLayout
     /// <summary>Shows the panel with this id. A docked one becomes the showing tab of its group, and one in a window
     /// the showing tab of its window, which comes to the front. One on a strip slides out over the dock. A closed
     /// one, or one the layout doesn't hold, joins the largest group as its showing tab. A group that covers the
-    /// panel's group is restored.</summary>
+    /// panel's group is restored. For a panel in a browser window of its own, only its place in the layout changes:
+    /// a browser lets a page bring another window forward only during the user's own click, so that window stays
+    /// where it is. Show its window, on the panel's button in the dock, brings it forward.</summary>
     public DockLayout Open(string panel)
     {
         if (StripOf(panel) is not null)

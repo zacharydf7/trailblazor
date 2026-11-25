@@ -21,7 +21,9 @@ public sealed record DialogOptions
     /// address's path counts: a new query string or fragment is the same page. False keeps the dialog open, as for a
     /// tool window. Left unset, it follows <see cref="DialogSettings.CloseOnNavigation"/>.
     /// A <see cref="TbDialog"/> in a page's markup isn't closed this way: it leaves with its page, or stays with
-    /// its layout.</summary>
+    /// its layout. Code that awaits the result keeps running after its page has gone, and a dialog it opens then
+    /// appears on the new page and stays. So before opening another dialog because this one wasn't confirmed, check
+    /// that the page is still there, such as with a flag the page's Dispose sets.</summary>
     public bool? CloseOnNavigation { get; init; }
 
     /// <summary>Opens the dialog in the browser's top layer, above everything on the page. False keeps it on the page,

@@ -138,7 +138,9 @@
 
     /// <summary>Decides when the selected tab's panel is a tab stop of its own, which lets the Tab key reach a panel
     /// that holds no control. Defaults to <see cref="TabPanelFocus.Auto"/>: a panel that starts with a control is no
-    /// tab stop, since Tab reaches that control, and any other panel is one.</summary>
+    /// tab stop, since Tab reaches that control, and any other panel is one. The tabs' script makes that check, so
+    /// in bUnit, which runs no script, the selected panel is a tab stop unless this is
+    /// <see cref="TabPanelFocus.Never"/>.</summary>
     [Parameter]
     public TabPanelFocus FocusablePanels { get; set; }
 

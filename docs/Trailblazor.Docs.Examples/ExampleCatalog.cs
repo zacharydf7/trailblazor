@@ -3407,7 +3407,9 @@ public static class ExampleCatalog
                     + "browser window instead (see Panels that come and go). While a panel is away, the dock keeps "
                     + "a button for it in "
                     + "a row above its groups: the button's menu brings the panel's window to the front, where the "
-                    + "browser allows it, or returns the panel. `PoppedOut` lists the panels that are away, "
+                    + "browser allows it, or returns the panel. `Layout.Open` on a panel that is away doesn't bring "
+                    + "its window forward, since a browser lets a page do that only during the user's own click; "
+                    + "Show its window does. `PoppedOut` lists the panels that are away, "
                     + "`PoppedOutChanged` reports each change, and `ReturnAsync` brings one back from code. "
                     + "Which panels are in windows of their own isn't part of "
                     + "the layout, since a page can't open windows as it loads. What the dock saves under a "
@@ -10873,7 +10875,10 @@ public static class ExampleCatalog
                     + "link, from code or with the browser's Back button. That closes it as from code, so nothing "
                     + "is asked first. A new query string or fragment is the same page and leaves it open, and so "
                     + "does a dialog the new page opens as it renders. Its opener has usually left with the old "
-                    + "page, so focus isn't given back to it."),
+                    + "page, so focus isn't given back to it. Code that awaits the result keeps running after the "
+                    + "page has gone, and a dialog it opens then appears on the new page and stays. So before opening "
+                    + "another because the first wasn't confirmed, check that the page is still there, such as with "
+                    + "a flag the page's `Dispose` sets."),
                 new("`CloseOnNavigation = false` keeps one dialog across pages, as for a tool window, and "
                     + "`DialogSettings.CloseOnNavigation` sets it for the app. A `TbDialog` in markup isn't "
                     + "closed this way: it leaves with its page, or stays with its layout. To ask before unsaved "
