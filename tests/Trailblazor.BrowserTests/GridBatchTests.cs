@@ -5,6 +5,45 @@ namespace Trailblazor.BrowserTests;
 public class GridBatchTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task PasteAsync_ShouldMarkThePastedCellsAsChanges_WhenRowsComeFromASpreadsheet(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+
+        await page.Tb().Grid("Hikes").PasteAsync("Pine Hollow", "Name", "Pine loop\t7\nEagle loop\t15");
+
+        await Expect(page.Locator("td[data-changed]")).ToHaveCountAsync(4);
+        await Expect(page.Locator("tr[data-key='1'] td[data-column=Name]")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task PasteAsync_ShouldMarkThePastedCells_WhenTheGridIsInAModalDialog(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-batch-dialog");
+
+        await page.Tb().Grid("Hikes").PasteAsync("Pine Hollow", "Name", "Pine loop\t7");
+
+        await Expect(page.Locator("td[data-changed]")).ToHaveCountAsync(2);
+    }
+
+    // Only Chromium lets a test write the clipboard without a click, and a real Ctrl+V reads it.
+    [Theory]
+    [InlineData("chromium")]
+    public async Task Keys_ShouldPasteTheClipboard_WhenCtrlVIsPressedOnACell(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-batch",
+            new() { Permissions = ["clipboard-read", "clipboard-write"] });
+        await Expect(page.Locator("[data-part=grid]")).ToHaveAttributeAsync("data-ready", "");
+        await page.EvaluateAsync("() => navigator.clipboard.writeText('Pine loop\t7')");
+        var name = page.Locator("tr[data-key='1'] td[data-column=Name]");
+        await name.FocusAsync();
+
+        await page.Keyboard.PressAsync("ControlOrMeta+V");
+
+        await Expect(page.Locator("td[data-changed]")).ToHaveCountAsync(2);
+        await Expect(name).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Changes_ShouldBeMarkedThenSavedTogether_WhenEditedFromTheKeyboard(string browser)
     {
         var page = await OpenReadyAsync(browser);

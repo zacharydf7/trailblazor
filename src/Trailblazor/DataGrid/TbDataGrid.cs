@@ -449,7 +449,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// <see cref="TbColumn{TItem}.Editable"/> cell of a row, where Enter saves the row, Escape cancels it, Tab moves
     /// between its fields and Save and Cancel buttons, and leaving the row saves it. In
     /// <see cref="GridEditMode.Batch"/>, cells are edited as in the default, and each edit is kept as a change until
-    /// the user saves or discards them all.</summary>
+    /// the user saves or discards them all; Ctrl+V on a cell pastes cells there too, such as rows copied from a
+    /// spreadsheet, each kept as a change.</summary>
     [Parameter]
     public GridEditMode EditMode { get; set; }
 
@@ -1325,28 +1326,33 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         return true;
     }
 
-    // A batch grid keeps each checked value as a change, and a value edited back to the item's own drops the change.
+    // A batch grid keeps each checked value as a change.
     private void KeepChanges(GridEdit edit, Dictionary<CellEdit, object?> values)
     {
         foreach (var (cell, value) in values)
         {
-            var key = (edit.Key, cell.Column.Key);
-            // A cell still being saved keeps a value edited back to the item's own, since the save is about to change the
-            // item.
-            if (Equals(value, cell.Column.ValueOf(edit.Item)) && !_sending.Contains(key))
-            {
-                _changes.Remove(key);
-            }
-            else
-            {
-                var item = _rows.FirstOrDefault(row => Equals(KeyOf(row), edit.Key)) ?? edit.Item;
-                _changes[key] = new(item, cell.Column.Key, value);
-            }
+            KeepChange(edit.Key, _rows.FirstOrDefault(row => Equals(KeyOf(row), edit.Key)) ?? edit.Item, cell.Column,
+                value);
         }
 
         _edit = null;
         _editVersion++;
         _rowVersion++;
+    }
+
+    // A value edited back to the item's own drops the change, unless the cell is still being saved, since the save is
+    // about to change the item.
+    private void KeepChange(object rowKey, TItem item, TbColumn<TItem> column, object? value)
+    {
+        var key = (rowKey, column.Key);
+        if (Equals(value, column.ValueOf(item)) && !_sending.Contains(key))
+        {
+            _changes.Remove(key);
+        }
+        else
+        {
+            _changes[key] = new(item, column.Key, value);
+        }
     }
 
     private GridCellEdit<TItem>? ChangeOf(object key, TbColumn<TItem> column) =>

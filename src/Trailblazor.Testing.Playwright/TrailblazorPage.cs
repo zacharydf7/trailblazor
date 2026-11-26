@@ -1914,6 +1914,39 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
         return Row(row).Locator($"td[data-column=\"{id}\"]");
     }
 
+    /// <summary>Pastes this text at the cell under <paramref name="column"/> in the row with a cell whose text is
+    /// exactly <paramref name="row"/>, as Ctrl+V does, and waits until the grid has handled it. Tabs separate the cells
+    /// and line breaks the rows, as a spreadsheet copies them. With a range of cells selected, the paste starts at the
+    /// range's first cell, and one value fills the range. The text never goes through the system clipboard. Throws
+    /// when the grid doesn't take pasted cells; only a grid that edits in batches does.</summary>
+    public async Task PasteAsync(string row, string column, string text)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(text);
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        if (await Table.GetAttributeAsync("data-paste") is null)
+        {
+            throw new InvalidOperationException("The grid doesn't take pasted cells; set its EditMode to Batch and "
+                + "give it an editable column.");
+        }
+
+        var cell = await CellAsync(row, column);
+        await cell.FocusAsync();
+        await AnsweredAsync(() => cell.EvaluateAsync(PasteText, text));
+    }
+
+    // Ctrl+V sends focus to the box the grid pastes into, which then gets the text as the browser would hand it over.
+    private const string PasteText = """
+        (cell, text) => {
+            const keys = { key: 'v', ctrlKey: true, bubbles: true, cancelable: true };
+            cell.dispatchEvent(new KeyboardEvent('keydown', keys));
+            const data = new DataTransfer();
+            data.setData('text/plain', text);
+            const paste = new Event('paste', { bubbles: true, cancelable: true });
+            Object.defineProperty(paste, 'clipboardData', { value: data });
+            cell.ownerDocument.activeElement.dispatchEvent(paste);
+        }
+        """;
+
     /// <summary>Selects the cells from the one under <paramref name="fromColumn"/> in the row <paramref name="fromRow"/>
     /// to a different one under <paramref name="toColumn"/> in the row <paramref name="toRow"/>, by clicking the first and
     /// Shift-clicking the second, then waits until the grid marks the range. Each row is found by a cell whose text is

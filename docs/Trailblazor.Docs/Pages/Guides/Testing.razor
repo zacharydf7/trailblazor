@@ -774,7 +774,9 @@
                             Discard changes buttons. In a grid with <code>CellSelection</code>,
                             <code>SelectCellsAsync</code> selects a range, <code>SelectedCells</code> reads its text,
                             and in Playwright <code>CopyAsync</code> presses Ctrl+C and returns what was copied, with
-                            no clipboard permission needed. <code>Rows</code> and <code>Selected</code> read the rows
+                            no clipboard permission needed. In a grid that edits in batches,
+                            <code>PasteAsync(row, column, text)</code> pastes tab-separated text at a cell as Ctrl+V
+                            does, without the clipboard. <code>Rows</code> and <code>Selected</code> read the rows
                             shown and the selected ones, <code>RowCount</code> counts the rows shown,
                             <code>IsBusy</code> reads whether rows are loading, and <code>WaitForRowsAsync</code> waits
                             until they've loaded.

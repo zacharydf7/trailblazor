@@ -104,6 +104,8 @@
                data-column-window="@(VirtualizeColumns ? $"{_columnWindow.First},{_columnWindow.Last}" : null)"
                @ontbcolumnwindow="OnColumnWindow" @ontbcolumnwindow:stopPropagation
                @ontbcellscopy="OnCellsCopied" @ontbcellscopy:stopPropagation
+               data-paste="@(CanPaste && RendererInfo.IsInteractive ? "" : null)"
+               @ontbcellspaste="OnCellsPastedAsync" @ontbcellspaste:stopPropagation
                data-selection="@(SelectionMode == SelectionMode.Multiple ? "multiple" : null)"
                data-select-all="@(SelectionMode == SelectionMode.Multiple && CanSelectAll ? "" : null)"
                data-row-click-selects="@(SelectionMode == SelectionMode.Multiple && RowClickSelects ? "" : null)"

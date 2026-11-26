@@ -1,0 +1,24 @@
+@page "/grid-batch-dialog"
+
+@* A grid that edits in batches inside a modal dialog, which leaves everything outside it inert. *@
+<TbDialog @bind-Open="_open" Title="Edit hikes">
+    <TbDataGrid TItem="Hike" Items="_hikes" AriaLabel="Hikes" KeySelector="hike => hike.Id"
+                EditMode="GridEditMode.Batch" OnBatchSave="_ => { }">
+        <TbColumn Field="hike => hike.Name" Editable />
+        <TbColumn Field="hike => hike.LengthKm" Title="Length (km)" Editable />
+    </TbDataGrid>
+</TbDialog>
+
+@code {
+    private bool _open = true;
+    private readonly List<Hike> _hikes = [new(1, "Pine Hollow", 6), new(2, "Eagle Ridge", 14)];
+
+    public sealed class Hike(int id, string name, int lengthKm)
+    {
+        public int Id { get; } = id;
+
+        public string Name { get; set; } = name;
+
+        public int LengthKm { get; set; } = lengthKm;
+    }
+}

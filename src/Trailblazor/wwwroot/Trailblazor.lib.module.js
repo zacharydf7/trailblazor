@@ -214,6 +214,7 @@ function registerEvents(blazor) {
         createEventArgs: event => event.detail,
     });
     register('tbcellscopy', { browserEventName: 'tb-cells-copy', createEventArgs: () => ({}) });
+    register('tbcellspaste', { browserEventName: 'tb-cells-paste', createEventArgs: event => event.detail });
     register('tbsignaturestroke', {
         browserEventName: 'tb-signature-stroke',
         createEventArgs: event => ({ points: event.detail.points }),

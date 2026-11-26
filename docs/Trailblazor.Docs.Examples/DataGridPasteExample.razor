@@ -1,0 +1,55 @@
+<TbStack Gap="3">
+    <TbText>Copy these rows, then click a cell in the grid and press Ctrl+V.</TbText>
+    <pre>Fern Gully&#9;5&#10;Lake Shore&#9;11</pre>
+    <TbDataGrid TItem="Trail" Items="_trails" AriaLabel="Trail lengths" KeySelector="trail => trail.Id"
+                EditMode="GridEditMode.Batch" CellSelection OnBatchSave="Save">
+        <TbColumn Field="trail => trail.Name" Editable />
+        <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Editable />
+        <TbColumn Field="trail => trail.Open" Editable />
+    </TbDataGrid>
+    <TbText Muted>@_status</TbText>
+</TbStack>
+
+@code {
+    private readonly List<Trail> _trails =
+    [
+        new(1, "Pine Hollow", 6, true),
+        new(2, "Eagle Ridge", 14, false),
+        new(3, "Cedar Flats", 3, true),
+    ];
+
+    private string _status = "Nothing saved yet.";
+
+    public sealed class Trail(int id, string name, int lengthKm, bool open)
+    {
+        public int Id { get; } = id;
+
+        public string Name { get; set; } = name;
+
+        public int LengthKm { get; set; } = lengthKm;
+
+        public bool Open { get; set; } = open;
+    }
+
+    // Stands in for sending the changes to a server.
+    private void Save(GridBatchEdit<Trail> batch)
+    {
+        foreach (var change in batch.Changes)
+        {
+            switch (change.Column)
+            {
+                case "Name":
+                    change.Item.Name = (string)change.Value!;
+                    break;
+                case "LengthKm":
+                    change.Item.LengthKm = (int)change.Value!;
+                    break;
+                case "Open":
+                    change.Item.Open = (bool)change.Value!;
+                    break;
+            }
+        }
+
+        _status = $"Saved {batch.Changes.Count} changes.";
+    }
+}

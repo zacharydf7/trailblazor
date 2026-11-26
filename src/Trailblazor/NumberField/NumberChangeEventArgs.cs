@@ -113,6 +113,7 @@ public sealed class CharactersLeftEventArgs : EventArgs
     enablePreventDefault: true)]
 [EventHandler("ontbcellrange", typeof(CellRangeEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbcellscopy", typeof(EventArgs), enableStopPropagation: true, enablePreventDefault: true)]
+[EventHandler("ontbcellspaste", typeof(CellsPasteEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbsignaturestroke", typeof(SignatureStrokeEventArgs), enableStopPropagation: true,
     enablePreventDefault: true)]
 [EventHandler("ontbcolumnwindow", typeof(ColumnWindowEventArgs), enableStopPropagation: true,

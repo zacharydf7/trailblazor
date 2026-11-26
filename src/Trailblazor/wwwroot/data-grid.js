@@ -680,6 +680,38 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
         return rows.slice(Math.min(top, bottom), Math.max(top, bottom) + 1).map(row => keys.map(key =>
             [...row.cells].find(one => one.dataset.column === key)).map(one => one ? copyTextOf(one) : ''));
     };
+    // Ctrl+V pastes into what has focus, and a cell takes no text, so the paste goes to a hidden box that hands its
+    // text to the server and focus back to the cell. With nothing to paste no paste event comes, so the box also goes
+    // after 200 ms. A modal dialog leaves everything outside it inert, so the box goes in the grid's dialog or popup.
+    const pasteAt = cell => {
+        const box = table.ownerDocument.createElement('textarea');
+        box.className = 'tb-visually-hidden';
+        box.tabIndex = -1;
+        box.setAttribute('aria-hidden', 'true');
+        // Chromium blurs the box as it's removed, so leave could run twice.
+        let left = false;
+        const leave = () => {
+            if (!left) {
+                left = true;
+                box.remove();
+                cell.focus({ preventScroll: true });
+            }
+        };
+        box.addEventListener('paste', event => {
+            event.preventDefault();
+            const text = event.clipboardData?.getData('text/plain') ?? '';
+            leave();
+            if (text) {
+                table.dispatchEvent(new CustomEvent('tb-cells-paste', { bubbles: true,
+                    detail: { ...spotOf(cell), text } }));
+            }
+        }, { once: true });
+        box.addEventListener('blur', leave, { once: true });
+        setTimeout(leave, 200);
+        (table.closest('dialog, [popover]') ?? table.ownerDocument.body).append(box);
+        box.focus({ preventScroll: true });
+    };
+
     const copyCells = cell => {
         const copy = table.closest('[data-part=grid]')?.querySelector(':scope > [data-part=copy]');
         const current = copy?.dataset.from === nameOf(anchor ?? {}) && copy?.dataset.to === nameOf(end ?? {});
@@ -1112,6 +1144,12 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
         const page = () => Math.max(1, Math.floor(Math.min(scroll.clientHeight, viewOf(scroll).innerHeight)
             / (rowHeight() || fallbackRowHeight)) - 1);
         const control = event.ctrlKey || event.metaKey;
+        if (control && !event.shiftKey && event.key.toLowerCase() === 'v' && table.hasAttribute('data-paste')
+            && bodyCellOf(cell) && !event.target.closest('[data-part=editor]')) {
+            pasteAt(cell);
+            return;
+        }
+
         if (selectsCells() && control && !event.shiftKey && event.key.toLowerCase() === 'c') {
             event.preventDefault();
             copyCells(cell);

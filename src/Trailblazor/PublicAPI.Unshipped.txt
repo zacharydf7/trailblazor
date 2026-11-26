@@ -8170,3 +8170,17 @@ static Trailblazor.TbTokens.Component.get -> System.Collections.Generic.IReadOnl
 static Trailblazor.TbTokens.SetByComponents.get -> System.Collections.Generic.IReadOnlyList<string!>!
 static Trailblazor.TbTokens.Theme.get -> System.Collections.Generic.IReadOnlyList<string!>!
 static Trailblazor.TbTokens.Classes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.DataGridLabels.PasteRejected.get -> string?
+Trailblazor.DataGridLabels.PasteRejected.init -> void
+Trailblazor.DataGridLabels.Pasted.get -> string?
+Trailblazor.DataGridLabels.Pasted.init -> void
+Trailblazor.Internal.Events.CellsPasteEventArgs
+Trailblazor.Internal.Events.CellsPasteEventArgs.CellsPasteEventArgs() -> void
+Trailblazor.Internal.Events.CellsPasteEventArgs.Column.get -> string?
+Trailblazor.Internal.Events.CellsPasteEventArgs.Column.set -> void
+Trailblazor.Internal.Events.CellsPasteEventArgs.Row.get -> string?
+Trailblazor.Internal.Events.CellsPasteEventArgs.Row.set -> void
+Trailblazor.Internal.Events.CellsPasteEventArgs.Text.get -> string?
+Trailblazor.Internal.Events.CellsPasteEventArgs.Text.set -> void
+const Trailblazor.TbStrings.DataGridPasteRejected = "DataGrid.PasteRejected" -> string!
+const Trailblazor.TbStrings.DataGridPasted = "DataGrid.Pasted" -> string!

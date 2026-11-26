@@ -5230,6 +5230,29 @@ public sealed class TbGridDriver
         Row(row).QuerySelector($"td[data-column=\"{Header(column).GetAttribute("data-column")}\"]")
         ?? throw new InvalidOperationException($"The row \"{row}\" has no cell under \"{column}\".");
 
+    /// <summary>Pastes this text at the cell under <paramref name="column"/> in the row with a cell whose text is
+    /// exactly <paramref name="row"/>, as Ctrl+V does. Tabs separate the cells and line breaks the rows, as a
+    /// spreadsheet copies them. With a range of cells selected, the paste starts at the range's first cell, and one
+    /// value fills the range. Throws when the grid doesn't take pasted cells; only a grid that edits in batches
+    /// does.</summary>
+    public async Task PasteAsync(string row, string column, string text)
+    {
+        var table = _find();
+        if (!table.HasAttribute("data-paste"))
+        {
+            throw new InvalidOperationException("The grid doesn't take pasted cells; set its EditMode to Batch and "
+                + "give it an editable column.");
+        }
+
+        var cell = Cell(row, column);
+        await table.TriggerEventAsync("ontbcellspaste", new CellsPasteEventArgs
+        {
+            Row = cell.ParentElement!.GetAttribute("data-key"),
+            Column = cell.GetAttribute("data-column"),
+            Text = text,
+        });
+    }
+
     /// <summary>Selects the cells from the one under <paramref name="fromColumn"/> in the row <paramref name="fromRow"/>
     /// to the one under <paramref name="toColumn"/> in the row <paramref name="toRow"/>, as a drag across them does. Each
     /// row is found by a cell whose text is exactly that value. Throws when the grid's <c>CellSelection</c> is off.

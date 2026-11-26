@@ -1750,6 +1750,14 @@ public static class TbStrings
     /// as a number too large; {0} is the column.</summary>
     public const string DataGridEditInvalid = "DataGrid.EditInvalid";
 
+    /// <summary>"Cells pasted: {0}": said once cells pasted into a data grid are kept as changes; {0} is how many.
+    /// </summary>
+    public const string DataGridPasted = "DataGrid.Pasted";
+
+    /// <summary>"Nothing was pasted: {0}": said when a cell pasted into a data grid can't hold its value; {0} says
+    /// why, such as "Price can't hold that value."</summary>
+    public const string DataGridPasteRejected = "DataGrid.PasteRejected";
+
     /// <summary>"Save": the button that saves a data grid row's edit.</summary>
     public const string DataGridSave = "DataGrid.Save";
 
@@ -2479,6 +2487,8 @@ public static class TbStrings
         [DataGridRowsShown] = "Rows shown: {0}.",
         [DataGridRowsShownAtLeast] = "Rows shown: at least {0}.",
         [DataGridEditInvalid] = "{0} can't hold that value.",
+        [DataGridPasted] = "Cells pasted: {0}",
+        [DataGridPasteRejected] = "Nothing was pasted: {0}",
         [DataGridSave] = "Save",
         [DataGridSaveRow] = "Save {0}",
         [DataGridCancel] = "Cancel",

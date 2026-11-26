@@ -13402,6 +13402,13 @@ public static class ExampleCatalog
                     + "their rows and `OnBatchSave` gets the reloaded items. Without a `KeySelector`, unless the items "
                     + "compare by value, the reloaded rows don't show changes made before the reload, though Save "
                     + "changes still sends them.", typeof(DataGridBatchExample)),
+                new("paste", "Paste from a spreadsheet", "In a grid that edits in batches, Ctrl+V on a cell pastes "
+                    + "tab-separated cells starting there, such as rows copied from a spreadsheet. Each is read as its "
+                    + "column's editor reads text, with the column's `Format`, and kept as a change; a blank cell "
+                    + "clears the value. With `CellSelection`, a paste starts at a selected range's first cell, and "
+                    + "one value fills the range. Cells past the last row or column shown are left out, and columns "
+                    + "that can't be edited, or that edit with an `EditTemplate`, keep their values. If any cell "
+                    + "can't hold its value, nothing is pasted and the grid says why.", typeof(DataGridPasteExample)),
                 new("cell-selection", "Select and copy cells", "With `CellSelection` on, drag across cells, or hold "
                     + "Shift and click a cell or press an arrow key, Home or End, to select a range. Ctrl+C (Cmd+C on "
                     + "a Mac) copies it as tab-separated text and as a table, so it pastes into a spreadsheet's "
@@ -13536,6 +13543,8 @@ public static class ExampleCatalog
                 new(["Ctrl+C", "Cmd+C"], "Copies the range, or the cell in focus without one, as text and as a "
                     + "table.") { When = "With `CellSelection`" },
                 new(["Escape"], "Clears the range.") { When = "With `CellSelection` and a range" },
+                new(["Ctrl+V", "Cmd+V"], "Pastes cells as changes, starting at the cell in focus or at a selected "
+                    + "range's first cell; one value fills the range.") { When = "In a grid that edits in batches" },
                 new(["Enter"], "In a value field, applies the filter.") { When = "In a filter menu" },
                 new(["Escape"], "Closes the menu.") { When = "In a filter menu" },
                 new(["Up", "Down"], "Moves the row up or down, and focus stays on the handle.")
@@ -13570,6 +13579,8 @@ public static class ExampleCatalog
             Announcements =
             [
                 "Every change of sort is read out, such as \"Sorted by Name, ascending.\"",
+                "A paste is read out, such as \"Cells pasted: 4\", or why nothing was pasted, such as \"Nothing was "
+                    + "pasted: Length (km) can't hold that value.\"",
                 "After a filter changes, the count of rows shown is read out, such as \"Rows shown: 2.\", or "
                     + "\"Rows shown: at least 10.\" when the `DataProvider` doesn't count the rows and more follow.",
                 "A failed load and a `DataProvider` load with no rows are read out. With `EmptyContent`, set "
@@ -13762,6 +13773,8 @@ public static class ExampleCatalog
                 "In Playwright, sorting, filtering and paging also wait for a `DataProvider`'s rows.",
                 "In bUnit, `cut.Tb().Grid(\"Trails\")` from `Trailblazor.Testing` has the same `Row`, `SelectAsync`, "
                     + "`SortAsync` and `FilterAsync`, and `Cell(row, column)` finds a cell.",
+                "In a grid that edits in batches, `PasteAsync(row, column, text)` pastes tab-separated text at a "
+                    + "cell as Ctrl+V does, in bUnit and in Playwright, where it doesn't use the system clipboard.",
                 "With a `StateHref`, the sort headers and the pager are links.",
                 "In an interactive grid with a `StateHref`, `SortAsync` and `GoToPageAsync` still work; on a static "
                     + "page, click the header's link, and `GoToPageAsync` follows the pager's.",
@@ -13836,12 +13849,13 @@ public static class ExampleCatalog
                     + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `filter`, `page`, "
                     + "`page_size`, `select`, `move`, `group`, `expand`, `collapse`, `edit`, `resize`, `reorder`, "
                     + "`hide`, `show`, `open_detail`, `close_detail`, `save_changes`, `discard_changes`, `copy`, "
-                    + "`export_csv`, `export_excel` or `export_pdf` for each of "
+                    + "`paste`, `export_csv`, `export_excel` or `export_pdf` for each of "
                     + "those the user does; a `move` also "
                     + "says whether a `pointer` or the "
                     + "`keyboard` made it.",
                 "A page `ScrollToAsync` moves to, or a group it opens, isn't counted, and which column, filter "
-                    + "value, page, group, rows or width were used, or what value an edit saved, is never recorded.",
+                    + "value, page, group, rows or width were used, what value an edit saved, or what text was "
+                    + "pasted, is never recorded.",
                 "A `DataProvider` that fails to load the rows is counted in `trailblazor.control.failed` with the "
                     + "action `load`, and an export that fails, in its provider or while the file is built, with the "
                     + "action `export`. Each is logged as a warning whether or not the grid has a `TelemetryName`.",

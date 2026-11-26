@@ -144,6 +144,16 @@ public sealed record DataGridLabels
     /// cref="TbStrings.DataGridEditInvalid"/>.</summary>
     public string? EditInvalid { get; init; }
 
+    /// <summary>Said once cells pasted into a grid that edits in batches are kept as changes; <c>{0}</c> is how many:
+    /// "Cells pasted: {0}" in English. Leave it null for the app's text for <see cref="TbStrings.DataGridPasted"/>.
+    /// </summary>
+    public string? Pasted { get; init; }
+
+    /// <summary>Said when a pasted cell can't hold its value, so nothing is pasted; <c>{0}</c> says why: "Nothing was
+    /// pasted: {0}" in English. Leave it null for the app's text for <see cref="TbStrings.DataGridPasteRejected"/>.
+    /// </summary>
+    public string? PasteRejected { get; init; }
+
     /// <summary>Shown when a cell edit leaves empty a column that needs a value; <c>{0}</c> is the column:
     /// "{0} is required." in English. Leave it null for the app's text for <see cref="TbStrings.FieldRequired"/>.
     /// </summary>
