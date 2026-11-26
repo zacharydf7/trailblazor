@@ -748,7 +748,6 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         _columnsChanged = false;
-        await FocusFilterMenusAsync();
         if (_nextRender is { } rendered)
         {
             _nextRender = null;
@@ -757,6 +756,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         Telemetry.Rendered(TelemetryName);
         try
         {
+            await FocusFilterMenusAsync();
             if (firstRender && RendererInfo.IsInteractive)
             {
                 await AttachAsync();

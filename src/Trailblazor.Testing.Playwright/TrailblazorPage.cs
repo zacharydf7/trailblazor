@@ -2176,6 +2176,9 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
         if (await panel.Locator("[data-part=filter-add-condition]").CountAsync() > 0)
         {
             await panel.Locator("[data-part=filter-add-condition]").ClickAsync();
+            // The grid then moves focus to the second condition, which mustn't land while a value is being typed.
+            await Assertions.Expect(panel.Locator("[data-part=filter-condition]").Nth(1).Locator("[role=combobox]"))
+                .ToBeFocusedAsync();
         }
 
         await SetConditionAsync(panel, 0, condition, text);
@@ -2190,6 +2193,8 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
         if (await panel.Locator("[data-part=filter-remove-condition]").CountAsync() > 0)
         {
             await panel.Locator("[data-part=filter-remove-condition]").ClickAsync();
+            // The grid then moves focus back to Add a condition, which mustn't land while a value is being typed.
+            await Assertions.Expect(panel.Locator("[data-part=filter-add-condition]")).ToBeFocusedAsync();
         }
     }
 
