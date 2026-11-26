@@ -65,7 +65,8 @@ public partial class TbChart<TItem>
 
     /// <summary>How several <see cref="TbBarSeries{TItem}"/>, or several <see cref="TbAreaSeries{TItem}"/>, share a
     /// place: each from zero, stacked, or stacked as shares of each place's total. <see cref="ChartStacking.None"/>
-    /// by default. Bars pile with bars and areas with areas, and line series are never stacked.</summary>
+    /// by default. Bars pile with bars and areas with areas, and line and scatter series are never stacked.
+    /// </summary>
     [Parameter]
     public ChartStacking Stacking { get; set; }
 
@@ -93,8 +94,8 @@ public partial class TbChart<TItem>
     public ChartClasses? Classes { get; set; }
 
     /// <summary>The chart's series, and its axes when they need settings: <see cref="TbLineSeries{TItem}"/>,
-    /// <see cref="TbAreaSeries{TItem}"/>, <see cref="TbBarSeries{TItem}"/>, <see cref="TbXAxis"/> and
-    /// <see cref="TbYAxis"/>.</summary>
+    /// <see cref="TbAreaSeries{TItem}"/>, <see cref="TbScatterSeries{TItem}"/>, <see cref="TbBarSeries{TItem}"/>,
+    /// <see cref="TbXAxis"/> and <see cref="TbYAxis"/>.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
@@ -260,6 +261,10 @@ public partial class TbChart<TItem>
 
     private static string Slot(int index) => $"tb-chart__series--{index % Slots + 1}";
 
+    // Which shape a scatter series' marks have: its place among the chart's scatter series, hidden ones too, so the
+    // first four always differ and none changes shape as others hide.
+    private int ShapeOf(int index) => _series.Take(index).Count(one => one.Dots);
+
     private string? Color(int index) => _series[index].Color is { } color ? $"--_tb-chart-series: {color}" : null;
 
     private static string BarClass(ChartBarEnd end) => end switch
@@ -317,10 +322,12 @@ public partial class TbChart<TItem>
     private string Summary()
     {
         var shown = _series.Where(one => !one.IsHidden).ToList();
-        // Areas beside lines read as a line chart, and anything beside bars as a bar and line chart.
+        // Any other mix of lines, areas and scatters reads as a line chart, and anything beside bars as a bar and
+        // line chart.
         var kind = shown.All(one => one.Bars) ? Labels.Bars ?? Localizer[TbStrings.ChartBars]
             : shown.Any(one => one.Bars) ? Labels.BarsAndLines ?? Localizer[TbStrings.ChartBarsAndLines]
             : shown.All(one => one.Filled) ? Labels.Areas ?? Localizer[TbStrings.ChartAreas]
+            : shown.All(one => one.Dots) ? Labels.Scatter ?? Localizer[TbStrings.ChartScatter]
             : Labels.Lines ?? Localizer[TbStrings.ChartLines];
         return string.Format(CultureInfo.CurrentCulture, Labels.Summary ?? Localizer[TbStrings.ChartSummary], kind,
             string.Join(", ", shown.Select(one => one.Name)));

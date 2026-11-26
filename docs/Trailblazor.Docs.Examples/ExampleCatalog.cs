@@ -950,9 +950,9 @@ public static class ExampleCatalog
             ],
         },
         new("chart", "Chart", ExampleCategory.Content,
-            "A chart of one or more series over a list of items: bars for comparing amounts, and lines and areas "
-                + "for how something changes, with a tooltip for the values at a place and every value in a table "
-                + "under it.")
+            "A chart of one or more series over a list of items: bars for comparing amounts, lines and areas for "
+                + "how something changes, and scatters for how two measures go together, with a tooltip for the "
+                + "values at a place and every value in a table under it.")
         {
             FullWidth = true,
             WhenToUse =
@@ -961,6 +961,7 @@ public static class ExampleCatalog
                 "Use lines to show how something changes over time, such as a trail's temperature day by day.",
                 "Use an area when the amount matters as well as its change, such as hikers on a trail through the "
                     + "day, and stacked areas for how the parts of a total change.",
+                "Use a scatter to show how two measures go together, such as a trail's length and its climb.",
             ],
             WhenNotToUse =
             [
@@ -968,8 +969,8 @@ public static class ExampleCatalog
                 "When readers need exact values more than the shape, use a [table](components/table) or a "
                     + "[data grid](components/data-grid).",
                 "For how far along one task is, use a [progress bar](components/progress).",
-                "Don't put two measures with different units on one chart: it has one value axis, and two charts "
-                    + "read better than two scales.",
+                "Don't give one chart two series with different units: it has one value axis, and two charts read "
+                    + "better than two scales. A scatter's second measure runs along the chart, as its `X`.",
             ],
             Related = ["table", "data-grid", "progress", "async-content"],
             Sections =
@@ -991,7 +992,7 @@ public static class ExampleCatalog
                     + "starts this line's axis at zero.", typeof(ChartSteppedExample)),
                 new("stacking", "Stacked bars", "`Stacking=\"ChartStacking.Stacked\"` piles the bar series on top of "
                     + "one another, so each stack's height is the place's total. Without it, the bars of a place "
-                    + "stand side by side. Line series are never stacked.", typeof(ChartStackedExample)),
+                    + "stand side by side. Line and scatter series are never stacked.", typeof(ChartStackedExample)),
                 new("percent", "Shares of a total", "`ChartStacking.Percent` draws each bar as its share of the "
                     + "place's total, so every stack is the same height and the axis reads from 0% to 100%. The data "
                     + "table keeps the values as given.", typeof(ChartPercentExample)),
@@ -1024,6 +1025,15 @@ public static class ExampleCatalog
                     + "sits at its distance along the trail, and the axis marks whole kilometers. A whole-number "
                     + "`X`, such as a year, is marked by whole numbers, written without digit grouping.",
                     typeof(ChartProfileExample)),
+                new("scatter", "Scatter", "A `TbScatterSeries` draws a mark for each item and no line between them, "
+                    + "for how two measures go together: here each trail's climb against its length. Give it a "
+                    + "continuous scale, since on an even one the marks are evenly spaced whatever their `X`. A "
+                    + "chart's scatter series take a circle, a square, a diamond and a ring as their marks, in the "
+                    + "order they are given, so they differ by shape as well as by color; a fifth starts over, and "
+                    + "no parameter picks a shape. Every item with a value has a mark, however many there are. The "
+                    + "tooltip and a click go to the mark under the pointer, and the keys move between a series' "
+                    + "marks. Like a line's, its axis starts near the lowest value, not at zero.",
+                    typeof(ChartScatterExample)),
                 new("combined", "Bars with a line", "Bar and line series share a chart and its one value axis, so "
                     + "give them values in the same unit. `Color` gives a series a CSS color of its own in place of "
                     + "the one its position gives it, such as the danger color for something that went wrong.",
@@ -1066,9 +1076,9 @@ public static class ExampleCatalog
             ],
             Api =
             [
-                typeof(TbChart<>), typeof(TbLineSeries<>), typeof(TbAreaSeries<>), typeof(TbBarSeries<>),
-                typeof(TbXAxis), typeof(TbYAxis), typeof(ChartPoint<>), typeof(ChartStacking), typeof(ChartCurve),
-                typeof(ChartScale), typeof(ChartLabels), typeof(ChartClasses),
+                typeof(TbChart<>), typeof(TbLineSeries<>), typeof(TbAreaSeries<>), typeof(TbScatterSeries<>),
+                typeof(TbBarSeries<>), typeof(TbXAxis), typeof(TbYAxis), typeof(ChartPoint<>), typeof(ChartStacking),
+                typeof(ChartCurve), typeof(ChartScale), typeof(ChartLabels), typeof(ChartClasses),
             ],
             Anatomy = """
                 <TbChart Items="…" X="…" Title="…">
@@ -1077,6 +1087,7 @@ public static class ExampleCatalog
                     <TbBarSeries Name="…" Value="…" />
                     <TbLineSeries Name="…" Value="…" />
                     <TbAreaSeries Name="…" Value="…" />
+                    <TbScatterSeries Name="…" Value="…" />
                 </TbChart>
                 """,
             Keyboard =
@@ -1109,8 +1120,9 @@ public static class ExampleCatalog
                     + "takes the same name. With neither, the figure and its table have no name.",
                 "The drawing is an image named by its kind and its series, such as \"Bar chart: Day passes, Week "
                     + "passes, Season passes\". `Labels.Summary` rewords it, and `Labels.Bars`, `Labels.Lines`, "
-                    + "`Labels.Areas` and `Labels.BarsAndLines` reword the kind. Areas beside lines read as a line "
-                    + "chart, and anything beside bars as a bar and line chart.",
+                    + "`Labels.Areas`, `Labels.Scatter` and `Labels.BarsAndLines` reword the kind. Any other mix of "
+                    + "lines, areas and scatters reads as a line chart, and anything beside bars as a bar and line "
+                    + "chart.",
                 "Each series' `Name` shows in the legend and heads its column of the data table. It names the "
                     + "series' legend button too.",
                 "The drawing's name lists only the series that show.",
@@ -1137,9 +1149,10 @@ public static class ExampleCatalog
                 "The eight series colors each have 3:1 contrast against the surface in both themes, and colors next "
                     + "to each other in the order stay easy to tell apart for people with red-green color blindness.",
                 "Two or more series always have a legend, whose keys are drawn as the marks are: a block for bars, "
-                    + "a stroke for a line, and a stroke over its tint for an area. Two series of the same kind "
-                    + "differ by color in the drawing, and the data table tells them apart for anyone who can't "
-                    + "use the colors.",
+                    + "a stroke for a line, a stroke over its tint for an area, and a scatter's own mark. Two "
+                    + "series of the same kind differ by color in the drawing, and two scatter series by the shape "
+                    + "of their marks too. The data table tells any of them apart for anyone who can't use the "
+                    + "colors.",
                 "A hidden series' legend entry is struck through as well as dimmed, so it doesn't differ by color "
                     + "alone. Its button reads as not pressed, and in a legend without buttons \"(hidden)\" "
                     + "follows its name for screen readers, which `Labels.Hidden` rewords.",
@@ -1147,7 +1160,8 @@ public static class ExampleCatalog
                     + "color. Lines differ by their dashes, and bars by being filled, hollow, dashed or dotted, with "
                     + "the legend's keys drawn the same way. There are four of each, so a fifth series of a kind "
                     + "looks like the first. An area keeps its line, dashed as a line's is, and loses its fill, so "
-                    + "it looks like a line there.",
+                    + "it looks like a line there. Scatter series keep their four shapes, the ring drawn in "
+                    + "outline, and a fifth scatter series looks like the first.",
             ],
             AppDuties =
             [
@@ -1182,8 +1196,12 @@ public static class ExampleCatalog
                     + "the `X` values are: dates a week apart and dates a day apart sit the same distance from each "
                     + "other. `Scale=\"ChartScale.Continuous\"` on `TbXAxis` places them by value."),
                 new("On a continuous scale a line joins the items in the order given, and the arrow keys move in "
-                    + "that order, so give the items in order of `X`. Items with the same `X` share one spot, where "
-                    + "the pointer reaches only the first of them; the keys reach each."),
+                    + "that order, so give the items in order of `X`. Items with the same `X` share one spot along "
+                    + "the chart. The pointer reaches each of a scatter's marks there but only the first of a "
+                    + "line's or a bar's items; the keys reach each."),
+                new("Where a scatter's marks overlap, they're drawn one on another, each with a ring in the "
+                    + "surface's color around it. The plot runs from the first `X` to the last, so the marks at the "
+                    + "ends sit on its edges. Past a few hundred marks a scatter is hard to read and to point at."),
                 new("Dates are placed by their clock time as written: a `DateTimeOffset`'s offset and a `DateTime`'s "
                     + "kind aren't applied, so convert the times to one zone first.") { Pitfall = true },
                 new("On a continuous scale an item's bars together take seven tenths of the smallest gap between two "
@@ -1200,11 +1218,12 @@ public static class ExampleCatalog
                     + "to show, the chart draws again as its parent renders. A series inside a component of yours "
                     + "that renders by itself may be drawn a render behind, so have such a change render the "
                     + "chart's parent too.") { Pitfall = true },
-                new("A line's value beyond a `Min` or `Max` you set is drawn outside the plot. A bar or an area's "
-                    + "fill stops at the plot's edge, and a bar cut short there has a square end.")
+                new("A line's or a scatter's value beyond a `Min` or `Max` you set is drawn outside the plot. A bar "
+                    + "or an area's fill stops at the plot's edge, and a bar cut short there has a square end.")
                     { Pitfall = true },
-                new("With `ChartStacking.Percent` the axis runs from 0% to 100%, and a line series is still drawn by "
-                    + "its own values, so a line whose values aren't shares between 0 and 1 runs off the plot.")
+                new("With `ChartStacking.Percent` the axis runs from 0% to 100%, and a line or scatter series is "
+                    + "still drawn by its own values, so one whose values aren't shares between 0 and 1 runs off "
+                    + "the plot.")
                     { Pitfall = true },
                 new("Hiding a bar or an area series changes what the others show. Side by side, bars take the room "
                     + "it leaves; stacked, the others pile without it; and as shares of a total, each becomes its "
@@ -1256,8 +1275,9 @@ public static class ExampleCatalog
                     + "month\" })` and its drawing with `GetByRole(AriaRole.Img, new() { Name = \"Bar chart: "
                     + "Hikers\" })`; the point that has the tab stop is an image too.",
                 "A series' marks are under an element with `data-series` set to its `Name`: a `g` of `rect` bars, "
-                    + "or the `path` of a line or of an area's line. An area's fill is a `path.tb-chart__area` in "
-                    + "`svg.tb-chart__fills`, outside its series' element. A hidden series has none.",
+                    + "the `path` of a line or of an area's line, or a `g` of a scatter's marks. An area's fill is a "
+                    + "`path.tb-chart__area` in `svg.tb-chart__fills`, outside its series' element. A hidden series "
+                    + "has none.",
             ],
             Telemetry =
             [

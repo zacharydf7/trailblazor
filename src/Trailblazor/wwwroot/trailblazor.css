@@ -11954,6 +11954,25 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         stroke-width: 2;
     }
 
+    /* A scatter series' square mark is given by its corner, and is moved to sit on its point as a circle does. A
+       diamond is the square turned. */
+    .tb-chart__marker--square,
+    .tb-chart__marker--diamond {
+        transform-box: fill-box;
+        transform-origin: center;
+        translate: -50% -50%;
+    }
+
+    .tb-chart__marker--diamond {
+        rotate: 45deg;
+    }
+
+    /* A ring is a circle in the surface's color with its series' color around it. */
+    .tb-chart__marker--ring {
+        fill: var(--tb-color-surface);
+        stroke: var(--_tb-chart-series);
+    }
+
     .tb-chart__bar {
         fill: var(--_tb-chart-series);
     }
@@ -12127,6 +12146,11 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         .tb-chart__marker {
             fill: CanvasText;
             stroke: Canvas;
+        }
+
+        .tb-chart__marker--ring {
+            fill: Canvas;
+            stroke: CanvasText;
         }
 
         .tb-chart__bar {

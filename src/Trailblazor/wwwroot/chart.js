@@ -102,6 +102,13 @@ export function attachChart(plot, events, point, noValue, activates) {
         return nearest;
     };
 
+    // The place a press or the pointer is for: that of the scatter mark under it, since two marks may share a spot
+    // along the chart, or else the nearest place along the chart.
+    const placeOf = event => {
+        const mark = event.target.closest?.('.tb-chart__marks [data-place]');
+        return mark ? Number(mark.dataset.place) : placeAt(event.clientX);
+    };
+
     // A press within this many pixels of a point is on that point: a marker's size.
     const onPoint = 6;
 
@@ -138,7 +145,7 @@ export function attachChart(plot, events, point, noValue, activates) {
     // One update a frame, for the last place the pointer was at.
     const frame = frames(plot, () => {
         if (pointer && read().places.length) {
-            show(placeAt(pointer.clientX), null);
+            show(placeOf(pointer), null);
         }
     });
 
@@ -181,7 +188,7 @@ export function attachChart(plot, events, point, noValue, activates) {
             return;
         }
 
-        const place = placeAt(event.clientX);
+        const place = placeOf(event);
         const seriesIndex = seriesAt(place, event);
         if (seriesIndex >= 0) {
             callDotNet(events, 'OnActivate', read().series[seriesIndex].number, place, 'pointer');

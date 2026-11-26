@@ -8451,3 +8451,8 @@ Trailblazor.TbXAxis.Scale.get -> Trailblazor.ChartScale
 Trailblazor.TbXAxis.Scale.set -> void
 Trailblazor.TbXAxis.MarkFormat.get -> string?
 Trailblazor.TbXAxis.MarkFormat.set -> void
+Trailblazor.ChartLabels.Scatter.get -> string?
+Trailblazor.ChartLabels.Scatter.init -> void
+Trailblazor.TbScatterSeries<TItem>
+Trailblazor.TbScatterSeries<TItem>.TbScatterSeries() -> void
+const Trailblazor.TbStrings.ChartScatter = "Chart.Scatter" -> string!

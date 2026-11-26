@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Components;
 namespace Trailblazor;
 
 /// <summary>A series of a <see cref="TbChart{TItem}"/>: one value for each of the chart's items, drawn as a
-/// <see cref="TbLineSeries{TItem}"/>, a <see cref="TbAreaSeries{TItem}"/> or a <see cref="TbBarSeries{TItem}"/>.
+/// <see cref="TbLineSeries{TItem}"/>, a <see cref="TbAreaSeries{TItem}"/>, a <see cref="TbScatterSeries{TItem}"/>
+/// or a <see cref="TbBarSeries{TItem}"/>.
 /// Series draw in the order they first render, and each takes the next of the chart's eight series colors.</summary>
 public abstract class TbChartSeries<TItem> : ComponentBase, IDisposable
 {
@@ -48,6 +49,9 @@ public abstract class TbChartSeries<TItem> : ComponentBase, IDisposable
 
     // Whether what is under the series' line is filled, as an area's is.
     internal virtual bool Filled => false;
+
+    // Whether the series is a mark for each item with no line between them, as a scatter's is.
+    internal virtual bool Dots => false;
 
     // What the user last chose in the legend, or what the app last set if that came later.
     internal bool IsHidden => _hidden;

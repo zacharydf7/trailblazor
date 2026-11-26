@@ -164,6 +164,87 @@ public class ChartTests(BrowserFixture fixture) : BrowserTest(fixture)
         }
     }
 
+    // Where each scatter series' middle mark is drawn, and where its point says it is, in the page's pixels.
+    private const string MiddleMarks = """
+        plot => {
+            const box = plot.getBoundingClientRect();
+            return [...plot.querySelectorAll('g[data-series]')].map(series => {
+                const mark = series.children[1].getBoundingClientRect();
+                const [x, y] = series.dataset.points.split(' ')[1].split(',');
+                return [mark.left + mark.width / 2, mark.top + mark.height / 2,
+                    box.left + box.width * x / 10000, box.top + box.height * y / 10000, mark.width];
+            });
+        }
+        """;
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Scatter_ShouldDrawEachSeriesMarksInItsOwnShapeOnItsPoints_WhenDrawn(string browser)
+    {
+        var page = await OpenAsync(browser, "/chart-scale");
+        var plot = Chart(page, "Four shapes").Locator("[data-part=plot]");
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+
+        // A circle, a square, a diamond and a ring, each centered on its point: a square is given by its corner and
+        // moved by the stylesheet, and a diamond is a square turned, so it is wider.
+        var marks = await plot.EvaluateAsync<double[][]>(MiddleMarks);
+        Assert.Equal(4, marks.Length);
+        Assert.All(marks, mark =>
+        {
+            Assert.InRange(mark[0] - mark[2], -0.75, 0.75);
+            Assert.InRange(mark[1] - mark[3], -0.75, 0.75);
+        });
+        Assert.InRange(marks[2][4] - marks[1][4], 2, 4.5);
+        await Expect(plot.Locator(".tb-chart__lines path")).ToHaveCountAsync(0);
+
+        // A click on a mark picks its point, and the keys move between a series' marks.
+        await page.Mouse.ClickAsync((float)marks[2][0], (float)marks[2][1]);
+        await Expect(page.GetByTestId("picked")).ToHaveTextAsync("Hail 2021 80");
+        await plot.Locator("[tabindex='0']").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(page.Locator(":focus")).ToHaveAccessibleNameAsync("2021, Rain: 180, 2 of 3");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Scatter_ShouldPickTheMarkUnderThePointer_WhenTwoMarksShareASpotAlongTheChart(string browser)
+    {
+        var page = await OpenAsync(browser, "/chart-scale");
+        var chart = Chart(page, "Two in a year");
+        var plot = chart.Locator("[data-part=plot]");
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+        await plot.ScrollIntoViewIfNeededAsync();
+
+        // Both of 2020's readings are at the plot's left edge, where the nearest place along the chart is the first,
+        // so picking the second needs its mark.
+        var second = plot.Locator("circle.tb-chart__marker").Nth(1);
+        await second.HoverAsync();
+        await Expect(chart.Locator(".tb-chart__tooltip-value")).ToHaveTextAsync("120");
+        await second.ClickAsync();
+
+        await Expect(page.GetByTestId("picked")).ToHaveTextAsync("Snow 2020 120");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Scatter_ShouldKeepItsShapes_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/chart-scale", new() { ForcedColors = ForcedColors.Active });
+        var (text, surface) = (await SystemColorAsync(page, "CanvasText"), await SystemColorAsync(page, "Canvas"));
+        var series = Chart(page, "Four shapes").Locator("[data-part=plot] g[data-series]");
+
+        await Expect(series).ToHaveCountAsync(4);
+        await Expect(series.Nth(0).Locator("circle").First).ToHaveCSSAsync("fill", text);
+        await Expect(series.Nth(1).Locator("rect").First).ToHaveCSSAsync("fill", text);
+        await Expect(series.Nth(2).Locator("rect").First).ToHaveCSSAsync("rotate", "45deg");
+        // The ring is the surface's color with the text color around it.
+        await Expect(series.Nth(3).Locator("circle").First).ToHaveCSSAsync("fill", surface);
+        await Expect(series.Nth(3).Locator("circle").First).ToHaveCSSAsync("stroke", text);
+        // The legend's keys are drawn as their series' marks are.
+        var keys = Chart(page, "Four shapes").Locator("[data-part=legend] svg > *");
+        await Expect(keys.Nth(1)).ToHaveCSSAsync("fill", text);
+        await Expect(keys.Nth(3)).ToHaveCSSAsync("fill", surface);
+        await Expect(keys.Nth(3)).ToHaveCSSAsync("stroke", text);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Series_ShouldDifferWithoutColor_WhenColorsAreForced(string browser)
     {

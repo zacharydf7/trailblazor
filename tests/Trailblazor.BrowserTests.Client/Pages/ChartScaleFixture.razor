@@ -7,8 +7,32 @@
     <TbLineSeries Name="Snowfall" Value="year => year.Snowfall" />
 </TbChart>
 
+@* Four scatter series, so each shape of mark is drawn, none of them on another. *@
+<div style="width: 24rem">
+    <TbChart TItem="Year" Items="Years" X="year => year.Number" Title="Four shapes" Height="12rem"
+             OnPointClick="@(point => _picked = $"{point.Series} {point.Item.Number} {point.Value}")">
+        <TbXAxis Scale="ChartScale.Continuous" />
+        <TbScatterSeries Name="Snow" Value="year => year.Snowfall" />
+        <TbScatterSeries Name="Rain" Value="year => year.Snowfall - 100" />
+        <TbScatterSeries Name="Hail" Value="year => year.Snowfall - 200" />
+        <TbScatterSeries Name="Fog" Value="year => year.Snowfall - 300" />
+    </TbChart>
+</div>
+@* Two readings in one year, so two marks share a spot along the chart. *@
+<div style="width: 24rem">
+    <TbChart TItem="Year" Items="Twice" X="year => year.Number" Title="Two in a year" Height="12rem"
+             OnPointClick="@(point => _picked = $"{point.Series} {point.Item.Number} {point.Value}")">
+        <TbXAxis Scale="ChartScale.Continuous" />
+        <TbScatterSeries Name="Snow" Value="year => year.Snowfall" />
+    </TbChart>
+</div>
+<output data-testid="picked">@_picked</output>
+
 @code {
     private static readonly Year[] Years = [new(2020, 310), new(2021, 280), new(2022, 345)];
+    private static readonly Year[] Twice = [new(2020, 310), new(2020, 120), new(2022, 345)];
+
+    private string? _picked;
 
     private sealed record Year(int Number, int Snowfall);
 }

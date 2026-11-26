@@ -37,15 +37,20 @@ public sealed record ChartLabels
     /// for <see cref="TbStrings.ChartBars"/>.</summary>
     public string? Bars { get; init; }
 
-    /// <summary>The kind of a chart with only line series, or with lines beside areas, for <see cref="Summary"/>.
-    /// Leave it null for the app's text for <see cref="TbStrings.ChartLines"/>.</summary>
+    /// <summary>The kind of a chart with only line series, or with a mix of lines, areas and scatters, for
+    /// <see cref="Summary"/>. Leave it null for the app's text for <see cref="TbStrings.ChartLines"/>.</summary>
     public string? Lines { get; init; }
 
     /// <summary>The kind of a chart with only area series, for <see cref="Summary"/>. Leave it null for the app's
     /// text for <see cref="TbStrings.ChartAreas"/>.</summary>
     public string? Areas { get; init; }
 
-    /// <summary>The kind of a chart with bar series beside line or area series, for <see cref="Summary"/>. Leave it
-    /// null for the app's text for <see cref="TbStrings.ChartBarsAndLines"/>.</summary>
+    /// <summary>The kind of a chart with only scatter series, for <see cref="Summary"/>. Leave it null for the
+    /// app's text for <see cref="TbStrings.ChartScatter"/>.</summary>
+    public string? Scatter { get; init; }
+
+    /// <summary>The kind of a chart with bar series beside line, area or scatter series, for
+    /// <see cref="Summary"/>. Leave it null for the app's text for <see cref="TbStrings.ChartBarsAndLines"/>.
+    /// </summary>
     public string? BarsAndLines { get; init; }
 }

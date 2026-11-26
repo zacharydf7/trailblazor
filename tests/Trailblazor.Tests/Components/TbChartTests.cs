@@ -162,6 +162,70 @@ public class TbChartTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldDrawAMarkForEachItemAndNoLine_WhenGivenAScatterSeries()
+    {
+        var cut = RenderChart(Scatter("Completed", month => month.Completed), Scatter("Failed", month => month.Failed),
+            Scatter("Hours", month => month.Hours), Scatter("Late", month => month.Failed + 1));
+
+        // The group of marks is the series' own element, which the script reads, and no line is drawn.
+        Assert.Empty(cut.FindAll("svg.tb-chart__lines path"));
+        var completed = cut.Find("g[data-series='Completed']");
+        Assert.Equal(("tb-chart__series--1", "0", "10\n20\n40", "1667,7500 5000,5000 8333,0"), (completed.ClassName,
+            completed.GetAttribute("data-number"), completed.GetAttribute("data-values"),
+            completed.GetAttribute("data-points")));
+        Assert.Equal([("circle", "tb-chart__marker", "16.667%", "75%"), ("circle", "tb-chart__marker", "50%", "50%"),
+            ("circle", "tb-chart__marker", "83.333%", "0%")], completed.Children.Select(mark =>
+            (mark.LocalName, mark.ClassName, mark.GetAttribute("cx"), mark.GetAttribute("cy"))));
+        // Each mark says which place it is, for the script: two marks may share a spot along the chart.
+        Assert.Equal(["0", "1", "2"], completed.Children.Select(mark => mark.GetAttribute("data-place")));
+        Assert.Equal(["0", "1"],
+            cut.FindAll("g[data-series='Hours'] rect").Select(mark => mark.GetAttribute("data-place")));
+        // Each series has a shape of its own: a circle, a square, a diamond and a ring. March has no hours.
+        Assert.Equal([("rect", "tb-chart__marker tb-chart__marker--square", 3),
+            ("rect", "tb-chart__marker tb-chart__marker--diamond", 2),
+            ("circle", "tb-chart__marker tb-chart__marker--ring", 3)],
+            new[] { "Failed", "Hours", "Late" }.Select(name => cut.Find($"g[data-series='{name}']")).Select(marks =>
+                (marks.Children[0].LocalName, marks.Children[0].ClassName, marks.Children.Length)));
+        var square = cut.Find("g[data-series='Failed'] rect");
+        Assert.Equal(("16.667%", "95%", "8", "8"), (square.GetAttribute("x"), square.GetAttribute("y"),
+            square.GetAttribute("width"), square.GetAttribute("height")));
+        Assert.Equal("3", cut.Find("g[data-series='Late'] circle").GetAttribute("r"));
+        Assert.Equal("Scatter chart: Completed, Failed, Hours, Late",
+            cut.Find("svg.tb-chart__marks").GetAttribute("aria-label"));
+        // A key is drawn as one of its series' marks, but has no place.
+        Assert.Equal(["tb-chart__marker", "tb-chart__marker tb-chart__marker--square",
+            "tb-chart__marker tb-chart__marker--diamond", "tb-chart__marker tb-chart__marker--ring"],
+            cut.FindAll("[data-part=legend] svg > *").Select(key => key.ClassName));
+        Assert.Empty(cut.FindAll("[data-part=legend] [data-place]"));
+    }
+
+    [Fact]
+    public void Render_ShouldGiveScatterSeriesTheirShapesInTheirOwnOrder_WhenOtherSeriesAreAmongThem()
+    {
+        var cut = RenderChart(Bars("Completed", month => month.Completed), Scatter("Failed", month => month.Failed),
+            Line("Hours", month => month.Hours), Scatter("Late", month => month.Failed + 1));
+
+        // The first scatter series is circles and the second squares, whatever is given between them, and each
+        // keeps the color of its place among all the series.
+        Assert.Equal([("tb-chart__series--2", "circle", "tb-chart__marker"),
+            ("tb-chart__series--4", "rect", "tb-chart__marker tb-chart__marker--square")],
+            new[] { "Failed", "Late" }.Select(name => cut.Find($"g[data-series='{name}']")).Select(marks =>
+                (marks.ClassName, marks.Children[0].LocalName, marks.Children[0].ClassName)));
+        Assert.Equal("Bar and line chart: Completed, Failed, Hours, Late",
+            cut.Find("svg.tb-chart__marks").GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void Render_ShouldCallItALineChart_WhenAScatterIsBesideALine()
+    {
+        var cut = RenderChart(Scatter("Completed", month => month.Completed), Line("Failed", month => month.Failed));
+
+        Assert.Equal("Line chart: Completed, Failed", cut.Find("svg.tb-chart__marks").GetAttribute("aria-label"));
+        // The line keeps its round markers, which are not its series' element.
+        Assert.Equal(2, cut.FindAll("[data-part=plot] [data-series]").Count);
+    }
+
+    [Fact]
     public void Render_ShouldNameTheFigureForScreenReaders_WhenGivenAnAriaLabelAndNoTitle()
     {
         var cut = Render<TbChart<Month>>(parameters => parameters.Add(chart => chart.Items, Months)
@@ -609,6 +673,15 @@ public class TbChartTests : BunitContext
         builder.SetKey(name);
         builder.AddComponentParameter(1, nameof(TbAreaSeries<Month>.Name), name);
         builder.AddComponentParameter(2, nameof(TbAreaSeries<Month>.Value), value);
+        builder.CloseComponent();
+    };
+
+    private static RenderFragment Scatter(string name, Func<Month, object?> value) => builder =>
+    {
+        builder.OpenComponent<TbScatterSeries<Month>>(0);
+        builder.SetKey(name);
+        builder.AddComponentParameter(1, nameof(TbScatterSeries<Month>.Name), name);
+        builder.AddComponentParameter(2, nameof(TbScatterSeries<Month>.Value), value);
         builder.CloseComponent();
     };
 

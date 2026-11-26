@@ -108,6 +108,7 @@ public class DriverParityTests
         ["TbThemeHead"] = NotInteractive, ["TbTimeline"] = NotInteractive, ["TbWatermark"] = NotInteractive,
         ["TbLineSeries"] = "part of TbChart", ["TbBarSeries"] = "part of TbChart",
         ["TbXAxis"] = "part of TbChart", ["TbYAxis"] = "part of TbChart", ["TbAreaSeries"] = "part of TbChart",
+        ["TbScatterSeries"] = "part of TbChart",
     };
 
     // Members only one package has, by type and member signature, and why.

@@ -48,6 +48,13 @@
                                 <rect class="tb-chart__bar" x="1" y="1" width="10" height="10" />
                             </svg>
                         }
+                        else if (one.Dots)
+                        {
+                            <svg class="@ClassNames.Join("tb-chart__key", Slot(number))" style="@Color(number)"
+                                 aria-hidden="true" focusable="false">
+                                @Dot(ShapeOf(number), "6", "6")
+                            </svg>
+                        }
                         else if (one.Filled)
                         {
                             <svg class="@ClassNames.Join("tb-chart__key tb-chart__key--line", Slot(number))"
@@ -184,7 +191,7 @@
                         @for (var index = 0; index < series.Count; index++)
                         {
                             var drawn = plan.Series[index];
-                            if (!drawn.Bars && !drawn.Hidden)
+                            if (!drawn.Bars && !drawn.Hidden && !series[index].Dots)
                             {
                                 <path data-series="@drawn.Name" data-number="@index" data-values="@Values(drawn)"
                                       data-points="@Points(drawn)" style="@Color(index)" d="@drawn.Path"
@@ -195,7 +202,28 @@
                     @for (var index = 0; index < series.Count; index++)
                     {
                         var drawn = plan.Series[index];
-                        if (!drawn.Bars && !drawn.Hidden && (series[index].HasMarkers ?? markers))
+                        if (drawn.Hidden || drawn.Bars)
+                        {
+                            continue;
+                        }
+
+                        @* A scatter series' group of marks is its series element: it carries what the script
+                           reads. Each mark says which place it is, since two marks may share a spot along the
+                           chart. *@
+                        if (series[index].Dots)
+                        {
+                            <g data-series="@drawn.Name" data-number="@index" data-values="@Values(drawn)"
+                               data-points="@Points(drawn)" class="@Slot(index)" style="@Color(index)">
+                                @for (var place = 0; place < drawn.Points.Count; place++)
+                                {
+                                    if (drawn.Points[place] is { } at)
+                                    {
+                                        @Dot(ShapeOf(index), Percent(at.X), Percent(at.Y), place)
+                                    }
+                                }
+                            </g>
+                        }
+                        else if (series[index].HasMarkers ?? markers)
                         {
                             <g class="@Slot(index)" style="@Color(index)">
                                 @foreach (var point in drawn.Points)
@@ -278,3 +306,18 @@
         </details>
     }
 </figure>
+
+@code {
+    // A scatter series' mark, at a spot given as lengths or shares of its drawing: a circle, a square that the
+    // stylesheet centers on the spot, the square turned for a diamond, or a ring whose line is as far out as a
+    // circle's edge. A mark in the plot says which place it is.
+    private static RenderFragment Dot(int shape, string x, string y, int? place = null) => (shape % 4) switch
+    {
+        1 => @<rect class="tb-chart__marker tb-chart__marker--square" data-place="@place" x="@x" y="@y" width="8"
+                    height="8" />,
+        2 => @<rect class="tb-chart__marker tb-chart__marker--diamond" data-place="@place" x="@x" y="@y" width="8"
+                    height="8" />,
+        3 => @<circle class="tb-chart__marker tb-chart__marker--ring" data-place="@place" r="3" cx="@x" cy="@y" />,
+        _ => @<circle class="tb-chart__marker" data-place="@place" r="4" cx="@x" cy="@y" />,
+    };
+}

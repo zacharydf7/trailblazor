@@ -1,0 +1,18 @@
+<TbChart Items="Trails" X="trail => trail.Km" Title="Trail length and climb">
+    <TbXAxis Scale="ChartScale.Continuous" Title="Length" Format="0.0 km" MarkFormat="0 km" />
+    <TbYAxis Title="m" />
+    <TbScatterSeries Name="North range" Value="@(trail => trail.North ? trail.Climb : null)" />
+    <TbScatterSeries Name="South range" Value="@(trail => trail.North ? null : trail.Climb)" />
+</TbChart>
+
+@code {
+    // Each trail is a mark in its own range's series, and has no value in the other.
+    private static readonly Trail[] Trails =
+    [
+        new(2.4, 120, true), new(3.1, 310, false), new(4.8, 260, true), new(5.5, 540, false), new(6.2, 410, true),
+        new(7.9, 780, false), new(9.3, 620, true), new(11.0, 940, false), new(12.6, 870, true),
+        new(14.2, 1180, false),
+    ];
+
+    private sealed record Trail(double Km, int Climb, bool North);
+}
