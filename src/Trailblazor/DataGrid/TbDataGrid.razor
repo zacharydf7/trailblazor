@@ -544,6 +544,33 @@
                                 }
                             </TbSelect>
                             break;
+                        case ColumnEditor.Date:
+                            @* A standard format, such as "d", leaves the box in the culture's short date. *@
+                            <TbDatePicker @ref="cell.Field" TDate="DateOnly" AriaLabel="@cell.Column.Heading"
+                                          Size="Size.Small" Format="@(cell.Column.Format is { Length: > 1 } format
+                                                                        ? format : null)"
+                                          AutoFocus="cell.Column == edit.Start" Value="cell.Value as DateOnly?"
+                                          ValueChanged="date => cell.Value = date" Error="@cell.Error" />
+                            break;
+                        case ColumnEditor.Time:
+                            <TbTimePicker @ref="cell.Field" TTime="TimeOnly" AriaLabel="@cell.Column.Heading"
+                                          Size="Size.Small"
+                                          AutoFocus="cell.Column == edit.Start" Value="cell.Value as TimeOnly?"
+                                          ValueChanged="time => cell.Value = time" Error="@cell.Error" />
+                            break;
+                        case ColumnEditor.DateAndTime:
+                            <TbDateTimePicker @ref="cell.Field" TDateTime="DateTime" AriaLabel="@cell.Column.Heading"
+                                              Size="Size.Small" AutoFocus="cell.Column == edit.Start"
+                                              Value="cell.Value as DateTime?" ValueChanged="when => cell.Value = when"
+                                              Error="@cell.Error" />
+                            break;
+                        case ColumnEditor.DateAndTimeWithOffset:
+                            <TbDateTimePicker @ref="cell.Field" TDateTime="DateTimeOffset"
+                                              AriaLabel="@cell.Column.Heading"
+                                              Size="Size.Small" AutoFocus="cell.Column == edit.Start"
+                                              Value="cell.Value as DateTimeOffset?"
+                                              ValueChanged="moment => cell.Value = moment" Error="@cell.Error" />
+                            break;
                         case ColumnEditor.YesNo:
                             <TbCheckbox TValue="bool" AriaLabel="@cell.Column.Heading"
                                         AutoFocus="cell.Column == edit.Start" Value="cell.Value is true"

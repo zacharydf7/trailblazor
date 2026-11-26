@@ -52,7 +52,9 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     /// such as "All year" for <c>AllYear</c>, and <c>"G"</c> keeps the name. True and false read "Yes" and "No", as
     /// the grid's <see cref="DataGridLabels.FilterYes"/> and <see cref="DataGridLabels.FilterNo"/> word them, with or
     /// without a format. A <see cref="DateTimeOffset"/> is shown, filtered and exported in the shared time zone, as
-    /// timestamps and chat times are, which <see cref="TimeSettings.TimeZone"/> describes.</summary>
+    /// timestamps and chat times are, which <see cref="TimeSettings.TimeZone"/> describes. An editable
+    /// <see cref="DateOnly"/> column's custom format, such as <c>"yyyy-MM-dd"</c>, is also its date box's, while a
+    /// standard one such as <c>"d"</c> leaves the box in the culture's short date.</summary>
     [Parameter]
     public string? Format { get; set; }
 
@@ -103,9 +105,11 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     public Func<TItem, object?>? GroupBy { get; set; }
 
     /// <summary>Lets the user edit the column's cells: double-click a cell, press Enter or F2 on it, or start typing.
-    /// Enter then saves and Escape cancels; Tab saves and opens the next editable cell, and leaving the cell, or
-    /// choosing an enum's value, saves too. A text, number, enum or bool <see cref="Field"/> gets a field to edit it
-    /// with; any other type needs an <see cref="EditTemplate"/>. Each value is checked by the field's
+    /// Enter then saves and Escape cancels; Tab moves through the field's controls, then saves and opens the next
+    /// editable cell, and leaving the cell, or choosing an enum's value, saves too. A text, number, enum, bool,
+    /// <c>DateOnly</c>, <c>TimeOnly</c>, <c>DateTime</c> or <c>DateTimeOffset</c> <see cref="Field"/> gets a field to
+    /// edit it with (a date, time or date-time picker for the last four); any other type needs an
+    /// <see cref="EditTemplate"/>. Each value is checked by the field's
     /// data annotations, such as <c>[Range]</c>, and by <see cref="Validate"/>, and a failed check keeps the edit open
     /// with its error. A saved value goes to the grid's <see cref="TbDataGrid{TItem}.OnCellEdit"/>, or, without one,
     /// is set on the item when the field is a property or field the grid can set. An editable column makes the grid an
@@ -223,6 +227,10 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
             var type when type == typeof(bool) => ColumnEditor.YesNo,
             var type when type == typeof(string) => ColumnEditor.Text,
             var type when IsNumber(type) => ColumnEditor.Number,
+            var type when type == typeof(DateOnly) => ColumnEditor.Date,
+            var type when type == typeof(TimeOnly) => ColumnEditor.Time,
+            var type when type == typeof(DateTime) => ColumnEditor.DateAndTime,
+            var type when type == typeof(DateTimeOffset) => ColumnEditor.DateAndTimeWithOffset,
             _ => ColumnEditor.None,
         };
 

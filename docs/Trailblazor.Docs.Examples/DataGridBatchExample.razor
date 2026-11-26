@@ -3,6 +3,7 @@
                 EditMode="GridEditMode.Batch" OnBatchSave="Save">
         <TbColumn Field="trail => trail.Name" Editable />
         <TbColumn Field="trail => trail.Region" Editable />
+        <TbColumn Field="trail => trail.Reopens" Format="d" Editable />
         <TbColumn Field="trail => trail.Open" Editable />
     </TbDataGrid>
     <TbText Muted>@_status</TbText>
@@ -11,14 +12,14 @@
 @code {
     private readonly List<Trail> _trails =
     [
-        new(1, "Pine Hollow", "North ridge", true),
-        new(2, "Eagle Ridge", "North ridge", false),
-        new(3, "Cedar Flats", "River valley", true),
+        new(1, "Pine Hollow", "North ridge", true, null),
+        new(2, "Eagle Ridge", "North ridge", false, new(2026, 12, 1)),
+        new(3, "Cedar Flats", "River valley", true, null),
     ];
 
     private string _status = "Nothing saved yet.";
 
-    public sealed class Trail(int id, string name, string region, bool open)
+    public sealed class Trail(int id, string name, string region, bool open, DateOnly? reopens)
     {
         public int Id { get; } = id;
 
@@ -27,6 +28,8 @@
         public string Region { get; set; } = region;
 
         public bool Open { get; set; } = open;
+
+        public DateOnly? Reopens { get; set; } = reopens;
     }
 
     // Every change arrives at once, as a server would take them in one request.
@@ -44,6 +47,9 @@
                     break;
                 case nameof(Trail.Open):
                     change.Item.Open = (bool)change.Value!;
+                    break;
+                case nameof(Trail.Reopens):
+                    change.Item.Reopens = (DateOnly?)change.Value;
                     break;
             }
         }

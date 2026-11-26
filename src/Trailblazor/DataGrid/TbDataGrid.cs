@@ -1419,6 +1419,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private string? CheckEdit(TItem item, CellEdit cell, out object? value)
     {
         value = null;
+        // A picker keeps its last value while it holds text it couldn't read, so the edit stays open until that text
+        // is fixed.
+        if (cell.Field is { HasParseError: true })
+        {
+            return Format(Labels.EditInvalid, TbStrings.DataGridEditInvalid, cell.Column.Heading);
+        }
+
         if (cell.Column.HoldsWholeNumbers && cell.Value is decimal number && number != decimal.Truncate(number))
         {
             return Format(Labels.EditInvalid, TbStrings.DataGridEditInvalid, cell.Column.Heading);
@@ -1480,6 +1487,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         public object? Value { get; set; } = value;
 
         public string? Error { get; set; }
+
+        // The field a date or time cell edits in, which says whether it holds text it couldn't read.
+        public IFormField? Field { get; set; }
     }
 
     // A line the grid draws: an item's row, a group's heading or a group's totals, with its place among all the lines,

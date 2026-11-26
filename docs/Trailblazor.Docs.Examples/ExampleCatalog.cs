@@ -13317,10 +13317,17 @@ public static class ExampleCatalog
                     + "button hands focus to it, and Enter goes into any other cell's fields.",
                     typeof(DataGridKeyboardExample)),
                 new("edit-cells", "Edit cells", "An `Editable` column's cells are edited in place: double-click one, "
-                    + "press Enter or F2 on it, or start typing. Enter saves, Escape cancels, Tab saves and opens the next "
-                    + "editable cell, and leaving the field saves too. "
-                    + "Each value is checked by its field's data annotations and the column's `Validate`, and "
-                    + "`OnCellEdit` gets each saved edit. An `Editable` column turns on cell navigation.",
+                    + "press Enter or F2 on it, or start typing. Enter saves, Escape cancels, Tab moves through the "
+                    + "field's controls and then saves and opens the next editable cell, and leaving the field saves "
+                    + "too. Each value is checked by its field's data annotations and the column's `Validate`, and "
+                    + "`OnCellEdit` gets each saved edit. An `Editable` column turns on cell navigation. The field "
+                    + "suits the value's type: a text field for a `string`, a number field for a number, a select for "
+                    + "an enum, a checkbox for a `bool`, a date picker for a `DateOnly`, a time picker for a "
+                    + "`TimeOnly`, and a date-time picker for a `DateTime` or `DateTimeOffset`. A `DateOnly` column's "
+                    + "custom `Format`, such as `yyyy-MM-dd`, is also its date box's format. A `DateTimeOffset` is "
+                    + "edited in the time zone the cell shows it in, and text the date box can't read keeps the edit "
+                    + "open. The Reopens column under Edit in batches edits with a date picker. `EditTemplate` gives a "
+                    + "column a field of its own.",
                     typeof(DataGridEditExample)),
                 new("edit-button", "Edit from a button", "An app's own button, such as an Edit button in an action "
                     + "column, calls `StartEditAsync(item, columnId)` to start an edit in that cell, or, without a "
@@ -13434,8 +13441,9 @@ public static class ExampleCatalog
                 new(["Space"], "Selects or unselects the row of the cell in focus.") { When = "With cell navigation" },
                 new(["Enter", "F2"], "Moves into the cell's fields, or starts editing an `Editable` cell.")
                     { When = "With cell navigation" },
-                new(["A character"], "Starts editing an `Editable` cell, with what's typed replacing a text or "
-                    + "number field's value; a select or checkbox just opens.") { When = "With cell navigation" },
+                new(["A character"], "Starts editing an `Editable` cell, with what's typed replacing a text, "
+                    + "number or date field's value; a select, a checkbox or a time box just opens.")
+                    { When = "With cell navigation" },
                 new(["Enter"], "On a cell with nothing to go into, clicks the row, raising `OnRowClick` and, with "
                     + "`RowClickSelects`, selecting or unselecting it.") { When = "With cell navigation" },
                 new(["Enter", "Space"], "Opens or closes the row's details.") { When = "On a row's details button" },
@@ -13446,8 +13454,13 @@ public static class ExampleCatalog
                 new(["Escape"], "Comes back out to the cell.") { When = "Inside a cell" },
                 new(["Enter"], "Saves the edit, and focus goes back to the cell.") { When = "Editing a cell" },
                 new(["Escape"], "Cancels the edit, and focus goes back to the cell.") { When = "Editing a cell" },
-                new(["Tab", "Shift+Tab"], "Saves the edit and opens the next or previous editable cell. Tab in the "
-                    + "last one leaves the grid, and Shift+Tab in the first goes back to its cell.") { When = "Editing a cell" },
+                new(["Tab", "Shift+Tab"], "Moves through the field's controls, such as a date box and its calendar "
+                    + "button. From the last or first of them, saves the edit and opens the next or previous editable "
+                    + "cell. Tab in the last cell leaves the grid, and Shift+Tab in the first goes back to its cell.")
+                    { When = "Editing a cell" },
+                new(["Enter", "Escape"], "On a picker's calendar button, Enter opens the calendar; in the calendar, "
+                    + "Enter picks a day and Escape closes it, and the edit stays open.")
+                    { When = "Editing a date or date-and-time cell" },
                 new(["Tab"], "Moves between the row's fields and its Save and Cancel buttons.")
                     { When = "Editing a row" },
                 new(["Enter"], "Saves the row.") { When = "Editing a row" },
@@ -13704,7 +13717,8 @@ public static class ExampleCatalog
                 "Hide or show a column from the Columns menu: `cut.Tb().Menu(\"Columns\").ChooseAsync(\"Region\")`, "
                     + "and the same in Playwright with `page.Tb()`.",
                 "Double-click a cell or press Enter on it to edit it. Its field is named for its column, so in bUnit "
-                    + "`cut.Tb().NumberField(\"Length (km)\")` finds it, and Enter saves.",
+                    + "`cut.Tb().NumberField(\"Length (km)\")` or `cut.Tb().DatePicker(\"Reopens\")` finds it, and "
+                    + "Enter saves.",
                 "A virtualized grid draws only the rows in view, so scroll its `[data-part=scroll]` box, or call "
                     + "`ScrollToAsync`, before looking for a row further down.",
                 "In both packages, with `Async` names in Playwright, `Rows` and `Selected` read the rows shown and "

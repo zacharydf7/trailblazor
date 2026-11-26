@@ -8,5 +8,9 @@ internal enum ColumnEditor
     Number,
     Choice,
     YesNo,
+    Date,
+    Time,
+    DateAndTime,
+    DateAndTimeWithOffset,
     Custom,
 }

@@ -447,7 +447,7 @@ export function createDataGrid(table, waitForReorder) {
     // Escape that ends a cell's edit is marked used, so a dialog around the grid stays open; one a field has already
     // used, such as a select closing its list, is already marked.
     const keepEscapeInEdit = event => {
-        if (event.key === 'Escape' && !event.defaultPrevented && !isComposing(event)
+        if (event.key === 'Escape' && !event.defaultPrevented && !isComposing(event) && !ownKey(event)
             && event.target.closest?.('.tb-data-grid__editor, .tb-data-grid__row-actions')) {
             event.preventDefault();
             event.tbGridGuarded = true;
@@ -455,11 +455,15 @@ export function createDataGrid(table, waitForReorder) {
     };
     table.addEventListener('keydown', keepEscapeInEdit);
 
+    // A key in a field's popup, such as a picker's calendar, or Enter on a field's own button belongs to the field.
+    const ownKey = event => Boolean(event.target.closest?.('.tb-data-grid__editor [popover]')
+        || (event.key === 'Enter' && event.target.closest?.('.tb-data-grid__editor button')));
+
     // Only Enter and Escape reach a cell's edit, saying whether its field used the key; the grid's own guards don't
     // count. Blazor listens on the document, so the window hears the key after a field's handlers have run.
     const sendEditKey = event => {
         const edit = event.target.closest?.('.tb-data-grid__editor, .tb-data-grid__row-actions');
-        if ((event.key === 'Enter' || event.key === 'Escape') && edit?.closest('table') === table) {
+        if ((event.key === 'Enter' || event.key === 'Escape') && edit?.closest('table') === table && !ownKey(event)) {
             edit.dispatchEvent(new CustomEvent('tb-edit-key', {
                 bubbles: true,
                 detail: {
@@ -966,13 +970,13 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
     const startEdit = cell => cell.dispatchEvent(new CustomEvent('tb-edit-start', { bubbles: true }));
 
     // What's typed on a cell replaces its field's value once the server has drawn it. It goes in as typing does, since a
-    // number box drops a lone minus sign set through its value. A select or a checkbox just opens.
+    // number box drops a lone minus sign set through its value. A select, a checkbox or a time box just opens.
     let typed = null;
     const takeTyped = field => {
         const { cell, text } = typed;
         typed = null;
         if (field.closest('td, th') === cell && field.closest('[data-part=editor]')
-            && field.matches('input, textarea') && !field.readOnly) {
+            && field.matches('input:not([type=time]), textarea') && !field.readOnly) {
             field.select();
             field.ownerDocument.execCommand('insertText', false, text);
         }
@@ -1008,8 +1012,19 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
             return;
         }
 
-        // Tab in a cell's edit opens the next editable cell, which saves this one first; past the last it leaves the grid.
+        // Tab in a cell's edit moves through its field's controls, such as a date box, its calendar button and a time
+        // box. From its last control it opens the next editable cell, which saves this one first; past the last cell
+        // it leaves the grid.
         if (event.key === 'Tab' && !inDetail && cell.querySelector('[data-part=editor]')) {
+            const stops = controlsOf(cell).filter(element => element.closest('[data-part=editor]'));
+            const at = stops.indexOf(event.target);
+            const inner = at < 0 ? null : stops[at + (event.shiftKey ? -1 : 1)];
+            if (inner) {
+                event.preventDefault();
+                inner.focus();
+                return;
+            }
+
             const editable = linesOf(table).filter(line => line.dataset.part === 'row')
                 .flatMap(line => [...line.cells]).filter(one => one.hasAttribute('data-editable'));
             const next = editable[editable.indexOf(cell) + (event.shiftKey ? -1 : 1)];

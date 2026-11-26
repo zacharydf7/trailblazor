@@ -18,6 +18,9 @@ internal interface IFormField
     // Whether the value differs from the one a reset goes back to, or the field holds text it can't read.
     bool IsDirty();
 
+    // Whether the field holds text it couldn't read, which leaves its last value in place.
+    bool HasParseError { get; }
+
     // Makes the current value the one a reset goes back to.
     void MarkAsSaved();
 

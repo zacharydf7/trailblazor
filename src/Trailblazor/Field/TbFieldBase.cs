@@ -449,6 +449,8 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
 
     private protected bool HasParseError => _parseError is not null;
 
+    bool IFormField.HasParseError => HasParseError;
+
     // Inside an EditForm the context holds every validator's messages for this field, including ours. While the field
     // shows its required message it shows only its own, so a model's [Required] or [EmailAddress] doesn't add another.
     private protected IReadOnlyList<string> Errors =>

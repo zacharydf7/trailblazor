@@ -1,0 +1,27 @@
+@page "/grid-date-edit"
+
+@* Editable date and time columns, which edit with pickers; the date's calendar opens inside the cell's editor. *@
+<TbDataGrid TItem="Trip" Items="_trips" AriaLabel="Trips" KeySelector="trip => trip.Id">
+    <TbColumn Field="trip => trip.Name" />
+    <TbColumn Field="trip => trip.Starts" Format="yyyy-MM-dd" Editable />
+    <TbColumn Field="trip => trip.Booked" Format="yyyy-MM-dd HH:mm" Editable />
+    <TbColumn Field="trip => trip.Leaves" Editable />
+</TbDataGrid>
+<button type="button">Elsewhere</button>
+
+@code {
+    private readonly List<Trip> _trips = [new() { Id = 1, Name = "Ridge loop", Starts = new(2026, 6, 3), Booked = new(2026, 5, 1, 9, 0, 0), Leaves = new(7, 30) }];
+
+    private sealed class Trip
+    {
+        public int Id { get; init; }
+
+        public string Name { get; set; } = "";
+
+        public DateOnly Starts { get; set; }
+
+        public DateTime Booked { get; set; }
+
+        public TimeOnly Leaves { get; set; }
+    }
+}
