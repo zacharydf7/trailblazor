@@ -1,0 +1,20 @@
+<TbStack Gap="3">
+    <TbChart Items="Days" X="day => day.Name" Title="River level at the ford">
+        <TbYAxis Title="cm" />
+        <TbBarSeries Name="Level" Value="day => day.Level"
+                     ItemTone="@(day => day.Level > Limit ? Tone.Danger : null)" />
+    </TbChart>
+    <TbText>The ford is closed while the river is above @Limit cm, as it was on Wednesday and Thursday.</TbText>
+</TbStack>
+
+@code {
+    private const int Limit = 60;
+
+    private static readonly Day[] Days =
+    [
+        new("Mon", 38), new("Tue", 52), new("Wed", 71), new("Thu", 64), new("Fri", 49), new("Sat", 41),
+        new("Sun", 36),
+    ];
+
+    private sealed record Day(string Name, int Level);
+}

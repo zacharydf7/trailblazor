@@ -1035,9 +1035,17 @@ public static class ExampleCatalog
                     + "marks. Like a line's, its axis starts near the lowest value, not at zero.",
                     typeof(ChartScatterExample)),
                 new("combined", "Bars with a line", "Bar and line series share a chart and its one value axis, so "
-                    + "give them values in the same unit. `Color` gives a series a CSS color of its own in place of "
-                    + "the one its position gives it, such as the danger color for something that went wrong.",
-                    typeof(ChartCombinedExample)),
+                    + "give them values in the same unit. `Tone` gives a series the color of what it means, in "
+                    + "place of the one its position gives it: here danger, for cancellations. `Color` gives it "
+                    + "any CSS color, and wins over the series' `Tone`.", typeof(ChartCombinedExample)),
+                new("tones", "Tones", "`Tone` gives a whole series the color of what it means, as the cancellations "
+                    + "in the chart above have. `ItemTone` gives single items a tone: the item's bar, its scatter "
+                    + "mark or its marker on a line takes the tone's color, and the others keep the series' own. "
+                    + "Here the days the river ran above the ford's limit are in the danger color. An item's tone "
+                    + "wins over its series' `Tone` and `Color`. The tooltip's key takes the color of the mark it "
+                    + "stands for, and the legend's key stays the series'. Base the tone on the value itself, as "
+                    + "this limit does, and say in text what the tone means: the data table and screen readers "
+                    + "have the values, not the colors.", typeof(ChartItemToneExample)),
                 new("gaps", "Missing values", "A null value leaves a gap: no bar, as on Thursday here, and a break "
                     + "in a line, as in the forecast on Wednesday. An area breaks as a line does, fill and all, and "
                     + "in a stack a missing value takes no room, so the bands above it drop at that place. The "
@@ -1162,6 +1170,10 @@ public static class ExampleCatalog
                     + "looks like the first. An area keeps its line, dashed as a line's is, and loses its fill, so "
                     + "it looks like a line there. Scatter series keep their four shapes, the ring drawn in "
                     + "outline, and a fifth scatter series looks like the first.",
+                "A tone is a color and nothing more. The legend names a series that has one, and a mark with a tone "
+                    + "of its own differs from the rest of its series only by color, so in forced-colors mode it "
+                    + "looks like them. What it marks has to be plain from the values and from text beside the "
+                    + "chart. The tones' colors have 4.5:1 contrast against the surface in both themes.",
             ],
             AppDuties =
             [
@@ -1174,6 +1186,11 @@ public static class ExampleCatalog
                 "With `OnPointClick`, say in text near the chart what choosing a point does, as in \"Pick a month "
                     + "to see its busiest day\": a point reads as an image, with nothing to say it can be chosen.",
                 "Check a `Color` you set for 3:1 contrast against the surface in both themes.",
+                "With `ItemTone`, say in text near the chart what the marks with a tone have in common, as in \"The "
+                    + "ford is closed while the river is above 60 cm\".",
+                "Don't tell marks or series apart by `Tone.Success` against `Tone.Danger` alone: red and green are "
+                    + "the pair people with color blindness most often confuse. Use one tone and leave the rest in "
+                    + "the series' color, as the example does, or say which is which in text.",
             ],
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
@@ -1211,13 +1228,21 @@ public static class ExampleCatalog
                     + "over at the first. A series inside an `@if` that shows later goes last, in the legend and the "
                     + "table too. Past four or five series a chart is hard to read; show fewer, or several small "
                     + "charts."),
+                new("In the light theme some tones are close to a series color: info to the first series' blue, "
+                    + "warning to the second's amber and success to the fourth's green, and primary may be too, "
+                    + "depending on the app's primary color. Beside that series, or as an item's tone in it, such "
+                    + "a tone is hard to tell from the series' own color: pick another tone, or give the series a "
+                    + "`Color`. Danger is clear of the first two series colors, the ones most charts use.")
+                    { Pitfall = true },
+                new("A line or an area drawn without markers, as one of more than 30 points is, shows no item's "
+                    + "tone: an `ItemTone` colors markers, never a stretch of the line.") { Pitfall = true },
                 new("A value that isn't a number throws, naming its series. A value that is null, or isn't finite, "
                     + "leaves a gap. On a continuous scale, an `X` that isn't a finite number, a `DateTime`, a "
                     + "`DateTimeOffset` or a `DateOnly` throws, null included."),
-                new("When a series' `Value` reads something from outside the item, such as a field that picks what "
-                    + "to show, the chart draws again as its parent renders. A series inside a component of yours "
-                    + "that renders by itself may be drawn a render behind, so have such a change render the "
-                    + "chart's parent too.") { Pitfall = true },
+                new("When a series' `Value` or `ItemTone` reads something from outside the item, such as a field "
+                    + "that picks what to show, the chart draws again as its parent renders. A series inside a "
+                    + "component of yours that renders by itself may be drawn a render behind, so have such a "
+                    + "change render the chart's parent too.") { Pitfall = true },
                 new("A line's or a scatter's value beyond a `Min` or `Max` you set is drawn outside the plot. A bar "
                     + "or an area's fill stops at the plot's edge, and a bar cut short there has a square end.")
                     { Pitfall = true },
@@ -1266,6 +1291,11 @@ public static class ExampleCatalog
                     + "for a legend with no buttons.",
                 "`IsSeriesHidden(series)` reads whether a series is hidden (`IsSeriesHiddenAsync(series)` in "
                     + "Playwright).",
+                "`Tone(series, place)` reads the tone of a series' mark at a place: the one `ItemTone` gives the "
+                    + "item, or else the series' `Tone`, and null with neither or where the series has no value "
+                    + "(`ToneAsync(series, place)` in Playwright).",
+                "Without the helpers, a series or a mark with a tone has a class such as `tb-chart__tone--danger`, "
+                    + "and the data table's cell for the mark has `data-tone=\"danger\"`.",
                 "Without the helpers, a legend button is `GetByRole(AriaRole.Button, new() { Name = \"Shuttle\" })`, "
                     + "with `aria-pressed` true while its series shows. A hidden series' legend entry has "
                     + "`data-hidden`, to restyle it by.",

@@ -25,6 +25,7 @@
         // With every series hidden there is nothing to draw, and the legend and the table stay.
         var blank = empty || plan.Series.All(one => one.Hidden);
         var markers = plan.Places.Count <= MostMarkers;
+        var tones = ItemTones(plan, markers);
         var toggles = CanHideSeries && RendererInfo.IsInteractive;
     }
     @if (Title is not null)
@@ -160,13 +161,16 @@
                         if (drawn.Bars && !drawn.Hidden)
                         {
                             <g data-series="@drawn.Name" data-number="@index" data-values="@Values(drawn)"
-                               data-points="@Points(drawn)" class="@Slot(index)" style="@Color(index)">
-                                @foreach (var mark in drawn.Marks)
+                               data-points="@Points(drawn)" data-tones="@Tones(tones[index])" class="@Slot(index)"
+                               style="@Color(index)">
+                                @for (var place = 0; place < drawn.Marks.Count; place++)
                                 {
-                                    if (mark is { } bar)
+                                    if (drawn.Marks[place] is { } bar)
                                     {
-                                        <rect class="@BarClass(bar.End)" x="@Percent(bar.X)" y="@Percent(bar.Y)"
-                                              width="@Percent(bar.Width)" height="@Percent(bar.Height)" />
+                                        <rect class="@ClassNames.Join(BarClass(bar.End),
+                                                         ToneClass(tones[index]?[place]))"
+                                              x="@Percent(bar.X)" y="@Percent(bar.Y)" width="@Percent(bar.Width)"
+                                              height="@Percent(bar.Height)" />
                                     }
                                 }
                             </g>
@@ -194,7 +198,8 @@
                             if (!drawn.Bars && !drawn.Hidden && !series[index].Dots)
                             {
                                 <path data-series="@drawn.Name" data-number="@index" data-values="@Values(drawn)"
-                                      data-points="@Points(drawn)" style="@Color(index)" d="@drawn.Path"
+                                      data-points="@Points(drawn)" data-tones="@Tones(tones[index])"
+                                      style="@Color(index)" d="@drawn.Path"
                                       class="@ClassNames.Join("tb-chart__line", Slot(index))" />
                             }
                         }
@@ -213,12 +218,14 @@
                         if (series[index].Dots)
                         {
                             <g data-series="@drawn.Name" data-number="@index" data-values="@Values(drawn)"
-                               data-points="@Points(drawn)" class="@Slot(index)" style="@Color(index)">
+                               data-points="@Points(drawn)" data-tones="@Tones(tones[index])" class="@Slot(index)"
+                               style="@Color(index)">
                                 @for (var place = 0; place < drawn.Points.Count; place++)
                                 {
                                     if (drawn.Points[place] is { } at)
                                     {
-                                        @Dot(ShapeOf(index), Percent(at.X), Percent(at.Y), place)
+                                        @Dot(ShapeOf(index), Percent(at.X), Percent(at.Y), place,
+                                            ToneClass(tones[index]?[place]))
                                     }
                                 }
                             </g>
@@ -226,12 +233,13 @@
                         else if (series[index].HasMarkers ?? markers)
                         {
                             <g class="@Slot(index)" style="@Color(index)">
-                                @foreach (var point in drawn.Points)
+                                @for (var place = 0; place < drawn.Points.Count; place++)
                                 {
-                                    if (point is { } at)
+                                    if (drawn.Points[place] is { } at)
                                     {
-                                        <circle class="tb-chart__marker" r="4" cx="@Percent(at.X)"
-                                                cy="@Percent(at.Y)" />
+                                        <circle class="@ClassNames.Join("tb-chart__marker",
+                                                           ToneClass(tones[index]?[place]))"
+                                                r="4" cx="@Percent(at.X)" cy="@Percent(at.Y)" />
                                     }
                                 }
                             </g>
@@ -295,9 +303,13 @@
                     {
                         <tr>
                             <th scope="row">@plan.Places[place]</th>
-                            @foreach (var one in plan.Series)
+                            @* A cell with a value says its mark's tone, the item's or else the series', for tests
+                               to read. *@
+                            @for (var index = 0; index < plan.Series.Count; index++)
                             {
-                                <td>@one.Text[place]</td>
+                                var text = plan.Series[index].Text[place];
+                                var tone = text is null ? null : tones[index]?[place] ?? series[index].Tone;
+                                <td data-tone="@ToneName(tone)">@text</td>
                             }
                         </tr>
                     }
@@ -310,14 +322,18 @@
 @code {
     // A scatter series' mark, at a spot given as lengths or shares of its drawing: a circle, a square that the
     // stylesheet centers on the spot, the square turned for a diamond, or a ring whose line is as far out as a
-    // circle's edge. A mark in the plot says which place it is.
-    private static RenderFragment Dot(int shape, string x, string y, int? place = null) => (shape % 4) switch
+    // circle's edge. A mark in the plot says which place it is, and has its item's tone when it has one.
+    private static RenderFragment Dot(int shape, string x, string y, int? place = null, string? tone = null)
     {
-        1 => @<rect class="tb-chart__marker tb-chart__marker--square" data-place="@place" x="@x" y="@y" width="8"
-                    height="8" />,
-        2 => @<rect class="tb-chart__marker tb-chart__marker--diamond" data-place="@place" x="@x" y="@y" width="8"
-                    height="8" />,
-        3 => @<circle class="tb-chart__marker tb-chart__marker--ring" data-place="@place" r="3" cx="@x" cy="@y" />,
-        _ => @<circle class="tb-chart__marker" data-place="@place" r="4" cx="@x" cy="@y" />,
-    };
+        var marker = ClassNames.Join("tb-chart__marker", tone);
+        return (shape % 4) switch
+        {
+            1 => @<rect class="@marker tb-chart__marker--square" data-place="@place" x="@x" y="@y" width="8"
+                        height="8" />,
+            2 => @<rect class="@marker tb-chart__marker--diamond" data-place="@place" x="@x" y="@y" width="8"
+                        height="8" />,
+            3 => @<circle class="@marker tb-chart__marker--ring" data-place="@place" r="3" cx="@x" cy="@y" />,
+            _ => @<circle class="@marker" data-place="@place" r="4" cx="@x" cy="@y" />,
+        };
+    }
 }

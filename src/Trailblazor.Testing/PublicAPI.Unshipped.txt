@@ -679,6 +679,7 @@ Trailblazor.Testing.TbChartDriver.ClickPointAsync(string! series, string! place)
 Trailblazor.Testing.TbChartDriver.Places.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TbChartDriver.Series.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TbChartDriver.Value(string! series, string! place) -> string!
+Trailblazor.Testing.TbChartDriver.Tone(string! series, string! place) -> Trailblazor.Tone?
 Trailblazor.Testing.TrailblazorMarkup.Chart(string? name = null) -> Trailblazor.Testing.TbChartDriver!
 Trailblazor.Testing.TbChartDriver.HideSeriesAsync(string! series) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbChartDriver.IsSeriesHidden(string! series) -> bool

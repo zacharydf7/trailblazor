@@ -10,6 +10,7 @@ public abstract class TbChartSeries<TItem> : ComponentBase, IDisposable
 {
     private object? _shown;
     private Func<TItem, object?>? _value;
+    private Func<TItem, Tone?>? _itemTone;
     private bool _hidden;
     private bool _hiddenGiven;
 
@@ -33,6 +34,21 @@ public abstract class TbChartSeries<TItem> : ComponentBase, IDisposable
     /// <c>"var(--tb-color-danger)"</c>. Check that it has 3:1 contrast against the surface in both themes.</summary>
     [Parameter]
     public string? Color { get; set; }
+
+    /// <summary>A tone for a series whose color should say what it means, such as
+    /// <see cref="Trailblazor.Tone.Danger"/> for failures: the tone's color takes the place of the one the series'
+    /// position gives it. A <see cref="Color"/> wins over it, and an item's <see cref="ItemTone"/> over both. Null
+    /// by default.</summary>
+    [Parameter]
+    public Tone? Tone { get; set; }
+
+    /// <summary>A tone for single items, such as <c>day => day.Level > 60 ? Tone.Danger : null</c>: the item's bar,
+    /// its scatter mark or its marker on a line takes the tone's color, and null keeps the series' own. Base the
+    /// tone on the value itself, since the data table and screen readers have the value and not the color. A line
+    /// drawn without markers shows no item's tone. A function that reads something from outside the item is drawn
+    /// again as <see cref="Value"/>'s is.</summary>
+    [Parameter]
+    public Func<TItem, Tone?>? ItemTone { get; set; }
 
     /// <summary>Whether the series is left out of the drawing. The chart's axis then fits the series that show, the
     /// legend still lists the series, and the data table keeps its values. On an interactive page the series' entry
@@ -96,18 +112,19 @@ public abstract class TbChartSeries<TItem> : ComponentBase, IDisposable
         }
 
         // The chart draws before its series take their parameters, so a series that changed has it draw again.
-        object shown = (Name, Value.Method, Color, Line, HasMarkers, IsHidden);
+        object shown = (Name, Value.Method, Color, Tone, ItemTone?.Method, Line, HasMarkers, IsHidden);
         if (!shown.Equals(_shown))
         {
             _shown = shown;
             Chart!.SeriesChanged();
         }
-        else if (!ReferenceEquals(Value, _value))
+        else if (!ReferenceEquals(Value, _value) || !ReferenceEquals(ItemTone, _itemTone))
         {
             Chart!.FunctionChanged();
         }
 
         _value = Value;
+        _itemTone = ItemTone;
     }
 
     /// <summary>Takes the series out of its chart.</summary>

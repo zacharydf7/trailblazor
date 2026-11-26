@@ -11784,6 +11784,16 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-chart__series--7 { --_tb-chart-series: var(--tb-chart-series-7); }
     .tb-chart__series--8 { --_tb-chart-series: var(--tb-chart-series-8); }
 
+    /* A tone's color takes the place of the one a series' position gives it, for the whole series or for one of
+       its marks. They are the colors a progress bar's tones have. */
+    .tb-chart__tone--primary { --_tb-chart-series: var(--tb-color-primary-text); }
+    .tb-chart__tone--secondary { --_tb-chart-series: var(--tb-color-secondary-text); }
+    .tb-chart__tone--neutral { --_tb-chart-series: var(--tb-color-neutral-text); }
+    .tb-chart__tone--success { --_tb-chart-series: var(--tb-color-success-text); }
+    .tb-chart__tone--warning { --_tb-chart-series: var(--tb-color-warning-text); }
+    .tb-chart__tone--danger { --_tb-chart-series: var(--tb-color-danger-text); }
+    .tb-chart__tone--info { --_tb-chart-series: var(--tb-color-info-text); }
+
     .tb-chart__legend {
         display: flex;
         flex-wrap: wrap;

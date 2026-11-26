@@ -6593,11 +6593,19 @@ public sealed class TbChartDriver
 
     /// <summary>The value of this series at this place, as the chart's data table writes it, or an empty string
     /// where the series has no value. A series or a place the chart doesn't have throws.</summary>
-    public string Value(string series, string place)
+    public string Value(string series, string place) => Cell(series, place).TextContent;
+
+    /// <summary>The tone of this series' mark at this place: the one the series' <c>ItemTone</c> gives the item, or
+    /// else the series' own <c>Tone</c>, and null with neither or where the series has no value. A series or a
+    /// place the chart doesn't have throws.</summary>
+    public Trailblazor.Tone? Tone(string series, string place) =>
+        Cell(series, place).GetAttribute("data-tone") is { } tone ? Enum.Parse<Trailblazor.Tone>(tone, true) : null;
+
+    // The data table's cell for this series at this place.
+    private IElement Cell(string series, string place)
     {
         var (column, row) = Find(series, place);
-        var cells = _find().QuerySelectorAll("[data-part=table] tbody tr")[row].QuerySelectorAll("td");
-        return cells[column].TextContent;
+        return _find().QuerySelectorAll("[data-part=table] tbody tr")[row].QuerySelectorAll("td")[column];
     }
 
     /// <summary>Whether this series is hidden: left out of the drawing, with its values still in the data table. A

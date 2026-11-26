@@ -246,6 +246,60 @@ public class ChartTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tone_ShouldColorASeriesAndSingleMarksAndTheirTooltipKeys_WhenGiven(string browser)
+    {
+        var page = await OpenAsync(browser, "/chart-tone");
+        var chart = Chart(page, "River level");
+        var plot = chart.Locator("[data-part=plot]");
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+        var danger = await SystemColorAsync(page, "var(--tb-color-danger-text)");
+        var info = await SystemColorAsync(page, "var(--tb-color-info-text)");
+        var first = await SystemColorAsync(page, "var(--tb-chart-series-1)");
+        var bars = plot.Locator("g[data-series='Level'] rect");
+        var keys = chart.Locator(".tb-chart__tooltip-key");
+
+        // Only Wednesday's level is above the limit. The rain's line and its legend key have the series' tone.
+        await Expect(bars.Nth(2)).ToHaveCSSAsync("fill", danger);
+        await Expect(bars.Nth(0)).ToHaveCSSAsync("fill", first);
+        await Expect(plot.Locator("path[data-series='Rain']")).ToHaveCSSAsync("stroke", info);
+        await Expect(chart.Locator("[data-part=legend] line")).ToHaveCSSAsync("stroke", info);
+        var helper = page.Tb().Chart("River level");
+        Assert.Equal((null, Tone.Danger, Tone.Info), (await helper.ToneAsync("Level", "Mon"),
+            await helper.ToneAsync("Level", "Wed"), await helper.ToneAsync("Rain", "Mon")));
+
+        // A tooltip's key is the color of the mark it stands for.
+        await bars.Nth(2).HoverAsync();
+        await Expect(keys.Nth(0)).ToHaveCSSAsync("background-color", danger);
+        await Expect(keys.Nth(1)).ToHaveCSSAsync("background-color", info);
+        await bars.Nth(0).HoverAsync();
+        await Expect(keys.Nth(0)).ToHaveCSSAsync("background-color", first);
+
+        // A lower limit gives Monday and Tuesday the danger tone too, and the tooltip follows.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Lower the limit" }).ClickAsync();
+        await Expect(bars.Nth(0)).ToHaveCSSAsync("fill", danger);
+        await bars.Nth(0).HoverAsync();
+        await Expect(keys.Nth(0)).ToHaveCSSAsync("background-color", danger);
+
+        // A new tone for the series changes only its class, and the tooltip follows that too.
+        var warning = await SystemColorAsync(page, "var(--tb-color-warning-text)");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Warn of rain" }).ClickAsync();
+        await Expect(plot.Locator("path[data-series='Rain']")).ToHaveCSSAsync("stroke", warning);
+        await bars.Nth(0).HoverAsync();
+        await Expect(keys.Nth(1)).ToHaveCSSAsync("background-color", warning);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ItemTone_ShouldWinOverItsSeriesColorAndTone_WhenASeriesHasAllThree(string browser)
+    {
+        var page = await OpenAsync(browser, "/chart-tone");
+        var bars = Chart(page, "All three").Locator("[data-part=plot] rect");
+
+        // The series' color wins over its tone, and Wednesday's own tone over both.
+        await Expect(bars.Nth(0)).ToHaveCSSAsync("fill", "rgb(102, 51, 153)");
+        await Expect(bars.Nth(2)).ToHaveCSSAsync("fill", await SystemColorAsync(page, "var(--tb-color-danger-text)"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Series_ShouldDifferWithoutColor_WhenColorsAreForced(string browser)
     {
         var page = await OpenAsync(browser, "/examples/chart/lines", new() { ForcedColors = ForcedColors.Active });

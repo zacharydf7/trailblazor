@@ -1,6 +1,6 @@
 <TbChart Items="Months" X="month => month.Name" Title="Bookings and cancellations">
     <TbBarSeries Name="Bookings" Value="month => month.Bookings" />
-    <TbLineSeries Name="Cancellations" Value="month => month.Cancellations" Color="var(--tb-color-danger)" />
+    <TbLineSeries Name="Cancellations" Value="month => month.Cancellations" Tone="Tone.Danger" />
 </TbChart>
 
 @code {

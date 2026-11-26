@@ -37,6 +37,8 @@ export function attachChart(plot, events, point, noValue, activates) {
             name: element.dataset.series,
             color: viewOf(plot).getComputedStyle(element).getPropertyValue('--_tb-chart-series'),
             values: element.dataset.values.split('\n'),
+            // The tone of each place's mark, where the series gives single marks one.
+            tones: element.dataset.tones?.split(' '),
             points: element.dataset.points.split(' ').map(point => {
                 const [x, y] = point.split(',');
                 return point === '-' ? null : { x: x / 10000, y: y / 10000 };
@@ -72,7 +74,13 @@ export function attachChart(plot, events, point, noValue, activates) {
             const row = element('div', 'tb-chart__tooltip-row');
             row.toggleAttribute('data-active', index === seriesIndex);
             const key = element('span', 'tb-chart__tooltip-key');
-            key.style.setProperty('--_tb-chart-series', one.color);
+            // The key is the color of the mark it stands for: its own tone's, or else its series'.
+            const tone = one.tones?.[place];
+            if (tone && tone !== '-') {
+                key.classList.add(`tb-chart__tone--${tone}`);
+            } else {
+                key.style.setProperty('--_tb-chart-series', one.color);
+            }
             row.append(key, element('span', 'tb-chart__tooltip-name', one.name),
                 element('strong', 'tb-chart__tooltip-value', one.values[place] || options.noValue));
             return row;
@@ -379,7 +387,7 @@ export function attachChart(plot, events, point, noValue, activates) {
     });
     observer.observe(plot, {
         subtree: true, childList: true, attributes: true,
-        attributeFilter: ['data-places', 'data-at', 'data-points', 'data-values'],
+        attributeFilter: ['data-places', 'data-at', 'data-points', 'data-values', 'data-tones', 'class', 'style'],
     });
 
     plot.addEventListener('pointermove', onPointerMove);

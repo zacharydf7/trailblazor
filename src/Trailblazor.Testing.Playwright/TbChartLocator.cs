@@ -57,7 +57,18 @@ public sealed class TbChartLocator(ILocator scope, string? name)
 
     /// <summary>The value of this series at this place, as the chart's data table writes it, or an empty string
     /// where the series has no value. A series or a place the chart doesn't have throws.</summary>
-    public async Task<string> ValueAsync(string series, string place)
+    public async Task<string> ValueAsync(string series, string place) =>
+        await (await CellAsync(series, place)).EvaluateAsync<string>("cell => cell.textContent");
+
+    /// <summary>The tone of this series' mark at this place: the one the series' <c>ItemTone</c> gives the item, or
+    /// else the series' own <c>Tone</c>, and null with neither or where the series has no value. A series or a
+    /// place the chart doesn't have throws.</summary>
+    public async Task<Tone?> ToneAsync(string series, string place) =>
+        await (await CellAsync(series, place)).GetAttributeAsync("data-tone") is { } tone
+            ? Enum.Parse<Tone>(tone, true) : null;
+
+    // The data table's cell for this series at this place.
+    private async Task<ILocator> CellAsync(string series, string place)
     {
         var column = (await SeriesAsync()).ToList().IndexOf(series);
         var row = (await PlacesAsync()).ToList().IndexOf(place);
@@ -66,8 +77,7 @@ public sealed class TbChartLocator(ILocator scope, string? name)
             throw new InvalidOperationException(Missing(column < 0 ? "series" : "place", series, place));
         }
 
-        return await Chart.Locator("[data-part=table] tbody tr").Nth(row).Locator("td").Nth(column)
-            .EvaluateAsync<string>("cell => cell.textContent");
+        return Chart.Locator("[data-part=table] tbody tr").Nth(row).Locator("td").Nth(column);
     }
 
     /// <summary>Whether this series is hidden: left out of the drawing, with its values still in the data table. A

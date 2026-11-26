@@ -53,6 +53,13 @@ Familiar apps: Excel and Google Sheets charts, Grafana panels, Highcharts' acces
 - [x] The tooltip and a click go to the scatter mark under the pointer, even where another mark shares its spot along the chart. `ChartTests.Scatter_ShouldPickTheMarkUnderThePointer_WhenTwoMarksShareASpotAlongTheChart`
 - [x] A chart of only scatter series is named a scatter chart, and one with lines beside them a line chart. `TbChartTests.Render_ShouldDrawAMarkForEachItemAndNoLine_WhenGivenAScatterSeries`, `TbChartTests.Render_ShouldCallItALineChart_WhenAScatterIsBesideALine`
 - [x] In forced-colors mode scatter series keep their shapes, in the plot and in the legend's keys, and the ring is drawn in outline. `ChartTests.Scatter_ShouldKeepItsShapes_WhenColorsAreForced`
+- [x] A series with a `Tone` is drawn in the tone's color, in the plot and in its legend key. `ChartTests.Tone_ShouldColorASeriesAndSingleMarksAndTheirTooltipKeys_WhenGiven`, `TbChartToneTests.Render_ShouldGiveASeriesItsTonesColor_WhenGivenATone`
+- [x] `ItemTone` colors single items' bars, scatter marks and line markers, each by its own item even after an item with no value, which has no tone itself, and an item's tone wins over its series'. `TbChartToneTests.Render_ShouldGiveSingleMarksTheirItemsTone_WhenGivenAnItemTone`, `TbChartToneTests.Render_ShouldToneAMarkByItsItem_WhenAnEarlierItemHasNoValue`
+- [x] The tooltip's key is the color of the mark it stands for, and follows when only a mark's tone or its series' tone changes. `ChartTests.Tone_ShouldColorASeriesAndSingleMarksAndTheirTooltipKeys_WhenGiven`
+- [x] A series' `Color` wins over its `Tone`, and an item's tone over both. `ChartTests.ItemTone_ShouldWinOverItsSeriesColorAndTone_WhenASeriesHasAllThree`
+- [x] A line drawn without markers shows no item's tone. `TbChartToneTests.Render_ShouldShowNoItemsTone_WhenALineHasNoMarkers`
+- [x] A series inside a component that renders on its own is drawn again with its new `Tone`, and with what a new `ItemTone` function reads. `TbChartToneTests.Render_ShouldDrawASeriesNewTone_WhenAComponentAroundTheSeriesRendersAlone`, `TbChartToneTests.Render_ShouldDrawWhatAnItemToneNowReads_WhenAComponentAroundTheSeriesRendersAlone`
+- [x] In forced-colors mode a mark with a tone is drawn as the rest of its series is. `trailblazor.css`
 - [x] An area is filled from its line down to zero, or to the area under it in a stack, and no farther than the plot's edge. `ChartTests.Area_ShouldBeFilledFromItsLineDownToZero_WhenDrawn`, `ChartPlanTests.Build_ShouldPileAreasOnAreasAndBarsOnBars_WhenStacked`, `ChartPlanTests.Build_ShouldFillPastThePlotsEdge_WhenTheAxisStartsAboveZero`
 
 ## Touch

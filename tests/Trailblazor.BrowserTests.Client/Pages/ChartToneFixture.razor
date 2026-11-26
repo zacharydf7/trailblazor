@@ -1,0 +1,30 @@
+@page "/chart-tone"
+
+@* A series whose bars above the limit have a tone of their own, beside a series with a tone. One button lowers the
+   limit, which changes the marks' tones and nothing else the script reads, and the other changes the series' tone,
+   which changes only its class. *@
+<div style="width: 24rem">
+    <TbChart TItem="Day" Items="Days" X="day => day.Name" Title="River level" Height="12rem">
+        <TbBarSeries Name="Level" Value="day => day.Level"
+                     ItemTone="@(day => day.Level > _limit ? Tone.Danger : null)" />
+        <TbLineSeries Name="Rain" Value="day => day.Rain" Tone="_rain" />
+    </TbChart>
+</div>
+@* A series with a color, a tone and an item's tone at once. *@
+<div style="width: 24rem">
+    <TbChart TItem="Day" Items="Days" X="day => day.Name" Title="All three" Height="12rem">
+        <TbBarSeries Name="Level" Value="day => day.Level" Color="rgb(102, 51, 153)" Tone="Tone.Success"
+                     ItemTone="@(day => day.Level > 60 ? Tone.Danger : null)" />
+    </TbChart>
+</div>
+<button type="button" @onclick="() => _limit = 30">Lower the limit</button>
+<button type="button" @onclick="() => _rain = Tone.Warning">Warn of rain</button>
+
+@code {
+    private static readonly Day[] Days = [new("Mon", 40, 5), new("Tue", 55, 20), new("Wed", 70, 30)];
+
+    private int _limit = 60;
+    private Tone _rain = Tone.Info;
+
+    private sealed record Day(string Name, int Level, int Rain);
+}

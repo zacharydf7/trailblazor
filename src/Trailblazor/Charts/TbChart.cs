@@ -259,7 +259,26 @@ public partial class TbChart<TItem>
         return ChartPlan.Build(places, series, Stacking, axis, culture, along);
     }
 
-    private static string Slot(int index) => $"tb-chart__series--{index % Slots + 1}";
+    // A series' classes: the color its position gives it, and its tone's color in place of that when it has one.
+    private string Slot(int index) =>
+        ClassNames.Join($"tb-chart__series--{index % Slots + 1}", ToneClass(_series[index].Tone));
+
+    private static string? ToneClass(Tone? tone) =>
+        tone is { } one ? ClassNames.Modifier("tb-chart__tone", one) : null;
+
+    private static string? ToneName(Tone? tone) => tone?.ToString().ToLowerInvariant();
+
+    // The tone each item's mark has in each series: nothing for a series that gives its marks none, or whose line
+    // has no markers to show one, and none where the series has no value.
+    private List<Tone?[]?> ItemTones(ChartPlan plan, bool markers) => [.. _series.Select((one, index) =>
+        one.ItemTone is { } tone && (one.Bars || one.Dots || (one.HasMarkers ?? markers))
+            ? _items.Select((item, place) => plan.Series[index].Text[place] is null ? null : tone(item)).ToArray()
+            : null)];
+
+    // Each place's tone, for the script's tooltip to give its key: a dash where the mark keeps its series' color,
+    // and nothing when every mark does.
+    private static string? Tones(Tone?[]? tones) => tones is null || Array.TrueForAll(tones, tone => tone is null)
+        ? null : string.Join(' ', tones.Select(tone => ToneName(tone) ?? "-"));
 
     // Which shape a scatter series' marks have: its place among the chart's scatter series, hidden ones too, so the
     // first four always differ and none changes shape as others hide.
