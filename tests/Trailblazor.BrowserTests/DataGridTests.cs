@@ -300,6 +300,9 @@ public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
             .ToHaveAttributeAsync("data-ready", "");
         await page.GetByRole(AriaRole.Button, new() { Name = "Filter Sites" }).ClickAsync();
         var add = page.Locator("[data-part=filter-add-condition]:visible");
+        // The menu moves focus into itself as it opens, which mustn't land after the test's own focus.
+        await Expect(page.Locator("[data-part=filter-condition]:visible").First.Locator("[role=combobox]"))
+            .ToBeFocusedAsync();
 
         await add.FocusAsync();
         await page.Keyboard.PressAsync("Enter");

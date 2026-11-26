@@ -213,13 +213,22 @@ public partial class TbDataGrid<TItem>
         draft.FocusAdd = true;
     }
 
-    // The Add a condition button comes back as the second condition goes, and takes the focus the Remove button had.
-    private async Task FocusAddButtonsAsync()
+    // Adding or removing the second condition takes away the button that had focus, so focus moves to the second
+    // condition's select, or back to the Add a condition button, once the menu has drawn it.
+    private async Task FocusFilterMenusAsync()
     {
-        foreach (var draft in _drafts.Values.Where(draft => draft.FocusAdd && draft.AddButton is not null))
+        foreach (var draft in _drafts.Values.Where(draft => draft.FocusSecond || draft.FocusAdd))
         {
-            draft.FocusAdd = false;
-            await draft.AddButton!.FocusAsync();
+            if (draft.FocusSecond && draft.Second.Select is { } select)
+            {
+                draft.FocusSecond = false;
+                await select.FocusAsync();
+            }
+            else if (draft.FocusAdd && draft.AddButton is { } add)
+            {
+                draft.FocusAdd = false;
+                await add.FocusAsync();
+            }
         }
     }
 
@@ -296,6 +305,8 @@ public partial class TbDataGrid<TItem>
         public string? Text { get; set; }
 
         public decimal? Number { get; set; }
+
+        public TbSelect<FilterOperator>? Select { get; set; }
 
         public void Reset(GridFilter? filter, IReadOnlyList<FilterOperator> operators)
         {

@@ -748,7 +748,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         _columnsChanged = false;
-        await FocusAddButtonsAsync();
+        await FocusFilterMenusAsync();
         if (_nextRender is { } rendered)
         {
             _nextRender = null;

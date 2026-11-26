@@ -375,9 +375,9 @@
 @code {
     // A filter menu's condition and, when it needs one, its value; Enter in the value applies the menu.
     private RenderFragment Condition(TbColumn<TItem> column, ConditionDraft condition, string label,
-        string valueLabel, bool autoFocus) => @<div data-part="filter-condition" class="tb-data-grid__filter-condition">
-        <TbSelect TValue="FilterOperator" Size="Size.Small" @bind-Value="condition.Operator" Label="@label"
-                  AutoFocus="autoFocus">
+        string valueLabel) => @<div data-part="filter-condition" class="tb-data-grid__filter-condition">
+        <TbSelect @ref="condition.Select" TValue="FilterOperator" Size="Size.Small" @bind-Value="condition.Operator"
+                  Label="@label">
             @foreach (var op in FilterOperators(column))
             {
                 <TbOption Value="op">@OperatorLabel(op)</TbOption>
@@ -883,8 +883,7 @@
                             else
                             {
                                 @Condition(column, draft.First,
-                                    Text(Labels.FilterCondition, TbStrings.DataGridFilterCondition), FilterValueLabel,
-                                    autoFocus: false)
+                                    Text(Labels.FilterCondition, TbStrings.DataGridFilterCondition), FilterValueLabel)
                                 @* Focus goes to the second condition as it's added, and back to Add as it goes. *@
                                 @if (draft.HasSecond)
                                 {
@@ -900,8 +899,7 @@
                                     </TbRadioGroup>
                                     @Condition(column, draft.Second,
                                         Text(Labels.FilterSecondCondition, TbStrings.DataGridFilterSecondCondition),
-                                        Text(Labels.FilterSecondValue, TbStrings.DataGridFilterSecondValue),
-                                        autoFocus: draft.FocusSecond)
+                                        Text(Labels.FilterSecondValue, TbStrings.DataGridFilterSecondValue))
                                     <TbButton Variant="Variant.Text" Size="Size.Small"
                                               data-part="filter-remove-condition" OnClick="() => RemoveSecond(draft)">
                                         @Text(Labels.FilterRemoveCondition, TbStrings.DataGridFilterRemoveCondition)
