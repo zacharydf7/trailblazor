@@ -587,7 +587,7 @@ public class TbTextFieldTests : BunitContext
 
         var input = cut.Find("[data-part=input]");
         Assert.Equal(grows, input.GetAttribute("data-max-lines"));
-        Assert.Equal(grows is null ? null : "--tb-text-field-lines: 3; --tb-text-field-max-lines: 8",
+        Assert.Equal(grows is null ? null : "--_tb-text-field-lines: 3; --_tb-text-field-max-lines: 8",
             input.GetAttribute("style"));
     }
 

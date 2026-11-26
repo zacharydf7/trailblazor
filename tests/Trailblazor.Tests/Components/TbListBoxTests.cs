@@ -80,7 +80,7 @@ public class TbListBoxTests : BunitContext
     {
         var cut = RenderListBox(null, rows: 3);
 
-        Assert.Contains("--tb-listbox-rows: 3", cut.Find("[role=listbox]").GetAttribute("style"));
+        Assert.Contains("--_tb-listbox-rows: 3", cut.Find("[role=listbox]").GetAttribute("style"));
     }
 
     [Fact]

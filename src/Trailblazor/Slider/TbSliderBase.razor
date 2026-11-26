@@ -23,7 +23,7 @@
                 @WithInfo(SliderLabel(labelFor))
             }
             <div class="tb-slider__control"
-                 style="@($"--tb-slider-from: {Ratio(from ?? 0)}; --tb-slider-to: {Ratio(to)}")">
+                 style="@($"--_tb-slider-from: {Ratio(from ?? 0)}; --_tb-slider-to: {Ratio(to)}")">
                 <span data-part="track" class="tb-slider__track">
                     <span data-part="fill" class="tb-slider__fill"></span>
                 </span>
@@ -35,7 +35,7 @@
                     @foreach (var mark in Marks)
                     {
                         <span data-part="mark" class="tb-slider__mark"
-                              style="@($"--tb-slider-at: {Ratio(Fraction(mark.Value))}")">@mark.Label</span>
+                              style="@($"--_tb-slider-at: {Ratio(Fraction(mark.Value))}")">@mark.Label</span>
                     }
                 </div>
             }
@@ -48,7 +48,7 @@
             @if (ShowValue)
             {
                 <span data-part="value" class="tb-slider__value" aria-hidden="true"
-                      style="@($"--tb-slider-at: {Ratio(at)}")">@text</span>
+                      style="@($"--_tb-slider-at: {Ratio(at)}")">@text</span>
             }
         </text>;
 

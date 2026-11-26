@@ -10,7 +10,7 @@ public class TbFieldRowTests : BunitContext
         var cut = Render<TbFieldRow>(parameters => parameters.AddChildContent("Item"));
 
         var row = cut.Find("div");
-        Assert.Equal(("tb-field-row", "--tb-field-row-gap: var(--tb-space-3)"),
+        Assert.Equal(("tb-field-row", "--_tb-field-row-gap: var(--tb-space-3)"),
             (row.GetAttribute("class"), row.GetAttribute("style")));
     }
 
@@ -22,7 +22,7 @@ public class TbFieldRowTests : BunitContext
 
         var row = cut.Find("div");
         Assert.Equal(("tb-field-row lookup",
-            "--tb-field-row-gap: var(--tb-space-2); --tb-field-row-columns: 1fr auto; margin: 0"),
+            "--_tb-field-row-gap: var(--tb-space-2); --_tb-field-row-columns: 1fr auto; margin: 0"),
             (row.GetAttribute("class"), row.GetAttribute("style")));
     }
 }

@@ -42,8 +42,8 @@ public sealed class TbMasonry : TbComponentBase, IAsyncDisposable
         builder.AddAttribute(1, "role", LayoutElements.Role(As));
         builder.AddMultipleAttributes(2, AdditionalAttributes);
         builder.AddAttribute(3, "class", ClassNames.Join("tb-masonry", Class));
-        builder.AddAttribute(4, "style", Styles.Join($"--tb-masonry-gap: {Spacing.Token(Gap, nameof(Gap))}; "
-            + $"--tb-masonry-column: {MinColumnWidth}", Style));
+        builder.AddAttribute(4, "style", Styles.Join($"--_tb-masonry-gap: {Spacing.Token(Gap, nameof(Gap))}; "
+            + $"--_tb-masonry-column: {MinColumnWidth}", Style));
         builder.AddElementReferenceCapture(5, element => _root = element);
         builder.AddContent(6, ChildContent);
         builder.CloseElement();

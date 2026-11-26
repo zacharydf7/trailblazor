@@ -204,7 +204,7 @@ public sealed class TbText : TbComponentBase, IAsyncDisposable
             Truncation == TextTruncation.Middle ? "tb-text--middle" : null,
             ShowsTooltip ? "tb-text--full-text" : null, Class));
         builder.AddAttribute(3, "style", Styles.Join(
-            MaxLines > 1 ? $"--tb-text-lines: {MaxLines}" : null, Style));
+            MaxLines > 1 ? $"--_tb-text-lines: {MaxLines}" : null, Style));
         // Cut-off text with a tooltip is a tab stop, so keyboard users can reach the tooltip, unless it sits in
         // something that takes focus, such as a link or a grid's cell, whose focus shows the tooltip instead.
         builder.AddAttribute(4, "tabindex", ShowsTooltip && !_held ? "0" : null);

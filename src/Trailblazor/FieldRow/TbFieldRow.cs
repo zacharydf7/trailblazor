@@ -28,8 +28,8 @@ public sealed class TbFieldRow : TbComponentBase
     {
         builder.OpenElement(0, "div");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
-        builder.AddAttribute(2, "style", Styles.Join($"--tb-field-row-gap: {Spacing.Token(Gap, nameof(Gap))}",
-            Columns is null ? null : $"--tb-field-row-columns: {Columns}", Style));
+        builder.AddAttribute(2, "style", Styles.Join($"--_tb-field-row-gap: {Spacing.Token(Gap, nameof(Gap))}",
+            Columns is null ? null : $"--_tb-field-row-columns: {Columns}", Style));
         builder.AddAttribute(3, "class", ClassNames.Join("tb-field-row", Class));
         builder.AddContent(4, ChildContent);
         builder.CloseElement();

@@ -26,7 +26,7 @@ public class ScrollLockTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static Task WaitForScrollbarAsync(IPage page, bool shown) => page.WaitForFunctionAsync("""
         shown => (innerWidth > document.documentElement.clientWidth) === shown
-            && (parseFloat(document.documentElement.style.getPropertyValue('--tb-page-scrollbar')) > 0) === shown
+            && (parseFloat(document.documentElement.style.getPropertyValue('--_tb-page-scrollbar')) > 0) === shown
         """, shown);
 
     private static async Task<IPage> GrowAsync(IPage page)

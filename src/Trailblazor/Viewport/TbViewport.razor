@@ -4,8 +4,8 @@
 
 <div @attributes="AdditionalAttributes" @ref="_root" data-part="viewport"
      data-zoom="@_zoom.ToString("0.####", CultureInfo.InvariantCulture)" data-fit="@_fit"
-     style="@ClassNames.Join($"--tb-viewport-zoom: {_zoom.ToString(CultureInfo.InvariantCulture)};",
-                Height is null ? null : $"--tb-viewport-height: {Height};", Style)"
+     style="@ClassNames.Join($"--_tb-viewport-zoom: {_zoom.ToString(CultureInfo.InvariantCulture)};",
+                Height is null ? null : $"--_tb-viewport-height: {Height};", Style)"
      class="@ClassNames.Join("tb-viewport", DragToPan ? "tb-viewport--drag" : null, Class)">
     @if (ShowControls)
     {

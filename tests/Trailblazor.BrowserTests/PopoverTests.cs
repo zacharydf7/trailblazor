@@ -143,7 +143,7 @@ public class PopoverTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(panel.GetByLabel("Only open items")).ToBeFocusedAsync();
         await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
-        await Expect(panel).ToHaveAttributeAsync("style", new Regex("--tb-anchored-offset"));
+        await Expect(panel).ToHaveAttributeAsync("style", new Regex("--_tb-anchored-offset"));
     }
 
     // A toggle still queued when the script replays the opening must not open the panel a second time.

@@ -96,7 +96,7 @@ public partial class TbLightbox
     private string ZoomText => Format(Text(Labels.Zoom, TbStrings.LightboxZoom), Math.Round(Zoom * 100));
 
     private string StageStyle =>
-        FormattableString.Invariant($"--tb-lightbox-zoom: {Zoom}; --tb-lightbox-turn: {_turns * 90}deg");
+        FormattableString.Invariant($"--_tb-lightbox-zoom: {Zoom}; --_tb-lightbox-turn: {_turns * 90}deg");
 
     /// <inheritdoc />
     protected override void OnParametersSet()

@@ -2022,8 +2022,8 @@
 
     // A window's layer sets how high it draws among the windows.
     private static string BoxStyle(DockBox box, int? layer = null) => string.Create(CultureInfo.InvariantCulture,
-        $"--tb-dock-x: {Round(box.X)}; --tb-dock-y: {Round(box.Y)}; --tb-dock-w: {Round(box.Width)}; "
-            + $"--tb-dock-h: {Round(box.Height)};{(layer is null ? "" : $" --tb-dock-z: {layer};")}");
+        $"--_tb-dock-x: {Round(box.X)}; --_tb-dock-y: {Round(box.Y)}; --_tb-dock-w: {Round(box.Width)}; "
+            + $"--_tb-dock-h: {Round(box.Height)};{(layer is null ? "" : $" --tb-dock-z: {layer};")}");
 
     private static string BoxText(DockBox box) => string.Create(CultureInfo.InvariantCulture,
         $"{Round(box.X)} {Round(box.Y)} {Round(box.Width)} {Round(box.Height)}");

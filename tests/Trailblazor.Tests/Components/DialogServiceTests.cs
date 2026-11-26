@@ -1031,7 +1031,7 @@ public class DialogServiceTests : BunitContext
 
         Assert.Null(dialog.Width);
         // The markup keeps the width it opened with, so a render doesn't undo what the script set.
-        Assert.Contains("--tb-dialog-width: 600px", host.Find("dialog").GetAttribute("style"));
+        Assert.Contains("--_tb-dialog-width: 600px", host.Find("dialog").GetAttribute("style"));
     }
 
     [Theory]
@@ -1054,7 +1054,7 @@ public class DialogServiceTests : BunitContext
         host.WaitForAssertion(() => Assert.Equal(["resizeTo", "setWidth"], calls));
         Assert.Equal([width], handle.Invocations["setWidth"][^1].Arguments);
         Assert.Equal(width is not null,
-            host.Find("dialog").GetAttribute("style")?.Contains("--tb-dialog-width: 30rem") == true);
+            host.Find("dialog").GetAttribute("style")?.Contains("--_tb-dialog-width: 30rem") == true);
     }
 
     [Fact]
@@ -1075,7 +1075,7 @@ public class DialogServiceTests : BunitContext
 
         var host = Render<DialogHost>();
 
-        Assert.Contains("--tb-dialog-width: 30rem", host.WaitForElement("dialog").GetAttribute("style"));
+        Assert.Contains("--_tb-dialog-width: 30rem", host.WaitForElement("dialog").GetAttribute("style"));
     }
 
     [Fact]

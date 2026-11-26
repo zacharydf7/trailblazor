@@ -8165,3 +8165,8 @@ Trailblazor.TbDataGrid<TItem>.LoadChildren.get -> System.Func<TItem, System.Thre
 Trailblazor.TbDataGrid<TItem>.LoadChildren.set -> void
 Trailblazor.TbDataGrid<TItem>.HasChildren.get -> System.Func<TItem, bool>?
 Trailblazor.TbDataGrid<TItem>.HasChildren.set -> void
+Trailblazor.TbTokens
+static Trailblazor.TbTokens.Component.get -> System.Collections.Generic.IReadOnlyList<string!>!
+static Trailblazor.TbTokens.SetByComponents.get -> System.Collections.Generic.IReadOnlyList<string!>!
+static Trailblazor.TbTokens.Theme.get -> System.Collections.Generic.IReadOnlyList<string!>!
+static Trailblazor.TbTokens.Classes.get -> System.Collections.Generic.IReadOnlyList<string!>!

@@ -119,8 +119,8 @@ public sealed class TbGridItem : TbComponentBase
         for (var step = 0; step < Breakpoints.Length; step++)
         {
             var suffix = step == 0 ? "" : $"-{Breakpoints[step].ToLowerInvariant()}";
-            declarations.Add($"--tb-grid-flex{suffix}: {Flex(_spans[step])}");
-            declarations.Add($"--tb-grid-offset{suffix}: {_offsets[step]}");
+            declarations.Add($"--_tb-grid-flex{suffix}: {Flex(_spans[step])}");
+            declarations.Add($"--_tb-grid-offset{suffix}: {_offsets[step]}");
         }
 
         return string.Join("; ", declarations);
@@ -128,5 +128,5 @@ public sealed class TbGridItem : TbComponentBase
 
     // A span of columns covers its columns and the gaps between them.
     private static string Flex(GridSpan span) => span == GridSpan.Grow ? "1 1 0%" : span == GridSpan.Auto
-        ? "0 1 auto" : $"0 0 calc({span.Columns} * var(--tb-grid-column) + {span.Columns - 1} * var(--tb-grid-gap))";
+        ? "0 1 auto" : $"0 0 calc({span.Columns} * var(--_tb-grid-column) + {span.Columns - 1} * var(--_tb-grid-gap))";
 }

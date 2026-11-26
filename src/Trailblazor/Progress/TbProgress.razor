@@ -163,10 +163,10 @@
     private double FractionOf(double value) => Max == Min ? 1 : Math.Clamp((value - Min) / (Max - Min), 0, 1);
 
     private string? PercentStyle =>
-        Fraction is { } fraction ? $"--tb-progress-percent: {Format(fraction * 100)}" : null;
+        Fraction is { } fraction ? $"--_tb-progress-percent: {Format(fraction * 100)}" : null;
 
     private string? BufferStyle => Value is null || Buffer is not { } buffer ? null
-        : $"--tb-progress-buffer: {Format(FractionOf(buffer) * 100)}";
+        : $"--_tb-progress-buffer: {Format(FractionOf(buffer) * 100)}";
 
     private string? ShownValue => ShowValue ? _valueText : null;
 

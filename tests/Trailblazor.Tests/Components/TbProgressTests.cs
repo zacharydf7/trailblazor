@@ -31,7 +31,7 @@ public class TbProgressTests : BunitContext
         Assert.Equal("10", progress.GetAttribute("aria-valuemin"));
         Assert.Equal("30", progress.GetAttribute("aria-valuemax"));
         Assert.Equal("15", progress.GetAttribute("aria-valuenow"));
-        Assert.Equal("--tb-progress-percent: 25", progress.GetAttribute("style"));
+        Assert.Equal("--_tb-progress-percent: 25", progress.GetAttribute("style"));
         Assert.DoesNotContain("tb-progress--indeterminate", progress.ClassList);
     }
 
@@ -44,7 +44,7 @@ public class TbProgressTests : BunitContext
 
         var progress = cut.Find("[role=progressbar]");
         Assert.Equal("100", progress.GetAttribute("aria-valuenow"));
-        Assert.Equal("--tb-progress-percent: 100", progress.GetAttribute("style"));
+        Assert.Equal("--_tb-progress-percent: 100", progress.GetAttribute("style"));
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class TbProgressTests : BunitContext
 
             var progress = cut.Find("[role=progressbar]");
             Assert.Equal("12.5", progress.GetAttribute("aria-valuenow"));
-            Assert.Equal("--tb-progress-percent: 12.5", progress.GetAttribute("style"));
+            Assert.Equal("--_tb-progress-percent: 12.5", progress.GetAttribute("style"));
         }
         finally
         {
@@ -142,7 +142,7 @@ public class TbProgressTests : BunitContext
             .Add(progress => progress.Max, 30));
 
         var progress = cut.Find("[role=progressbar]");
-        Assert.Contains("--tb-progress-buffer: 75", progress.GetAttribute("style"));
+        Assert.Contains("--_tb-progress-buffer: 75", progress.GetAttribute("style"));
         Assert.Equal("15", progress.GetAttribute("aria-valuenow"));
         Assert.Equal(["buffer", "indicator"],
             cut.Find("[data-part=bar]").Children.Select(part => part.GetAttribute("data-part")));
@@ -157,7 +157,7 @@ public class TbProgressTests : BunitContext
             .Add(progress => progress.Value, value).Add(progress => progress.Buffer, buffer));
 
         var style = cut.Find("[role=progressbar]").GetAttribute("style");
-        Assert.Equal(value is null ? null : "--tb-progress-percent: 40; --tb-progress-buffer: 100", style);
+        Assert.Equal(value is null ? null : "--_tb-progress-percent: 40; --_tb-progress-buffer: 100", style);
         Assert.Equal(value is null ? 0 : 1, cut.FindAll("[data-part=buffer]").Count);
     }
 
@@ -238,7 +238,7 @@ public class TbProgressTests : BunitContext
             .Add(progress => progress.Min, 0).Add(progress => progress.Max, 0).Add(progress => progress.Value, 0));
 
         var progress = cut.Find("[role=progressbar]");
-        Assert.Equal("--tb-progress-percent: 100", progress.GetAttribute("style"));
+        Assert.Equal("--_tb-progress-percent: 100", progress.GetAttribute("style"));
         Assert.Equal(1.0.ToString("P0", CultureInfo.CurrentCulture), progress.GetAttribute("aria-valuetext"));
     }
 }

@@ -16,11 +16,11 @@ export function createAnchoredPosition(floating, anchor, options) {
     floating.style.inset = 'auto';
     floating.style.margin = '0';
     // CSS that has to span the gap, such as a tooltip's hover bridge, reads its size from here.
-    floating.style.setProperty('--tb-anchored-offset', `${options.offset}px`);
+    floating.style.setProperty('--_tb-anchored-offset', `${options.offset}px`);
 
     // CSS that keeps a popup as wide as its anchor, such as a select's list, reads the live width from here.
     const update = () => {
-        floating.style.setProperty('--tb-anchor-width', `${anchor.offsetWidth}px`);
+        floating.style.setProperty('--_tb-anchor-width', `${anchor.offsetWidth}px`);
         position(floating, anchor, options);
     };
     update();
@@ -29,7 +29,7 @@ export function createAnchoredPosition(floating, anchor, options) {
     // observer made in another window never hears of the anchor.
     const view = anchor.ownerDocument.defaultView;
     // A new anchor width resizes the popup, which inside the observer's own callback is reported as a loop error.
-    const resizeObserver = new view.ResizeObserver(() => floating.style.getPropertyValue('--tb-anchor-width')
+    const resizeObserver = new view.ResizeObserver(() => floating.style.getPropertyValue('--_tb-anchor-width')
         === `${anchor.offsetWidth}px` ? update() : view.requestAnimationFrame(update));
     resizeObserver.observe(anchor);
     resizeObserver.observe(floating);
@@ -52,7 +52,7 @@ function position(floating, anchor, options) {
     // The popup is measured at its natural size, so a cap from the last placement doesn't decide this one. Uncapped,
     // a scrolled popup would lose its place, so the place is put back once the new cap is on.
     const scrolled = floating.scrollTop;
-    floating.style.removeProperty('--tb-available-block-size');
+    floating.style.removeProperty('--_tb-available-block-size');
     if (wrapped.delete(floating)) {
         floating.style.removeProperty('width');
         floating.style.removeProperty('box-sizing');
@@ -74,7 +74,7 @@ function position(floating, anchor, options) {
     // CSS caps a popup that still doesn't fit at the room it has, so its content scrolls instead of leaving the screen.
     const blockRoom = side === 'top' || side === 'bottom'
         ? room(side, anchorRect, options.offset, viewport) : viewport.height - 2 * viewportPadding;
-    floating.style.setProperty('--tb-available-block-size', `${Math.max(blockRoom, 0)}px`);
+    floating.style.setProperty('--_tb-available-block-size', `${Math.max(blockRoom, 0)}px`);
     if (side === 'left' || side === 'right') {
         wrapToRoom(floating, natural.width, room(side, anchorRect, options.offset, viewport));
     }
@@ -99,7 +99,7 @@ function position(floating, anchor, options) {
     const center = side === 'top' || side === 'bottom'
         ? anchorRect.left + anchorRect.width / 2 - point.x
         : anchorRect.top + anchorRect.height / 2 - point.y;
-    floating.style.setProperty('--tb-anchor-center', `${center}px`);
+    floating.style.setProperty('--_tb-anchor-center', `${center}px`);
 }
 
 // A popup beside its anchor that's too wide for the room there wraps to fit, as far as its content lets it.

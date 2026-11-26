@@ -3668,7 +3668,7 @@ public sealed class TbDockDriver
     {
         var style = WindowRow(panel).GetAttribute("style")!;
         double Number(string name) => double.Parse(
-            style.Split($"--tb-dock-{name}: ")[1].Split(';')[0], CultureInfo.InvariantCulture);
+            style.Split($"--_tb-dock-{name}: ")[1].Split(';')[0], CultureInfo.InvariantCulture);
         return (Number("x"), Number("y"), Number("w"), Number("h"));
     }
 

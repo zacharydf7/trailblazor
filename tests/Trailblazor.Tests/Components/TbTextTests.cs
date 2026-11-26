@@ -95,7 +95,7 @@ public class TbTextTests : BunitContext
 
         var paragraph = cut.Find("p");
         Assert.Contains("tb-text--clamp", paragraph.ClassList);
-        Assert.Equal("--tb-text-lines: 3; color: red", paragraph.GetAttribute("style"));
+        Assert.Equal("--_tb-text-lines: 3; color: red", paragraph.GetAttribute("style"));
     }
 
     [Fact]

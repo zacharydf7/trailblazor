@@ -49,7 +49,7 @@
               aria-multiselectable="@(Multiple ? "true" : null)" aria-disabled="@(Disabled ? "true" : null)"
               aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@AriaRequired"
               aria-invalid="@(ShowsInvalid ? "true" : null)"
-              aria-describedby="@InputDescribedBy" style="--tb-listbox-rows: @Rows"
+              aria-describedby="@InputDescribedBy" style="--_tb-listbox-rows: @Rows"
               class="@ClassNames.Join("tb-field__input", "tb-listbox", ClassNames.Modifier("tb-listbox", Size),
                          Classes?.Input)">
             <CascadingValue Value="this">@ChildContent</CascadingValue>

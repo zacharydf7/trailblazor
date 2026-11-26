@@ -147,8 +147,8 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         await SetThemeAsync(page, theme);
         const string Soft = "tb-button tb-button--neutral tb-button--soft";
 
-        var text = await GetLuminanceAsync(page, "--tb-button-text", Soft);
-        var fill = await GetLuminanceAsync(page, "--tb-button-subtle", Soft);
+        var text = await GetLuminanceAsync(page, "--_tb-button-text", Soft);
+        var fill = await GetLuminanceAsync(page, "--_tb-button-subtle", Soft);
         var background = await GetLuminanceAsync(page, "--tb-color-background");
 
         // Below these, a soft neutral button reads as disabled beside other buttons.
@@ -563,7 +563,7 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.EvaluateAsync("palette => document.documentElement.dataset.tbPalette = palette", palette);
         await SetThemeAsync(page, theme);
 
-        var dot = await GetLuminanceAsync(page, "--tb-badge-fill", "tb-badge tb-badge--dot tb-badge--warning");
+        var dot = await GetLuminanceAsync(page, "--_tb-badge-fill", "tb-badge tb-badge--dot tb-badge--warning");
         var ratio = ContrastRatio(dot, await GetLuminanceAsync(page, "--tb-color-surface"));
 
         Assert.True(ratio >= 3, $"{ratio:F2}");
@@ -608,11 +608,11 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
             foreach (var tone in Tones)
             {
                 var classes = $"{block} {block}--{tone}";
-                var fill = await GetLuminanceAsync(page, "--tb-choice-fill", classes);
+                var fill = await GetLuminanceAsync(page, "--_tb-choice-fill", classes);
                 foreach (var other in new[]
                 {
                     "--tb-color-background", "--tb-color-surface", "--tb-color-surface-raised",
-                    "--tb-color-surface-sunken", "--tb-choice-on-fill",
+                    "--tb-color-surface-sunken", "--_tb-choice-on-fill",
                 })
                 {
                     var ratio = ContrastRatio(fill, await GetLuminanceAsync(page, other, classes));

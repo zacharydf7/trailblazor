@@ -191,7 +191,7 @@ export function attachDock(root, reporter) {
     const movedSides = new Map();
     let reports = 0;
     const boxOf = element => moved.get(element) ?? Object.fromEntries(sides.map(side =>
-        [side, Number(element.style.getPropertyValue(`--tb-dock-${names[side]}`))]));
+        [side, Number(element.style.getPropertyValue(`--_tb-dock-${names[side]}`))]));
     const sidesOf = separator => movedSides.get(separator) ?? Object.fromEntries(['before', 'after'].map(side => {
         const [x, y, width, height] = separator.dataset[side].split(' ').map(Number);
         return [side, { x, y, width, height }];
@@ -203,7 +203,7 @@ export function attachDock(root, reporter) {
         for (const [element, box] of moved) {
             for (const shown of withGrip(element)) {
                 for (const side of sides) {
-                    shown.style.setProperty(`--tb-dock-live-${names[side]}`, String(box[side]));
+                    shown.style.setProperty(`--_tb-dock-live-${names[side]}`, String(box[side]));
                 }
             }
         }
@@ -216,7 +216,7 @@ export function attachDock(root, reporter) {
 
         for (const shown of [...moved.keys()].flatMap(withGrip)) {
             for (const side of sides) {
-                shown.style.removeProperty(`--tb-dock-live-${names[side]}`);
+                shown.style.removeProperty(`--_tb-dock-live-${names[side]}`);
             }
         }
 

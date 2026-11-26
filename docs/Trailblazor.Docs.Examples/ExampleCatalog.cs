@@ -5156,6 +5156,8 @@ public static class ExampleCatalog
             [
                 "Put the app's name or the page's title in the app bar, and give every page's content a heading.",
                 "Use `Match=\"NavLinkMatch.All\"` on the link to the home page, which every address starts with.",
+                "If the app bar isn't the default 3.5rem tall, set `--tb-app-bar-height` to its height on the "
+                    + "root, so a control reached with Shift+Tab scrolls into view below the bar instead of under it.",
             ],
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =

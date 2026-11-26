@@ -134,7 +134,7 @@ public partial class TbKanban<TItem>
 
     // The lanes' count sets the grid's rows: the headers, one per lane, then the footers.
     private string? BoardStyle => Styles.Join(ShownLanes is { } lanes
-        ? $"--tb-kanban-lanes: {lanes.Count.ToString(CultureInfo.InvariantCulture)}" : null, Style);
+        ? $"--_tb-kanban-lanes: {lanes.Count.ToString(CultureInfo.InvariantCulture)}" : null, Style);
 
     private string CountText(KanbanColumn<TItem> column) => column.Limit is { } limit
         ? string.Format(CultureInfo.CurrentCulture, Labels.Count ?? Localizer[TbStrings.KanbanCount],

@@ -334,7 +334,7 @@ public class DialogMoveAndResizeTests(BrowserFixture fixture) : BrowserTest(fixt
 
         var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Sized" });
         await Expect(dialog).ToHaveClassAsync(new Regex("tb-dialog--large"));
-        await Expect(dialog).Not.ToHaveAttributeAsync("style", new Regex("--tb-dialog-width"));
+        await Expect(dialog).Not.ToHaveAttributeAsync("style", new Regex("--_tb-dialog-width"));
         Assert.Equal(LargeWidth, (await DialogTests.BoxAsync(page, "Sized")).Width, tolerance: 1);
     }
 

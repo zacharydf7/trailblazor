@@ -20,7 +20,7 @@
      data-move-positions="@(OnMove.HasDelegate ? MovePositionsAttribute : null)"
      data-follows-focus="@(FollowsFocus ? "" : null)" data-no-typeahead="@(TypeAhead ? null : "")"
      data-row-size="@(Virtualize ? RowSize : null)"
-     style="@(Virtualize ? Styles.Join($"--tb-tree-row-size: {RowSize}px", Style) : Style)"
+     style="@(Virtualize ? Styles.Join($"--_tb-tree-row-size: {RowSize}px", Style) : Style)"
      class="@ClassNames.Join("tb-tree", Disabled ? "tb-tree--disabled" : null,
                 Virtualize ? "tb-tree--virtual" : null, InsertTemplate is null ? null : "tb-tree--inserts", Class)">
     @ChildContent
@@ -65,7 +65,7 @@
             if (index > next)
             {
                 <div @key="new Gap(next)" data-part="spacer" aria-hidden="true" class="tb-tree__spacer"
-                     style="--tb-tree-gap: @(index - next)"></div>
+                     style="--_tb-tree-gap: @(index - next)"></div>
             }
             if (index == _rows.Count)
             {
@@ -84,7 +84,7 @@
                 <div @key="@($"{node.Id}-loading")" role="treeitem" aria-level="@(node.Level + 1)" aria-setsize="1"
                      aria-posinset="1" aria-disabled="true" aria-busy="true" tabindex="-1" data-part="loading"
                      data-index="@place" data-inside="@(Virtualize ? _inside[index] : null)"
-                     style="@($"--tb-tree-level: {node.Level}")" class="tb-tree__item tb-tree__item--status"
+                     style="@($"--_tb-tree-level: {node.Level}")" class="tb-tree__item tb-tree__item--status"
                      @onclick:stopPropagation="Nested" @ondblclick:stopPropagation="Nested">
                     <span class="tb-tree__toggle" aria-hidden="true"></span>
                     <span class="tb-tree__spinner" aria-hidden="true"></span>
@@ -96,7 +96,7 @@
                 <div @key="@($"{node.Id}-failed")" role="treeitem" aria-level="@(node.Level + 1)" aria-setsize="1"
                      aria-posinset="1" aria-disabled="true" tabindex="-1" data-part="failed" data-index="@place"
                      data-inside="@(Virtualize ? _inside[index] : null)"
-                     style="@($"--tb-tree-level: {node.Level}")" class="tb-tree__item tb-tree__item--status"
+                     style="@($"--_tb-tree-level: {node.Level}")" class="tb-tree__item tb-tree__item--status"
                      @onclick:stopPropagation="Nested" @ondblclick:stopPropagation="Nested">
                     <span class="tb-tree__toggle" aria-hidden="true"></span>
                     <span class="tb-tree__failed">@LoadFailedLabel</span>
@@ -132,7 +132,7 @@
              aria-disabled="@(disabled ? "true" : null)" tabindex="@(node.Id == focusId ? 0 : -1)"
              data-draggable="@(draggable ? "" : null)" aria-describedby="@(draggable ? MoveHintId : null)"
              aria-labelledby="@(InsertTemplate is null ? null : $"{nameId}-content {nameId}-end")"
-             style="@(declared?.RowStyle ?? $"--tb-tree-level: {node.Level - 1}")"
+             style="@(declared?.RowStyle ?? $"--_tb-tree-level: {node.Level - 1}")"
              class="@ClassNames.Join("tb-tree__item", context.Selected ? "tb-tree__item--selected" : null,
                         context.Matches ? "tb-tree__item--match" : null, Classes?.Item, declared?.Class,
                         valued ? ItemClass?.Invoke(node.Item) : null)"

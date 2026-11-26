@@ -604,7 +604,7 @@ function placeAtPoint(menu, point) {
     menu.style.margin = '0';
     const { clientWidth: width, clientHeight: height } = menu.ownerDocument.documentElement;
     // A menu taller than the window scrolls, as the CSS caps it at this.
-    menu.style.setProperty('--tb-available-block-size', `${Math.max(height - 2 * viewportPadding, 0)}px`);
+    menu.style.setProperty('--_tb-available-block-size', `${Math.max(height - 2 * viewportPadding, 0)}px`);
     const size = { width: menu.offsetWidth, height: menu.offsetHeight };
     // In right-to-left text the menu opens toward the left, as the end of the line is there.
     const rtl = getComputedStyle(menu).direction === 'rtl';

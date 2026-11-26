@@ -404,7 +404,7 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     public async Task<(double X, double Y, double Width, double Height)> WindowAsync(string panel)
     {
         var box = await (await WindowRowAsync(panel)).EvaluateAsync<double[]>(
-            "row => ['x', 'y', 'w', 'h'].map(side => Number(row.style.getPropertyValue(`--tb-dock-${side}`)))");
+            "row => ['x', 'y', 'w', 'h'].map(side => Number(row.style.getPropertyValue(`--_tb-dock-${side}`)))");
         return (box[0], box[1], box[2], box[3]);
     }
 

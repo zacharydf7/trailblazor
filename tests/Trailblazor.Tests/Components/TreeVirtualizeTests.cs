@@ -28,7 +28,7 @@ public class TreeVirtualizeTests : BunitContext
         var rows = cut.FindAll("[role=treeitem]");
         Assert.Equal(40, rows.Count);
         Assert.Equal(["40", "1000"], [rows[^1].GetAttribute("aria-posinset")!, rows[^1].GetAttribute("aria-setsize")!]);
-        Assert.Equal("--tb-tree-gap: 960", cut.Find("[data-part=spacer]").GetAttribute("style"));
+        Assert.Equal("--_tb-tree-gap: 960", cut.Find("[data-part=spacer]").GetAttribute("style"));
         Assert.Equal("1000", cut.Find("[role=tree]").GetAttribute("data-rows"));
     }
 
@@ -51,7 +51,7 @@ public class TreeVirtualizeTests : BunitContext
         await cut.InvokeAsync(() => Events().OnView(500, 20));
 
         Assert.Equal([0, 1, .. Enumerable.Range(500, 20)], Indexes(cut));
-        Assert.Equal(["--tb-tree-gap: 498", "--tb-tree-gap: 480"],
+        Assert.Equal(["--_tb-tree-gap: 498", "--_tb-tree-gap: 480"],
             cut.FindAll("[data-part=spacer]").Select(spacer => spacer.GetAttribute("style")!));
     }
 

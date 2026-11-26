@@ -37,7 +37,7 @@ else
 
     private RenderFragment Preview =>
         @<span data-part="swatch-preview" aria-hidden="true" class="tb-color-picker__preview"
-               style="@(Color is { } color ? $"--tb-color-picker-value: {color.ToHex(true)}" : null)"></span>;
+               style="@(Color is { } color ? $"--_tb-color-picker-value: {color.ToHex(true)}" : null)"></span>;
 
     private RenderFragment Buttons => @<text>
         @if (Clearable && !Disabled && !ReadOnly && Value is not null)
@@ -68,7 +68,7 @@ else
                                        aria-label="@NameOf(swatch)" checked="@IsChosen(swatch)"
                                        disabled="@(Disabled || ReadOnly)"
                                        @onchange="_chooseSwatch.For(swatch)"
-                                       style="@($"--tb-swatch: {Read(swatch).ToHex(true)}")"
+                                       style="@($"--_tb-swatch: {Read(swatch).ToHex(true)}")"
                                        class="tb-color-picker__swatch" />
                             }
                         </div>
@@ -99,14 +99,14 @@ else
     </text>;
 
     private string PadStyle => FormattableString.Invariant(
-        $"--tb-color-picker-x: {_saturation}; --tb-color-picker-y: {1 - _brightness}");
+        $"--_tb-color-picker-x: {_saturation}; --_tb-color-picker-y: {1 - _brightness}");
 
     // Each slider's track shows the colors it runs through, given the other sliders' values.
-    private string BodyStyle => FormattableString.Invariant($"--tb-color-picker-hue: {_hue}deg; ")
-        + $"--tb-color-picker-gray: {ColorValue.FromHsv(_hue, 0, _brightness, 255).ToHex(false)}; "
-        + $"--tb-color-picker-vivid: {ColorValue.FromHsv(_hue, 1, _brightness, 255).ToHex(false)}; "
-        + $"--tb-color-picker-bright: {ColorValue.FromHsv(_hue, _saturation, 1, 255).ToHex(false)}; "
-        + $"--tb-color-picker-opaque: {Picked.ToHex(false)}";
+    private string BodyStyle => FormattableString.Invariant($"--_tb-color-picker-hue: {_hue}deg; ")
+        + $"--_tb-color-picker-gray: {ColorValue.FromHsv(_hue, 0, _brightness, 255).ToHex(false)}; "
+        + $"--_tb-color-picker-vivid: {ColorValue.FromHsv(_hue, 1, _brightness, 255).ToHex(false)}; "
+        + $"--_tb-color-picker-bright: {ColorValue.FromHsv(_hue, _saturation, 1, 255).ToHex(false)}; "
+        + $"--_tb-color-picker-opaque: {Picked.ToHex(false)}";
 
     // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.
     private RenderFragment Input => builder =>

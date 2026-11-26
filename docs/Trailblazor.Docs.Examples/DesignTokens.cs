@@ -7,27 +7,6 @@ public static partial class DesignTokens
 {
     private static readonly Lazy<IReadOnlyList<(string Selector, string Body)>> Rules = new(LoadRules);
 
-    // The theme declares its tokens outside any component's rules: on :root, a palette or a density.
-    private static readonly Lazy<IReadOnlySet<string>> Theme = new(() => Rules.Value
-        .Where(rule => !rule.Selector.Contains(".tb-", StringComparison.Ordinal))
-        .SelectMany(rule => Declared().Matches(rule.Body)).Select(match => match.Groups[1].Value).ToHashSet());
-
-    // The tokens an app may set to restyle one component. Other variables read with a fallback, such as a color picker's
-    // value, are set by the components' own code, so they aren't listed.
-    public static IReadOnlyList<string> ComponentTokens { get; } =
-    [
-        "--tb-barcode-background", "--tb-barcode-color", "--tb-button-height", "--tb-button-radius",
-        "--tb-carousel-duration", "--tb-chat-max-height", "--tb-data-grid-row-height", "--tb-data-grid-stripe-color",
-        "--tb-dialog-radius", "--tb-dialog-z-index", "--tb-fab-offset", "--tb-fab-radius", "--tb-fab-z-index",
-        "--tb-field-background", "--tb-field-border-color", "--tb-field-border-width", "--tb-field-height",
-        "--tb-field-radius", "--tb-kanban-column-width", "--tb-menu-item-font-size", "--tb-menu-item-height",
-        "--tb-menu-item-icon-size", "--tb-menu-radius", "--tb-popover-max-width", "--tb-popover-radius",
-        "--tb-qr-code-background", "--tb-qr-code-color", "--tb-ribbon-context-color", "--tb-table-row-height",
-        "--tb-table-sticky-top", "--tb-table-stripe-color", "--tb-tabs-indicator-color", "--tb-tabs-indicator-size",
-        "--tb-tooltip-max-width", "--tb-tree-insert-band", "--tb-tree-insert-offset", "--tb-tree-item-height",
-        "--tb-tree-item-radius", "--tb-tree-text-min-width",
-    ];
-
     private static readonly string[] Tones =
         ["primary", "secondary", "neutral", "success", "warning", "danger", "info"];
 
@@ -37,10 +16,10 @@ public static partial class DesignTokens
     private static readonly string[] DensityTokens =
         ["--tb-control-height", "--tb-control-padding-", "--tb-item-height", "--tb-row-height"];
 
-    // Variables a component sets for itself, such as a dialog's width, are its own workings, not theme tokens.
+    // The theme tokens a block's rules read; its component tokens, such as --tb-dialog-z-index, are listed apart.
     public static IReadOnlyList<string> Read(IEnumerable<string> blocks) =>
         [.. RulesOf(blocks).SelectMany(rule => Used().Matches(rule.Body)).Select(match => match.Groups[1].Value)
-            .Where(Theme.Value.Contains).Distinct().Order(StringComparer.Ordinal)];
+            .Where(TbTokens.Theme.Contains).Distinct().Order(StringComparer.Ordinal)];
 
     // The component tokens a block's rules read, each with the fallback that is its default until an app sets it. A
     // token the block sets on itself, as a grid does with the table's row height, is left out: an app setting it from
@@ -51,7 +30,7 @@ public static partial class DesignTokens
         var declared = rules.SelectMany(rule => Declared().Matches(rule.Body)).Select(match => match.Groups[1].Value)
             .ToHashSet();
         return [.. rules.SelectMany(rule => Fallbacks(rule.Body))
-            .Where(hook => ComponentTokens.Contains(hook.Name) && !declared.Contains(hook.Name))
+            .Where(hook => TbTokens.Component.Contains(hook.Name) && !declared.Contains(hook.Name))
             .DistinctBy(hook => hook.Name).OrderBy(hook => hook.Name, StringComparer.Ordinal)];
     }
 

@@ -36,7 +36,7 @@ public class TbDockManagerCompactTests : BunitContext
 
         Assert.True(dock.IsCompact);
         var group = Assert.Single(cut.FindAll("[data-part=group]"));
-        Assert.Equal("--tb-dock-x: 0; --tb-dock-y: 0; --tb-dock-w: 100; --tb-dock-h: 100;", group.GetAttribute("style"));
+        Assert.Equal("--_tb-dock-x: 0; --_tb-dock-y: 0; --_tb-dock-w: 100; --_tb-dock-h: 100;", group.GetAttribute("style"));
         Assert.Equal(["Trails", "Map", "Notes", "Weather"], dock.Panels);
         Assert.Equal(["Trails"], dock.Showing);
         // The panels that showed in the other groups stay in the page, out of reach.

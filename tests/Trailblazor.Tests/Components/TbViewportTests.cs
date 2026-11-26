@@ -73,7 +73,7 @@ public class TbViewportTests : BunitContext
         var cut = RenderMap(parameters => parameters.Add(viewport => viewport.Zoom, 2)
             .Add(viewport => viewport.Height, "30rem"));
 
-        Assert.Equal("--tb-viewport-zoom: 2; --tb-viewport-height: 30rem;",
+        Assert.Equal("--_tb-viewport-zoom: 2; --_tb-viewport-height: 30rem;",
             cut.Find("[data-part=viewport]").GetAttribute("style"));
         Assert.Equal($"Zoom {Percent(2)}",
             cut.Find("[data-part=zoom-menu] [aria-haspopup=menu]").GetAttribute("aria-label"));

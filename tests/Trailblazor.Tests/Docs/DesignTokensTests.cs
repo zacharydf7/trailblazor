@@ -5,14 +5,13 @@ namespace Trailblazor.Tests.Docs;
 public class DesignTokensTests
 {
     [Fact]
-    public void Read_ShouldListTheThemeTokensButNotTheComponentsOwnVariables_WhenGivenADialog()
+    public void Read_ShouldListTheThemeTokensButNotTheComponentTokens_WhenGivenADialog()
     {
         var tokens = DesignTokens.Read(["tb-dialog"]);
 
         Assert.Contains("--tb-color-surface-raised", tokens);
         Assert.Contains("--tb-shadow-lg", tokens);
-        Assert.DoesNotContain("--tb-dialog-width", tokens);
-        Assert.DoesNotContain("--tb-dialog-left", tokens);
+        Assert.DoesNotContain("--tb-dialog-z-index", tokens);
     }
 
     [Fact]
@@ -47,18 +46,19 @@ public class DesignTokensTests
         Assert.Contains("--tb-table-row-height", Names("tb-table"));
         Assert.Equal(["--tb-data-grid-row-height", "--tb-data-grid-stripe-color"], Names("tb-data-grid"));
         Assert.Equal(["--tb-tabs-indicator-color", "--tb-tabs-indicator-size"], Names("tb-tabs"));
-        Assert.DoesNotContain("--tb-dialog-tray-block", Names("tb-dialog"));
-        Assert.DoesNotContain("--tb-color-picker-value", Names("tb-field", "tb-color-picker"));
-        Assert.DoesNotContain("--tb-available-block-size", Names("tb-menu"));
     }
 
     [Fact]
-    public void ComponentTokens_ShouldEachBeReadByAComponentOnTheSite_WhenTheCatalogIsRead()
+    public void ComponentTokens_ShouldEachShowOnTheSite_WhenTheCatalogIsRead()
     {
         var read = ExampleCatalog.All.SelectMany(example => DesignTokens.Hooks(example.Blocks))
             .Select(hook => hook.Name).ToHashSet();
+        // A token read outside a component's own rules, such as by [data-tb-blocked], is named in a page's text.
+        var catalog = File.ReadAllText(Path.Combine(Repository.Root, "docs", "Trailblazor.Docs.Examples",
+            "ExampleCatalog.cs"));
 
-        Assert.All(DesignTokens.ComponentTokens, token => Assert.Contains(token, read));
+        Assert.All(TbTokens.Component, token => Assert.True(read.Contains(token) || catalog.Contains($"`{token}`"),
+            token));
     }
 
     [Fact]

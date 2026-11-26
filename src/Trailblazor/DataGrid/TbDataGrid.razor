@@ -509,7 +509,7 @@
     // A tree row's first cell is set in by its depth and starts with a button for the rows under it, or a blank space
     // when it has none.
     private RenderFragment TreeToggle(TreePlace tree, object key, string label) =>
-        @<span class="tb-data-grid__tree" style="--tb-data-grid-tree-level: @(tree.Level - 1)">
+        @<span class="tb-data-grid__tree" style="--_tb-data-grid-tree-level: @(tree.Level - 1)">
             @if (tree.Open is { } open)
             {
                 <button type="button" data-part="tree-toggle" aria-expanded="@(open ? "true" : "false")"
@@ -627,7 +627,7 @@
     private RenderFragment GroupRow(GroupHeading group, int at) =>
         @<tr data-part="group" data-level="@group.Level" aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)"
              class="@ClassNames.Join("tb-data-grid__group", Classes?.Group)">
-            <td colspan="@DrawnCount" style="--tb-data-grid-group-level: @(group.Level - 1)"
+            <td colspan="@DrawnCount" style="--_tb-data-grid-group-level: @(group.Level - 1)"
                 class="tb-data-grid__group-cell">
                 <button type="button" data-part="group-toggle" aria-expanded="@(group.Open ? "true" : "false")"
                         class="tb-data-grid__group-toggle" @onclick="_toggleGroup.For(group.Key)">

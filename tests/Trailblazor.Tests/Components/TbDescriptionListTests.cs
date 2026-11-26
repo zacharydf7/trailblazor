@@ -68,7 +68,7 @@ public class TbDescriptionListTests : BunitContext
 
         var root = cut.Find(".tb-description-list");
         Assert.Contains("tb-description-list--inline", root.ClassList);
-        Assert.Contains("--tb-description-list-columns: 2", root.GetAttribute("style"));
+        Assert.Contains("--_tb-description-list-columns: 2", root.GetAttribute("style"));
     }
 
     [Fact]

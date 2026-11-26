@@ -64,6 +64,8 @@ An issue is done when all of these hold:
   `SUT_Should<Expectation>_When<Condition>`.
 - A change to the public API is listed in its project's `PublicAPI.Unshipped.txt`. The build flags each public member
   that isn't listed (RS0016), and the IDE's code fix adds it; a release moves the lines to `PublicAPI.Shipped.txt`.
+- A custom property a component sets for itself starts with `--_tb-`; one an app may set or read goes in `TbTokens`,
+  which a contract test checks against the sources.
 - A renamed or removed public name is listed under "Renamed and removed" in `CHANGELOG.md`, which the docs site's
   Upgrading page is built from.
 - A change to a documented part, id or attribute, a default look, a telemetry value, an interface member or other

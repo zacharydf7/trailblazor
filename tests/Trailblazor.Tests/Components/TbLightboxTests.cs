@@ -108,7 +108,7 @@ public class TbLightboxTests : BunitContext
 
         await lightbox.RotateRightAsync();
         Assert.Equal(90, lightbox.Rotation);
-        Assert.Contains("--tb-lightbox-turn: 90deg", cut.Find("[data-part=stage]").GetAttribute("style"));
+        Assert.Contains("--_tb-lightbox-turn: 90deg", cut.Find("[data-part=stage]").GetAttribute("style"));
         await lightbox.RotateLeftAsync();
         await lightbox.RotateLeftAsync();
         Assert.Equal(270, lightbox.Rotation);

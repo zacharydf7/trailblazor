@@ -11,7 +11,7 @@ const hold = event => event.preventDefault();
 const thumbWidth = where => {
     const probe = document.createElement('div');
     probe.style.position = 'absolute';
-    probe.style.inlineSize = 'var(--tb-slider-thumb)';
+    probe.style.inlineSize = 'var(--_tb-slider-thumb)';
     where.append(probe);
     const width = probe.getBoundingClientRect().width;
     probe.remove();

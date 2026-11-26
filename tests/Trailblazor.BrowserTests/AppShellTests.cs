@@ -208,6 +208,22 @@ public class AppShellTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AppShell_ShouldTakeItsHeightAndNavigationWidth_WhenTheRootSetsThem(string browser)
+    {
+        var page = await OpenAsync(browser, "/app-shell");
+
+        await page.EvaluateAsync("""
+            () => {
+                document.documentElement.style.setProperty('--tb-app-shell-height', '2000px');
+                document.documentElement.style.setProperty('--tb-app-shell-navigation-width', '300px');
+            }
+            """);
+
+        await Expect(page.Locator(".tb-app-shell")).ToHaveCSSAsync("min-height", "2000px");
+        Assert.Equal(300, Math.Round((await Beside(page).BoundingBoxAsync())!.Width));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task MenuButton_ShouldNarrowTheNavigationToARail_WhenTheWindowIsWide(string browser)
     {
         var page = await OpenAsync(browser, "/app-shell");

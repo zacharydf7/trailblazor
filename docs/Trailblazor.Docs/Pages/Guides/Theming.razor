@@ -197,6 +197,17 @@
         </TbText>
         <CodeBlock Label="Token overrides" Code="@Overrides" Language="CodeLanguage.Css" />
 
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Which properties to rely on</TbText>
+        <TbText>
+            <code>TbTokens</code> lists every custom property an app may set or read: <code>Theme</code> for the theme's
+            tokens, <code>Component</code> for the tokens that restyle one component, and <code>SetByComponents</code>
+            for values a component sets for your CSS to read, such as <code>--tb-scroll-lock-offset</code>. Its
+            <code>Classes</code> are the classes you may put on your own elements, such as
+            <code>tb-visually-hidden</code>. A property that starts with <code>--_tb-</code>, such as a dialog's
+            position, is part of a component's own workings. It can change in any release, so don't set or read
+            it.
+        </TbText>
+
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">A primary for part of a page</TbText>
         <TbText>
             The primary's hover, pressed, subtle and text colors and the focus ring are worked out from
@@ -215,7 +226,8 @@
         <TbText>To change one component rather than the whole theme, reach for these in order:</TbText>
         <ol>
             <li>
-                Its own tokens, such as <code>--tb-button-radius</code>, listed under Design tokens on its page. Set one
+                Its own tokens, such as <code>--tb-button-radius</code>, listed under Design tokens or in the notes on
+                its page. Set one
                 on the page to change the component everywhere, or on an element to change it only inside that element.
             </li>
             <li>

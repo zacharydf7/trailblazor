@@ -4,14 +4,14 @@ namespace Trailblazor.Tests.Components;
 
 public class TbGridTests : BunitContext
 {
-    private const string Twelve = "0 0 calc(12 * var(--tb-grid-column) + 11 * var(--tb-grid-gap))";
+    private const string Twelve = "0 0 calc(12 * var(--_tb-grid-column) + 11 * var(--_tb-grid-gap))";
 
     [Fact]
     public void Render_ShouldSetTheGap_WhenGapIsSet()
     {
         var cut = Render<TbGrid>(parameters => parameters.Add(grid => grid.Gap, 2));
 
-        Assert.Equal("--tb-grid-gap: var(--tb-space-2)", cut.Find(".tb-grid").GetAttribute("style"));
+        Assert.Equal("--_tb-grid-gap: var(--tb-space-2)", cut.Find(".tb-grid").GetAttribute("style"));
     }
 
     [Fact]
@@ -22,8 +22,8 @@ public class TbGridTests : BunitContext
         var style = Declarations(cut);
         Assert.All(["", "-sm", "-md", "-lg", "-xl"], suffix =>
         {
-            Assert.Equal(Twelve, style[$"--tb-grid-flex{suffix}"]);
-            Assert.Equal("0", style[$"--tb-grid-offset{suffix}"]);
+            Assert.Equal(Twelve, style[$"--_tb-grid-flex{suffix}"]);
+            Assert.Equal("0", style[$"--_tb-grid-offset{suffix}"]);
         });
     }
 
@@ -35,9 +35,9 @@ public class TbGridTests : BunitContext
 
         var style = Declarations(cut);
         Assert.Equal(["6", "6", "4", "4", "3"], new[] { "", "-sm", "-md", "-lg", "-xl" }
-            .Select(suffix => style[$"--tb-grid-flex{suffix}"].Split('(')[1].Split(' ')[0]));
+            .Select(suffix => style[$"--_tb-grid-flex{suffix}"].Split('(')[1].Split(' ')[0]));
         Assert.Equal(["2", "2", "2", "8", "8"], new[] { "", "-sm", "-md", "-lg", "-xl" }
-            .Select(suffix => style[$"--tb-grid-offset{suffix}"]));
+            .Select(suffix => style[$"--_tb-grid-offset{suffix}"]));
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class TbGridTests : BunitContext
 
         var style = Declarations(cut);
         Assert.Equal(["0 1 auto", "0 1 auto", "1 1 0%", "1 1 0%", "1 1 0%"],
-            new[] { "", "-sm", "-md", "-lg", "-xl" }.Select(suffix => style[$"--tb-grid-flex{suffix}"]));
+            new[] { "", "-sm", "-md", "-lg", "-xl" }.Select(suffix => style[$"--_tb-grid-flex{suffix}"]));
     }
 
     [Theory]

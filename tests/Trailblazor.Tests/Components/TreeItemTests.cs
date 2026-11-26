@@ -170,7 +170,7 @@ public class TreeItemTests : BunitContext
 
         var row = cut.Find("[role=treeitem]");
         Assert.Contains("row-class", row.ClassList);
-        Assert.Equal("--tb-tree-level: 0; color: red", row.GetAttribute("style"));
+        Assert.Equal("--_tb-tree-level: 0; color: red", row.GetAttribute("style"));
         Assert.Equal("docs-row", row.GetAttribute("data-testid"));
     }
 

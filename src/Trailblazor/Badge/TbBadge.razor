@@ -3,7 +3,7 @@
 @using System.Globalization
 
 <span @attributes="AdditionalAttributes"
-      style="@Styles.Join(Offset is null ? null : $"--tb-badge-offset: {Offset}", Style)"
+      style="@Styles.Join(Offset is null ? null : $"--_tb-badge-offset: {Offset}", Style)"
       class="@ClassNames.Join("tb-badge-host", ChildContent is null ? null : "tb-badge-host--overlap", Class)">
     @ChildContent
     @if (Visible && (Count != 0 || ShowZero))

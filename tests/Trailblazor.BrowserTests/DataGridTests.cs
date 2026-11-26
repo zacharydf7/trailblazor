@@ -320,7 +320,7 @@ public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
         var page = await OpenAsync(browser, "/pinned-grid");
         var table = Table(page, "Numbers");
         var scroll = table.Locator("xpath=..");
-        await Expect(table).ToHaveAttributeAsync("style", new Regex("--tb-data-grid-pin-end-0"));
+        await Expect(table).ToHaveAttributeAsync("style", new Regex("--_tb-data-grid-pin-end-0"));
 
         await scroll.EvaluateAsync("box => box.scrollLeft = 150");
 
@@ -344,7 +344,7 @@ public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
     {
         var page = await OpenAsync(browser, "/pinned-grid");
         var table = Table(page, "Numbers");
-        await Expect(table).ToHaveAttributeAsync("style", new Regex("--tb-data-grid-pin-end-0"));
+        await Expect(table).ToHaveAttributeAsync("style", new Regex("--_tb-data-grid-pin-end-0"));
         await table.Locator("xpath=..").EvaluateAsync("box => box.scrollLeft = 100");
         var sort = table.Locator("th[data-column=double] [data-part=sort]");
         Assert.False(await sort.EvaluateAsync<bool>("button => { const box = button.getBoundingClientRect();"
@@ -361,10 +361,10 @@ public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
     {
         var page = await OpenAsync(browser, "/pinned-grid");
         var table = Table(page, "Numbers");
-        await Expect(table).ToHaveAttributeAsync("style", new Regex("--tb-data-grid-pin-end-0"));
+        await Expect(table).ToHaveAttributeAsync("style", new Regex("--_tb-data-grid-pin-end-0"));
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Pin tripled" }).ClickAsync();
-        await Expect(table).ToHaveAttributeAsync("style", new Regex("--tb-data-grid-pin-2"));
+        await Expect(table).ToHaveAttributeAsync("style", new Regex("--_tb-data-grid-pin-2"));
         await table.Locator("xpath=..").EvaluateAsync("box => box.scrollLeft = box.scrollWidth");
 
         var number = (await table.Locator("tbody td[data-column=Number]").First.BoundingBoxAsync())!;
@@ -392,7 +392,7 @@ public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
     {
         var page = await OpenAsync(browser, "/pinned-grid");
         var table = Table(page, "Numbers");
-        await Expect(table).ToHaveAttributeAsync("style", new Regex("--tb-data-grid-pin-end-0"));
+        await Expect(table).ToHaveAttributeAsync("style", new Regex("--_tb-data-grid-pin-end-0"));
 
         await table.Locator("xpath=..").EvaluateAsync("box => box.scrollTop = 100");
 
@@ -596,7 +596,7 @@ public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
     {
         var page = await OpenAsync(browser, "/pinned-grid");
         var table = Table(page, "Numbers");
-        await Expect(table).ToHaveAttributeAsync("style", new Regex("--tb-data-grid-pin-end-0"));
+        await Expect(table).ToHaveAttributeAsync("style", new Regex("--_tb-data-grid-pin-end-0"));
         var box = table.Locator("tbody tr[data-part=row]").Nth(1).Locator("input[type=checkbox]");
         await box.EvaluateAsync("box => { const scroll = box.closest('.tb-data-grid__scroll');"
             + " const header = box.closest('table').tHead.getBoundingClientRect();"

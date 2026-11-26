@@ -22,7 +22,7 @@ public class TbMasonryTests : BunitContext
 
         var root = cut.Find(".tb-masonry");
         Assert.Equal(("div", null), (root.LocalName, root.GetAttribute("role")));
-        Assert.Equal("--tb-masonry-gap: var(--tb-space-4); --tb-masonry-column: 16rem", root.GetAttribute("style"));
+        Assert.Equal("--_tb-masonry-gap: var(--tb-space-4); --_tb-masonry-column: 16rem", root.GetAttribute("style"));
         Assert.Equal(["Pine", "Cedar", "Eagle"], cut.FindAll("article").Select(card => card.TextContent));
     }
 
@@ -35,7 +35,7 @@ public class TbMasonryTests : BunitContext
 
         var root = cut.Find(".tb-masonry");
         Assert.Equal(("ul", "list"), (root.LocalName, root.GetAttribute("role")));
-        Assert.Equal("--tb-masonry-gap: var(--tb-space-2); --tb-masonry-column: 12rem", root.GetAttribute("style"));
+        Assert.Equal("--_tb-masonry-gap: var(--tb-space-2); --_tb-masonry-column: 12rem", root.GetAttribute("style"));
     }
 
     [Fact]

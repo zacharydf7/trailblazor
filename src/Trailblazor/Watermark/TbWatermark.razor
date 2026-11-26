@@ -85,8 +85,8 @@
     }
 
     private string MarksStyle => Image is not null
-        ? $"--tb-watermark-tile: {TbAvatar.CssUrl(Image)}; --tb-watermark-size: {ImageWidth}px"
-        : $"--tb-watermark-tile: url(\"{TextTile()}\")";
+        ? $"--_tb-watermark-tile: {TbAvatar.CssUrl(Image)}; --_tb-watermark-size: {ImageWidth}px"
+        : $"--_tb-watermark-tile: url(\"{TextTile()}\")";
 
     // The text's tile: each line centered and slanted, in a box that holds the slanted text plus the gap. Its fill is
     // only the mask's shape; the color comes from the stylesheet. Capitals and wide characters, such as CJK, count a

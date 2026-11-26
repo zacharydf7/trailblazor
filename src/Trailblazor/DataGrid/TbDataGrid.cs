@@ -225,7 +225,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     /// <summary>Extra CSS classes for a row. A row whose classes change draws again, even when they come from outside
     /// the item, such as which row is current. A class that shades the row should also set
-    /// <c>--tb-data-grid-row-shade</c> to that color, so the row's pinned cells, which paint a background of their own,
+    /// <c>--_tb-data-grid-row-shade</c> to that color, so the row's pinned cells, which paint a background of their own,
     /// take the shade too.</summary>
     [Parameter]
     public Func<TItem, string?>? RowClass { get; set; }
@@ -1634,7 +1634,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         return column.Pinned switch
         {
             ColumnPin.Start => StartPinStyle(LeadCount + at),
-            ColumnPin.End => $"inset-inline-end: var(--tb-data-grid-pin-end-{_shownColumns.Count - 1 - at}, 0px)",
+            ColumnPin.End => $"inset-inline-end: var(--_tb-data-grid-pin-end-{_shownColumns.Count - 1 - at}, 0px)",
             _ => null,
         };
     }
@@ -1788,7 +1788,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         await StateChangedAsync();
     }
 
-    private static string StartPinStyle(int slot) => $"inset-inline-start: var(--tb-data-grid-pin-{slot}, 0px)";
+    private static string StartPinStyle(int slot) => $"inset-inline-start: var(--_tb-data-grid-pin-{slot}, 0px)";
 
     // A sort names its column by key, so two columns with one key would sort and mark each other. Checked as the grid
     // renders, once every column has its parameters, since columns reordered in a loop change one at a time.

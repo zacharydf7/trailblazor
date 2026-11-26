@@ -61,7 +61,7 @@ public class DockManagerStepMenuTests(BrowserFixture fixture) : DockManagerPage(
         await dock.MoveWindowAsync("Gear", -25, 0);
 
         await ChooseTurnedOffAsync(page, "Move the Gear window", "Left", "Right", () => page.WaitForFunctionAsync("""
-            () => document.querySelector('.tb-dock__group--floating').style.getPropertyValue('--tb-dock-x') === '10'
+            () => document.querySelector('.tb-dock__group--floating').style.getPropertyValue('--_tb-dock-x') === '10'
             """));
     }
 

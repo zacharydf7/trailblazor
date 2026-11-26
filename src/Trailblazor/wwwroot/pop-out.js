@@ -92,8 +92,8 @@ const watchDisabled = sheet => {
 // effect while the sheet's media doesn't match, so the answer only counts while it does.
 const applies = sheet => {
     try {
-        const at = sheet.insertRule('head { --tb-sheet-applies: 1 }', sheet.cssRules.length);
-        const found = getComputedStyle(document.head).getPropertyValue('--tb-sheet-applies') !== '';
+        const at = sheet.insertRule('head { --_tb-sheet-applies: 1 }', sheet.cssRules.length);
+        const found = getComputedStyle(document.head).getPropertyValue('--_tb-sheet-applies') !== '';
         sheet.deleteRule(at);
         return found;
     } catch {

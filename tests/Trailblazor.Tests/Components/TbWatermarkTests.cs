@@ -44,7 +44,7 @@ public class TbWatermarkTests : BunitContext
 
         var marks = cut.Find("[data-part=marks]");
         Assert.DoesNotContain("tb-watermark__marks--text", marks.ClassList);
-        Assert.Equal("--tb-watermark-tile: url(\"/logo\\\".png\\c )\"); --tb-watermark-size: 100px",
+        Assert.Equal("--_tb-watermark-tile: url(\"/logo\\\".png\\c )\"); --_tb-watermark-size: 100px",
             marks.GetAttribute("style"));
         Assert.Equal("Confidential", cut.Find("[data-part=label]").TextContent);
     }

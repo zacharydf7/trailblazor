@@ -26,8 +26,8 @@ function layOutTray() {
 function layOutRows(page, dialogs) {
     // The CSS registers these as lengths, so they come back in px whatever the theme and font size.
     const style = getComputedStyle(dialogs[0]);
-    const trayGap = parseFloat(style.getPropertyValue('--tb-dialog-tray-gap'));
-    const room = page.documentElement.clientWidth - 2 * parseFloat(style.getPropertyValue('--tb-dialog-tray-edge'));
+    const trayGap = parseFloat(style.getPropertyValue('--_tb-dialog-tray-gap'));
+    const room = page.documentElement.clientWidth - 2 * parseFloat(style.getPropertyValue('--_tb-dialog-tray-edge'));
     let inline = 0;
     let block = 0;
     let rowHeight = 0;
@@ -38,8 +38,8 @@ function layOutRows(page, dialogs) {
             rowHeight = 0;
         }
 
-        dialog.style.setProperty('--tb-dialog-tray-inline', `${inline}px`);
-        dialog.style.setProperty('--tb-dialog-tray-block', `${block}px`);
+        dialog.style.setProperty('--_tb-dialog-tray-inline', `${inline}px`);
+        dialog.style.setProperty('--_tb-dialog-tray-block', `${block}px`);
         inline += dialog.offsetWidth + trayGap;
         rowHeight = Math.max(rowHeight, dialog.offsetHeight);
     }
@@ -214,7 +214,7 @@ function show(dialog, modal, topLayer) {
 
 // On the page layer, a dialog's place in the stack sets how high it draws.
 function numberLevels() {
-    stack.forEach((entry, level) => entry.dialog.style.setProperty('--tb-dialog-level', level));
+    stack.forEach((entry, level) => entry.dialog.style.setProperty('--_tb-dialog-level', level));
 }
 
 // Hiding and showing a manual popover in one task moves it to the top of the top layer. Inert meanwhile, it has nothing
@@ -417,8 +417,8 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
     const isNormal = () => (dialog.dataset.windowState ?? 'normal') === 'normal';
 
     function place(left, top) {
-        dialog.style.setProperty('--tb-dialog-left', `${left}px`);
-        dialog.style.setProperty('--tb-dialog-top', `${top}px`);
+        dialog.style.setProperty('--_tb-dialog-left', `${left}px`);
+        dialog.style.setProperty('--_tb-dialog-top', `${top}px`);
         dialog.dataset.placed = '';
     }
 
@@ -445,8 +445,8 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
             ? clamp(start.width - dx, minimumSize.width, start.left + start.width)
             : clamp(start.width + dx, minimumSize.width, room.clientWidth - start.left);
         const height = clamp(start.height + dy, minimumSize.height, room.clientHeight - start.top);
-        dialog.style.setProperty('--tb-dialog-resized-width', `${width}px`);
-        dialog.style.setProperty('--tb-dialog-resized-height', `${height}px`);
+        dialog.style.setProperty('--_tb-dialog-resized-width', `${width}px`);
+        dialog.style.setProperty('--_tb-dialog-resized-height', `${height}px`);
         dialog.dataset.sized = '';
         place(rightToLeft ? start.left + start.width - width : start.left, start.top);
     }
@@ -703,7 +703,7 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
         },
         resizeTo(from, to) {
             delete dialog.dataset.sized;
-            dialog.style.removeProperty('--tb-dialog-width');
+            dialog.style.removeProperty('--_tb-dialog-width');
             dialog.classList.replace(from, to);
             keepInside();
         },
@@ -711,9 +711,9 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
         setWidth(width) {
             delete dialog.dataset.sized;
             if (width) {
-                dialog.style.setProperty('--tb-dialog-width', width);
+                dialog.style.setProperty('--_tb-dialog-width', width);
             } else {
-                dialog.style.removeProperty('--tb-dialog-width');
+                dialog.style.removeProperty('--_tb-dialog-width');
             }
 
             keepInside();

@@ -31,7 +31,7 @@ public class TbAutocompleteColumnsTests : BunitContext
             titles.QuerySelectorAll("[data-part=column-title]").Select(title => title.TextContent));
         Assert.Equal(["Ridge loop", "7 mi", "North"],
             cut.FindAll("[role=option]")[0].QuerySelectorAll("[data-part=cell]").Select(cell => cell.TextContent));
-        Assert.Equal("--tb-autocomplete-columns: minmax(0, 1fr) 5rem minmax(0, 1fr)", titles.GetAttribute("style"));
+        Assert.Equal("--_tb-autocomplete-columns: minmax(0, 1fr) 5rem minmax(0, 1fr)", titles.GetAttribute("style"));
     }
 
     [Fact]

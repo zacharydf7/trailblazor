@@ -13,7 +13,7 @@ public class TbStackTests : BunitContext
         Assert.DoesNotContain("tb-stack--row", stack.ClassList);
         Assert.Contains("tb-stack--align-stretch", stack.ClassList);
         Assert.Contains("tb-stack--justify-start", stack.ClassList);
-        Assert.Equal("--tb-stack-gap: var(--tb-space-3)", stack.GetAttribute("style"));
+        Assert.Equal("--_tb-stack-gap: var(--tb-space-3)", stack.GetAttribute("style"));
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class TbStackTests : BunitContext
             .Add(stack => stack.Gap, 0)
             .Add(stack => stack.Style, "padding: 1rem"));
 
-        Assert.Equal("--tb-stack-gap: var(--tb-space-0); padding: 1rem", cut.Find(".tb-stack").GetAttribute("style"));
+        Assert.Equal("--_tb-stack-gap: var(--tb-space-0); padding: 1rem", cut.Find(".tb-stack").GetAttribute("style"));
     }
 
     [Theory]

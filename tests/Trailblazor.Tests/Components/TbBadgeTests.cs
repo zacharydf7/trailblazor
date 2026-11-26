@@ -115,6 +115,6 @@ public class TbBadgeTests : BunitContext
         var badge = cut.Find("[data-part=badge]");
         Assert.Contains("tb-badge--placement-bottomstart", badge.ClassList);
         Assert.Contains("tb-badge--circular", badge.ClassList);
-        Assert.Equal("--tb-badge-offset: 4px", cut.Find(".tb-badge-host").GetAttribute("style"));
+        Assert.Equal("--_tb-badge-offset: 4px", cut.Find(".tb-badge-host").GetAttribute("style"));
     }
 }

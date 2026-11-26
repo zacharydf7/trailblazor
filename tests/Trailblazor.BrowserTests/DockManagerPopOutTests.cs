@@ -248,7 +248,7 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
             + ".getBoundingClientRect().top - (top - 20)) < 1", before[0]);
 
         // The field narrows, with nothing else changing: the list is told its field's new width.
-        const string Width = "document.querySelector('[data-side]').style.getPropertyValue('--tb-anchor-width')";
+        const string Width = "document.querySelector('[data-side]').style.getPropertyValue('--_tb-anchor-width')";
         var wide = await window.EvaluateAsync<string>(Width);
         await window.Locator("[data-part=panel]").EvaluateAsync("""
             panel => {
@@ -591,7 +591,7 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         Assert.Equal(["chosen", "offered", "shouted"], await page.EvaluateAsync<string[]>("asked"));
         var left = await page.EvaluateAsync<int[]>("""
             () => [...asked.map(id => document.getElementById(id).sheet.cssRules.length),
-                getComputedStyle(document.head).getPropertyValue('--tb-sheet-applies').length]
+                getComputedStyle(document.head).getPropertyValue('--_tb-sheet-applies').length]
             """);
         Assert.Equal([1, 1, 1, 0], left);
     }

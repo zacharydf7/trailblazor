@@ -28,7 +28,7 @@ public sealed class TbGrid : TbComponentBase
         builder.AddAttribute(1, "role", LayoutElements.Role(As));
         builder.AddMultipleAttributes(2, AdditionalAttributes);
         builder.AddAttribute(3, "class", ClassNames.Join("tb-grid", Class));
-        builder.AddAttribute(4, "style", Styles.Join($"--tb-grid-gap: {Spacing.Token(Gap, nameof(Gap))}", Style));
+        builder.AddAttribute(4, "style", Styles.Join($"--_tb-grid-gap: {Spacing.Token(Gap, nameof(Gap))}", Style));
         builder.AddContent(5, ChildContent);
         builder.CloseElement();
     }

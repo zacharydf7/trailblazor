@@ -188,7 +188,7 @@
              data-sends-answered="@_sendsAnswered"
              @ontbcharactersleft="OnCharactersLeft"
              inputmode="@(ReadOnly ? "none" : null)" spellcheck="true"
-             style="--tb-rich-text-editor-lines: @Lines; --tb-rich-text-editor-max-lines: @(MaxLines ?? 0)"
+             style="--_tb-rich-text-editor-lines: @Lines; --_tb-rich-text-editor-max-lines: @(MaxLines ?? 0)"
              class="@ClassNames.Join("tb-field__input", "tb-rich-text-editor__content",
                         MaxLines is null ? null : "tb-rich-text-editor__content--limited", Classes?.Input)">
             @if (!RendererInfo.IsInteractive)

@@ -1,18 +1,18 @@
 /* Registered as lengths so the dialog script reads the tray's spacing in px from the theme. */
-@property --tb-dialog-tray-gap {
+@property --_tb-dialog-tray-gap {
     syntax: "<length>";
     inherits: false;
     initial-value: 0px;
 }
 
-@property --tb-dialog-tray-edge {
+@property --_tb-dialog-tray-edge {
     syntax: "<length>";
     inherits: false;
     initial-value: 0px;
 }
 
 /* Registered as a length so a bare 0 offset still adds to the circle's percentage inset. */
-@property --tb-badge-offset {
+@property --_tb-badge-offset {
     syntax: "<length-percentage>";
     inherits: true;
     initial-value: 0px;
@@ -853,7 +853,7 @@
         display: -webkit-box;
         overflow: hidden;
         -webkit-box-orient: vertical;
-        -webkit-line-clamp: var(--tb-text-lines);
+        -webkit-line-clamp: var(--_tb-text-lines);
     }
 
     .tb-text--primary {
@@ -930,9 +930,9 @@
     }
 
     .tb-avatar {
-        --tb-avatar-size: 2rem;
-        --tb-avatar-subtle: var(--tb-color-neutral-subtle);
-        --tb-avatar-text: var(--tb-color-neutral-text);
+        --_tb-avatar-size: 2rem;
+        --_tb-avatar-subtle: var(--tb-color-neutral-subtle);
+        --_tb-avatar-text: var(--tb-color-neutral-text);
         position: relative;
         display: inline-flex;
         flex-shrink: 0;
@@ -940,12 +940,12 @@
         justify-content: center;
         overflow: hidden;
         box-sizing: border-box;
-        inline-size: var(--tb-avatar-size);
-        block-size: var(--tb-avatar-size);
+        inline-size: var(--_tb-avatar-size);
+        block-size: var(--_tb-avatar-size);
         border-radius: var(--tb-radius-full);
-        background: var(--tb-avatar-subtle);
-        color: var(--tb-avatar-text);
-        font-size: calc(var(--tb-avatar-size) * 0.4);
+        background: var(--_tb-avatar-subtle);
+        color: var(--_tb-avatar-text);
+        font-size: calc(var(--_tb-avatar-size) * 0.4);
         font-weight: var(--tb-font-weight-semibold);
         line-height: 1;
         vertical-align: middle;
@@ -954,11 +954,11 @@
     }
 
     .tb-avatar--small {
-        --tb-avatar-size: 1.5rem;
+        --_tb-avatar-size: 1.5rem;
     }
 
     .tb-avatar--large {
-        --tb-avatar-size: 2.5rem;
+        --_tb-avatar-size: 2.5rem;
     }
 
     .tb-avatar--rounded {
@@ -966,33 +966,33 @@
     }
 
     .tb-avatar--primary {
-        --tb-avatar-subtle: var(--tb-color-primary-subtle);
-        --tb-avatar-text: var(--tb-color-primary-text);
+        --_tb-avatar-subtle: var(--tb-color-primary-subtle);
+        --_tb-avatar-text: var(--tb-color-primary-text);
     }
 
     .tb-avatar--success {
-        --tb-avatar-subtle: var(--tb-color-success-subtle);
-        --tb-avatar-text: var(--tb-color-success-text);
+        --_tb-avatar-subtle: var(--tb-color-success-subtle);
+        --_tb-avatar-text: var(--tb-color-success-text);
     }
 
     .tb-avatar--warning {
-        --tb-avatar-subtle: var(--tb-color-warning-subtle);
-        --tb-avatar-text: var(--tb-color-warning-text);
+        --_tb-avatar-subtle: var(--tb-color-warning-subtle);
+        --_tb-avatar-text: var(--tb-color-warning-text);
     }
 
     .tb-avatar--danger {
-        --tb-avatar-subtle: var(--tb-color-danger-subtle);
-        --tb-avatar-text: var(--tb-color-danger-text);
+        --_tb-avatar-subtle: var(--tb-color-danger-subtle);
+        --_tb-avatar-text: var(--tb-color-danger-text);
     }
 
     .tb-avatar--info {
-        --tb-avatar-subtle: var(--tb-color-info-subtle);
-        --tb-avatar-text: var(--tb-color-info-text);
+        --_tb-avatar-subtle: var(--tb-color-info-subtle);
+        --_tb-avatar-text: var(--tb-color-info-text);
     }
 
     .tb-avatar--secondary {
-        --tb-avatar-subtle: var(--tb-color-secondary-subtle);
-        --tb-avatar-text: var(--tb-color-secondary-text);
+        --_tb-avatar-subtle: var(--tb-color-secondary-subtle);
+        --_tb-avatar-text: var(--tb-color-secondary-text);
     }
 
     .tb-avatar .tb-avatar__icon {
@@ -1015,7 +1015,7 @@
 
     /* Each avatar after the first overlaps the one before, with a ring of the page's color between them. */
     .tb-avatar-group > :not(:first-child) {
-        margin-inline-start: calc(var(--tb-avatar-size, 2rem) * -0.15);
+        margin-inline-start: calc(var(--_tb-avatar-size, 2rem) * -0.15);
     }
 
     .tb-avatar-group .tb-avatar {
@@ -1100,8 +1100,8 @@
         block-size: 1.25rem;
         padding-inline: var(--tb-space-1);
         border-radius: var(--tb-radius-full);
-        background: var(--tb-badge-fill);
-        color: var(--tb-badge-on-fill);
+        background: var(--_tb-badge-fill);
+        color: var(--_tb-badge-on-fill);
         font-family: inherit;
         font-size: var(--tb-font-size-xs);
         font-weight: var(--tb-font-weight-semibold);
@@ -1120,95 +1120,95 @@
     /* On an icon or button, the badge straddles a corner, ringed in the surface color to stand apart. The x and y
        signs say which way it hangs over, and the reading direction flips x. */
     .tb-badge-host--overlap > .tb-badge {
-        --tb-badge-inset: var(--tb-badge-offset);
-        --tb-badge-direction: 1;
+        --_tb-badge-inset: var(--_tb-badge-offset);
+        --_tb-badge-direction: 1;
         position: absolute;
-        translate: calc(var(--tb-badge-x) * var(--tb-badge-direction) * 50%) calc(var(--tb-badge-y) * 50%);
+        translate: calc(var(--_tb-badge-x) * var(--_tb-badge-direction) * 50%) calc(var(--_tb-badge-y) * 50%);
         box-shadow: 0 0 0 2px var(--tb-color-surface);
         pointer-events: none;
     }
 
     .tb-badge-host--overlap > .tb-badge:dir(rtl) {
-        --tb-badge-direction: -1;
+        --_tb-badge-direction: -1;
     }
 
     /* A circle's edge crosses the diagonal 14.6% in from each side of its box. */
     .tb-badge-host--overlap > .tb-badge--circular {
-        --tb-badge-inset: calc(14.6% + var(--tb-badge-offset));
+        --_tb-badge-inset: calc(14.6% + var(--_tb-badge-offset));
     }
 
     /* An icon button's glyph fills the middle half of its box, so the badge hangs over the glyph's corner, unless it
        keeps to a round button's edge. */
     .tb-badge-host--overlap:has(> .tb-icon-button) > .tb-badge:not(.tb-badge--circular) {
-        --tb-badge-inset: calc(25% + var(--tb-badge-offset));
+        --_tb-badge-inset: calc(25% + var(--_tb-badge-offset));
     }
 
     .tb-badge--placement-topend {
-        --tb-badge-x: 1;
-        --tb-badge-y: -1;
-        inset-block-start: var(--tb-badge-inset);
-        inset-inline-end: var(--tb-badge-inset);
+        --_tb-badge-x: 1;
+        --_tb-badge-y: -1;
+        inset-block-start: var(--_tb-badge-inset);
+        inset-inline-end: var(--_tb-badge-inset);
     }
 
     .tb-badge--placement-topstart {
-        --tb-badge-x: -1;
-        --tb-badge-y: -1;
-        inset-block-start: var(--tb-badge-inset);
-        inset-inline-start: var(--tb-badge-inset);
+        --_tb-badge-x: -1;
+        --_tb-badge-y: -1;
+        inset-block-start: var(--_tb-badge-inset);
+        inset-inline-start: var(--_tb-badge-inset);
     }
 
     .tb-badge--placement-bottomend {
-        --tb-badge-x: 1;
-        --tb-badge-y: 1;
-        inset-block-end: var(--tb-badge-inset);
-        inset-inline-end: var(--tb-badge-inset);
+        --_tb-badge-x: 1;
+        --_tb-badge-y: 1;
+        inset-block-end: var(--_tb-badge-inset);
+        inset-inline-end: var(--_tb-badge-inset);
     }
 
     .tb-badge--placement-bottomstart {
-        --tb-badge-x: -1;
-        --tb-badge-y: 1;
-        inset-block-end: var(--tb-badge-inset);
-        inset-inline-start: var(--tb-badge-inset);
+        --_tb-badge-x: -1;
+        --_tb-badge-y: 1;
+        inset-block-end: var(--_tb-badge-inset);
+        inset-inline-start: var(--_tb-badge-inset);
     }
 
     .tb-badge--primary {
-        --tb-badge-fill: var(--tb-color-primary);
-        --tb-badge-on-fill: var(--tb-color-on-primary);
+        --_tb-badge-fill: var(--tb-color-primary);
+        --_tb-badge-on-fill: var(--tb-color-on-primary);
     }
 
     .tb-badge--neutral {
-        --tb-badge-fill: var(--tb-color-neutral);
-        --tb-badge-on-fill: var(--tb-color-on-neutral);
+        --_tb-badge-fill: var(--tb-color-neutral);
+        --_tb-badge-on-fill: var(--tb-color-on-neutral);
     }
 
     .tb-badge--success {
-        --tb-badge-fill: var(--tb-color-success);
-        --tb-badge-on-fill: var(--tb-color-on-success);
+        --_tb-badge-fill: var(--tb-color-success);
+        --_tb-badge-on-fill: var(--tb-color-on-success);
     }
 
     .tb-badge--warning {
-        --tb-badge-fill: var(--tb-color-warning);
-        --tb-badge-on-fill: var(--tb-color-on-warning);
+        --_tb-badge-fill: var(--tb-color-warning);
+        --_tb-badge-on-fill: var(--tb-color-on-warning);
     }
 
     .tb-badge--danger {
-        --tb-badge-fill: var(--tb-color-danger);
-        --tb-badge-on-fill: var(--tb-color-on-danger);
+        --_tb-badge-fill: var(--tb-color-danger);
+        --_tb-badge-on-fill: var(--tb-color-on-danger);
     }
 
     .tb-badge--info {
-        --tb-badge-fill: var(--tb-color-info);
-        --tb-badge-on-fill: var(--tb-color-on-info);
+        --_tb-badge-fill: var(--tb-color-info);
+        --_tb-badge-on-fill: var(--tb-color-on-info);
     }
 
     .tb-badge--secondary {
-        --tb-badge-fill: var(--tb-color-secondary);
-        --tb-badge-on-fill: var(--tb-color-on-secondary);
+        --_tb-badge-fill: var(--tb-color-secondary);
+        --_tb-badge-on-fill: var(--tb-color-on-secondary);
     }
 
     /* A textless dot is under 3:1 in amber on a light surface, so it takes the warning text tone. */
     .tb-badge--dot.tb-badge--warning {
-        --tb-badge-fill: light-dark(var(--tb-color-warning-text), var(--tb-color-warning));
+        --_tb-badge-fill: light-dark(var(--tb-color-warning-text), var(--tb-color-warning));
     }
 
     /* Forced colors drop the fill, so an outline keeps the badge's shape and a dot stays visible. */
@@ -1395,11 +1395,11 @@
     }
 
     .tb-chip {
-        --tb-chip-height: calc(var(--tb-control-height) - 0.5rem);
+        --_tb-chip-height: calc(var(--tb-control-height) - 0.5rem);
         display: inline-flex;
         align-items: stretch;
         box-sizing: border-box;
-        block-size: var(--tb-chip-height);
+        block-size: var(--_tb-chip-height);
         border: 1px solid transparent;
         border-radius: var(--tb-radius-full);
         font-family: inherit;
@@ -1409,89 +1409,89 @@
     }
 
     .tb-chip--small {
-        --tb-chip-height: max(1.5rem, calc(var(--tb-control-height) - 1rem));
+        --_tb-chip-height: max(1.5rem, calc(var(--tb-control-height) - 1rem));
         font-size: var(--tb-font-size-xs);
     }
 
     .tb-chip--large {
-        --tb-chip-height: var(--tb-control-height);
+        --_tb-chip-height: var(--tb-control-height);
         font-size: var(--tb-font-size-md);
     }
 
     /* Each tone sets the chip's own tokens; each variant decides which of them it paints with. */
     .tb-chip--primary {
-        --tb-chip-fill: var(--tb-color-primary);
-        --tb-chip-on-fill: var(--tb-color-on-primary);
-        --tb-chip-subtle: var(--tb-color-primary-subtle);
-        --tb-chip-text: var(--tb-color-primary-text);
+        --_tb-chip-fill: var(--tb-color-primary);
+        --_tb-chip-on-fill: var(--tb-color-on-primary);
+        --_tb-chip-subtle: var(--tb-color-primary-subtle);
+        --_tb-chip-text: var(--tb-color-primary-text);
     }
 
     .tb-chip--neutral {
-        --tb-chip-fill: var(--tb-color-neutral);
-        --tb-chip-on-fill: var(--tb-color-on-neutral);
-        --tb-chip-subtle: var(--tb-color-neutral-subtle);
-        --tb-chip-text: var(--tb-color-neutral-text);
+        --_tb-chip-fill: var(--tb-color-neutral);
+        --_tb-chip-on-fill: var(--tb-color-on-neutral);
+        --_tb-chip-subtle: var(--tb-color-neutral-subtle);
+        --_tb-chip-text: var(--tb-color-neutral-text);
     }
 
     .tb-chip--success {
-        --tb-chip-fill: var(--tb-color-success);
-        --tb-chip-on-fill: var(--tb-color-on-success);
-        --tb-chip-subtle: var(--tb-color-success-subtle);
-        --tb-chip-text: var(--tb-color-success-text);
+        --_tb-chip-fill: var(--tb-color-success);
+        --_tb-chip-on-fill: var(--tb-color-on-success);
+        --_tb-chip-subtle: var(--tb-color-success-subtle);
+        --_tb-chip-text: var(--tb-color-success-text);
     }
 
     .tb-chip--warning {
-        --tb-chip-fill: var(--tb-color-warning);
-        --tb-chip-on-fill: var(--tb-color-on-warning);
-        --tb-chip-subtle: var(--tb-color-warning-subtle);
-        --tb-chip-text: var(--tb-color-warning-text);
+        --_tb-chip-fill: var(--tb-color-warning);
+        --_tb-chip-on-fill: var(--tb-color-on-warning);
+        --_tb-chip-subtle: var(--tb-color-warning-subtle);
+        --_tb-chip-text: var(--tb-color-warning-text);
     }
 
     .tb-chip--danger {
-        --tb-chip-fill: var(--tb-color-danger);
-        --tb-chip-on-fill: var(--tb-color-on-danger);
-        --tb-chip-subtle: var(--tb-color-danger-subtle);
-        --tb-chip-text: var(--tb-color-danger-text);
+        --_tb-chip-fill: var(--tb-color-danger);
+        --_tb-chip-on-fill: var(--tb-color-on-danger);
+        --_tb-chip-subtle: var(--tb-color-danger-subtle);
+        --_tb-chip-text: var(--tb-color-danger-text);
     }
 
     .tb-chip--info {
-        --tb-chip-fill: var(--tb-color-info);
-        --tb-chip-on-fill: var(--tb-color-on-info);
-        --tb-chip-subtle: var(--tb-color-info-subtle);
-        --tb-chip-text: var(--tb-color-info-text);
+        --_tb-chip-fill: var(--tb-color-info);
+        --_tb-chip-on-fill: var(--tb-color-on-info);
+        --_tb-chip-subtle: var(--tb-color-info-subtle);
+        --_tb-chip-text: var(--tb-color-info-text);
     }
 
     .tb-chip--secondary {
-        --tb-chip-fill: var(--tb-color-secondary);
-        --tb-chip-on-fill: var(--tb-color-on-secondary);
-        --tb-chip-subtle: var(--tb-color-secondary-subtle);
-        --tb-chip-text: var(--tb-color-secondary-text);
+        --_tb-chip-fill: var(--tb-color-secondary);
+        --_tb-chip-on-fill: var(--tb-color-on-secondary);
+        --_tb-chip-subtle: var(--tb-color-secondary-subtle);
+        --_tb-chip-text: var(--tb-color-secondary-text);
     }
 
     .tb-chip--filled {
-        background: var(--tb-chip-fill);
-        color: var(--tb-chip-on-fill);
+        background: var(--_tb-chip-fill);
+        color: var(--_tb-chip-on-fill);
     }
 
     .tb-chip--soft {
-        background: var(--tb-chip-subtle);
-        color: var(--tb-chip-text);
+        background: var(--_tb-chip-subtle);
+        color: var(--_tb-chip-text);
     }
 
     .tb-chip--text {
-        color: var(--tb-chip-text);
+        color: var(--_tb-chip-text);
     }
 
     .tb-chip--outlined {
         border-color: var(--tb-border-strong);
-        color: var(--tb-chip-text);
+        color: var(--_tb-chip-text);
     }
 
     /* A selected toggle chip is filled whatever its variant, so on and off read apart at a glance. */
     .tb-chip.tb-chip--selected {
         border-color: transparent;
-        background: var(--tb-chip-fill);
-        color: var(--tb-chip-on-fill);
+        background: var(--_tb-chip-fill);
+        color: var(--_tb-chip-on-fill);
     }
 
     .tb-chip--disabled {
@@ -1534,13 +1534,13 @@
 
     /* At least the 24px target WCAG 2.5.8 asks for, so on a small chip it fills the chip's height. */
     .tb-chip__remove {
-        --tb-chip-remove-size: max(1.5rem, calc(var(--tb-chip-height) - 0.5rem));
+        --_tb-chip-remove-size: max(1.5rem, calc(var(--_tb-chip-height) - 0.5rem));
         display: inline-grid;
         place-items: center;
         align-self: center;
-        inline-size: var(--tb-chip-remove-size);
-        block-size: var(--tb-chip-remove-size);
-        margin-inline-end: calc((var(--tb-chip-height) - var(--tb-chip-remove-size)) / 2);
+        inline-size: var(--_tb-chip-remove-size);
+        block-size: var(--_tb-chip-remove-size);
+        margin-inline-end: calc((var(--_tb-chip-height) - var(--_tb-chip-remove-size)) / 2);
         padding: 0;
         border: 0;
         border-radius: var(--tb-radius-full);
@@ -1610,10 +1610,10 @@
     }
 
     .tb-list {
-        --tb-list-item-height: var(--tb-row-height);
-        --tb-list-item-padding: var(--tb-control-padding-block) var(--tb-space-3);
-        --tb-list-current: var(--tb-color-primary-subtle);
-        --tb-list-on-current: var(--tb-color-primary-text);
+        --_tb-list-item-height: var(--tb-row-height);
+        --_tb-list-item-padding: var(--tb-control-padding-block) var(--tb-space-3);
+        --_tb-list-current: var(--tb-color-primary-subtle);
+        --_tb-list-on-current: var(--tb-color-primary-text);
         display: flex;
         flex-direction: column;
         gap: 2px;
@@ -1640,7 +1640,7 @@
     .tb-list__item {
         display: flex;
         align-items: center;
-        min-block-size: var(--tb-list-item-height);
+        min-block-size: var(--_tb-list-item-height);
         border-radius: var(--tb-radius-sm);
     }
 
@@ -1652,8 +1652,8 @@
         gap: var(--tb-space-3);
         box-sizing: border-box;
         min-inline-size: 0;
-        min-block-size: var(--tb-list-item-height);
-        padding: var(--tb-list-item-padding);
+        min-block-size: var(--_tb-list-item-height);
+        padding: var(--_tb-list-item-padding);
     }
 
     .tb-list__action {
@@ -1683,8 +1683,8 @@
 
     .tb-list__item--selected,
     .tb-list__item--selected .tb-list__action:hover {
-        background: var(--tb-list-current);
-        color: var(--tb-list-on-current);
+        background: var(--_tb-list-current);
+        color: var(--_tb-list-on-current);
     }
 
     .tb-list__item--selected .tb-list__primary {
@@ -2003,7 +2003,7 @@
 
     .tb-description-list__list {
         display: grid;
-        grid-template-columns: repeat(var(--tb-description-list-columns, 1), minmax(0, 1fr));
+        grid-template-columns: repeat(var(--_tb-description-list-columns, 1), minmax(0, 1fr));
         gap: var(--tb-space-3) var(--tb-space-6);
         margin: 0;
     }
@@ -2088,7 +2088,7 @@
 
     /* An empty state sits centered in the space it stands in for, with a muted icon above its title. */
     .tb-empty-state {
-        --tb-empty-state-icon-size: 3rem;
+        --_tb-empty-state-icon-size: 3rem;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -2098,7 +2098,7 @@
     }
 
     .tb-empty-state--compact {
-        --tb-empty-state-icon-size: 2rem;
+        --_tb-empty-state-icon-size: 2rem;
         padding: var(--tb-space-4) var(--tb-space-3);
     }
 
@@ -2108,8 +2108,8 @@
     }
 
     .tb-empty-state__icon .tb-icon {
-        width: var(--tb-empty-state-icon-size);
-        height: var(--tb-empty-state-icon-size);
+        width: var(--_tb-empty-state-icon-size);
+        height: var(--_tb-empty-state-icon-size);
     }
 
     .tb-empty-state__title {
@@ -2282,66 +2282,66 @@
 
     /* Each tone sets the button's own tokens; each variant decides which of them it paints with. */
     .tb-button--primary {
-        --tb-button-fill: var(--tb-color-primary);
-        --tb-button-fill-hover: var(--tb-color-primary-hover);
-        --tb-button-fill-active: var(--tb-color-primary-active);
-        --tb-button-on-fill: var(--tb-color-on-primary);
-        --tb-button-subtle: var(--tb-color-primary-subtle);
-        --tb-button-text: var(--tb-color-primary-text);
+        --_tb-button-fill: var(--tb-color-primary);
+        --_tb-button-fill-hover: var(--tb-color-primary-hover);
+        --_tb-button-fill-active: var(--tb-color-primary-active);
+        --_tb-button-on-fill: var(--tb-color-on-primary);
+        --_tb-button-subtle: var(--tb-color-primary-subtle);
+        --_tb-button-text: var(--tb-color-primary-text);
     }
 
     .tb-button--neutral {
-        --tb-button-fill: var(--tb-color-neutral);
-        --tb-button-fill-hover: var(--tb-color-neutral-hover);
-        --tb-button-fill-active: var(--tb-color-neutral-active);
-        --tb-button-on-fill: var(--tb-color-on-neutral);
-        --tb-button-subtle: var(--tb-color-neutral-subtle);
-        --tb-button-text: var(--tb-color-neutral-text);
+        --_tb-button-fill: var(--tb-color-neutral);
+        --_tb-button-fill-hover: var(--tb-color-neutral-hover);
+        --_tb-button-fill-active: var(--tb-color-neutral-active);
+        --_tb-button-on-fill: var(--tb-color-on-neutral);
+        --_tb-button-subtle: var(--tb-color-neutral-subtle);
+        --_tb-button-text: var(--tb-color-neutral-text);
     }
 
     .tb-button--success {
-        --tb-button-fill: var(--tb-color-success);
-        --tb-button-fill-hover: var(--tb-color-success-hover);
-        --tb-button-fill-active: var(--tb-color-success-active);
-        --tb-button-on-fill: var(--tb-color-on-success);
-        --tb-button-subtle: var(--tb-color-success-subtle);
-        --tb-button-text: var(--tb-color-success-text);
+        --_tb-button-fill: var(--tb-color-success);
+        --_tb-button-fill-hover: var(--tb-color-success-hover);
+        --_tb-button-fill-active: var(--tb-color-success-active);
+        --_tb-button-on-fill: var(--tb-color-on-success);
+        --_tb-button-subtle: var(--tb-color-success-subtle);
+        --_tb-button-text: var(--tb-color-success-text);
     }
 
     .tb-button--warning {
-        --tb-button-fill: var(--tb-color-warning);
-        --tb-button-fill-hover: var(--tb-color-warning-hover);
-        --tb-button-fill-active: var(--tb-color-warning-active);
-        --tb-button-on-fill: var(--tb-color-on-warning);
-        --tb-button-subtle: var(--tb-color-warning-subtle);
-        --tb-button-text: var(--tb-color-warning-text);
+        --_tb-button-fill: var(--tb-color-warning);
+        --_tb-button-fill-hover: var(--tb-color-warning-hover);
+        --_tb-button-fill-active: var(--tb-color-warning-active);
+        --_tb-button-on-fill: var(--tb-color-on-warning);
+        --_tb-button-subtle: var(--tb-color-warning-subtle);
+        --_tb-button-text: var(--tb-color-warning-text);
     }
 
     .tb-button--danger {
-        --tb-button-fill: var(--tb-color-danger);
-        --tb-button-fill-hover: var(--tb-color-danger-hover);
-        --tb-button-fill-active: var(--tb-color-danger-active);
-        --tb-button-on-fill: var(--tb-color-on-danger);
-        --tb-button-subtle: var(--tb-color-danger-subtle);
-        --tb-button-text: var(--tb-color-danger-text);
+        --_tb-button-fill: var(--tb-color-danger);
+        --_tb-button-fill-hover: var(--tb-color-danger-hover);
+        --_tb-button-fill-active: var(--tb-color-danger-active);
+        --_tb-button-on-fill: var(--tb-color-on-danger);
+        --_tb-button-subtle: var(--tb-color-danger-subtle);
+        --_tb-button-text: var(--tb-color-danger-text);
     }
 
     .tb-button--info {
-        --tb-button-fill: var(--tb-color-info);
-        --tb-button-fill-hover: var(--tb-color-info-hover);
-        --tb-button-fill-active: var(--tb-color-info-active);
-        --tb-button-on-fill: var(--tb-color-on-info);
-        --tb-button-subtle: var(--tb-color-info-subtle);
-        --tb-button-text: var(--tb-color-info-text);
+        --_tb-button-fill: var(--tb-color-info);
+        --_tb-button-fill-hover: var(--tb-color-info-hover);
+        --_tb-button-fill-active: var(--tb-color-info-active);
+        --_tb-button-on-fill: var(--tb-color-on-info);
+        --_tb-button-subtle: var(--tb-color-info-subtle);
+        --_tb-button-text: var(--tb-color-info-text);
     }
 
     .tb-button--secondary {
-        --tb-button-fill: var(--tb-color-secondary);
-        --tb-button-fill-hover: var(--tb-color-secondary-hover);
-        --tb-button-fill-active: var(--tb-color-secondary-active);
-        --tb-button-on-fill: var(--tb-color-on-secondary);
-        --tb-button-subtle: var(--tb-color-secondary-subtle);
-        --tb-button-text: var(--tb-color-secondary-text);
+        --_tb-button-fill: var(--tb-color-secondary);
+        --_tb-button-fill-hover: var(--tb-color-secondary-hover);
+        --_tb-button-fill-active: var(--tb-color-secondary-active);
+        --_tb-button-on-fill: var(--tb-color-on-secondary);
+        --_tb-button-subtle: var(--tb-color-secondary-subtle);
+        --_tb-button-text: var(--tb-color-secondary-text);
     }
 
     .tb-button {
@@ -2374,80 +2374,80 @@
     }
 
     .tb-button--filled {
-        background: var(--tb-button-fill);
-        color: var(--tb-button-on-fill);
+        background: var(--_tb-button-fill);
+        color: var(--_tb-button-on-fill);
     }
 
     .tb-button--filled:hover:not(:disabled, [aria-disabled="true"]) {
-        background: var(--tb-button-fill-hover);
+        background: var(--_tb-button-fill-hover);
     }
 
     .tb-button--filled:active:not(:disabled, [aria-disabled="true"]) {
-        background: var(--tb-button-fill-active);
+        background: var(--_tb-button-fill-active);
     }
 
     .tb-button--outlined {
-        border-color: var(--tb-button-text);
+        border-color: var(--_tb-button-text);
         background: transparent;
-        color: var(--tb-button-text);
+        color: var(--_tb-button-text);
     }
 
     .tb-button--soft {
-        background: var(--tb-button-subtle);
-        color: var(--tb-button-text);
+        background: var(--_tb-button-subtle);
+        color: var(--_tb-button-text);
     }
 
     /* Neutral has no hue to set it apart, so its soft fill and gray text read as disabled; a stronger fill and the
        body text's color make it read as a control. */
     .tb-button--neutral.tb-button--soft {
-        --tb-button-subtle: color-mix(in oklch, var(--tb-color-neutral-subtle), var(--tb-color-neutral-text) 12%);
-        --tb-button-text: var(--tb-color-text);
+        --_tb-button-subtle: color-mix(in oklch, var(--tb-color-neutral-subtle), var(--tb-color-neutral-text) 12%);
+        --_tb-button-text: var(--tb-color-text);
     }
 
     .tb-button--text {
         background: transparent;
-        color: var(--tb-button-text);
+        color: var(--_tb-button-text);
     }
 
     .tb-button--outlined:hover:not(:disabled, [aria-disabled="true"], [aria-pressed="true"]),
     .tb-button--text:hover:not(:disabled, [aria-disabled="true"], [aria-pressed="true"]) {
-        background: var(--tb-button-subtle);
+        background: var(--_tb-button-subtle);
     }
 
     /* A soft button's hover and press deepen its fill toward its text, as the filled button's steps do. A mixed
        toggle's do too, in every variant, outranking a filled button's own. */
     .tb-button--soft:hover:not(:disabled, [aria-disabled="true"], [aria-pressed="true"]),
     .tb-button[aria-pressed="mixed"]:hover:not(:disabled, [aria-disabled="true"]) {
-        background: color-mix(in oklch, var(--tb-button-subtle), var(--tb-button-text) 10%);
+        background: color-mix(in oklch, var(--_tb-button-subtle), var(--_tb-button-text) 10%);
     }
 
     :is(.tb-button--soft, .tb-button--outlined, .tb-button--text):active:not(:disabled, [aria-disabled="true"],
         [aria-pressed="true"]),
     .tb-button[aria-pressed="mixed"]:active:not(:disabled, [aria-disabled="true"]) {
-        background: color-mix(in oklch, var(--tb-button-subtle), var(--tb-button-text) 18%);
+        background: color-mix(in oklch, var(--_tb-button-subtle), var(--_tb-button-text) 18%);
     }
 
     /* A pressed toggle takes the solid fill, well past the light fill an off one shows when hovered. */
     .tb-button[aria-pressed="true"] {
         border-color: transparent;
-        background: var(--tb-button-fill);
-        color: var(--tb-button-on-fill);
+        background: var(--_tb-button-fill);
+        color: var(--_tb-button-on-fill);
     }
 
     .tb-button[aria-pressed="true"]:hover:not(:disabled, [aria-disabled="true"], .tb-button--text, .tb-button--quiet) {
-        background: var(--tb-button-fill-hover);
+        background: var(--_tb-button-fill-hover);
     }
 
     /* A filled button is solid when off too, so an inner ring marks it pressed. */
     .tb-button--filled[aria-pressed="true"] {
-        box-shadow: inset 0 0 0 2px var(--tb-button-on-fill);
+        box-shadow: inset 0 0 0 2px var(--_tb-button-on-fill);
     }
 
     /* A text toggle on its own marks pressed with an edge in its text color, which meets 3:1 where a fill can't. */
     .tb-button--text[aria-pressed="true"] {
-        border-color: var(--tb-button-text);
-        background: var(--tb-button-subtle);
-        color: var(--tb-button-text);
+        border-color: var(--_tb-button-text);
+        background: var(--_tb-button-subtle);
+        color: var(--_tb-button-text);
     }
 
     /* The quiet look's bar meets 3:1 against its light fill and the page, which the fill alone can't. It holds through
@@ -2455,19 +2455,19 @@
     .tb-button--quiet[aria-pressed="true"],
     .tb-button--quiet[aria-pressed="true"]:is(:hover, :active):not(:disabled, [aria-disabled="true"]) {
         border-color: transparent;
-        background: var(--tb-button-subtle);
-        color: var(--tb-button-text);
-        box-shadow: inset 0 -2px 0 var(--tb-button-text);
+        background: var(--_tb-button-subtle);
+        color: var(--_tb-button-text);
+        box-shadow: inset 0 -2px 0 var(--_tb-button-text);
         border-end-start-radius: 0;
         border-end-end-radius: 0;
     }
 
     /* A mixed toggle, on for only part of what it acts on, takes the light fill and a dashed edge in every variant. */
     .tb-button[aria-pressed="mixed"] {
-        border-color: var(--tb-button-text);
+        border-color: var(--_tb-button-text);
         border-style: dashed;
-        background: var(--tb-button-subtle);
-        color: var(--tb-button-text);
+        background: var(--_tb-button-subtle);
+        color: var(--_tb-button-text);
     }
 
     @media (forced-colors: active) {
@@ -2551,9 +2551,9 @@
     }
 
     .tb-fab {
-        --tb-fab-size: 3.5rem;
-        min-width: var(--tb-fab-size);
-        min-height: var(--tb-fab-size);
+        --_tb-fab-size: 3.5rem;
+        min-width: var(--_tb-fab-size);
+        min-height: var(--_tb-fab-size);
         padding: 0;
         border-radius: var(--tb-fab-radius, var(--tb-radius-full));
         box-shadow: var(--tb-shadow-md);
@@ -2562,11 +2562,11 @@
     }
 
     .tb-fab.tb-button--small {
-        --tb-fab-size: 2.5rem;
+        --_tb-fab-size: 2.5rem;
     }
 
     .tb-fab.tb-button--large {
-        --tb-fab-size: 4.5rem;
+        --_tb-fab-size: 4.5rem;
     }
 
     .tb-fab:hover:not(:disabled, [aria-disabled="true"]) {
@@ -2690,8 +2690,8 @@
 
     /* Over the page as it scrolls, clear of a phone's rounded corners and home bar, and under dialogs and popups. */
     :is(.tb-fab, .tb-speed-dial):not(.tb-fab--inline, .tb-speed-dial--inline) {
-        --tb-fab-edge: var(--tb-fab-offset, var(--tb-space-4));
-        --tb-fab-side: calc(var(--tb-fab-edge)
+        --_tb-fab-edge: var(--tb-fab-offset, var(--tb-space-4));
+        --_tb-fab-side: calc(var(--_tb-fab-edge)
             + max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)));
         position: fixed;
         z-index: var(--tb-fab-z-index, 10);
@@ -2699,19 +2699,19 @@
 
     :is(.tb-fab--bottomend, .tb-fab--bottomstart, .tb-fab--bottomcenter, .tb-speed-dial--bottomend,
         .tb-speed-dial--bottomstart, .tb-speed-dial--bottomcenter) {
-        inset-block-end: calc(var(--tb-fab-edge) + env(safe-area-inset-bottom, 0px));
+        inset-block-end: calc(var(--_tb-fab-edge) + env(safe-area-inset-bottom, 0px));
     }
 
     :is(.tb-fab--topend, .tb-fab--topstart, .tb-speed-dial--topend, .tb-speed-dial--topstart) {
-        inset-block-start: calc(var(--tb-fab-edge) + env(safe-area-inset-top, 0px));
+        inset-block-start: calc(var(--_tb-fab-edge) + env(safe-area-inset-top, 0px));
     }
 
     :is(.tb-fab--bottomend, .tb-fab--topend, .tb-speed-dial--bottomend, .tb-speed-dial--topend) {
-        inset-inline-end: var(--tb-fab-side);
+        inset-inline-end: var(--_tb-fab-side);
     }
 
     :is(.tb-fab--bottomstart, .tb-fab--topstart, .tb-speed-dial--bottomstart, .tb-speed-dial--topstart) {
-        inset-inline-start: var(--tb-fab-side);
+        inset-inline-start: var(--_tb-fab-side);
     }
 
     /* Both insets with auto margins center it in either reading direction. */
@@ -2723,15 +2723,15 @@
 
     /* A speed dial is a menu drawn as round actions over the page, each icon centered over the trigger's. */
     .tb-speed-dial {
-        --tb-speed-dial-inset: var(--tb-space-2);
+        --_tb-speed-dial-inset: var(--tb-space-2);
     }
 
     .tb-speed-dial--small {
-        --tb-speed-dial-inset: 0px;
+        --_tb-speed-dial-inset: 0px;
     }
 
     .tb-speed-dial--large {
-        --tb-speed-dial-inset: var(--tb-space-4);
+        --_tb-speed-dial-inset: var(--tb-space-4);
     }
 
     .tb-speed-dial__plus .tb-fab__icon {
@@ -2746,7 +2746,7 @@
     .tb-speed-dial .tb-menu__list {
         min-width: 0;
         overflow: visible;
-        padding: var(--tb-space-2) var(--tb-speed-dial-inset);
+        padding: var(--tb-space-2) var(--_tb-speed-dial-inset);
         border: none;
         background: transparent;
         box-shadow: none;
@@ -2946,7 +2946,7 @@
     .tb-stack {
         display: flex;
         flex-direction: column;
-        gap: var(--tb-stack-gap);
+        gap: var(--_tb-stack-gap);
     }
 
     .tb-stack--row {
@@ -3047,11 +3047,11 @@
     .tb-field-row {
         display: grid;
         grid-template-rows: repeat(5, auto);
-        grid-template-columns: var(--tb-field-row-columns, none);
+        grid-template-columns: var(--_tb-field-row-columns, none);
         grid-auto-flow: column;
         justify-content: start;
         align-items: start;
-        column-gap: var(--tb-field-row-gap);
+        column-gap: var(--_tb-field-row-gap);
     }
 
     .tb-field-row > .tb-field:has(> [data-part="control"]) {
@@ -3124,17 +3124,17 @@
     .tb-grid {
         display: flex;
         flex-wrap: wrap;
-        gap: var(--tb-grid-gap);
+        gap: var(--_tb-grid-gap);
     }
 
     /* A column is the grid's width less its eleven gaps, over twelve; TbGridItem sizes its span in columns. */
     .tb-grid-item {
-        --tb-grid-column: calc((100% - 11 * var(--tb-grid-gap)) / 12);
+        --_tb-grid-column: calc((100% - 11 * var(--_tb-grid-gap)) / 12);
         box-sizing: border-box;
         min-width: 0;
         max-width: 100%;
-        flex: var(--tb-grid-flex);
-        margin-inline-start: calc(var(--tb-grid-offset) * (var(--tb-grid-column) + var(--tb-grid-gap)));
+        flex: var(--_tb-grid-flex);
+        margin-inline-start: calc(var(--_tb-grid-offset) * (var(--_tb-grid-column) + var(--_tb-grid-gap)));
     }
 
     /* Until its script places them, the cards sit in a plain grid, which also works out the columns they're placed in. */
@@ -3142,8 +3142,8 @@
         box-sizing: border-box;
         inline-size: 100%;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(min(var(--tb-masonry-column), 100%), 1fr));
-        gap: var(--tb-masonry-gap);
+        grid-template-columns: repeat(auto-fill, minmax(min(var(--_tb-masonry-column), 100%), 1fr));
+        gap: var(--_tb-masonry-gap);
         align-items: start;
     }
 
@@ -3160,75 +3160,75 @@
     /* These widths repeat the --tb-breakpoint-* tokens, because media queries can't read custom properties. */
     @media (min-width: 640px) {
         .tb-grid-item {
-            flex: var(--tb-grid-flex-sm);
-            margin-inline-start: calc(var(--tb-grid-offset-sm) * (var(--tb-grid-column) + var(--tb-grid-gap)));
+            flex: var(--_tb-grid-flex-sm);
+            margin-inline-start: calc(var(--_tb-grid-offset-sm) * (var(--_tb-grid-column) + var(--_tb-grid-gap)));
         }
     }
 
     @media (min-width: 768px) {
         .tb-grid-item {
-            flex: var(--tb-grid-flex-md);
-            margin-inline-start: calc(var(--tb-grid-offset-md) * (var(--tb-grid-column) + var(--tb-grid-gap)));
+            flex: var(--_tb-grid-flex-md);
+            margin-inline-start: calc(var(--_tb-grid-offset-md) * (var(--_tb-grid-column) + var(--_tb-grid-gap)));
         }
     }
 
     @media (min-width: 1024px) {
         .tb-grid-item {
-            flex: var(--tb-grid-flex-lg);
-            margin-inline-start: calc(var(--tb-grid-offset-lg) * (var(--tb-grid-column) + var(--tb-grid-gap)));
+            flex: var(--_tb-grid-flex-lg);
+            margin-inline-start: calc(var(--_tb-grid-offset-lg) * (var(--_tb-grid-column) + var(--_tb-grid-gap)));
         }
     }
 
     @media (min-width: 1280px) {
         .tb-grid-item {
-            flex: var(--tb-grid-flex-xl);
-            margin-inline-start: calc(var(--tb-grid-offset-xl) * (var(--tb-grid-column) + var(--tb-grid-gap)));
+            flex: var(--_tb-grid-flex-xl);
+            margin-inline-start: calc(var(--_tb-grid-offset-xl) * (var(--_tb-grid-column) + var(--_tb-grid-gap)));
         }
     }
 
     /* A banner spans the full width of its container, but its content is capped at the widest page width. */
     .tb-banner {
         container-type: inline-size;
-        border-bottom: 1px solid var(--tb-banner-accent);
-        background: var(--tb-banner-subtle);
+        border-bottom: 1px solid var(--_tb-banner-accent);
+        background: var(--_tb-banner-subtle);
         color: var(--tb-color-text);
         font-size: var(--tb-font-size-sm);
         line-height: var(--tb-line-height-normal);
     }
 
     .tb-banner--primary {
-        --tb-banner-subtle: var(--tb-color-primary-subtle);
-        --tb-banner-accent: var(--tb-color-primary-text);
+        --_tb-banner-subtle: var(--tb-color-primary-subtle);
+        --_tb-banner-accent: var(--tb-color-primary-text);
     }
 
     .tb-banner--neutral {
-        --tb-banner-subtle: var(--tb-color-neutral-subtle);
-        --tb-banner-accent: var(--tb-color-neutral-text);
+        --_tb-banner-subtle: var(--tb-color-neutral-subtle);
+        --_tb-banner-accent: var(--tb-color-neutral-text);
     }
 
     .tb-banner--success {
-        --tb-banner-subtle: var(--tb-color-success-subtle);
-        --tb-banner-accent: var(--tb-color-success-text);
+        --_tb-banner-subtle: var(--tb-color-success-subtle);
+        --_tb-banner-accent: var(--tb-color-success-text);
     }
 
     .tb-banner--warning {
-        --tb-banner-subtle: var(--tb-color-warning-subtle);
-        --tb-banner-accent: var(--tb-color-warning-text);
+        --_tb-banner-subtle: var(--tb-color-warning-subtle);
+        --_tb-banner-accent: var(--tb-color-warning-text);
     }
 
     .tb-banner--danger {
-        --tb-banner-subtle: var(--tb-color-danger-subtle);
-        --tb-banner-accent: var(--tb-color-danger-text);
+        --_tb-banner-subtle: var(--tb-color-danger-subtle);
+        --_tb-banner-accent: var(--tb-color-danger-text);
     }
 
     .tb-banner--info {
-        --tb-banner-subtle: var(--tb-color-info-subtle);
-        --tb-banner-accent: var(--tb-color-info-text);
+        --_tb-banner-subtle: var(--tb-color-info-subtle);
+        --_tb-banner-accent: var(--tb-color-info-text);
     }
 
     .tb-banner--secondary {
-        --tb-banner-subtle: var(--tb-color-secondary-subtle);
-        --tb-banner-accent: var(--tb-color-secondary-text);
+        --_tb-banner-subtle: var(--tb-color-secondary-subtle);
+        --_tb-banner-accent: var(--tb-color-secondary-text);
     }
 
     /* The parts share one row, centered while they fit; a longer message wraps beside the icon instead of taking a
@@ -3247,7 +3247,7 @@
     .tb-banner__icon {
         grid-area: 1 / 1;
         margin-inline-end: var(--tb-space-3);
-        color: var(--tb-banner-accent);
+        color: var(--_tb-banner-accent);
     }
 
     .tb-banner__message {
@@ -3519,19 +3519,19 @@
 
     /* Forward moves toward the start of the line, which is left in left-to-right text and right in right-to-left. */
     .tb-carousel__slides[data-direction="forward"] {
-        --tb-carousel-shift: 100%;
+        --_tb-carousel-shift: 100%;
     }
 
     .tb-carousel__slides[data-direction="back"] {
-        --tb-carousel-shift: -100%;
+        --_tb-carousel-shift: -100%;
     }
 
     .tb-carousel__slides[data-direction="forward"]:dir(rtl) {
-        --tb-carousel-shift: -100%;
+        --_tb-carousel-shift: -100%;
     }
 
     .tb-carousel__slides[data-direction="back"]:dir(rtl) {
-        --tb-carousel-shift: 100%;
+        --_tb-carousel-shift: 100%;
     }
 
     .tb-carousel__slides[data-transition="slide"] > .tb-carousel__slide:not([data-leaving]) {
@@ -3552,13 +3552,13 @@
 
     @keyframes tb-carousel-slide-in {
         from {
-            translate: var(--tb-carousel-shift) 0;
+            translate: var(--_tb-carousel-shift) 0;
         }
     }
 
     @keyframes tb-carousel-slide-out {
         to {
-            translate: calc(-1 * var(--tb-carousel-shift)) 0;
+            translate: calc(-1 * var(--_tb-carousel-shift)) 0;
         }
     }
 
@@ -3629,72 +3629,72 @@
         align-items: flex-start;
         gap: var(--tb-space-3);
         padding: calc(1.5 * var(--tb-control-padding-block)) var(--tb-space-4);
-        border-inline-start: 4px solid var(--tb-alert-accent);
+        border-inline-start: 4px solid var(--_tb-alert-accent);
         border-radius: var(--tb-radius-md);
-        background: var(--tb-alert-subtle);
+        background: var(--_tb-alert-subtle);
         color: var(--tb-color-text);
         font-size: var(--tb-font-size-sm);
         line-height: var(--tb-line-height-normal);
     }
 
     .tb-alert--primary {
-        --tb-alert-subtle: var(--tb-color-primary-subtle);
-        --tb-alert-accent: var(--tb-color-primary-text);
-        --tb-alert-fill: var(--tb-color-primary);
-        --tb-alert-on-fill: var(--tb-color-on-primary);
+        --_tb-alert-subtle: var(--tb-color-primary-subtle);
+        --_tb-alert-accent: var(--tb-color-primary-text);
+        --_tb-alert-fill: var(--tb-color-primary);
+        --_tb-alert-on-fill: var(--tb-color-on-primary);
     }
 
     .tb-alert--neutral {
-        --tb-alert-subtle: var(--tb-color-neutral-subtle);
-        --tb-alert-accent: var(--tb-color-neutral-text);
-        --tb-alert-fill: var(--tb-color-neutral);
-        --tb-alert-on-fill: var(--tb-color-on-neutral);
+        --_tb-alert-subtle: var(--tb-color-neutral-subtle);
+        --_tb-alert-accent: var(--tb-color-neutral-text);
+        --_tb-alert-fill: var(--tb-color-neutral);
+        --_tb-alert-on-fill: var(--tb-color-on-neutral);
     }
 
     .tb-alert--success {
-        --tb-alert-subtle: var(--tb-color-success-subtle);
-        --tb-alert-accent: var(--tb-color-success-text);
-        --tb-alert-fill: var(--tb-color-success);
-        --tb-alert-on-fill: var(--tb-color-on-success);
+        --_tb-alert-subtle: var(--tb-color-success-subtle);
+        --_tb-alert-accent: var(--tb-color-success-text);
+        --_tb-alert-fill: var(--tb-color-success);
+        --_tb-alert-on-fill: var(--tb-color-on-success);
     }
 
     .tb-alert--warning {
-        --tb-alert-subtle: var(--tb-color-warning-subtle);
-        --tb-alert-accent: var(--tb-color-warning-text);
-        --tb-alert-fill: var(--tb-color-warning);
-        --tb-alert-on-fill: var(--tb-color-on-warning);
+        --_tb-alert-subtle: var(--tb-color-warning-subtle);
+        --_tb-alert-accent: var(--tb-color-warning-text);
+        --_tb-alert-fill: var(--tb-color-warning);
+        --_tb-alert-on-fill: var(--tb-color-on-warning);
     }
 
     .tb-alert--danger {
-        --tb-alert-subtle: var(--tb-color-danger-subtle);
-        --tb-alert-accent: var(--tb-color-danger-text);
-        --tb-alert-fill: var(--tb-color-danger);
-        --tb-alert-on-fill: var(--tb-color-on-danger);
+        --_tb-alert-subtle: var(--tb-color-danger-subtle);
+        --_tb-alert-accent: var(--tb-color-danger-text);
+        --_tb-alert-fill: var(--tb-color-danger);
+        --_tb-alert-on-fill: var(--tb-color-on-danger);
     }
 
     .tb-alert--info {
-        --tb-alert-subtle: var(--tb-color-info-subtle);
-        --tb-alert-accent: var(--tb-color-info-text);
-        --tb-alert-fill: var(--tb-color-info);
-        --tb-alert-on-fill: var(--tb-color-on-info);
+        --_tb-alert-subtle: var(--tb-color-info-subtle);
+        --_tb-alert-accent: var(--tb-color-info-text);
+        --_tb-alert-fill: var(--tb-color-info);
+        --_tb-alert-on-fill: var(--tb-color-on-info);
     }
 
     .tb-alert--secondary {
-        --tb-alert-subtle: var(--tb-color-secondary-subtle);
-        --tb-alert-accent: var(--tb-color-secondary-text);
-        --tb-alert-fill: var(--tb-color-secondary);
-        --tb-alert-on-fill: var(--tb-color-on-secondary);
+        --_tb-alert-subtle: var(--tb-color-secondary-subtle);
+        --_tb-alert-accent: var(--tb-color-secondary-text);
+        --_tb-alert-fill: var(--tb-color-secondary);
+        --_tb-alert-on-fill: var(--tb-color-on-secondary);
     }
 
     .tb-alert__icon {
-        color: var(--tb-alert-accent);
+        color: var(--_tb-alert-accent);
     }
 
     .tb-alert--filled {
-        --tb-alert-page-ring: var(--tb-focus-ring-color);
+        --_tb-alert-page-ring: var(--tb-focus-ring-color);
         border-inline-start-color: transparent;
-        background: var(--tb-alert-fill);
-        color: var(--tb-alert-on-fill);
+        background: var(--_tb-alert-fill);
+        color: var(--_tb-alert-on-fill);
     }
 
     .tb-alert--filled .tb-alert__icon {
@@ -3705,24 +3705,24 @@
        readable. A popup's panel inside the alert has the page's own background, so it sets the page's ring back,
        which its contents inherit, and its buttons keep their own tokens. */
     .tb-alert--filled > * {
-        --tb-focus-ring-color: var(--tb-alert-on-fill);
+        --tb-focus-ring-color: var(--_tb-alert-on-fill);
     }
 
     .tb-alert--filled [popover] {
-        --tb-focus-ring-color: var(--tb-alert-page-ring);
+        --tb-focus-ring-color: var(--_tb-alert-page-ring);
     }
 
     .tb-alert--filled .tb-button:not([popover] *) {
-        --tb-button-text: var(--tb-alert-on-fill);
-        --tb-button-subtle: color-mix(in oklch, var(--tb-alert-on-fill) 16%, transparent);
-        --tb-button-fill: var(--tb-alert-on-fill);
-        --tb-button-fill-hover: color-mix(in oklch, var(--tb-alert-on-fill) 88%, var(--tb-alert-fill));
-        --tb-button-fill-active: color-mix(in oklch, var(--tb-alert-on-fill) 76%, var(--tb-alert-fill));
-        --tb-button-on-fill: var(--tb-alert-fill);
+        --_tb-button-text: var(--_tb-alert-on-fill);
+        --_tb-button-subtle: color-mix(in oklch, var(--_tb-alert-on-fill) 16%, transparent);
+        --_tb-button-fill: var(--_tb-alert-on-fill);
+        --_tb-button-fill-hover: color-mix(in oklch, var(--_tb-alert-on-fill) 88%, var(--_tb-alert-fill));
+        --_tb-button-fill-active: color-mix(in oklch, var(--_tb-alert-on-fill) 76%, var(--_tb-alert-fill));
+        --_tb-button-on-fill: var(--_tb-alert-fill);
     }
 
     .tb-alert--outlined {
-        border: 1px solid var(--tb-alert-accent);
+        border: 1px solid var(--_tb-alert-accent);
         background: none;
     }
 
@@ -3794,18 +3794,18 @@
         position: absolute;
         inset-block: 0;
         inset-inline-start: 0;
-        width: calc(var(--tb-progress-buffer) * 1%);
+        width: calc(var(--_tb-progress-buffer) * 1%);
         border-radius: inherit;
-        background: color-mix(in srgb, var(--tb-progress-fill) 30%, transparent);
+        background: color-mix(in srgb, var(--_tb-progress-fill) 30%, transparent);
         transition: width var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
     }
 
     .tb-progress--linear .tb-progress__indicator {
         position: relative;
-        width: calc(var(--tb-progress-percent) * 1%);
+        width: calc(var(--_tb-progress-percent) * 1%);
         height: 100%;
         border-radius: inherit;
-        background: var(--tb-progress-fill);
+        background: var(--_tb-progress-fill);
         transition: width var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
     }
 
@@ -3820,11 +3820,11 @@
 
     /* The stripes take the surface's color, so they show against the fill in light and dark themes alike. */
     .tb-progress--striped .tb-progress__indicator {
-        background-image: linear-gradient(45deg, var(--tb-progress-stripe) 25%, transparent 25%, transparent 50%,
-            var(--tb-progress-stripe) 50%, var(--tb-progress-stripe) 75%, transparent 75%, transparent);
+        background-image: linear-gradient(45deg, var(--_tb-progress-stripe) 25%, transparent 25%, transparent 50%,
+            var(--_tb-progress-stripe) 50%, var(--_tb-progress-stripe) 75%, transparent 75%, transparent);
         background-size: 1rem 1rem;
         animation: tb-progress-stripes 1s linear infinite;
-        --tb-progress-stripe: color-mix(in srgb, var(--tb-color-surface) 35%, transparent);
+        --_tb-progress-stripe: color-mix(in srgb, var(--tb-color-surface) 35%, transparent);
     }
 
     .tb-progress--striped:dir(rtl) .tb-progress__indicator {
@@ -3884,9 +3884,9 @@
     }
 
     .tb-progress--circular .tb-progress__indicator {
-        stroke: var(--tb-progress-fill);
+        stroke: var(--_tb-progress-fill);
         stroke-linecap: round;
-        stroke-dasharray: var(--tb-progress-percent) 100;
+        stroke-dasharray: var(--_tb-progress-percent) 100;
         transition: stroke-dasharray var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
     }
 
@@ -3901,23 +3901,23 @@
     }
 
     .tb-progress--primary {
-        --tb-progress-fill: var(--tb-color-primary-text);
+        --_tb-progress-fill: var(--tb-color-primary-text);
     }
 
     .tb-progress--neutral {
-        --tb-progress-fill: var(--tb-color-neutral-text);
+        --_tb-progress-fill: var(--tb-color-neutral-text);
     }
 
     .tb-progress--success {
-        --tb-progress-fill: var(--tb-color-success-text);
+        --_tb-progress-fill: var(--tb-color-success-text);
     }
 
     .tb-progress--warning {
-        --tb-progress-fill: var(--tb-color-warning-text);
+        --_tb-progress-fill: var(--tb-color-warning-text);
     }
 
     .tb-progress--danger {
-        --tb-progress-fill: var(--tb-color-danger-text);
+        --_tb-progress-fill: var(--tb-color-danger-text);
     }
 
     /* Forced colors paint every background in the page's own color, so the bar and the ring take system colors. */
@@ -3946,11 +3946,11 @@
     }
 
     .tb-progress--info {
-        --tb-progress-fill: var(--tb-color-info-text);
+        --_tb-progress-fill: var(--tb-color-info-text);
     }
 
     .tb-progress--secondary {
-        --tb-progress-fill: var(--tb-color-secondary-text);
+        --_tb-progress-fill: var(--tb-color-secondary-text);
     }
 
     /* A still partial indicator would read as a real value, so reduced motion fills it and pulses instead. */
@@ -4019,7 +4019,7 @@
     }
 
     .tb-field {
-        --tb-field-padding-block: var(--tb-control-padding-block);
+        --_tb-field-padding-block: var(--tb-control-padding-block);
         display: flex;
         flex-direction: column;
         gap: var(--tb-space-1);
@@ -4077,13 +4077,13 @@
     .tb-field__input {
         flex: 1 1 auto;
         min-width: 0;
-        padding-block: var(--tb-field-padding-block);
+        padding-block: var(--_tb-field-padding-block);
         border: none;
         background: transparent;
         color: inherit;
         font: inherit;
         line-height: var(--tb-line-height-tight);
-        font-size: var(--tb-field-font-size, var(--tb-font-size-md));
+        font-size: var(--_tb-field-font-size, var(--tb-font-size-md));
         outline: none;
     }
 
@@ -4116,8 +4116,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     /* A size works from the density's control height, as a button's does, and leaves the token to what's inside. */
     .tb-field--small {
-        --tb-field-font-size: var(--tb-font-size-sm);
-        --tb-field-padding-block: var(--tb-space-0);
+        --_tb-field-font-size: var(--tb-font-size-sm);
+        --_tb-field-padding-block: var(--tb-space-0);
     }
 
     /* A small box keeps room for its own 24px buttons, the smallest pointer target allowed, inside its borders. */
@@ -4133,11 +4133,11 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-field--small textarea.tb-field__input {
-        --tb-field-padding-block: var(--tb-space-1);
+        --_tb-field-padding-block: var(--tb-space-1);
     }
 
     .tb-field--large {
-        --tb-field-font-size: var(--tb-font-size-lg);
+        --_tb-field-font-size: var(--tb-font-size-lg);
     }
 
     .tb-field--large .tb-field__control {
@@ -4165,8 +4165,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         textarea.tb-field__input[data-max-lines] {
             box-sizing: border-box;
             field-sizing: content;
-            min-block-size: calc(var(--tb-text-field-lines) * 1lh + 2 * var(--tb-field-padding-block));
-            max-block-size: calc(var(--tb-text-field-max-lines) * 1lh + 2 * var(--tb-field-padding-block));
+            min-block-size: calc(var(--_tb-text-field-lines) * 1lh + 2 * var(--_tb-field-padding-block));
+            max-block-size: calc(var(--_tb-text-field-max-lines) * 1lh + 2 * var(--_tb-field-padding-block));
             resize: none;
         }
     }
@@ -4288,7 +4288,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-rich-text-editor__content {
         position: relative;
         box-sizing: border-box;
-        min-block-size: calc(var(--tb-rich-text-editor-lines) * 1lh + 2 * var(--tb-field-padding-block));
+        min-block-size: calc(var(--_tb-rich-text-editor-lines) * 1lh + 2 * var(--_tb-field-padding-block));
         padding-inline: var(--tb-control-padding-inline);
         line-height: var(--tb-line-height-normal);
         /* Spaces stay as typed, so the browser never swaps them for no-break spaces. */
@@ -4307,7 +4307,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-rich-text-editor__content--limited {
-        max-block-size: calc(var(--tb-rich-text-editor-max-lines) * 1lh + 2 * var(--tb-field-padding-block));
+        max-block-size: calc(var(--_tb-rich-text-editor-max-lines) * 1lh + 2 * var(--_tb-field-padding-block));
         overflow-y: auto;
     }
 
@@ -4453,7 +4453,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         box-sizing: border-box;
         contain: inline-size;
         min-block-size: 6lh;
-        padding: var(--tb-field-padding-block) var(--tb-control-padding-inline);
+        padding: var(--_tb-field-padding-block) var(--tb-control-padding-inline);
         line-height: var(--tb-line-height-normal);
         overflow-wrap: anywhere;
     }
@@ -4594,12 +4594,12 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-switch,
     .tb-radio-group,
     .tb-checkbox-group {
-        --tb-choice-fill: var(--tb-color-primary);
-        --tb-choice-on-fill: var(--tb-color-on-primary);
-        --tb-choice-box: 1.125rem;
-        --tb-switch-width: 2.25rem;
-        --tb-switch-height: 1.25rem;
-        --tb-switch-thumb: 0.875rem;
+        --_tb-choice-fill: var(--tb-color-primary);
+        --_tb-choice-on-fill: var(--tb-color-on-primary);
+        --_tb-choice-box: 1.125rem;
+        --_tb-switch-width: 2.25rem;
+        --_tb-switch-height: 1.25rem;
+        --_tb-switch-thumb: 0.875rem;
         font-size: var(--tb-font-size-sm);
     }
 
@@ -4607,40 +4607,40 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-switch--neutral,
     .tb-radio-group--neutral,
     .tb-checkbox-group--neutral {
-        --tb-choice-fill: var(--tb-color-neutral);
-        --tb-choice-on-fill: var(--tb-color-on-neutral);
+        --_tb-choice-fill: var(--tb-color-neutral);
+        --_tb-choice-on-fill: var(--tb-color-on-neutral);
     }
 
     .tb-checkbox--success,
     .tb-switch--success,
     .tb-radio-group--success,
     .tb-checkbox-group--success {
-        --tb-choice-fill: var(--tb-color-success);
-        --tb-choice-on-fill: var(--tb-color-on-success);
+        --_tb-choice-fill: var(--tb-color-success);
+        --_tb-choice-on-fill: var(--tb-color-on-success);
     }
 
     .tb-checkbox--danger,
     .tb-switch--danger,
     .tb-radio-group--danger,
     .tb-checkbox-group--danger {
-        --tb-choice-fill: var(--tb-color-danger);
-        --tb-choice-on-fill: var(--tb-color-on-danger);
+        --_tb-choice-fill: var(--tb-color-danger);
+        --_tb-choice-on-fill: var(--tb-color-on-danger);
     }
 
     .tb-checkbox--info,
     .tb-switch--info,
     .tb-radio-group--info,
     .tb-checkbox-group--info {
-        --tb-choice-fill: var(--tb-color-info);
-        --tb-choice-on-fill: var(--tb-color-on-info);
+        --_tb-choice-fill: var(--tb-color-info);
+        --_tb-choice-on-fill: var(--tb-color-on-info);
     }
 
     .tb-checkbox--secondary,
     .tb-switch--secondary,
     .tb-radio-group--secondary,
     .tb-checkbox-group--secondary {
-        --tb-choice-fill: var(--tb-color-secondary);
-        --tb-choice-on-fill: var(--tb-color-on-secondary);
+        --_tb-choice-fill: var(--tb-color-secondary);
+        --_tb-choice-on-fill: var(--tb-color-on-secondary);
     }
 
     /* The warning fill is too light to stand out from a light page, so checked warning controls take its text color. */
@@ -4648,19 +4648,19 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-switch--warning,
     .tb-radio-group--warning,
     .tb-checkbox-group--warning {
-        --tb-choice-fill: var(--tb-color-warning-text);
-        --tb-choice-on-fill: var(--tb-color-surface);
+        --_tb-choice-fill: var(--tb-color-warning-text);
+        --_tb-choice-on-fill: var(--tb-color-surface);
     }
 
     .tb-checkbox--small,
     .tb-switch--small,
     .tb-radio-group--small,
     .tb-checkbox-group--small {
-        --tb-choice-box: 1rem;
-        --tb-switch-width: 1.75rem;
-        --tb-switch-height: 1rem;
-        --tb-switch-thumb: 0.625rem;
-        --tb-choice-gap: 0;
+        --_tb-choice-box: 1rem;
+        --_tb-switch-width: 1.75rem;
+        --_tb-switch-height: 1rem;
+        --_tb-switch-thumb: 0.625rem;
+        --_tb-choice-gap: 0;
         font-size: var(--tb-font-size-xs);
     }
 
@@ -4668,11 +4668,11 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-switch--large,
     .tb-radio-group--large,
     .tb-checkbox-group--large {
-        --tb-choice-box: 1.375rem;
-        --tb-switch-width: 2.75rem;
-        --tb-switch-height: 1.5rem;
-        --tb-switch-thumb: 1.125rem;
-        --tb-choice-gap: var(--tb-space-2);
+        --_tb-choice-box: 1.375rem;
+        --_tb-switch-width: 2.75rem;
+        --_tb-switch-height: 1.5rem;
+        --_tb-switch-thumb: 1.125rem;
+        --_tb-choice-gap: var(--tb-space-2);
         font-size: var(--tb-font-size-md);
     }
 
@@ -4714,8 +4714,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-checkbox__input,
     .tb-tree__check,
     .tb-select__box {
-        width: var(--tb-choice-box, 1.125rem);
-        height: var(--tb-choice-box, 1.125rem);
+        width: var(--_tb-choice-box, 1.125rem);
+        height: var(--_tb-choice-box, 1.125rem);
         border-radius: var(--tb-radius-sm);
     }
 
@@ -4734,51 +4734,51 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-tree__check--checked,
     .tb-tree__check--mixed,
     [aria-selected="true"] > .tb-select__box {
-        border-color: var(--tb-choice-fill, var(--tb-color-primary));
-        background: var(--tb-choice-fill, var(--tb-color-primary));
+        border-color: var(--_tb-choice-fill, var(--tb-color-primary));
+        background: var(--_tb-choice-fill, var(--tb-color-primary));
     }
 
     .tb-checkbox__input:checked::before,
     .tb-tree__check--checked::before,
     [aria-selected="true"] > .tb-select__box::before {
         content: "";
-        width: calc(var(--tb-choice-box, 1.125rem) * 0.56);
-        height: calc(var(--tb-choice-box, 1.125rem) * 0.56);
-        background: var(--tb-choice-on-fill, var(--tb-color-on-primary));
+        width: calc(var(--_tb-choice-box, 1.125rem) * 0.56);
+        height: calc(var(--_tb-choice-box, 1.125rem) * 0.56);
+        background: var(--_tb-choice-on-fill, var(--tb-color-on-primary));
         clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
     }
 
     .tb-checkbox__input:indeterminate::before,
     .tb-tree__check--mixed::before {
         content: "";
-        width: calc(var(--tb-choice-box, 1.125rem) * 0.56);
+        width: calc(var(--_tb-choice-box, 1.125rem) * 0.56);
         height: 2px;
-        background: var(--tb-choice-on-fill, var(--tb-color-on-primary));
+        background: var(--_tb-choice-on-fill, var(--tb-color-on-primary));
     }
 
     /* A radio outside a radio group, such as a grid's single-selection radio, has no tone or size tokens, so it falls
        back to the primary tone and the medium size. */
     .tb-radio__input {
-        width: var(--tb-choice-box, 1.125rem);
-        height: var(--tb-choice-box, 1.125rem);
+        width: var(--_tb-choice-box, 1.125rem);
+        height: var(--_tb-choice-box, 1.125rem);
         border-radius: var(--tb-radius-full);
     }
 
     .tb-radio__input:checked {
-        border-color: var(--tb-choice-fill, var(--tb-color-primary));
+        border-color: var(--_tb-choice-fill, var(--tb-color-primary));
     }
 
     .tb-radio__input:checked::before {
         content: "";
-        width: calc(var(--tb-choice-box, 1.125rem) / 2);
-        height: calc(var(--tb-choice-box, 1.125rem) / 2);
+        width: calc(var(--_tb-choice-box, 1.125rem) / 2);
+        height: calc(var(--_tb-choice-box, 1.125rem) / 2);
         border-radius: var(--tb-radius-full);
-        background: var(--tb-choice-fill, var(--tb-color-primary));
+        background: var(--_tb-choice-fill, var(--tb-color-primary));
     }
 
     .tb-switch__input {
-        width: var(--tb-switch-width);
-        height: var(--tb-switch-height);
+        width: var(--_tb-switch-width);
+        height: var(--_tb-switch-height);
         padding: 2px;
         border-radius: var(--tb-radius-full);
         background: var(--tb-color-neutral-subtle);
@@ -4788,8 +4788,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     .tb-switch__input::before {
         content: "";
-        width: var(--tb-switch-thumb);
-        height: var(--tb-switch-thumb);
+        width: var(--_tb-switch-thumb);
+        height: var(--_tb-switch-thumb);
         border-radius: var(--tb-radius-full);
         background: var(--tb-color-text-muted);
     }
@@ -4800,24 +4800,24 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-switch__input:checked {
-        border-color: var(--tb-choice-fill);
-        background: var(--tb-choice-fill);
+        border-color: var(--_tb-choice-fill);
+        background: var(--_tb-choice-fill);
     }
 
     .tb-switch__input:checked::before {
-        background: var(--tb-choice-on-fill);
+        background: var(--_tb-choice-on-fill);
     }
 
     /* The thumb and its icons travel the track less the thumb's width, the 2px padding each side and the 1px border
        each side. */
     .tb-switch__input:checked::before,
     .tb-switch__input:checked ~ .tb-switch__thumb-icon {
-        transform: translateX(calc(var(--tb-switch-width) - var(--tb-switch-thumb) - 6px));
+        transform: translateX(calc(var(--_tb-switch-width) - var(--_tb-switch-thumb) - 6px));
     }
 
     .tb-switch__input:dir(rtl):checked::before,
     .tb-switch__input:dir(rtl):checked ~ .tb-switch__thumb-icon {
-        transform: translateX(calc(var(--tb-switch-thumb) + 6px - var(--tb-switch-width)));
+        transform: translateX(calc(var(--_tb-switch-thumb) + 6px - var(--_tb-switch-width)));
     }
 
     /* A thumb icon sits on the thumb and moves with it. Clicks pass through it to the switch, so the icon isn't
@@ -4830,23 +4830,23 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     .tb-switch__thumb-icon {
         position: absolute;
-        inset-block-start: calc((var(--tb-switch-height) - var(--tb-switch-thumb)) / 2);
+        inset-block-start: calc((var(--_tb-switch-height) - var(--_tb-switch-thumb)) / 2);
         inset-inline-start: 3px;
         display: grid;
         place-content: center;
-        width: var(--tb-switch-thumb);
-        height: var(--tb-switch-thumb);
+        width: var(--_tb-switch-thumb);
+        height: var(--_tb-switch-thumb);
         color: var(--tb-color-surface);
         pointer-events: none;
     }
 
     .tb-switch__thumb-icon .tb-icon {
-        width: calc(var(--tb-switch-thumb) * 0.75);
-        height: calc(var(--tb-switch-thumb) * 0.75);
+        width: calc(var(--_tb-switch-thumb) * 0.75);
+        height: calc(var(--_tb-switch-thumb) * 0.75);
     }
 
     .tb-switch__input:checked ~ .tb-switch__thumb-icon {
-        color: var(--tb-choice-fill);
+        color: var(--_tb-choice-fill);
     }
 
     /* Hidden rather than removed, so both icons slide with the thumb and the one shown is never left behind. */
@@ -4937,52 +4937,52 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-checkbox-group__options {
         display: flex;
         flex-direction: column;
-        gap: var(--tb-choice-gap, var(--tb-space-1));
+        gap: var(--_tb-choice-gap, var(--tb-space-1));
     }
 
     .tb-radio-group__options--row,
     .tb-checkbox-group__options--row {
         flex-direction: row;
         flex-wrap: wrap;
-        gap: var(--tb-choice-gap, var(--tb-space-1)) var(--tb-space-4);
+        gap: var(--_tb-choice-gap, var(--tb-space-1)) var(--tb-space-4);
     }
 
     /* Each monospace character plus its letter-spacing fills a box; the gradient underlines each box. */
     .tb-code-field {
-        --tb-code-field-slot: 2.5rem;
-        --tb-code-field-font-size: 1.25rem;
+        --_tb-code-field-slot: 2.5rem;
+        --_tb-code-field-font-size: 1.25rem;
         inline-size: max-content;
     }
 
     .tb-code-field.tb-field--small {
-        --tb-code-field-slot: 2rem;
-        --tb-code-field-font-size: 1rem;
+        --_tb-code-field-slot: 2rem;
+        --_tb-code-field-font-size: 1rem;
     }
 
     .tb-code-field.tb-field--large {
-        --tb-code-field-slot: 3rem;
-        --tb-code-field-font-size: 1.5rem;
+        --_tb-code-field-slot: 3rem;
+        --_tb-code-field-font-size: 1.5rem;
     }
 
     .tb-code-field .tb-code-field__input {
         box-sizing: content-box;
-        inline-size: calc(var(--tb-code-field-length) * var(--tb-code-field-slot));
-        padding-inline: calc((var(--tb-code-field-slot) - 1ch) / 2) 0;
+        inline-size: calc(var(--_tb-code-field-length) * var(--_tb-code-field-slot));
+        padding-inline: calc((var(--_tb-code-field-slot) - 1ch) / 2) 0;
         font-family: var(--tb-font-family-mono);
-        font-size: var(--tb-code-field-font-size);
-        letter-spacing: calc(var(--tb-code-field-slot) - 1ch);
+        font-size: var(--_tb-code-field-font-size);
+        letter-spacing: calc(var(--_tb-code-field-slot) - 1ch);
         text-transform: uppercase;
-        background: repeating-linear-gradient(to right, var(--tb-code-field-slot-color, var(--tb-border-strong)) 0
-                calc(var(--tb-code-field-slot) - var(--tb-space-2)), transparent 0 var(--tb-code-field-slot))
+        background: repeating-linear-gradient(to right, var(--_tb-code-field-slot-color, var(--tb-border-strong)) 0
+                calc(var(--_tb-code-field-slot) - var(--tb-space-2)), transparent 0 var(--_tb-code-field-slot))
             calc(var(--tb-space-2) / 2) calc(100% - var(--tb-space-2)) /
-            calc(var(--tb-code-field-length) * var(--tb-code-field-slot)) 2px no-repeat;
+            calc(var(--_tb-code-field-length) * var(--_tb-code-field-slot)) 2px no-repeat;
     }
 
     /* Forced colors drop the slots' color, so the input opts out and draws the slots, its text and its background in
        system colors. */
     @media (forced-colors: active) {
         .tb-code-field .tb-code-field__input {
-            --tb-code-field-slot-color: CanvasText;
+            --_tb-code-field-slot-color: CanvasText;
             forced-color-adjust: none;
             background-color: Canvas;
             color: CanvasText;
@@ -5070,22 +5070,22 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-radio-group--segmented {
-        --tb-segment-height: var(--tb-control-height);
+        --_tb-segment-height: var(--tb-control-height);
     }
 
     .tb-radio-group--segmented.tb-radio-group--small {
-        --tb-segment-height: var(--tb-control-height-sm);
+        --_tb-segment-height: var(--tb-control-height-sm);
     }
 
     .tb-radio-group--segmented.tb-radio-group--large {
-        --tb-segment-height: var(--tb-control-height-lg);
+        --_tb-segment-height: var(--tb-control-height-lg);
     }
 
     /* The track's padding and border take 6px of the control height; a segment is never shorter than 24px. */
     .tb-radio-group--segmented .tb-radio {
         position: relative;
         justify-content: center;
-        min-height: max(24px, calc(var(--tb-segment-height) - 6px));
+        min-height: max(24px, calc(var(--_tb-segment-height) - 6px));
         padding: 0 var(--tb-space-3);
         border-radius: calc(var(--tb-radius-md) - 2px);
         font-weight: var(--tb-font-weight-medium);
@@ -5107,8 +5107,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-radio-group--segmented .tb-radio:has(.tb-radio__input:checked) {
-        background: var(--tb-choice-fill);
-        color: var(--tb-choice-on-fill);
+        background: var(--_tb-choice-fill);
+        color: var(--_tb-choice-on-fill);
     }
 
     .tb-radio-group--segmented .tb-radio:has(.tb-radio__input:focus-visible) {
@@ -5176,25 +5176,25 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-tooltip[data-side="bottom"]::before {
         inset-inline: 0;
         bottom: 100%;
-        height: var(--tb-anchored-offset);
+        height: var(--_tb-anchored-offset);
     }
 
     .tb-tooltip[data-side="top"]::before {
         inset-inline: 0;
         top: 100%;
-        height: var(--tb-anchored-offset);
+        height: var(--_tb-anchored-offset);
     }
 
     .tb-tooltip[data-side="start"]::before {
         inset-block: 0;
         inset-inline-start: 100%;
-        width: var(--tb-anchored-offset);
+        width: var(--_tb-anchored-offset);
     }
 
     .tb-tooltip[data-side="end"]::before {
         inset-block: 0;
         inset-inline-end: 100%;
-        width: var(--tb-anchored-offset);
+        width: var(--_tb-anchored-offset);
     }
 
     /* A plain kbd in a tooltip; a TbKbd keeps its own keycaps. */
@@ -5209,35 +5209,35 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     /* A square turned on its corner, half under the tooltip, kept clear of the rounded corners as it follows the
        trigger's middle. */
     .tb-tooltip__arrow {
-        --tb-tooltip-arrow-size: 8px;
-        --tb-tooltip-arrow-along: clamp(var(--tb-radius-sm),
-            calc(var(--tb-anchor-center, 50%) - var(--tb-tooltip-arrow-size) / 2),
-            calc(100% - var(--tb-radius-sm) - var(--tb-tooltip-arrow-size)));
+        --_tb-tooltip-arrow-size: 8px;
+        --_tb-tooltip-arrow-along: clamp(var(--tb-radius-sm),
+            calc(var(--_tb-anchor-center, 50%) - var(--_tb-tooltip-arrow-size) / 2),
+            calc(100% - var(--tb-radius-sm) - var(--_tb-tooltip-arrow-size)));
         position: absolute;
-        width: var(--tb-tooltip-arrow-size);
-        height: var(--tb-tooltip-arrow-size);
+        width: var(--_tb-tooltip-arrow-size);
+        height: var(--_tb-tooltip-arrow-size);
         background: inherit;
         rotate: 45deg;
     }
 
     .tb-tooltip[data-side="top"] > .tb-tooltip__arrow {
-        top: calc(100% - var(--tb-tooltip-arrow-size) / 2);
-        left: var(--tb-tooltip-arrow-along);
+        top: calc(100% - var(--_tb-tooltip-arrow-size) / 2);
+        left: var(--_tb-tooltip-arrow-along);
     }
 
     .tb-tooltip[data-side="bottom"] > .tb-tooltip__arrow {
-        bottom: calc(100% - var(--tb-tooltip-arrow-size) / 2);
-        left: var(--tb-tooltip-arrow-along);
+        bottom: calc(100% - var(--_tb-tooltip-arrow-size) / 2);
+        left: var(--_tb-tooltip-arrow-along);
     }
 
     .tb-tooltip[data-side="start"] > .tb-tooltip__arrow {
-        inset-inline-start: calc(100% - var(--tb-tooltip-arrow-size) / 2);
-        top: var(--tb-tooltip-arrow-along);
+        inset-inline-start: calc(100% - var(--_tb-tooltip-arrow-size) / 2);
+        top: var(--_tb-tooltip-arrow-along);
     }
 
     .tb-tooltip[data-side="end"] > .tb-tooltip__arrow {
-        inset-inline-end: calc(100% - var(--tb-tooltip-arrow-size) / 2);
-        top: var(--tb-tooltip-arrow-along);
+        inset-inline-end: calc(100% - var(--_tb-tooltip-arrow-size) / 2);
+        top: var(--_tb-tooltip-arrow-along);
     }
 
     /* A menubar's menus sit in a row. */
@@ -5261,7 +5261,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-menu--full-width > .tb-menu__list {
-        min-width: max(10rem, var(--tb-anchor-width, 0px));
+        min-width: max(10rem, var(--_tb-anchor-width, 0px));
     }
 
     /* A long press opens the context menu, so iOS doesn't also show its own callout for a link or image. */
@@ -5273,7 +5273,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-menu__list {
         box-sizing: border-box;
         min-width: 10rem;
-        max-block-size: var(--tb-available-block-size, none);
+        max-block-size: var(--_tb-available-block-size, none);
         overflow-y: auto;
         margin: 0;
         padding: var(--tb-space-1);
@@ -5294,29 +5294,29 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
        a list box's, and follow the density. They are the menu's own variables, which take precedence over the tokens
        an app sets for every menu. */
     .tb-menu__list--small {
-        --tb-menu-size-height: max(24px, calc(var(--tb-item-height) - 4px));
-        --tb-menu-size-text: var(--tb-font-size-xs);
-        --tb-menu-size-icon: 1rem;
+        --_tb-menu-size-height: max(24px, calc(var(--tb-item-height) - 4px));
+        --_tb-menu-size-text: var(--tb-font-size-xs);
+        --_tb-menu-size-icon: 1rem;
     }
 
     .tb-menu__list--large {
-        --tb-menu-size-height: calc(var(--tb-item-height) + 8px);
-        --tb-menu-size-text: var(--tb-font-size-md);
-        --tb-menu-size-icon: 1.25rem;
+        --_tb-menu-size-height: calc(var(--tb-item-height) + 8px);
+        --_tb-menu-size-text: var(--tb-font-size-md);
+        --_tb-menu-size-icon: 1.25rem;
     }
 
     /* The size of an item's text: the menu's own step, or else the token. A group's label is sized from it too. */
     :is(.tb-menu__item, .tb-menu__group-label) {
-        --tb-menu-text: var(--tb-menu-size-text, var(--tb-menu-item-font-size, var(--tb-font-size-sm)));
+        --_tb-menu-text: var(--_tb-menu-size-text, var(--tb-menu-item-font-size, var(--tb-font-size-sm)));
     }
 
     .tb-menu__item {
-        --tb-menu-icon: var(--tb-menu-size-icon, var(--tb-menu-item-icon-size, 1rem));
+        --_tb-menu-icon: var(--_tb-menu-size-icon, var(--tb-menu-item-icon-size, 1rem));
         display: flex;
         align-items: center;
         gap: var(--tb-space-2);
         box-sizing: border-box;
-        min-height: var(--tb-menu-size-height, var(--tb-menu-item-height, var(--tb-item-height)));
+        min-height: var(--_tb-menu-size-height, var(--tb-menu-item-height, var(--tb-item-height)));
         width: 100%;
         padding: var(--tb-space-1) var(--tb-space-3);
         border: none;
@@ -5325,7 +5325,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         color: inherit;
         font: inherit;
         line-height: var(--tb-line-height-tight);
-        font-size: var(--tb-menu-text);
+        font-size: var(--_tb-menu-text);
         text-align: start;
         cursor: pointer;
     }
@@ -5334,8 +5334,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
        the app puts in the item keeps its own size. */
     .tb-menu__item > :is([data-part="icon"], [data-part="chevron"]),
     .tb-menu__indicator > .tb-icon {
-        width: var(--tb-menu-icon);
-        height: var(--tb-menu-icon);
+        width: var(--_tb-menu-icon);
+        height: var(--_tb-menu-icon);
     }
 
     /* The pointer moves focus too, so focus alone marks the item Enter would choose. Until the script attaches, hover
@@ -5364,7 +5364,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-menu__end,
     .tb-menu__description,
     .tb-menu__group-label {
-        font-size: max(0.6875rem, calc(var(--tb-menu-text) - 0.125rem));
+        font-size: max(0.6875rem, calc(var(--_tb-menu-text) - 0.125rem));
     }
 
     .tb-menu__end {
@@ -5413,13 +5413,13 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         flex: none;
         align-items: center;
         justify-content: center;
-        width: var(--tb-menu-icon);
+        width: var(--_tb-menu-icon);
     }
 
     .tb-menu__item[role="menuitemradio"][aria-checked="true"] > .tb-menu__indicator::before {
         content: "";
-        width: calc(var(--tb-menu-icon) * 0.4);
-        height: calc(var(--tb-menu-icon) * 0.4);
+        width: calc(var(--_tb-menu-icon) * 0.4);
+        height: calc(var(--_tb-menu-icon) * 0.4);
         border-radius: var(--tb-radius-full);
         background: currentColor;
     }
@@ -5466,7 +5466,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
        !important because a page's own unlayered styles for its root, such as a reset's padding, would otherwise win. */
     :root:has(.tb-overlay--lock-scroll,
         dialog.tb-dialog:is(:modal, [data-layer="page"][data-backdrop]:not([data-leaving]))) {
-        --tb-scroll-lock-offset: var(--tb-page-scrollbar, 0px);
+        --tb-scroll-lock-offset: var(--_tb-page-scrollbar, 0px);
         box-sizing: border-box !important;
         overflow: hidden !important;
         padding-right: var(--tb-scroll-lock-offset) !important;
@@ -5478,7 +5478,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     :root[data-tb-scrollbar-left]:has(.tb-overlay--lock-scroll,
         dialog.tb-dialog:is(:modal, [data-layer="page"][data-backdrop]:not([data-leaving]))) {
         --tb-scroll-lock-offset: 0px;
-        --tb-scroll-lock-offset-left: var(--tb-page-scrollbar, 0px);
+        --tb-scroll-lock-offset-left: var(--_tb-page-scrollbar, 0px);
         padding-left: var(--tb-scroll-lock-offset-left) !important;
     }
 
@@ -5489,7 +5489,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-popover__panel {
         box-sizing: border-box;
         max-inline-size: min(var(--tb-popover-max-width, 24rem), calc(100vw - 2 * var(--tb-space-4)));
-        max-block-size: var(--tb-available-block-size, none);
+        max-block-size: var(--_tb-available-block-size, none);
         overflow-y: auto;
         margin: 0;
         padding: var(--tb-space-4);
@@ -5544,7 +5544,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     .tb-dialog {
         box-sizing: border-box;
-        width: min(calc(100vw - 2 * var(--tb-space-4)), var(--tb-dialog-width));
+        width: min(calc(100vw - 2 * var(--tb-space-4)), var(--_tb-dialog-width));
         max-height: calc(100vh - 2 * var(--tb-space-8));
         padding: 0;
         border: 1px solid var(--tb-border-subtle);
@@ -5566,7 +5566,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-dialog[data-layer="page"] {
         position: fixed;
         inset: 0;
-        z-index: calc(var(--tb-dialog-z-index, 1100) + var(--tb-dialog-level, 0));
+        z-index: calc(var(--tb-dialog-z-index, 1100) + var(--_tb-dialog-level, 0));
         overflow: clip;
     }
 
@@ -5662,30 +5662,30 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-dialog--small {
-        --tb-dialog-width: 24rem;
+        --_tb-dialog-width: 24rem;
     }
 
     .tb-dialog--medium {
-        --tb-dialog-width: 32rem;
+        --_tb-dialog-width: 32rem;
     }
 
     .tb-dialog--large {
-        --tb-dialog-width: 48rem;
+        --_tb-dialog-width: 48rem;
     }
 
     .tb-dialog--extralarge {
-        --tb-dialog-width: 64rem;
+        --_tb-dialog-width: 64rem;
     }
 
     .tb-dialog--fit {
-        --tb-dialog-width: 100vw;
+        --_tb-dialog-width: 100vw;
         width: fit-content;
-        max-width: min(calc(100vw - 2 * var(--tb-space-4)), var(--tb-dialog-width));
+        max-width: min(calc(100vw - 2 * var(--tb-space-4)), var(--_tb-dialog-width));
     }
 
     .tb-dialog--full {
-        --tb-dialog-width: 100vw;
-        width: min(100%, var(--tb-dialog-width));
+        --_tb-dialog-width: 100vw;
+        width: min(100%, var(--_tb-dialog-width));
         max-width: 100vw;
         margin: 0;
         height: 100vh;
@@ -5695,13 +5695,13 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     /* A minimized dialog shows only its header, at the offset the script gives it from the bottom-end corner. */
     .tb-dialog[data-window-state="minimized"] {
-        --tb-dialog-tray-gap: var(--tb-space-2);
-        --tb-dialog-tray-edge: var(--tb-space-4);
-        width: min(18rem, 100% - 2 * var(--tb-dialog-tray-edge));
+        --_tb-dialog-tray-gap: var(--tb-space-2);
+        --_tb-dialog-tray-edge: var(--tb-space-4);
+        width: min(18rem, 100% - 2 * var(--_tb-dialog-tray-edge));
         height: fit-content;
         max-height: none;
-        margin-block: auto calc(var(--tb-dialog-tray-edge) + var(--tb-dialog-tray-block, 0px));
-        margin-inline: auto calc(var(--tb-dialog-tray-edge) + var(--tb-dialog-tray-inline, 0px));
+        margin-block: auto calc(var(--_tb-dialog-tray-edge) + var(--_tb-dialog-tray-block, 0px));
+        margin-inline: auto calc(var(--_tb-dialog-tray-edge) + var(--_tb-dialog-tray-inline, 0px));
     }
 
     .tb-dialog[data-window-state="minimized"] > [data-part="body"] {
@@ -5726,14 +5726,14 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     /* A moved or resized dialog keeps its place and size, apart from while it is minimized or maximized. */
     .tb-dialog[data-placed]:not([data-window-state="minimized"], [data-window-state="maximized"]) {
-        inset: var(--tb-dialog-top) auto auto var(--tb-dialog-left);
+        inset: var(--_tb-dialog-top) auto auto var(--_tb-dialog-left);
         margin: 0;
     }
 
     .tb-dialog[data-sized]:not([data-window-state="minimized"], [data-window-state="maximized"]) {
-        width: var(--tb-dialog-resized-width);
+        width: var(--_tb-dialog-resized-width);
         max-width: none;
-        height: var(--tb-dialog-resized-height);
+        height: var(--_tb-dialog-resized-height);
         max-height: none;
     }
 
@@ -5848,7 +5848,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-drawer.tb-dialog--fit {
-        max-width: min(100%, var(--tb-dialog-width));
+        max-width: min(100%, var(--_tb-dialog-width));
     }
 
     .tb-drawer--start,
@@ -5857,25 +5857,25 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-drawer--start {
-        --tb-drawer-from: -100% 0;
+        --_tb-drawer-from: -100% 0;
         margin-inline-end: auto;
         border-start-end-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
         border-end-end-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
     }
 
     .tb-drawer--end {
-        --tb-drawer-from: 100% 0;
+        --_tb-drawer-from: 100% 0;
         margin-inline-start: auto;
         border-start-start-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
         border-end-start-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
     }
 
     .tb-drawer--start:dir(rtl) {
-        --tb-drawer-from: 100% 0;
+        --_tb-drawer-from: 100% 0;
     }
 
     .tb-drawer--end:dir(rtl) {
-        --tb-drawer-from: -100% 0;
+        --_tb-drawer-from: -100% 0;
     }
 
     .tb-drawer--top,
@@ -5897,14 +5897,14 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-drawer--top {
-        --tb-drawer-from: 0 -100%;
+        --_tb-drawer-from: 0 -100%;
         margin-block-end: auto;
         border-end-start-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
         border-end-end-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
     }
 
     .tb-drawer--bottom {
-        --tb-drawer-from: 0 100%;
+        --_tb-drawer-from: 0 100%;
         margin-block-start: auto;
         border-start-start-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
         border-start-end-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
@@ -5912,12 +5912,12 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     @starting-style {
         .tb-drawer[open] {
-            translate: var(--tb-drawer-from);
+            translate: var(--_tb-drawer-from);
         }
     }
 
     .tb-drawer[data-leaving] {
-        translate: var(--tb-drawer-from);
+        translate: var(--_tb-drawer-from);
     }
 
     /* A drawer's body stacks its content, and so does the body of a full-window dialog with actions, so the actions
@@ -5999,30 +5999,30 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         display: block;
         max-width: 100cqw;
         max-height: 100cqh;
-        rotate: var(--tb-lightbox-turn);
+        rotate: var(--_tb-lightbox-turn);
     }
 
     /* Once its size is known, the image fits the stage at its own shape, never past its own size, and is then scaled
        by the zoom. A quarter turn swaps its sides, so its height fits the stage's width. */
     .tb-lightbox__frame[data-measured] {
-        --tb-lightbox-fit: min(100cqw, 100cqh * var(--tb-lightbox-ratio), var(--tb-lightbox-natural-width));
-        --tb-lightbox-width: calc(var(--tb-lightbox-fit) * var(--tb-lightbox-zoom));
-        width: var(--tb-lightbox-width);
-        height: calc(var(--tb-lightbox-width) / var(--tb-lightbox-ratio));
+        --_tb-lightbox-fit: min(100cqw, 100cqh * var(--_tb-lightbox-ratio), var(--_tb-lightbox-natural-width));
+        --_tb-lightbox-width: calc(var(--_tb-lightbox-fit) * var(--_tb-lightbox-zoom));
+        width: var(--_tb-lightbox-width);
+        height: calc(var(--_tb-lightbox-width) / var(--_tb-lightbox-ratio));
     }
 
     .tb-lightbox__stage:is([data-turns="1"], [data-turns="3"]) > .tb-lightbox__frame[data-measured] {
-        --tb-lightbox-fit: min(100cqh, 100cqw * var(--tb-lightbox-ratio), var(--tb-lightbox-natural-width));
-        width: calc(var(--tb-lightbox-width) / var(--tb-lightbox-ratio));
-        height: var(--tb-lightbox-width);
+        --_tb-lightbox-fit: min(100cqh, 100cqw * var(--_tb-lightbox-ratio), var(--_tb-lightbox-natural-width));
+        width: calc(var(--_tb-lightbox-width) / var(--_tb-lightbox-ratio));
+        height: var(--_tb-lightbox-width);
     }
 
     .tb-lightbox__frame[data-measured] > .tb-lightbox__image {
         position: absolute;
         top: 50%;
         left: 50%;
-        width: var(--tb-lightbox-width);
-        height: calc(var(--tb-lightbox-width) / var(--tb-lightbox-ratio));
+        width: var(--_tb-lightbox-width);
+        height: calc(var(--_tb-lightbox-width) / var(--_tb-lightbox-ratio));
         max-width: none;
         max-height: none;
         translate: -50% -50%;
@@ -6077,14 +6077,14 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         z-index: 1;
         pointer-events: none;
         opacity: var(--tb-watermark-opacity, 0.12);
-        background-image: var(--tb-watermark-tile);
-        background-size: var(--tb-watermark-size) auto;
+        background-image: var(--_tb-watermark-tile);
+        background-size: var(--_tb-watermark-size) auto;
         print-color-adjust: exact;
     }
 
     .tb-watermark__marks--text {
         background: var(--tb-watermark-color, var(--tb-color-text));
-        mask-image: var(--tb-watermark-tile);
+        mask-image: var(--_tb-watermark-tile);
         mask-repeat: repeat;
     }
 
@@ -6316,19 +6316,16 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     /* The bar runs across the top, the navigation sits beside the page, and the page and its footer fill the rest.
        The window scrolls, while the bar and the navigation stay in view. */
     .tb-app-shell {
-        --tb-app-shell-height: 100dvh;
-        --tb-app-shell-navigation-width: 16rem;
-        --tb-app-shell-rail-width: 5.5rem;
         position: relative;
         display: grid;
-        grid-template-columns: var(--tb-app-shell-navigation-width) minmax(0, 1fr);
+        grid-template-columns: var(--tb-app-shell-navigation-width, 16rem) minmax(0, 1fr);
         grid-template-rows: auto 1fr auto;
         grid-template-areas: "header header" "navigation main" "navigation footer";
-        min-height: var(--tb-app-shell-height);
+        min-height: var(--tb-app-shell-height, 100dvh);
     }
 
     .tb-app-shell--collapsed {
-        grid-template-columns: var(--tb-app-shell-rail-width) minmax(0, 1fr);
+        grid-template-columns: var(--tb-app-shell-rail-width, 5.5rem) minmax(0, 1fr);
     }
 
     .tb-app-shell--no-navigation {
@@ -6357,7 +6354,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         position: sticky;
         inset-block-start: var(--tb-app-bar-height, 3.5rem);
         box-sizing: border-box;
-        height: calc(var(--tb-app-shell-height) - var(--tb-app-bar-height, 3.5rem));
+        height: calc(var(--tb-app-shell-height, 100dvh) - var(--tb-app-bar-height, 3.5rem));
         overflow-y: auto;
         grid-area: navigation;
         padding: var(--tb-space-2);
@@ -6558,7 +6555,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-stepper {
-        --tb-stepper-indicator-size: 1.75rem;
+        --_tb-stepper-indicator-size: 1.75rem;
         display: flex;
         gap: var(--tb-space-1);
         margin: 0;
@@ -6620,8 +6617,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         align-items: center;
         justify-content: center;
         box-sizing: border-box;
-        width: var(--tb-stepper-indicator-size);
-        height: var(--tb-stepper-indicator-size);
+        width: var(--_tb-stepper-indicator-size);
+        height: var(--_tb-stepper-indicator-size);
         border: 1px solid var(--tb-border-strong);
         border-radius: var(--tb-radius-full);
         font-size: var(--tb-font-size-sm);
@@ -6707,9 +6704,9 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     /* Under the current step, its content lines up with the title, beside a line down from the number. */
     .tb-stepper__content {
-        margin-inline-start: calc(var(--tb-space-2) + var(--tb-stepper-indicator-size) / 2);
+        margin-inline-start: calc(var(--tb-space-2) + var(--_tb-stepper-indicator-size) / 2);
         padding: var(--tb-space-2) var(--tb-space-2) var(--tb-space-4)
-            calc(var(--tb-space-2) + var(--tb-stepper-indicator-size) / 2);
+            calc(var(--tb-space-2) + var(--_tb-stepper-indicator-size) / 2);
         border-inline-start: 1px solid var(--tb-border-strong);
     }
 
@@ -6734,51 +6731,51 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-timeline__item {
-        --tb-timeline-fill: var(--tb-color-neutral);
-        --tb-timeline-on-fill: var(--tb-color-on-neutral);
-        --tb-timeline-dot-size: 0.75rem;
+        --_tb-timeline-fill: var(--tb-color-neutral);
+        --_tb-timeline-on-fill: var(--tb-color-on-neutral);
+        --_tb-timeline-dot-size: 0.75rem;
         display: grid;
         grid-template-columns: 1.5rem minmax(0, 1fr);
         column-gap: var(--tb-space-3);
     }
 
     .tb-timeline__item--icon {
-        --tb-timeline-dot-size: 1.5rem;
+        --_tb-timeline-dot-size: 1.5rem;
     }
 
     .tb-timeline__item--primary {
-        --tb-timeline-fill: var(--tb-color-primary);
-        --tb-timeline-on-fill: var(--tb-color-on-primary);
+        --_tb-timeline-fill: var(--tb-color-primary);
+        --_tb-timeline-on-fill: var(--tb-color-on-primary);
     }
 
     .tb-timeline__item--success {
-        --tb-timeline-fill: var(--tb-color-success);
-        --tb-timeline-on-fill: var(--tb-color-on-success);
+        --_tb-timeline-fill: var(--tb-color-success);
+        --_tb-timeline-on-fill: var(--tb-color-on-success);
     }
 
     .tb-timeline__item--warning {
-        --tb-timeline-fill: var(--tb-color-warning);
-        --tb-timeline-on-fill: var(--tb-color-on-warning);
+        --_tb-timeline-fill: var(--tb-color-warning);
+        --_tb-timeline-on-fill: var(--tb-color-on-warning);
     }
 
     /* A dot without an icon is under 3:1 in amber on a light surface, so it takes the warning text tone. */
     .tb-timeline__item--warning:not(.tb-timeline__item--icon) {
-        --tb-timeline-fill: light-dark(var(--tb-color-warning-text), var(--tb-color-warning));
+        --_tb-timeline-fill: light-dark(var(--tb-color-warning-text), var(--tb-color-warning));
     }
 
     .tb-timeline__item--danger {
-        --tb-timeline-fill: var(--tb-color-danger);
-        --tb-timeline-on-fill: var(--tb-color-on-danger);
+        --_tb-timeline-fill: var(--tb-color-danger);
+        --_tb-timeline-on-fill: var(--tb-color-on-danger);
     }
 
     .tb-timeline__item--info {
-        --tb-timeline-fill: var(--tb-color-info);
-        --tb-timeline-on-fill: var(--tb-color-on-info);
+        --_tb-timeline-fill: var(--tb-color-info);
+        --_tb-timeline-on-fill: var(--tb-color-on-info);
     }
 
     .tb-timeline__item--secondary {
-        --tb-timeline-fill: var(--tb-color-secondary);
-        --tb-timeline-on-fill: var(--tb-color-on-secondary);
+        --_tb-timeline-fill: var(--tb-color-secondary);
+        --_tb-timeline-on-fill: var(--tb-color-on-secondary);
     }
 
     /* The dot sits beside the first line of text, and the line below it runs to the next event's dot. */
@@ -6786,7 +6783,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding-block-start: calc((1lh - var(--tb-timeline-dot-size)) / 2);
+        padding-block-start: calc((1lh - var(--_tb-timeline-dot-size)) / 2);
     }
 
     .tb-timeline__item:not(:last-child) .tb-timeline__marker::after {
@@ -6802,11 +6799,11 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         flex: none;
         align-items: center;
         justify-content: center;
-        width: var(--tb-timeline-dot-size);
-        height: var(--tb-timeline-dot-size);
+        width: var(--_tb-timeline-dot-size);
+        height: var(--_tb-timeline-dot-size);
         border-radius: var(--tb-radius-full);
-        background: var(--tb-timeline-fill);
-        color: var(--tb-timeline-on-fill);
+        background: var(--_tb-timeline-fill);
+        color: var(--_tb-timeline-on-fill);
     }
 
     .tb-timeline__body {
@@ -6907,9 +6904,9 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-rating {
-        --tb-rating-on: var(--tb-color-primary);
-        --tb-rating-off: var(--tb-border-strong);
-        --tb-rating-size: 1.5rem;
+        --_tb-rating-on: var(--tb-color-primary);
+        --_tb-rating-off: var(--tb-border-strong);
+        --_tb-rating-size: 1.5rem;
         min-width: 0;
         margin: 0;
         padding: 0;
@@ -6918,35 +6915,35 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     /* Gold falls short of 3:1 on a light page, so chosen stars use the darker warning text color there. */
     .tb-rating--warning {
-        --tb-rating-on: light-dark(var(--tb-color-warning-text), var(--tb-color-warning));
+        --_tb-rating-on: light-dark(var(--tb-color-warning-text), var(--tb-color-warning));
     }
 
     .tb-rating--success {
-        --tb-rating-on: var(--tb-color-success);
+        --_tb-rating-on: var(--tb-color-success);
     }
 
     .tb-rating--danger {
-        --tb-rating-on: var(--tb-color-danger);
+        --_tb-rating-on: var(--tb-color-danger);
     }
 
     .tb-rating--info {
-        --tb-rating-on: var(--tb-color-info);
+        --_tb-rating-on: var(--tb-color-info);
     }
 
     .tb-rating--secondary {
-        --tb-rating-on: var(--tb-color-secondary);
+        --_tb-rating-on: var(--tb-color-secondary);
     }
 
     .tb-rating--neutral {
-        --tb-rating-on: var(--tb-color-text);
+        --_tb-rating-on: var(--tb-color-text);
     }
 
     .tb-rating--small {
-        --tb-rating-size: 1.25rem;
+        --_tb-rating-size: 1.25rem;
     }
 
     .tb-rating--large {
-        --tb-rating-size: 2rem;
+        --_tb-rating-size: 2rem;
     }
 
     .tb-rating__label {
@@ -6968,14 +6965,14 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         display: inline-flex;
         margin: 0;
         border-radius: var(--tb-radius-sm);
-        color: var(--tb-rating-off);
+        color: var(--_tb-rating-off);
         cursor: pointer;
     }
 
     /* A star not chosen is an outline, so the rating doesn't rely on color alone. */
     .tb-rating .tb-rating__icon {
-        width: var(--tb-rating-size);
-        height: var(--tb-rating-size);
+        width: var(--_tb-rating-size);
+        height: var(--_tb-rating-size);
         fill: none;
         stroke: currentColor;
         stroke-width: 1.5;
@@ -6986,7 +6983,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
        page is interactive. */
     .tb-rating__star:has(.tb-rating__input:checked),
     .tb-rating__star:has(~ .tb-rating__star .tb-rating__input:checked) {
-        color: var(--tb-rating-on);
+        color: var(--_tb-rating-on);
     }
 
     .tb-rating__star:has(.tb-rating__input:checked) .tb-rating__icon,
@@ -6995,7 +6992,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-rating--invalid {
-        --tb-rating-off: var(--tb-color-danger-text);
+        --_tb-rating-off: var(--tb-color-danger-text);
     }
 
     /* The radio is the star's focusable part, kept over the star so a click lands on it. */
@@ -7019,7 +7016,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     @media (hover: hover) {
         .tb-rating:not(.tb-rating--disabled, .tb-rating--readonly) .tb-rating__stars:has(.tb-rating__star:hover)
             .tb-rating__star {
-            color: var(--tb-rating-on);
+            color: var(--_tb-rating-on);
         }
 
         .tb-rating:not(.tb-rating--disabled, .tb-rating--readonly) .tb-rating__stars:has(.tb-rating__star:hover)
@@ -7029,7 +7026,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
         .tb-rating:not(.tb-rating--disabled, .tb-rating--readonly) .tb-rating__stars .tb-rating__star:hover
             ~ .tb-rating__star {
-            color: var(--tb-rating-off);
+            color: var(--_tb-rating-off);
         }
 
         .tb-rating:not(.tb-rating--disabled, .tb-rating--readonly) .tb-rating__stars .tb-rating__star:hover
@@ -7050,8 +7047,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     /* Forced colors drop the stars' colors, so chosen ones take the highlight and the rest the text color. */
     @media (forced-colors: active) {
         .tb-rating {
-            --tb-rating-on: Highlight;
-            --tb-rating-off: CanvasText;
+            --_tb-rating-on: Highlight;
+            --_tb-rating-off: CanvasText;
         }
     }
 
@@ -7126,7 +7123,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-tag-input__tag {
         min-inline-size: 0;
         max-inline-size: 100%;
-        font-size: var(--tb-field-font-size, var(--tb-font-size-md));
+        font-size: var(--_tb-field-font-size, var(--tb-font-size-md));
     }
 
     .tb-tag-input__tag > .tb-chip__action {
@@ -7168,7 +7165,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-select__listbox[popover],
     .tb-select__popup {
         box-sizing: border-box;
-        min-width: var(--tb-anchor-width, 0px);
+        min-width: var(--_tb-anchor-width, 0px);
         margin: 0;
         border: 1px solid var(--tb-border-subtle);
         border-radius: var(--tb-popover-radius, var(--tb-radius-md));
@@ -7213,8 +7210,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-tree-select__popover .tb-popover__panel {
-        min-inline-size: max(16rem, var(--tb-anchor-width, 0px));
-        max-block-size: min(24rem, var(--tb-available-block-size, 24rem));
+        min-inline-size: max(16rem, var(--_tb-anchor-width, 0px));
+        max-block-size: min(24rem, var(--_tb-available-block-size, 24rem));
         overflow-y: auto;
         padding: 0;
     }
@@ -7335,17 +7332,17 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     /* The titles stick to the top, so scroll padding keeps them from covering the active suggestion. */
     .tb-autocomplete__listbox[data-columns] {
         inline-size: max-content;
-        min-inline-size: var(--tb-anchor-width, 0px);
+        min-inline-size: var(--_tb-anchor-width, 0px);
         max-inline-size: calc(100vw - 2 * var(--tb-space-2));
         padding-block-start: 0;
-        scroll-padding-block-start: var(--tb-autocomplete-titles-height);
-        --tb-autocomplete-titles-height: 2rem;
+        scroll-padding-block-start: var(--_tb-autocomplete-titles-height);
+        --_tb-autocomplete-titles-height: 2rem;
     }
 
     .tb-autocomplete__columns,
     .tb-autocomplete__listbox[data-columns] > .tb-select__option {
         display: grid;
-        grid-template-columns: var(--tb-autocomplete-columns);
+        grid-template-columns: var(--_tb-autocomplete-columns);
         column-gap: var(--tb-space-3);
     }
 
@@ -7354,7 +7351,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         inset-block-start: 0;
         box-sizing: border-box;
         align-items: center;
-        block-size: var(--tb-autocomplete-titles-height);
+        block-size: var(--_tb-autocomplete-titles-height);
         padding-inline: var(--tb-space-3);
         border-block-end: 1px solid var(--tb-border-subtle);
         background: var(--tb-color-surface-raised);
@@ -7429,10 +7426,10 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     /* Each size offsets the option height from the density's item height; small never drops below 24px. */
     .tb-listbox {
-        --tb-listbox-item-height: var(--tb-item-height);
-        --tb-listbox-row-height: calc(var(--tb-listbox-item-height) + 2 * var(--tb-space-1));
+        --_tb-listbox-item-height: var(--tb-item-height);
+        --_tb-listbox-row-height: calc(var(--_tb-listbox-item-height) + 2 * var(--tb-space-1));
         box-sizing: border-box;
-        max-block-size: calc(var(--tb-listbox-rows) * var(--tb-listbox-row-height));
+        max-block-size: calc(var(--_tb-listbox-rows) * var(--_tb-listbox-row-height));
         padding-block: 0;
         overflow-y: auto;
         font-size: var(--tb-font-size-sm);
@@ -7445,17 +7442,17 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     /* A row's height includes the option's padding, so the list fits Rows whole options under any box-sizing reset. */
     .tb-listbox .tb-select__option {
         box-sizing: border-box;
-        min-height: var(--tb-listbox-row-height);
+        min-height: var(--_tb-listbox-row-height);
         font-size: inherit;
     }
 
     .tb-listbox--small {
-        --tb-listbox-item-height: max(24px, calc(var(--tb-item-height) - 4px));
+        --_tb-listbox-item-height: max(24px, calc(var(--tb-item-height) - 4px));
         font-size: var(--tb-font-size-xs);
     }
 
     .tb-listbox--large {
-        --tb-listbox-item-height: calc(var(--tb-item-height) + 8px);
+        --_tb-listbox-item-height: calc(var(--tb-item-height) + 8px);
         font-size: var(--tb-font-size-md);
     }
 
@@ -7608,7 +7605,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-table-of-contents__link {
         display: block;
         padding-block: var(--tb-space-1);
-        padding-inline: calc((var(--tb-table-of-contents-level) + 1) * var(--tb-space-3)) var(--tb-space-2);
+        padding-inline: calc((var(--_tb-table-of-contents-level) + 1) * var(--tb-space-3)) var(--tb-space-2);
         border-inline-start: 1px solid var(--tb-border-subtle);
         color: var(--tb-color-text-muted);
         text-decoration: none;
@@ -7625,7 +7622,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     .tb-table-of-contents__link[aria-current="location"] {
         border-inline-start: 3px solid var(--tb-color-primary);
-        padding-inline-start: calc((var(--tb-table-of-contents-level) + 1) * var(--tb-space-3) - 2px);
+        padding-inline-start: calc((var(--_tb-table-of-contents-level) + 1) * var(--tb-space-3) - 2px);
         color: var(--tb-color-primary-text);
         font-weight: var(--tb-font-weight-medium);
     }
@@ -7637,8 +7634,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-slider {
-        --tb-slider-thumb: 1.125rem;
-        --tb-slider-track: 0.25rem;
+        --_tb-slider-thumb: 1.125rem;
+        --_tb-slider-track: 0.25rem;
         display: flex;
         flex-direction: column;
         gap: var(--tb-space-1);
@@ -7653,8 +7650,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-slider--small {
-        --tb-slider-thumb: 0.875rem;
-        --tb-slider-track: 0.1875rem;
+        --_tb-slider-thumb: 0.875rem;
+        --_tb-slider-track: 0.1875rem;
     }
 
     .tb-slider--small .tb-slider__label {
@@ -7662,8 +7659,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-slider--large {
-        --tb-slider-thumb: 1.375rem;
-        --tb-slider-track: 0.375rem;
+        --_tb-slider-thumb: 1.375rem;
+        --_tb-slider-track: 0.375rem;
     }
 
     .tb-slider--large .tb-slider__label {
@@ -7675,13 +7672,13 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         position: relative;
         display: flex;
         align-items: center;
-        block-size: max(24px, var(--tb-slider-thumb));
+        block-size: max(24px, var(--_tb-slider-thumb));
     }
 
     .tb-slider__track {
         position: absolute;
         inset-inline: 0;
-        block-size: var(--tb-slider-track);
+        block-size: var(--_tb-slider-track);
         border-radius: var(--tb-radius-full);
         background: var(--tb-border-subtle);
     }
@@ -7690,14 +7687,14 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         position: absolute;
         inset-block: 0;
         inset-inline-start: 0;
-        inline-size: calc(var(--tb-slider-thumb) / 2 + var(--tb-slider-to) * (100% - var(--tb-slider-thumb)));
+        inline-size: calc(var(--_tb-slider-thumb) / 2 + var(--_tb-slider-to) * (100% - var(--_tb-slider-thumb)));
         border-radius: inherit;
         background: var(--tb-color-primary);
     }
 
     .tb-slider--range .tb-slider__fill {
-        inset-inline-start: calc(var(--tb-slider-thumb) / 2 + var(--tb-slider-from) * (100% - var(--tb-slider-thumb)));
-        inline-size: calc((var(--tb-slider-to) - var(--tb-slider-from)) * (100% - var(--tb-slider-thumb)));
+        inset-inline-start: calc(var(--_tb-slider-thumb) / 2 + var(--_tb-slider-from) * (100% - var(--_tb-slider-thumb)));
+        inline-size: calc((var(--_tb-slider-to) - var(--_tb-slider-from)) * (100% - var(--_tb-slider-thumb)));
     }
 
     .tb-slider__input {
@@ -7722,8 +7719,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     .tb-slider__input::-webkit-slider-thumb {
         box-sizing: border-box;
-        inline-size: var(--tb-slider-thumb);
-        block-size: var(--tb-slider-thumb);
+        inline-size: var(--_tb-slider-thumb);
+        block-size: var(--_tb-slider-thumb);
         border: 2px solid var(--tb-color-primary);
         border-radius: var(--tb-radius-full);
         appearance: none;
@@ -7733,8 +7730,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     .tb-slider__input::-moz-range-thumb {
         box-sizing: border-box;
-        inline-size: var(--tb-slider-thumb);
-        block-size: var(--tb-slider-thumb);
+        inline-size: var(--_tb-slider-thumb);
+        block-size: var(--_tb-slider-thumb);
         border: 2px solid var(--tb-color-primary);
         border-radius: var(--tb-radius-full);
         background: var(--tb-color-surface);
@@ -7794,7 +7791,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-slider__value,
     .tb-slider__mark {
         position: absolute;
-        inset-inline-start: calc(var(--tb-slider-thumb) / 2 + var(--tb-slider-at) * (100% - var(--tb-slider-thumb)));
+        inset-inline-start: calc(var(--_tb-slider-thumb) / 2 + var(--_tb-slider-at) * (100% - var(--_tb-slider-thumb)));
         translate: -50%;
         font-size: var(--tb-font-size-xs);
         white-space: nowrap;
@@ -8116,7 +8113,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     /* A dock's groups, panels and separators are siblings, each placed by its box in percent of the dock. A box
        that a separator has moved comes from the script's own properties until the app renders it. */
     .tb-dock {
-        --tb-dock-tabs-size: var(--tb-control-height-sm);
+        --_tb-dock-tabs-size: var(--tb-control-height-sm);
         position: relative;
         /* Its windows and marks stack among themselves, under whatever the page layers above the dock. */
         isolation: isolate;
@@ -8132,16 +8129,16 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-dock__separator {
         position: absolute;
         box-sizing: border-box;
-        inset-inline-start: calc(var(--tb-dock-live-x, var(--tb-dock-x)) * 1%);
-        inset-block-start: calc(var(--tb-dock-live-y, var(--tb-dock-y)) * 1%);
-        inline-size: calc(var(--tb-dock-live-w, var(--tb-dock-w)) * 1%);
-        block-size: calc(var(--tb-dock-live-h, var(--tb-dock-h)) * 1%);
+        inset-inline-start: calc(var(--_tb-dock-live-x, var(--_tb-dock-x)) * 1%);
+        inset-block-start: calc(var(--_tb-dock-live-y, var(--_tb-dock-y)) * 1%);
+        inline-size: calc(var(--_tb-dock-live-w, var(--_tb-dock-w)) * 1%);
+        block-size: calc(var(--_tb-dock-live-h, var(--_tb-dock-h)) * 1%);
     }
 
     /* A group's element is the row of tabs along the top of its box, and its panels fill the rest. */
     .tb-dock__group {
         display: flex;
-        block-size: var(--tb-dock-tabs-size);
+        block-size: var(--_tb-dock-tabs-size);
         border-block-end: 1px solid var(--tb-border-subtle);
         background: var(--tb-color-surface-sunken);
     }
@@ -8198,9 +8195,9 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         position: absolute;
         z-index: calc(11 + var(--tb-dock-z) * 2);
         inset-inline-start: calc(
-            (var(--tb-dock-live-x, var(--tb-dock-x)) + var(--tb-dock-live-w, var(--tb-dock-w))) * 1% - 24px);
+            (var(--_tb-dock-live-x, var(--_tb-dock-x)) + var(--_tb-dock-live-w, var(--_tb-dock-w))) * 1% - 24px);
         inset-block-start: calc(
-            (var(--tb-dock-live-y, var(--tb-dock-y)) + var(--tb-dock-live-h, var(--tb-dock-h))) * 1% - 24px);
+            (var(--_tb-dock-live-y, var(--_tb-dock-y)) + var(--_tb-dock-live-h, var(--_tb-dock-h))) * 1% - 24px);
     }
 
     .tb-dock__window-grip > [data-part="trigger"] {
@@ -8223,8 +8220,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-dock__panel {
-        inset-block-start: calc(var(--tb-dock-live-y, var(--tb-dock-y)) * 1% + var(--tb-dock-tabs-size));
-        block-size: calc(var(--tb-dock-live-h, var(--tb-dock-h)) * 1% - var(--tb-dock-tabs-size));
+        inset-block-start: calc(var(--_tb-dock-live-y, var(--_tb-dock-y)) * 1% + var(--_tb-dock-tabs-size));
+        block-size: calc(var(--_tb-dock-live-h, var(--_tb-dock-h)) * 1% - var(--_tb-dock-tabs-size));
         overflow: auto;
     }
 
@@ -8232,27 +8229,27 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
        compact dock a window is at least 18rem by 14rem, but no larger than the dock, and moves back inside it. */
     .tb-dock[data-compact] > :is(.tb-dock__group--floating:not(.tb-dock__group--revealed),
         .tb-dock__panel--floating:not(.tb-dock__panel--revealed), .tb-dock__window-grip) {
-        --tb-dock-fit-w: max(var(--tb-dock-live-w, var(--tb-dock-w)) * 1%, min(100%, 18rem));
-        --tb-dock-fit-h: max(var(--tb-dock-live-h, var(--tb-dock-h)) * 1%, min(100%, 14rem));
-        --tb-dock-fit-x: min(var(--tb-dock-live-x, var(--tb-dock-x)) * 1%, 100% - var(--tb-dock-fit-w));
-        --tb-dock-fit-y: min(var(--tb-dock-live-y, var(--tb-dock-y)) * 1%, 100% - var(--tb-dock-fit-h));
+        --_tb-dock-fit-w: max(var(--_tb-dock-live-w, var(--_tb-dock-w)) * 1%, min(100%, 18rem));
+        --_tb-dock-fit-h: max(var(--_tb-dock-live-h, var(--_tb-dock-h)) * 1%, min(100%, 14rem));
+        --_tb-dock-fit-x: min(var(--_tb-dock-live-x, var(--_tb-dock-x)) * 1%, 100% - var(--_tb-dock-fit-w));
+        --_tb-dock-fit-y: min(var(--_tb-dock-live-y, var(--_tb-dock-y)) * 1%, 100% - var(--_tb-dock-fit-h));
     }
 
     .tb-dock[data-compact] > :is(.tb-dock__group--floating:not(.tb-dock__group--revealed),
         .tb-dock__panel--floating:not(.tb-dock__panel--revealed)) {
-        inset-inline-start: var(--tb-dock-fit-x);
-        inset-block-start: var(--tb-dock-fit-y);
-        inline-size: var(--tb-dock-fit-w);
+        inset-inline-start: var(--_tb-dock-fit-x);
+        inset-block-start: var(--_tb-dock-fit-y);
+        inline-size: var(--_tb-dock-fit-w);
     }
 
     .tb-dock[data-compact] > .tb-dock__panel--floating:not(.tb-dock__panel--revealed) {
-        inset-block-start: calc(var(--tb-dock-fit-y) + var(--tb-dock-tabs-size));
-        block-size: calc(var(--tb-dock-fit-h) - var(--tb-dock-tabs-size));
+        inset-block-start: calc(var(--_tb-dock-fit-y) + var(--_tb-dock-tabs-size));
+        block-size: calc(var(--_tb-dock-fit-h) - var(--_tb-dock-tabs-size));
     }
 
     .tb-dock[data-compact] > .tb-menu.tb-dock__window-grip {
-        inset-inline-start: calc(var(--tb-dock-fit-x) + var(--tb-dock-fit-w) - 24px);
-        inset-block-start: calc(var(--tb-dock-fit-y) + var(--tb-dock-fit-h) - 24px);
+        inset-inline-start: calc(var(--_tb-dock-fit-x) + var(--_tb-dock-fit-w) - 24px);
+        inset-block-start: calc(var(--_tb-dock-fit-y) + var(--_tb-dock-fit-h) - 24px);
     }
 
     /* A hidden panel keeps its content and its scroll position, out of sight, out of the tab order and out of
@@ -8270,10 +8267,10 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-dock-window > .tb-dock__panel--popped {
-        --tb-dock-return-bar-size: calc(var(--tb-control-height-sm) + 1px);
+        --_tb-dock-return-bar-size: calc(var(--tb-control-height-sm) + 1px);
         position: fixed;
         inset: 0;
-        inset-block-start: var(--tb-dock-return-bar-size);
+        inset-block-start: var(--_tb-dock-return-bar-size);
         inline-size: auto;
         block-size: auto;
         background: var(--tb-color-surface);
@@ -8287,7 +8284,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         inset-inline: 0;
         z-index: 1;
         box-sizing: border-box;
-        block-size: var(--tb-dock-return-bar-size);
+        block-size: var(--_tb-dock-return-bar-size);
         display: flex;
         justify-content: flex-end;
         border-block-end: 1px solid var(--tb-border-subtle);
@@ -8496,10 +8493,10 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         align-items: center;
         justify-content: center;
         box-sizing: border-box;
-        inset-inline-start: calc(var(--tb-dock-live-x, var(--tb-dock-x)) * 1%);
-        inset-block-start: calc(var(--tb-dock-live-y, var(--tb-dock-y)) * 1%);
+        inset-inline-start: calc(var(--_tb-dock-live-x, var(--_tb-dock-x)) * 1%);
+        inset-block-start: calc(var(--_tb-dock-live-y, var(--_tb-dock-y)) * 1%);
         inline-size: 0;
-        block-size: calc(var(--tb-dock-live-h, var(--tb-dock-h)) * 1%);
+        block-size: calc(var(--_tb-dock-live-h, var(--_tb-dock-h)) * 1%);
         pointer-events: none;
     }
 
@@ -8507,7 +8504,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
        above the line, clear of the tabs and their close marks. */
     .tb-menu.tb-dock__grip--vertical {
         align-items: flex-end;
-        inline-size: calc(var(--tb-dock-live-w, var(--tb-dock-w)) * 1%);
+        inline-size: calc(var(--_tb-dock-live-w, var(--_tb-dock-w)) * 1%);
         block-size: 0;
     }
 
@@ -8557,29 +8554,29 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         z-index: calc(11 + var(--tb-dock-z) * 2);
         box-sizing: border-box;
         inset-inline-start: calc(
-            (var(--tb-dock-live-x, var(--tb-dock-x)) + var(--tb-dock-live-w, var(--tb-dock-w))) * 1%);
-        inset-block-start: calc(var(--tb-dock-live-y, var(--tb-dock-y)) * 1%);
+            (var(--_tb-dock-live-x, var(--_tb-dock-x)) + var(--_tb-dock-live-w, var(--_tb-dock-w))) * 1%);
+        inset-block-start: calc(var(--_tb-dock-live-y, var(--_tb-dock-y)) * 1%);
         inline-size: 0;
-        block-size: calc(var(--tb-dock-live-h, var(--tb-dock-h)) * 1%);
+        block-size: calc(var(--_tb-dock-live-h, var(--_tb-dock-h)) * 1%);
     }
 
     /* Each selector is written out, since :is() would give the separator the grip's higher specificity. */
     .tb-dock__slide-separator:is([data-edge="end"], [data-edge="top"], [data-edge="bottom"]),
     .tb-menu.tb-dock__slide-grip:is([data-edge="end"], [data-edge="top"], [data-edge="bottom"]) {
-        inset-inline-start: calc(var(--tb-dock-live-x, var(--tb-dock-x)) * 1%);
+        inset-inline-start: calc(var(--_tb-dock-live-x, var(--_tb-dock-x)) * 1%);
     }
 
     .tb-dock__slide-separator:is([data-edge="top"], [data-edge="bottom"]),
     .tb-menu.tb-dock__slide-grip:is([data-edge="top"], [data-edge="bottom"]) {
         inset-block-start: calc(
-            (var(--tb-dock-live-y, var(--tb-dock-y)) + var(--tb-dock-live-h, var(--tb-dock-h))) * 1%);
-        inline-size: calc(var(--tb-dock-live-w, var(--tb-dock-w)) * 1%);
+            (var(--_tb-dock-live-y, var(--_tb-dock-y)) + var(--_tb-dock-live-h, var(--_tb-dock-h))) * 1%);
+        inline-size: calc(var(--_tb-dock-live-w, var(--_tb-dock-w)) * 1%);
         block-size: 0;
     }
 
     .tb-dock__slide-separator[data-edge="bottom"],
     .tb-menu.tb-dock__slide-grip[data-edge="bottom"] {
-        inset-block-start: calc(var(--tb-dock-live-y, var(--tb-dock-y)) * 1%);
+        inset-block-start: calc(var(--_tb-dock-live-y, var(--_tb-dock-y)) * 1%);
     }
 
     .tb-dock__slide-separator {
@@ -8620,7 +8617,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-dock__separator--vertical {
-        inline-size: calc(var(--tb-dock-live-w, var(--tb-dock-w)) * 1%);
+        inline-size: calc(var(--_tb-dock-live-w, var(--_tb-dock-w)) * 1%);
         block-size: 9px;
         margin-inline-start: 0;
         margin-block-start: -4px;
@@ -9252,7 +9249,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         gap: var(--tb-space-2);
         padding: var(--tb-space-2) var(--tb-space-2) var(--tb-space-2) var(--tb-space-4);
         border: 1px solid var(--tb-border-subtle);
-        border-inline-start: 4px solid var(--tb-toast-accent);
+        border-inline-start: 4px solid var(--_tb-toast-accent);
         border-radius: var(--tb-radius-md);
         background: var(--tb-color-surface-raised);
         box-shadow: var(--tb-shadow-lg);
@@ -9282,7 +9279,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-toast__icon {
-        color: var(--tb-toast-accent);
+        color: var(--_tb-toast-accent);
     }
 
     .tb-toast__body {
@@ -9296,31 +9293,31 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-toast--primary {
-        --tb-toast-accent: var(--tb-color-primary-text);
+        --_tb-toast-accent: var(--tb-color-primary-text);
     }
 
     .tb-toast--neutral {
-        --tb-toast-accent: var(--tb-color-neutral-text);
+        --_tb-toast-accent: var(--tb-color-neutral-text);
     }
 
     .tb-toast--success {
-        --tb-toast-accent: var(--tb-color-success-text);
+        --_tb-toast-accent: var(--tb-color-success-text);
     }
 
     .tb-toast--warning {
-        --tb-toast-accent: var(--tb-color-warning-text);
+        --_tb-toast-accent: var(--tb-color-warning-text);
     }
 
     .tb-toast--danger {
-        --tb-toast-accent: var(--tb-color-danger-text);
+        --_tb-toast-accent: var(--tb-color-danger-text);
     }
 
     .tb-toast--info {
-        --tb-toast-accent: var(--tb-color-info-text);
+        --_tb-toast-accent: var(--tb-color-info-text);
     }
 
     .tb-toast--secondary {
-        --tb-toast-accent: var(--tb-color-secondary-text);
+        --_tb-toast-accent: var(--tb-color-secondary-text);
     }
 
     .tb-file-upload__zone,
@@ -9530,24 +9527,24 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-data-grid__row:where(.tb-data-grid--striped:not(.tb-data-grid--virtual) > .tb-data-grid__scroll
         > .tb-data-grid__table > tbody > :nth-child(even of .tb-data-grid__row)),
     .tb-data-grid__row--stripe:where(.tb-data-grid--striped > .tb-data-grid__scroll > .tb-data-grid__table > * > *) {
-        --tb-data-grid-row-shade: var(--tb-table-stripe-color,
+        --_tb-data-grid-row-shade: var(--tb-table-stripe-color,
             color-mix(in srgb, var(--tb-color-text) 4%, transparent));
-        background: var(--tb-data-grid-row-shade);
+        background: var(--_tb-data-grid-row-shade);
     }
 
     .tb-data-grid__row:hover {
-        --tb-data-grid-row-shade: var(--tb-color-hover);
+        --_tb-data-grid-row-shade: var(--tb-color-hover);
         background: var(--tb-color-hover);
     }
 
     .tb-data-grid__row:active:not(.tb-data-grid__row--selected) {
-        --tb-data-grid-row-shade: var(--tb-color-pressed);
+        --_tb-data-grid-row-shade: var(--tb-color-pressed);
         background: var(--tb-color-pressed);
     }
 
     .tb-data-grid__row--selected,
     .tb-data-grid__row--selected:hover {
-        --tb-data-grid-row-shade: var(--tb-color-primary-subtle);
+        --_tb-data-grid-row-shade: var(--tb-color-primary-subtle);
         background: var(--tb-color-primary-subtle);
     }
 
@@ -9607,8 +9604,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     /* A row's shade may be see-through, so a pinned cell lays it over the surface. */
     .tb-data-grid__row > [data-pinned] {
-        background: linear-gradient(var(--tb-data-grid-row-shade, transparent),
-            var(--tb-data-grid-row-shade, transparent)), var(--tb-color-surface);
+        background: linear-gradient(var(--_tb-data-grid-row-shade, transparent),
+            var(--_tb-data-grid-row-shade, transparent)), var(--tb-color-surface);
     }
 
     /* The last cell pinned at the start and the first pinned at the end draw a line where the others pass under. */
@@ -9946,7 +9943,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         display: inline-flex;
         align-items: center;
         min-inline-size: 24px;
-        margin-inline-start: calc(var(--tb-data-grid-tree-level, 0) * var(--tb-space-5));
+        margin-inline-start: calc(var(--_tb-data-grid-tree-level, 0) * var(--tb-space-5));
         margin-inline-end: var(--tb-space-1);
         vertical-align: middle;
     }
@@ -9997,26 +9994,26 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-data-grid__row[data-drop] {
-        --tb-sortable-drop: var(--tb-color-primary);
+        --_tb-sortable-drop: var(--tb-color-primary);
     }
 
     .tb-data-grid__row[data-drop-refused] {
-        --tb-sortable-drop: var(--tb-color-danger-text);
+        --_tb-sortable-drop: var(--tb-color-danger-text);
         cursor: not-allowed;
     }
 
     /* A table row draws no shadow of its own, so its cells draw the line. */
     .tb-data-grid__row[data-drop="before"] > td {
-        box-shadow: inset 0 2px 0 var(--tb-sortable-drop);
+        box-shadow: inset 0 2px 0 var(--_tb-sortable-drop);
     }
 
     .tb-data-grid__row[data-drop="after"] > td {
-        box-shadow: inset 0 -2px 0 var(--tb-sortable-drop);
+        box-shadow: inset 0 -2px 0 var(--_tb-sortable-drop);
     }
 
     .tb-data-grid__row[data-drop][data-drop-refused] > td {
         box-shadow: none;
-        border-block: 2px dashed var(--tb-sortable-drop);
+        border-block: 2px dashed var(--_tb-sortable-drop);
     }
 
     .tb-data-grid__check.tb-checkbox__input,
@@ -10054,7 +10051,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     /* A group's heading is a band across the rows, set further in for each group it sits in. */
     .tb-data-grid__group-cell {
-        padding-inline-start: calc(var(--tb-space-2) + var(--tb-data-grid-group-level, 0) * var(--tb-space-5));
+        padding-inline-start: calc(var(--tb-space-2) + var(--_tb-data-grid-group-level, 0) * var(--tb-space-5));
         background: var(--tb-color-surface-sunken);
         font-weight: var(--tb-font-weight-semibold);
     }
@@ -10128,7 +10125,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-data-grid--reloading > .tb-data-grid__scroll::before {
         content: "";
         position: sticky;
-        inset-block-start: calc(var(--tb-data-grid-header-size, 0px) - 0.125rem);
+        inset-block-start: calc(var(--_tb-data-grid-header-size, 0px) - 0.125rem);
         inset-inline-start: 0;
         z-index: 3;
         display: block;
@@ -10221,7 +10218,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-tree {
-        --tb-tree-indent: 1.25rem;
+        --_tb-tree-indent: 1.25rem;
         position: relative;
         display: flex;
         flex-direction: column;
@@ -10233,7 +10230,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     /* Narrow panels keep deep rows readable by indenting less. */
     @container (max-width: 16rem) {
         .tb-tree {
-            --tb-tree-indent: 0.75rem;
+            --_tb-tree-indent: 0.75rem;
         }
     }
 
@@ -10252,7 +10249,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         align-items: center;
         gap: var(--tb-space-1);
         min-block-size: var(--tb-tree-item-height, var(--tb-item-height));
-        padding-inline: calc(var(--tb-tree-level) * var(--tb-tree-indent)) var(--tb-space-2);
+        padding-inline: calc(var(--_tb-tree-level) * var(--_tb-tree-indent)) var(--tb-space-2);
         border-radius: var(--tb-tree-item-radius, var(--tb-radius-sm));
         cursor: default;
         outline: none;
@@ -10270,13 +10267,13 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-tree--virtual > .tb-tree__item {
         flex: none;
         box-sizing: border-box;
-        block-size: var(--tb-tree-row-size);
+        block-size: var(--_tb-tree-row-size);
         min-block-size: 0;
     }
 
     .tb-tree__spacer {
         flex: none;
-        block-size: calc(var(--tb-tree-gap) * var(--tb-tree-row-size));
+        block-size: calc(var(--_tb-tree-gap) * var(--_tb-tree-row-size));
     }
 
     .tb-tree__item:hover:not(.tb-tree__item--status, [aria-disabled="true"]) {
@@ -10421,30 +10418,30 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
 
     .tb-tree__item[data-drop] {
-        --tb-tree-drop: var(--tb-color-primary);
+        --_tb-tree-drop: var(--tb-color-primary);
     }
 
     .tb-tree__item[data-drop-refused] {
-        --tb-tree-drop: var(--tb-color-danger-text);
+        --_tb-tree-drop: var(--tb-color-danger-text);
         cursor: not-allowed;
     }
 
     .tb-tree__item[data-drop="before"] {
-        box-shadow: inset 0 2px 0 var(--tb-tree-drop);
+        box-shadow: inset 0 2px 0 var(--_tb-tree-drop);
     }
 
     .tb-tree__item[data-drop="after"] {
-        box-shadow: inset 0 -2px 0 var(--tb-tree-drop);
+        box-shadow: inset 0 -2px 0 var(--_tb-tree-drop);
     }
 
     .tb-tree__item[data-drop="inside"] {
-        box-shadow: inset 0 0 0 2px var(--tb-tree-drop);
+        box-shadow: inset 0 0 0 2px var(--_tb-tree-drop);
     }
 
     /* A place the drop is refused is dashed, so it doesn't rely on its color. */
     .tb-tree__item[data-drop][data-drop-refused] {
         box-shadow: none;
-        outline: 2px dashed var(--tb-tree-drop);
+        outline: 2px dashed var(--_tb-tree-drop);
         outline-offset: -2px;
     }
 
@@ -10472,7 +10469,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-tree__insert {
         position: absolute;
         inset-block-end: 0;
-        inset-inline-start: calc(var(--tb-tree-level) * var(--tb-tree-indent)
+        inset-inline-start: calc(var(--_tb-tree-level) * var(--_tb-tree-indent)
             + var(--tb-tree-insert-offset, 1.5rem + var(--tb-space-2)));
         z-index: 1;
         display: flex;
@@ -10578,7 +10575,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-date-range__panel {
         box-sizing: border-box;
         max-width: calc(100vw - 2 * var(--tb-space-2));
-        max-block-size: var(--tb-available-block-size, none);
+        max-block-size: var(--_tb-available-block-size, none);
         overflow-y: auto;
         margin: 0;
         padding: var(--tb-space-4);
@@ -10862,7 +10859,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-color-picker__preview,
     .tb-color-picker__swatch,
     .tb-color-picker__slider--alpha {
-        --tb-color-picker-checks: repeating-conic-gradient(#ccc 0 25%, #fff 0 50%) 0 0 / 8px 8px;
+        --_tb-color-picker-checks: repeating-conic-gradient(#ccc 0 25%, #fff 0 50%) 0 0 / 8px 8px;
     }
 
     .tb-color-picker__preview {
@@ -10873,8 +10870,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         border: 1px solid var(--tb-border-strong);
         border-radius: var(--tb-radius-sm);
         background:
-            linear-gradient(var(--tb-color-picker-value, transparent), var(--tb-color-picker-value, transparent)),
-            var(--tb-color-picker-checks);
+            linear-gradient(var(--_tb-color-picker-value, transparent), var(--_tb-color-picker-value, transparent)),
+            var(--_tb-color-picker-checks);
     }
 
     .tb-color-picker__body {
@@ -10897,7 +10894,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         border: 1px solid var(--tb-border-strong);
         border-radius: var(--tb-radius-sm);
         appearance: none;
-        background: linear-gradient(var(--tb-swatch), var(--tb-swatch)), var(--tb-color-picker-checks);
+        background: linear-gradient(var(--_tb-swatch), var(--_tb-swatch)), var(--_tb-color-picker-checks);
         cursor: pointer;
     }
 
@@ -10917,7 +10914,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         block-size: 9rem;
         border-radius: var(--tb-radius-sm);
         background: linear-gradient(to top, #000, transparent),
-            linear-gradient(to right, #fff, hsl(var(--tb-color-picker-hue) 100% 50%));
+            linear-gradient(to right, #fff, hsl(var(--_tb-color-picker-hue) 100% 50%));
         cursor: crosshair;
         touch-action: none;
     }
@@ -10925,8 +10922,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     /* The pad is a color space, not text, so it runs left to right in any direction, as the script measures it. */
     .tb-color-picker__pad-thumb {
         position: absolute;
-        left: calc(var(--tb-color-picker-x) * 100%);
-        inset-block-start: calc(var(--tb-color-picker-y) * 100%);
+        left: calc(var(--_tb-color-picker-x) * 100%);
+        inset-block-start: calc(var(--_tb-color-picker-y) * 100%);
         inline-size: 0.875rem;
         block-size: 0.875rem;
         border: 2px solid #fff;
@@ -10966,30 +10963,30 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-color-picker__slider--saturation {
-        background: linear-gradient(to right, var(--tb-color-picker-gray), var(--tb-color-picker-vivid));
+        background: linear-gradient(to right, var(--_tb-color-picker-gray), var(--_tb-color-picker-vivid));
     }
 
     .tb-color-picker__slider--brightness {
-        background: linear-gradient(to right, #000, var(--tb-color-picker-bright));
+        background: linear-gradient(to right, #000, var(--_tb-color-picker-bright));
     }
 
     .tb-color-picker__slider--alpha {
-        background: linear-gradient(to right, transparent, var(--tb-color-picker-opaque)),
-            var(--tb-color-picker-checks);
+        background: linear-gradient(to right, transparent, var(--_tb-color-picker-opaque)),
+            var(--_tb-color-picker-checks);
     }
 
     /* A range input runs from the right in right-to-left text, so its track's colors do too. */
     .tb-color-picker__slider--saturation:dir(rtl) {
-        background: linear-gradient(to left, var(--tb-color-picker-gray), var(--tb-color-picker-vivid));
+        background: linear-gradient(to left, var(--_tb-color-picker-gray), var(--_tb-color-picker-vivid));
     }
 
     .tb-color-picker__slider--brightness:dir(rtl) {
-        background: linear-gradient(to left, #000, var(--tb-color-picker-bright));
+        background: linear-gradient(to left, #000, var(--_tb-color-picker-bright));
     }
 
     .tb-color-picker__slider--alpha:dir(rtl) {
-        background: linear-gradient(to left, transparent, var(--tb-color-picker-opaque)),
-            var(--tb-color-picker-checks);
+        background: linear-gradient(to left, transparent, var(--_tb-color-picker-opaque)),
+            var(--_tb-color-picker-checks);
     }
 
     .tb-color-picker__slider::-webkit-slider-thumb {
@@ -11148,12 +11145,12 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     .tb-model-fields__grid {
         display: grid;
-        grid-template-columns: repeat(var(--tb-model-fields-columns, 1), minmax(0, 1fr));
+        grid-template-columns: repeat(var(--_tb-model-fields-columns, 1), minmax(0, 1fr));
         gap: var(--tb-space-4);
     }
 
     .tb-model-fields__field {
-        grid-column: span var(--tb-model-fields-span, 1);
+        grid-column: span var(--_tb-model-fields-span, 1);
         min-inline-size: 0;
     }
 
@@ -11189,7 +11186,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         display: flex;
         flex-direction: column;
         gap: var(--tb-space-1);
-        block-size: var(--tb-viewport-height, 24rem);
+        block-size: var(--_tb-viewport-height, 24rem);
     }
 
     .tb-viewport__controls {
@@ -11219,7 +11216,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-viewport__content {
         flex: none;
         margin: auto;
-        zoom: var(--tb-viewport-zoom, 1);
+        zoom: var(--_tb-viewport-zoom, 1);
     }
 
     /* A drag pans and two fingers pinch, so the browser leaves touches and text selection to the viewport. */
@@ -11324,7 +11321,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         display: grid;
         grid-auto-flow: column;
         grid-auto-columns: max-content;
-        grid-template-rows: auto repeat(var(--tb-kanban-lanes), auto) auto;
+        grid-template-rows: auto repeat(var(--_tb-kanban-lanes), auto) auto;
         row-gap: var(--tb-space-2);
     }
 
@@ -11346,7 +11343,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     .tb-kanban--lanes .tb-kanban__cells {
         display: grid;
-        grid-row: 2 / span var(--tb-kanban-lanes);
+        grid-row: 2 / span var(--_tb-kanban-lanes);
         grid-template-rows: subgrid;
     }
 
@@ -11456,25 +11453,25 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     /* The item lands before or after the one under the pointer; a place it can't land shows dashed, in the danger
        color. */
     .tb-sortable__item[data-drop] {
-        --tb-sortable-drop: var(--tb-color-primary);
+        --_tb-sortable-drop: var(--tb-color-primary);
     }
 
     .tb-sortable__item[data-drop-refused] {
-        --tb-sortable-drop: var(--tb-color-danger-text);
+        --_tb-sortable-drop: var(--tb-color-danger-text);
         cursor: not-allowed;
     }
 
     .tb-sortable__item[data-drop="before"] {
-        box-shadow: inset 0 2px 0 var(--tb-sortable-drop);
+        box-shadow: inset 0 2px 0 var(--_tb-sortable-drop);
     }
 
     .tb-sortable__item[data-drop="after"] {
-        box-shadow: inset 0 -2px 0 var(--tb-sortable-drop);
+        box-shadow: inset 0 -2px 0 var(--_tb-sortable-drop);
     }
 
     .tb-sortable__item[data-drop][data-drop-refused] {
         box-shadow: none;
-        outline: 2px dashed var(--tb-sortable-drop);
+        outline: 2px dashed var(--_tb-sortable-drop);
         outline-offset: -2px;
     }
 
@@ -11500,14 +11497,14 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     }
 
     .tb-sortable__list[data-drop="end"] {
-        --tb-sortable-drop: var(--tb-color-primary);
+        --_tb-sortable-drop: var(--tb-color-primary);
         border-radius: var(--tb-radius-md);
-        outline: 2px solid var(--tb-sortable-drop);
+        outline: 2px solid var(--_tb-sortable-drop);
         outline-offset: -2px;
     }
 
     .tb-sortable__list[data-drop="end"][data-drop-refused] {
-        --tb-sortable-drop: var(--tb-color-danger-text);
+        --_tb-sortable-drop: var(--tb-color-danger-text);
         outline-style: dashed;
         cursor: not-allowed;
     }

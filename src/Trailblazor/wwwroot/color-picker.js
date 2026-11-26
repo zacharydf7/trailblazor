@@ -28,8 +28,8 @@ export function createColorPad(pad, events) {
             x: clamp((event.clientX - box.left) / box.width),
             y: clamp((event.clientY - box.top) / box.height),
         };
-        thumb.style.setProperty('--tb-color-picker-x', latest.x);
-        thumb.style.setProperty('--tb-color-picker-y', latest.y);
+        thumb.style.setProperty('--_tb-color-picker-x', latest.x);
+        thumb.style.setProperty('--_tb-color-picker-y', latest.y);
         timer ||= setTimeout(report, Math.max(0, reportedAt + reportEvery - performance.now()));
     };
     const onPointerDown = event => {
@@ -54,8 +54,8 @@ export function createColorPad(pad, events) {
         clearTimeout(timer);
         report().finally(() => {
             if (!dragging) {
-                thumb.style.removeProperty('--tb-color-picker-x');
-                thumb.style.removeProperty('--tb-color-picker-y');
+                thumb.style.removeProperty('--_tb-color-picker-x');
+                thumb.style.removeProperty('--_tb-color-picker-y');
             }
         });
     };

@@ -47,7 +47,7 @@ public sealed class TbStack : TbComponentBase
         builder.OpenElement(0, LayoutElements.Tag(As));
         builder.AddAttribute(1, "role", LayoutElements.Role(As));
         builder.AddMultipleAttributes(2, AdditionalAttributes);
-        builder.AddAttribute(3, "style", Styles.Join($"--tb-stack-gap: {Spacing.Token(Gap, nameof(Gap))}", Style));
+        builder.AddAttribute(3, "style", Styles.Join($"--_tb-stack-gap: {Spacing.Token(Gap, nameof(Gap))}", Style));
         builder.AddAttribute(4, "class", ClassNames.Join("tb-stack", Row ? "tb-stack--row" : null,
             RowFrom is { } from ? ClassNames.Modifier("tb-stack", "row-from", from) : null,
             Wrap ? "tb-stack--wrap" : null, ClassNames.Modifier("tb-stack", "align", Align),

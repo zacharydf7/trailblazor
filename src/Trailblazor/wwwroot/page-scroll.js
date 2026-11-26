@@ -29,7 +29,7 @@ export function measurePageScrollbar() {
     const root = document.documentElement;
     if (getComputedStyle(root).getPropertyValue('--tb-scroll-lock-offset') === '') {
         const width = haveRoom ? window.innerWidth - root.clientWidth : 0;
-        root.style.setProperty('--tb-page-scrollbar', `${width}px`);
+        root.style.setProperty('--_tb-page-scrollbar', `${width}px`);
         root.toggleAttribute('data-tb-scrollbar-left', width > 0 && scrollbarOnLeft());
     }
 }

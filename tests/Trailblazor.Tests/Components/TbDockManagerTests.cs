@@ -46,9 +46,9 @@ public class TbDockManagerTests : BunitContext
         Assert.Equal(["Panel group 1", "Panel group 2", "Panel group 3"],
             groups.Select(group => group.QuerySelector("[role=tablist]")!.GetAttribute("aria-label")));
         Assert.Equal([["Trails", "Map"], ["Notes"], ["Weather"]], groups.Select(Titles));
-        Assert.Equal(["--tb-dock-x: 0; --tb-dock-y: 0; --tb-dock-w: 25; --tb-dock-h: 100;",
-            "--tb-dock-x: 25; --tb-dock-y: 0; --tb-dock-w: 75; --tb-dock-h: 75;",
-            "--tb-dock-x: 25; --tb-dock-y: 75; --tb-dock-w: 75; --tb-dock-h: 25;"],
+        Assert.Equal(["--_tb-dock-x: 0; --_tb-dock-y: 0; --_tb-dock-w: 25; --_tb-dock-h: 100;",
+            "--_tb-dock-x: 25; --_tb-dock-y: 0; --_tb-dock-w: 75; --_tb-dock-h: 75;",
+            "--_tb-dock-x: 25; --_tb-dock-y: 75; --_tb-dock-w: 75; --_tb-dock-h: 25;"],
             groups.Select(group => group.GetAttribute("style")));
     }
 
@@ -119,7 +119,7 @@ public class TbDockManagerTests : BunitContext
 
         Assert.Equal([["Trails", "Map"], ["Notes"]], cut.FindAll("[data-part=group]").Select(Titles));
         // With the weather gone, the notes take the whole column.
-        Assert.Contains("--tb-dock-h: 100;", cut.FindAll("[data-part=group]")[1].GetAttribute("style"));
+        Assert.Contains("--_tb-dock-h: 100;", cut.FindAll("[data-part=group]")[1].GetAttribute("style"));
         await Tab(cut, "Map").ClickAsync();
         Assert.Equal(["weather"], changed!.GroupOf("weather")!.Panels);
     }
@@ -427,8 +427,8 @@ public class TbDockManagerTests : BunitContext
         Assert.Equal(["0", "0"], separators.Select(each => each.GetAttribute("tabindex")));
         Assert.Equal(new[] { "trails", "notes" }.Select(id => cut.Find($"[role=tabpanel][data-panel={id}]").Id),
             separators.Select(each => each.GetAttribute("aria-controls")));
-        Assert.Equal(["--tb-dock-x: 25; --tb-dock-y: 0; --tb-dock-w: 0; --tb-dock-h: 100;",
-            "--tb-dock-x: 25; --tb-dock-y: 75; --tb-dock-w: 75; --tb-dock-h: 0;"],
+        Assert.Equal(["--_tb-dock-x: 25; --_tb-dock-y: 0; --_tb-dock-w: 0; --_tb-dock-h: 100;",
+            "--_tb-dock-x: 25; --_tb-dock-y: 75; --_tb-dock-w: 75; --_tb-dock-h: 0;"],
             separators.Select(each => each.GetAttribute("style")));
         Assert.Equal(("0 0 25 100", "25 0 75 100"),
             (separators[0].GetAttribute("data-before"), separators[0].GetAttribute("data-after")));
@@ -457,8 +457,8 @@ public class TbDockManagerTests : BunitContext
 
         await cut.InvokeAsync(() => Report().OnResize(0, 0.4, 1));
 
-        Assert.Contains("--tb-dock-w: 40;", cut.FindAll("[data-part=group]")[0].GetAttribute("style"));
-        Assert.Contains("--tb-dock-x: 40;", cut.FindAll("[data-part=group]")[1].GetAttribute("style"));
+        Assert.Contains("--_tb-dock-w: 40;", cut.FindAll("[data-part=group]")[0].GetAttribute("style"));
+        Assert.Contains("--_tb-dock-x: 40;", cut.FindAll("[data-part=group]")[1].GetAttribute("style"));
         Assert.Equal("40", cut.FindAll(".tb-dock__separator")[0].GetAttribute("aria-valuenow"));
         Assert.Equal("1", cut.Find("[data-part=dock]").GetAttribute("data-report"));
         Assert.Equal([1.6, 2.4],
@@ -482,7 +482,7 @@ public class TbDockManagerTests : BunitContext
 
         // The script shows its own boxes over the app's until it sees the report's number, so the two arrive together.
         var (report, firstGroup) = Assert.Single(renders);
-        Assert.Contains("--tb-dock-w: 40;", firstGroup);
+        Assert.Contains("--_tb-dock-w: 40;", firstGroup);
         Assert.Equal("1", report);
     }
 
@@ -1303,7 +1303,7 @@ public class TbDockManagerTests : BunitContext
 
         Assert.Equal(Hike.Maximize("notes"), changed);
         var groups = cut.FindAll("[data-part=group]");
-        const string full = "--tb-dock-x: 0; --tb-dock-y: 0; --tb-dock-w: 100; --tb-dock-h: 100;";
+        const string full = "--_tb-dock-x: 0; --_tb-dock-y: 0; --_tb-dock-w: 100; --_tb-dock-h: 100;";
         Assert.Equal(full, groups[1].GetAttribute("style"));
         Assert.Equal([false, true, false], groups.Select(group => group.HasAttribute("data-maximized")));
         Assert.Equal([true, false, true],
@@ -1532,7 +1532,7 @@ public class TbDockManagerTests : BunitContext
         Assert.Equal(Hike.Float("notes"), changed);
         // The window is numbered after the docked groups, and drawn half as large as the dock over its middle.
         var window = cut.Find("[data-part=group][data-floating]");
-        const string box = "--tb-dock-x: 25; --tb-dock-y: 25; --tb-dock-w: 50; --tb-dock-h: 50; --tb-dock-z: 0;";
+        const string box = "--_tb-dock-x: 25; --_tb-dock-y: 25; --_tb-dock-w: 50; --_tb-dock-h: 50; --tb-dock-z: 0;";
         Assert.Equal(("2", box, "Floating panel group 3"), (window.GetAttribute("data-group"),
             window.GetAttribute("style"), window.QuerySelector("[role=tablist]")!.GetAttribute("aria-label")));
         Assert.Contains("tb-dock__group--floating", window.ClassList);
@@ -1778,7 +1778,7 @@ public class TbDockManagerTests : BunitContext
 
         var cut = RenderDock(Hike.FloatAt("map", 10, 20, 30, 40), HikePanels);
 
-        Assert.Equal("--tb-dock-x: 10; --tb-dock-y: 20; --tb-dock-w: 30; --tb-dock-h: 40; --tb-dock-z: 0;",
+        Assert.Equal("--_tb-dock-x: 10; --_tb-dock-y: 20; --_tb-dock-w: 30; --_tb-dock-h: 40; --tb-dock-z: 0;",
             cut.Find("[data-part=group][data-floating]").GetAttribute("style"));
         Assert.Equal(["Map"], cut.Tb().Dock().Floating);
     }
@@ -1828,7 +1828,7 @@ public class TbDockManagerTests : BunitContext
 
         await cut.InvokeAsync(() => Report().OnFloat("notes", 10, 20, 50, 50, false, 1));
 
-        const string moved = "--tb-dock-x: 10; --tb-dock-y: 20; --tb-dock-w: 50; --tb-dock-h: 50; --tb-dock-z: 0;";
+        const string moved = "--_tb-dock-x: 10; --_tb-dock-y: 20; --_tb-dock-w: 50; --_tb-dock-h: 50; --tb-dock-z: 0;";
         Assert.Equal(Hike.FloatAt("notes", 10, 20, 50, 50), changes[^1]);
         Assert.Equal(moved, cut.Find("[data-part=group][data-floating]").GetAttribute("style"));
         Assert.StartsWith(moved, cut.Find("[role=tabpanel][data-panel=notes]").GetAttribute("style"));
@@ -1915,7 +1915,7 @@ public class TbDockManagerTests : BunitContext
         Assert.Equal(["Wider", "Narrower", "Taller", "Shorter"],
             grip.QuerySelectorAll("[data-step]").Select(item => item.TextContent.Trim()));
         // The grip is the window's last part, with the window's number, layer and box.
-        const string box = "--tb-dock-x: 25; --tb-dock-y: 25; --tb-dock-w: 50; --tb-dock-h: 50; --tb-dock-z: 0;";
+        const string box = "--_tb-dock-x: 25; --_tb-dock-y: 25; --_tb-dock-w: 50; --_tb-dock-h: 50; --tb-dock-z: 0;";
         Assert.Equal(("2", true, box),
             (grip.GetAttribute("data-group"), grip.HasAttribute("data-floating"), grip.GetAttribute("style")));
         // A docked group has neither.
@@ -2389,7 +2389,7 @@ public class TbDockManagerTests : BunitContext
         // It is drawn as a window with one tab across the edge, in front of the weather's window and numbered after
         // it, a quarter of the dock deep.
         Assert.Equal(layout.Open("notes"), changes[^1]);
-        const string box = "--tb-dock-x: 75; --tb-dock-y: 0; --tb-dock-w: 25; --tb-dock-h: 100; --tb-dock-z: 1;";
+        const string box = "--_tb-dock-x: 75; --_tb-dock-y: 0; --_tb-dock-w: 25; --_tb-dock-h: 100; --tb-dock-z: 1;";
         var row = cut.Find("[data-part=group][data-edge]");
         Assert.Equal(("end", "2", box, true, "Auto-hidden panel"), (row.GetAttribute("data-edge"),
             row.GetAttribute("data-group"), row.GetAttribute("style"), row.HasAttribute("data-floating"),
@@ -2440,7 +2440,7 @@ public class TbDockManagerTests : BunitContext
             edge.GetAttribute("aria-valuemax")));
         Assert.Equal(cut.Find("[data-part=panel][data-panel=notes]").Id, edge.GetAttribute("aria-controls"));
         Assert.Equal("tb-dock__slide-separator tb-dock__slide-separator--end", edge.ClassName);
-        const string box = "--tb-dock-x: 75; --tb-dock-y: 0; --tb-dock-w: 25; --tb-dock-h: 100; --tb-dock-z: 0;";
+        const string box = "--_tb-dock-x: 75; --_tb-dock-y: 0; --_tb-dock-w: 25; --_tb-dock-h: 100; --tb-dock-z: 0;";
         var grip = cut.Find("[data-part=slide-grip]");
         Assert.Equal((box, box, "2", "2"), (edge.GetAttribute("style"), grip.GetAttribute("style"),
             edge.GetAttribute("data-group"), grip.GetAttribute("data-group")));
@@ -2455,7 +2455,7 @@ public class TbDockManagerTests : BunitContext
 
         Assert.Equal([layout.ResizeAutoHidden("notes", 33.3333)], changes);
         Assert.Equal("33", cut.Find("[data-part=slide-separator]").GetAttribute("aria-valuenow"));
-        Assert.StartsWith("--tb-dock-x: 66.6667; --tb-dock-y: 0; --tb-dock-w: 33.3333;",
+        Assert.StartsWith("--_tb-dock-x: 66.6667; --_tb-dock-y: 0; --_tb-dock-w: 33.3333;",
             cut.Find("[data-part=group][data-edge]").GetAttribute("style"));
         Assert.Equal(("1", "1"), (cut.Find("[data-part=dock]").GetAttribute("data-report"),
             cut.Find("[data-part=dock]").GetAttribute("data-commits")));
@@ -2488,7 +2488,7 @@ public class TbDockManagerTests : BunitContext
         await dock.ResizeAsync("Resize Notes", 40);
 
         Assert.Equal(40, dock.Size("Resize Notes"));
-        Assert.StartsWith("--tb-dock-x: 0; --tb-dock-y: 0; --tb-dock-w: 100; --tb-dock-h: 40;",
+        Assert.StartsWith("--_tb-dock-x: 0; --_tb-dock-y: 0; --_tb-dock-w: 100; --_tb-dock-h: 40;",
             cut.Find("[data-part=group][data-edge]").GetAttribute("style"));
         // A docked separator keeps its own name and its own share.
         Assert.Equal(25, dock.Size("Resize Trails"));

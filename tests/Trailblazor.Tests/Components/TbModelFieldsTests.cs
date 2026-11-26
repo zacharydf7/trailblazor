@@ -219,8 +219,8 @@ public class TbModelFieldsTests : BunitContext
         Assert.Equal(["Notes", "Name", "Length", "Code", "Speed", "Start", "Mode", "Email"], Names(cut));
         Assert.Equal("Trip notes", cut.Find("[data-name=Notes] label").TextContent.Trim());
         Assert.Contains("Anything worth remembering.", cut.Find("[data-name=Notes]").TextContent);
-        Assert.Contains("--tb-model-fields-span: 2;", cut.Find("[data-name=Notes]").GetAttribute("style"));
-        Assert.Contains("--tb-model-fields-columns: 2;", cut.Find(".tb-model-fields").GetAttribute("style"));
+        Assert.Contains("--_tb-model-fields-span: 2;", cut.Find("[data-name=Notes]").GetAttribute("style"));
+        Assert.Contains("--_tb-model-fields-columns: 2;", cut.Find(".tb-model-fields").GetAttribute("style"));
         Assert.True(cut.Find("[data-name=Name] input").HasAttribute("readonly"));
     }
 

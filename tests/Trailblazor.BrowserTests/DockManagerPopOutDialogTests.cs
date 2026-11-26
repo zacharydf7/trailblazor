@@ -24,7 +24,7 @@ public class DockManagerPopOutDialogTests(BrowserFixture fixture) : BrowserTest(
 
     // How far along its window's row of minimized dialogs a dialog sits, and how many rows up.
     private static Task<string> PlaceInTheRowAsync(ILocator dialog) => dialog.EvaluateAsync<string>("""
-        dialog => ['--tb-dialog-tray-inline', '--tb-dialog-tray-block']
+        dialog => ['--_tb-dialog-tray-inline', '--_tb-dialog-tray-block']
             .map(name => dialog.style.getPropertyValue(name)).join(' ')
         """);
 

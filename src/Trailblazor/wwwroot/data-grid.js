@@ -138,7 +138,7 @@ export function createDataGrid(table, waitForReorder) {
     const scroll = table.parentElement;
     const measurePins = () => {
         const place = (cells, name) => cells.reduce((offset, cell, slot) => {
-            table.style.setProperty(`--tb-data-grid-pin-${name}${slot}`, `${offset}px`);
+            table.style.setProperty(`--_tb-data-grid-pin-${name}${slot}`, `${offset}px`);
             return offset + cell.getBoundingClientRect().width;
         }, 0);
         const cells = [...headers.cells];
@@ -152,8 +152,8 @@ export function createDataGrid(table, waitForReorder) {
         const scrolls = scroll.parentElement.classList.contains('tb-data-grid--scrolls');
         const head = `${table.tHead.getBoundingClientRect().height}px`;
         // Where a reloading grid's bar runs, under the header.
-        if (scroll.style.getPropertyValue('--tb-data-grid-header-size') !== head) {
-            scroll.style.setProperty('--tb-data-grid-header-size', head);
+        if (scroll.style.getPropertyValue('--_tb-data-grid-header-size') !== head) {
+            scroll.style.setProperty('--_tb-data-grid-header-size', head);
         }
 
         const top = scrolls ? head : '';

@@ -101,8 +101,8 @@ document.addEventListener('load', event => {
     }
 
     const frame = image.parentElement;
-    frame.style.setProperty('--tb-lightbox-ratio', String(image.naturalWidth / image.naturalHeight));
-    frame.style.setProperty('--tb-lightbox-natural-width', `${image.naturalWidth}px`);
+    frame.style.setProperty('--_tb-lightbox-ratio', String(image.naturalWidth / image.naturalHeight));
+    frame.style.setProperty('--_tb-lightbox-natural-width', `${image.naturalWidth}px`);
     frame.dataset.measured = '';
 }, true);
 

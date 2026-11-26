@@ -70,7 +70,7 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
     private bool ShowsColumns => Columns is { Count: > 0 } && ItemTemplate is null;
 
     private string? ColumnsStyle => ShowsColumns
-        ? "--tb-autocomplete-columns: " + string.Join(" ", Columns!.Select(column => column.Width ?? "minmax(0, 1fr)"))
+        ? "--_tb-autocomplete-columns: " + string.Join(" ", Columns!.Select(column => column.Width ?? "minmax(0, 1fr)"))
         : null;
 
     private string ColumnsLabel(TValue item) =>

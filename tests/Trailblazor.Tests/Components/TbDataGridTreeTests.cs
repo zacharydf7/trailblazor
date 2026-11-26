@@ -95,7 +95,7 @@ public class TbDataGridTreeTests : BunitContext
             plans.GetAttribute("aria-setsize")));
         Assert.Equal("true", cut.Tb().Grid("Folders").Row("Docs").GetAttribute("aria-expanded"));
         Assert.Equal([1], Ids(Reported.Single()));
-        Assert.Equal("--tb-data-grid-tree-level: 1", plans.QuerySelector(".tb-data-grid__tree")!.GetAttribute("style"));
+        Assert.Equal("--_tb-data-grid-tree-level: 1", plans.QuerySelector(".tb-data-grid__tree")!.GetAttribute("style"));
     }
 
     [Fact]

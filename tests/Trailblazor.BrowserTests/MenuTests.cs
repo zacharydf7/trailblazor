@@ -314,7 +314,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         script.SetResult();
 
         await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Duplicate" })).ToBeFocusedAsync();
-        await Expect(menu).ToHaveAttributeAsync("style", new Regex("--tb-anchored-offset"));
+        await Expect(menu).ToHaveAttributeAsync("style", new Regex("--_tb-anchored-offset"));
         await Expect(menu).ToHaveAttributeAsync("data-open", "");
         await page.Keyboard.PressAsync("Escape");
         await Expect(menu).ToBeHiddenAsync();
@@ -334,7 +334,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(Item(page, "Email")).ToBeFocusedAsync();
         await Expect(Item(page, "Share")).ToHaveAttributeAsync("aria-expanded", "true");
-        await Expect(submenu).ToHaveAttributeAsync("style", new Regex("--tb-anchored-offset"));
+        await Expect(submenu).ToHaveAttributeAsync("style", new Regex("--_tb-anchored-offset"));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -1170,7 +1170,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         var trigger = page.GetByRole(AriaRole.Button, new() { Name = label, Exact = true });
         var menu = page.GetByRole(AriaRole.Menu, new() { Name = label, Exact = true });
         await trigger.ClickAsync();
-        await Expect(menu).ToHaveAttributeAsync("style", new Regex("--tb-anchored-offset"));
+        await Expect(menu).ToHaveAttributeAsync("style", new Regex("--_tb-anchored-offset"));
         return ((await trigger.BoundingBoxAsync())!, (await menu.BoundingBoxAsync())!);
     }
 

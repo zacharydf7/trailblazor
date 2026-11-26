@@ -131,7 +131,7 @@ public class TbSliderTests : BunitContext
         cut.Find("input").Input("75");
 
         Assert.Equal(75, Brightness);
-        Assert.Contains("--tb-slider-to: 0.75", cut.Find(".tb-slider__control").GetAttribute("style"));
+        Assert.Contains("--_tb-slider-to: 0.75", cut.Find(".tb-slider__control").GetAttribute("style"));
     }
 
     [Fact]
@@ -173,7 +173,7 @@ public class TbSliderTests : BunitContext
 
         var marks = cut.FindAll("[data-part=mark]");
         Assert.Equal(["Flat", "Scramble"], marks.Select(mark => mark.TextContent));
-        Assert.Contains("--tb-slider-at: 1", marks[1].GetAttribute("style"));
+        Assert.Contains("--_tb-slider-at: 1", marks[1].GetAttribute("style"));
     }
 
     [Theory]

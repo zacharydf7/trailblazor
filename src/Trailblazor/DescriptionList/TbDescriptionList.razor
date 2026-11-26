@@ -36,7 +36,7 @@
 
     internal string ShownEmptyText => EmptyText ?? Localizer[TbStrings.EmptyValue];
 
-    private string ColumnsStyle => Styles.Join($"--tb-description-list-columns: {Columns}", Style)!;
+    private string ColumnsStyle => Styles.Join($"--_tb-description-list-columns: {Columns}", Style)!;
 
     /// <inheritdoc />
     protected override void OnParametersSet() =>

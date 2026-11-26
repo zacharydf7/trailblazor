@@ -68,7 +68,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         builder.AddAttribute(4, "aria-labelledby", TitleId);
         builder.AddAttribute(5, "tabindex", "-1");
         builder.AddAttribute(6, "style", string.IsNullOrWhiteSpace(_openingWidth) ? Style
-            : Styles.Join($"--tb-dialog-width: {_openingWidth}", Style));
+            : Styles.Join($"--_tb-dialog-width: {_openingWidth}", Style));
         builder.AddAttribute(7, "class", ClassNames.Join("tb-dialog", SizeClass(Dialog.Size),
             PositionClass(Dialog.Position),
             Draggable ? "tb-dialog--draggable" : null, Resizable ? "tb-dialog--resizable" : null,

@@ -126,7 +126,7 @@ else
 
     // The row's indent, with the item's own style after it.
     internal string RowStyle =>
-        Style is null ? $"--tb-tree-level: {Level - 1}" : $"--tb-tree-level: {Level - 1}; {Style}";
+        Style is null ? $"--_tb-tree-level: {Level - 1}" : $"--_tb-tree-level: {Level - 1}; {Style}";
 
     // What the row shows, here or in the tree's rows.
     internal RenderFragment Row => TextContent ?? (builder =>

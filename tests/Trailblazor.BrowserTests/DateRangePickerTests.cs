@@ -421,7 +421,7 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(Day(page, "Wednesday, June 3, 2026, Start date")).ToBeFocusedAsync();
         await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
-        await Expect(Calendar(page)).ToHaveAttributeAsync("style", new Regex("--tb-anchored-offset"));
+        await Expect(Calendar(page)).ToHaveAttributeAsync("style", new Regex("--_tb-anchored-offset"));
     }
 
     // A toggle still queued when the script replays the opening must not open the calendar a second time.

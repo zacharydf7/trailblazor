@@ -8,6 +8,10 @@ they run by version. The docs site's Upgrading page is built from both.
 
 ### Renamed and removed
 
+#### 2026-11-26
+
+- Custom properties a component sets for its own layout or state, such as --tb-dialog-width, --tb-dock-x, --tb-color-picker-value and --tb-button-fill → the same names starting with --_tb-, which marks them private: TbTokens lists every property an app may set or read, and a --_tb- one can change in any release. To recolor one button, set --tb-color-primary or --tb-color-secondary in its Style, and its hover and pressed colors follow; for another tone, also set that tone's -hover and -active tokens and its --tb-color-on- token
+
 #### 2026-11-25
 
 - GridResult.TotalCount as an int, such as int total = result.TotalCount → GridResult.TotalCount as an int?: read it with ?? or a null check
@@ -96,6 +100,8 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-26
 
+- `--tb-app-shell-height` works on the root or any element around the shell, not only on the shell itself, and the new `--tb-app-shell-navigation-width` and `--tb-app-shell-rail-width` set the navigation's width and its rail's.
+- Style values the components write in markup now use `--_tb-` names, such as a dock window's `--_tb-dock-x`, `--_tb-dock-y`, `--_tb-dock-w` and `--_tb-dock-h`, a description list's `--_tb-description-list-columns` and the pop-out window's `--_tb-sheet-applies` probe; `--tb-dock-z` stays public.
 - A `TbDataGrid` tree grid can load a row's children the first time it opens, with the new `LoadChildren` and `HasChildren` in place of a `ChildrenSelector`. A row is `aria-busy` while its children load.
 
 #### 2026-11-25

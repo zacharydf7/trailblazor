@@ -1504,13 +1504,13 @@ public class TbDataGridTests : BunitContext
         var headers = cut.FindAll("thead tr:first-child th");
         Assert.Equal(["LastHiked", "LengthKm", "Name"], headers.Select(header => header.GetAttribute("data-column")));
         Assert.Equal(["start", null, "end"], headers.Select(header => header.GetAttribute("data-pinned")));
-        Assert.Equal("width: 9rem; inset-inline-start: var(--tb-data-grid-pin-0, 0px)",
+        Assert.Equal("width: 9rem; inset-inline-start: var(--_tb-data-grid-pin-0, 0px)",
             headers[0].GetAttribute("style"));
         Assert.Null(headers[1].GetAttribute("style"));
         var cells = Row(cut, "1").QuerySelectorAll("td");
         Assert.Equal(["LastHiked", "LengthKm", "Name"], cells.Select(cell => cell.GetAttribute("data-column")));
         Assert.Equal(["start", null, "end"], cells.Select(cell => cell.GetAttribute("data-pinned")));
-        Assert.Equal("inset-inline-end: var(--tb-data-grid-pin-end-0, 0px)", cells[2].GetAttribute("style"));
+        Assert.Equal("inset-inline-end: var(--_tb-data-grid-pin-end-0, 0px)", cells[2].GetAttribute("style"));
     }
 
     [Fact]
@@ -1521,7 +1521,7 @@ public class TbDataGridTests : BunitContext
             SelectionMode.Multiple).Add(grid => grid.OnMove, (SortableMove<Trail> move) => move.ApplyTo(trails)),
             PinnedColumns(ColumnPin.Start, ColumnPin.Start, ColumnPin.None));
 
-        var styles = Enumerable.Range(0, 4).Select(slot => $"inset-inline-start: var(--tb-data-grid-pin-{slot}, 0px)");
+        var styles = Enumerable.Range(0, 4).Select(slot => $"inset-inline-start: var(--_tb-data-grid-pin-{slot}, 0px)");
         Assert.All(cut.FindAll("tr"), row =>
         {
             var cells = row.Children;
@@ -1551,8 +1551,8 @@ public class TbDataGridTests : BunitContext
 
         var cells = Row(cut, "1").Children;
         Assert.Equal([null, null, "end", "end"], cells.Select(cell => cell.GetAttribute("data-pinned")));
-        Assert.Equal([null, null, "inset-inline-end: var(--tb-data-grid-pin-end-1, 0px)",
-            "inset-inline-end: var(--tb-data-grid-pin-end-0, 0px)"], cells.Select(cell => cell.GetAttribute("style")));
+        Assert.Equal([null, null, "inset-inline-end: var(--_tb-data-grid-pin-end-1, 0px)",
+            "inset-inline-end: var(--_tb-data-grid-pin-end-0, 0px)"], cells.Select(cell => cell.GetAttribute("style")));
     }
 
     [Fact]

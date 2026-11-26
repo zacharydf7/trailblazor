@@ -48,7 +48,7 @@ public class DockManagerResizeTests(BrowserFixture fixture) : DockManagerPage(fi
         await Expect(page.GetByTestId("layout")).ToContainTextAsync("\"size\":1.4");
         // The app's boxes show now, so the script's own are gone.
         Assert.Equal("", await page.Locator(".tb-dock__group").First.EvaluateAsync<string>(
-            "group => group.style.getPropertyValue('--tb-dock-live-w')"));
+            "group => group.style.getPropertyValue('--_tb-dock-live-w')"));
         Assert.Equal(0.35 * 766, await WidthAsync(page, 0), 1.0);
     }
 

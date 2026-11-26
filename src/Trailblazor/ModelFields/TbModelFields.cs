@@ -54,7 +54,7 @@ public sealed partial class TbModelFields<
     private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
     private string RootStyle => ClassNames.Join(
-        FormattableString.Invariant($"--tb-model-fields-columns: {Columns};"), Style) ?? "";
+        FormattableString.Invariant($"--_tb-model-fields-columns: {Columns};"), Style) ?? "";
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -94,7 +94,7 @@ public sealed partial class TbModelFields<
     }
 
     private string SpanStyle(ModelFieldPlace place) =>
-        FormattableString.Invariant($"--tb-model-fields-span: {Math.Clamp(place.Override?.Span ?? 1, 1, Columns)};");
+        FormattableString.Invariant($"--_tb-model-fields-span: {Math.Clamp(place.Override?.Span ?? 1, 1, Columns)};");
 
     private RenderFragment Editor(ModelFieldPlace place)
     {

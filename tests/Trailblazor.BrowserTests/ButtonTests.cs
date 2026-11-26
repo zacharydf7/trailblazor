@@ -298,7 +298,7 @@ public class ButtonTests(BrowserFixture fixture) : BrowserTest(fixture)
             async bold => {
                 bold.classList.replace('tb-button--text', 'tb-button--filled');
                 const probe = bold.appendChild(document.createElement('span'));
-                probe.style.background = 'var(--tb-button-fill-hover)';
+                probe.style.background = 'var(--_tb-button-fill-hover)';
                 const fill = getComputedStyle(probe).backgroundColor;
                 probe.remove();
                 return [fill, getComputedStyle(bold).backgroundColor];

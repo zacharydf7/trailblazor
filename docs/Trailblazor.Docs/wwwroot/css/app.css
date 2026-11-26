@@ -1025,10 +1025,10 @@ code {
 
 /* The hero's main button wears the site's brand accent rather than the palette's. */
 .docs-hero__actions .tb-button--filled {
-    --tb-button-fill: var(--docs-brand);
-    --tb-button-fill-hover: color-mix(in srgb, var(--docs-brand) 88%, var(--tb-color-text));
-    --tb-button-fill-active: color-mix(in srgb, var(--docs-brand) 76%, var(--tb-color-text));
-    --tb-button-on-fill: var(--docs-on-brand);
+    --tb-color-primary: var(--docs-brand);
+    --tb-color-primary-hover: color-mix(in srgb, var(--docs-brand) 88%, var(--tb-color-text));
+    --tb-color-primary-active: color-mix(in srgb, var(--docs-brand) 76%, var(--tb-color-text));
+    --tb-color-on-primary: var(--docs-on-brand);
 }
 
 .docs-status {
