@@ -79,6 +79,55 @@ public class ChartPathTests
         Assert.Equal(2000, curves[1].First.Y);
     }
 
+    [Fact]
+    public void Area_ShouldGoAlongTheLineThenBackAlongTheFloor_WhenStraight()
+    {
+        var path = ChartPath.Area([(0, 0.5), (0.5, 0.2), (1, 0.4)], [(0, 1), (0.5, 1), (1, 1)], ChartCurve.Straight);
+
+        Assert.Equal("M0 5000l5000 -3000l5000 2000v6000l-5000 0l-5000 0z", path);
+    }
+
+    [Fact]
+    public void Area_ShouldBeAShapeForEachRun_WhenAPointIsMissing()
+    {
+        // The last point has a gap on both sides, and no width to fill.
+        var path = ChartPath.Area([(0, 0.5), (0.25, 0.5), null, (0.75, 0.5), null],
+            [(0, 1), (0.25, 1), null, (0.75, 1), null], ChartCurve.Straight);
+
+        Assert.Equal("M0 5000l2500 0v5000l-2500 0z", path);
+    }
+
+    [Fact]
+    public void Area_ShouldFollowItsFloorsSteps_WhenStepped()
+    {
+        var path = ChartPath.Area([(0, 0.5), (0.5, 0.2)], [(0, 1), (0.5, 0.8)], ChartCurve.Stepped);
+
+        // Back along the floor, the jump comes before the level stretch, so the floor is the line that Line draws.
+        Assert.Equal("M0 5000h5000v-3000v6000v2000h-5000z", path);
+    }
+
+    [Fact]
+    public void Area_ShouldFollowItsFloorsCurve_WhenSmooth()
+    {
+        (double X, double Y)?[] floor = [(0, 0.9), (0.25, 0.7), (0.5, 0.75), (0.75, 0.4), (1, 0.6)];
+        (double X, double Y)?[] line = [.. floor.Select(point => ((double, double)?)(point!.Value.X, 0.1))];
+
+        var area = ChartPath.Area(line, floor, ChartCurve.Smooth);
+
+        // The way back starts at the floor's last point and is the floor's own line, end for end.
+        var back = Curves("M10000 6000" + Regex.Match(area, @"v-?\d+(.*)z$").Groups[1].Value);
+        var along = Curves(ChartPath.Line(floor, ChartCurve.Smooth));
+        Assert.Equal(along.Count, back.Count);
+        foreach (var (there, here) in along.AsEnumerable().Reverse().Zip(back))
+        {
+            Assert.Equal((there.End, there.Start), (here.Start, here.End));
+            Assert.InRange(here.First.Y - there.Second.Y, -1, 1);
+            Assert.InRange(here.Second.Y - there.First.Y, -1, 1);
+            Assert.InRange(here.First.X - there.Second.X, -1, 1);
+            Assert.InRange(here.Second.X - there.First.X, -1, 1);
+        }
+    }
+
     private static int Whole(double share) => (int)Math.Round(share * ChartPath.Grid);
 
     // Each curve of a smooth path, as the places of its start, its two handles and its end on the grid.

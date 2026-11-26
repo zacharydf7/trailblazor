@@ -11921,7 +11921,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         overflow: visible;
     }
 
-    /* The lines' drawing is stretched to the plot, and the stroke isn't stretched with it. */
+    /* The lines' drawing is stretched to the plot, and the stroke isn't stretched with it. Browsers disagree on
+       where such a stroke is for the pointer, so a line takes no press, and the script goes by the nearest point. */
     .tb-chart__line {
         fill: none;
         stroke: var(--_tb-chart-series);
@@ -11929,6 +11930,21 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         stroke-linejoin: round;
         stroke-linecap: round;
         vector-effect: non-scaling-stroke;
+        pointer-events: none;
+    }
+
+    /* An area's fill is a tint of its series' color, so grid lines and the areas behind it show through. The
+       pointer passes through it to whatever is under it. */
+    .tb-chart__area {
+        fill: var(--_tb-chart-series);
+        fill-opacity: 0.2;
+        stroke: none;
+        pointer-events: none;
+    }
+
+    /* A fill in a stack takes a click for its series, whether or not it is painted. */
+    .tb-chart__area[data-number] {
+        pointer-events: fill;
     }
 
     /* A ring in the surface's color keeps a marker clear of the lines it sits on. */
@@ -12080,6 +12096,11 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     @media (forced-colors: active) {
         .tb-chart__line {
             stroke: CanvasText;
+        }
+
+        /* An area keeps its line, which differs from the others by its dashes, and loses its fill. */
+        .tb-chart__area {
+            fill: none;
         }
 
         .tb-chart__series--2.tb-chart__line,

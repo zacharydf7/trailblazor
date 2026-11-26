@@ -192,6 +192,63 @@ public class ChartPlanTests
     }
 
     [Fact]
+    public void Build_ShouldFillAnAreaFromItsLineDownToZero_WhenGivenAnAreaSeries()
+    {
+        var plan = Build(["A", "B"], [Area("One", 10, 20)]);
+
+        // An area is read from zero, as a bar is, so the axis reaches it.
+        Assert.Equal((0d, 20d), (plan.Ticks.Min, plan.Ticks.Max));
+        Assert.Equal(("M2500 5000l5000 -5000", "M2500 5000l5000 -5000v10000l-5000 0z"),
+            (plan.Series[0].Path, plan.Series[0].Fill));
+        Assert.Equal([(0.25, 0.5), (0.75, 0)], plan.Series[0].Points);
+    }
+
+    [Fact]
+    public void Build_ShouldFillPastThePlotsEdge_WhenTheAxisStartsAboveZero()
+    {
+        var plan = Build(["A", "B"], [Area("One", 10, 20)], axis: new(Min: 10, Max: null, Step: null, Format: null));
+
+        // Zero is as far below the plot as the plot is high, and the fills' drawing ends at the plot's edge.
+        Assert.Equal((10d, 20d), (plan.Ticks.Min, plan.Ticks.Max));
+        Assert.Equal("M2500 10000l5000 -10000v20000l-5000 0z", plan.Series[0].Fill);
+    }
+
+    [Fact]
+    public void Build_ShouldPileAreasOnAreasAndBarsOnBars_WhenStacked()
+    {
+        var plan = Build(["A", "B"], [Area("One", 10, 20), Area("Two", 30, 20), Bars("Three", 5, 5)],
+            ChartStacking.Stacked);
+
+        Assert.Equal((0d, 40d), (plan.Ticks.Min, plan.Ticks.Max));
+        // The second area's line is the total, and its floor is the first area's line.
+        Assert.Equal(("M2500 0l5000 0", "M2500 0l5000 0v5000l-5000 2500z"), (plan.Series[1].Path, plan.Series[1].Fill));
+        // The bar starts from zero, not from the top of the areas.
+        AssertBar(new(0.075, 0.875, 0.35, 0.125, ChartBarEnd.Top), plan.Series[2].Marks[0]);
+    }
+
+    [Fact]
+    public void Build_ShouldDrawAStackedAreasLowerEdgeWithItsOwnCurve_WhenTheAreaUnderItHasAnother()
+    {
+        var plan = Build(["A", "B", "C"], [Area("One", 10, 30, 10),
+            Area("Two", 10, 10, 10) with { Curve = ChartCurve.Smooth }], ChartStacking.Stacked);
+
+        // The area under it has a straight line, and this one comes back along curves: a stack shares one curve.
+        Assert.DoesNotContain('c', plan.Series[0].Path);
+        Assert.Matches(@"v\d+(c[-\d ]+){2}z$", plan.Series[1].Fill);
+    }
+
+    [Fact]
+    public void Build_ShouldDrawAreasAsSharesOfEachPlacesTotal_WhenStackedAsPercent()
+    {
+        var plan = Build(["A", "B"], [Area("One", 1, 3), Area("Two", 3, 1)], ChartStacking.Percent);
+
+        Assert.Equal(new ChartTicks(0, 1, 0.2), plan.Ticks);
+        Assert.Equal([(0.25, 0.75), (0.75, 0.25)], plan.Series[0].Points);
+        Assert.Equal([(0.25, 0d), (0.75, 0d)], plan.Series[1].Points);
+        Assert.Equal(["1", "3"], plan.Series[0].Text);
+    }
+
+    [Fact]
     public void Build_ShouldLeaveAGap_WhenAValueIsMissing()
     {
         var plan = Build(["A", "B", "C"], [Bars("Count", null, 5, 5), Line("Level", 1, null, 3)]);
@@ -248,6 +305,9 @@ public class ChartPlanTests
 
     private static ChartSeriesValues Line(string name, params double?[] values) =>
         new(name, false, ChartCurve.Straight, values);
+
+    private static ChartSeriesValues Area(string name, params double?[] values) =>
+        new(name, false, ChartCurve.Straight, values, Filled: true);
 
     private static void AssertBar(ChartBar expected, ChartBar? actual)
     {

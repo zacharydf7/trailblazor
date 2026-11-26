@@ -8435,3 +8435,12 @@ const Trailblazor.TbStrings.ChartAllHidden = "Chart.AllHidden" -> string!
 Trailblazor.ChartLabels.Hidden.get -> string?
 Trailblazor.ChartLabels.Hidden.init -> void
 const Trailblazor.TbStrings.ChartHidden = "Chart.Hidden" -> string!
+Trailblazor.ChartLabels.Areas.get -> string?
+Trailblazor.ChartLabels.Areas.init -> void
+Trailblazor.TbAreaSeries<TItem>
+Trailblazor.TbAreaSeries<TItem>.Curve.get -> Trailblazor.ChartCurve
+Trailblazor.TbAreaSeries<TItem>.Curve.set -> void
+Trailblazor.TbAreaSeries<TItem>.Markers.get -> bool?
+Trailblazor.TbAreaSeries<TItem>.Markers.set -> void
+Trailblazor.TbAreaSeries<TItem>.TbAreaSeries() -> void
+const Trailblazor.TbStrings.ChartAreas = "Chart.Areas" -> string!

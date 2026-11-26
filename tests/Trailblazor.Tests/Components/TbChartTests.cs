@@ -91,6 +91,58 @@ public class TbChartTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldFillUnderALine_WhenGivenAnAreaSeries()
+    {
+        var cut = RenderChart(Area("Completed", month => month.Completed), Area("Failed", month => month.Failed));
+
+        // An area's line is its series' marks, as a line series' is.
+        var line = cut.Find("svg.tb-chart__lines > path[data-series='Completed']");
+        Assert.Equal(("tb-chart__line tb-chart__series--1", "0", "1667,7500 5000,5000 8333,0", line.GetAttribute("d")),
+            (line.ClassName, line.GetAttribute("data-number"), line.GetAttribute("data-points"),
+                "M1667 7500l3333 -2500l3333 -5000"));
+        var fills = cut.FindAll("svg.tb-chart__fills > path.tb-chart__area");
+        Assert.Equal(["tb-chart__area tb-chart__series--1", "tb-chart__area tb-chart__series--2"],
+            fills.Select(fill => fill.ClassName));
+        Assert.Equal("M1667 7500l3333 -2500l3333 -5000v10000l-3333 0l-3333 0z", fills[0].GetAttribute("d"));
+        // Unstacked fills overlap, so none of them takes a click for its series.
+        Assert.All(fills, fill => Assert.False(fill.HasAttribute("data-number")));
+        Assert.Equal("Area chart: Completed, Failed", cut.Find("svg.tb-chart__marks").GetAttribute("aria-label"));
+        // A key is a small drawing of an area: its line over its tint.
+        Assert.Equal(2, cut.FindAll("[data-part=legend] svg > rect.tb-chart__area + line.tb-chart__line").Count);
+    }
+
+    [Fact]
+    public void Render_ShouldDrawEveryFillUnderTheBarsAndTheLines_WhenAreasShareAChartWithThem()
+    {
+        var cut = RenderChart(parameters => parameters.Add(chart => chart.Stacking, ChartStacking.Stacked),
+            Line("Hours", month => month.Hours), Area("Completed", month => month.Completed),
+            Bars("Failed", month => month.Failed));
+
+        // The fills come first, so no fill covers a bar or another series' line.
+        Assert.Equal(["tb-chart__fills", "tb-chart__series--3", "tb-chart__lines"],
+            cut.FindAll("svg.tb-chart__marks > svg, svg.tb-chart__marks > g[data-series]")
+                .Select(layer => layer.ClassName));
+        // In a stack a fill carries its series' number, and a click inside it is on that series.
+        Assert.Equal("1", cut.Find("path.tb-chart__area").GetAttribute("data-number"));
+    }
+
+    [Fact]
+    public void Render_ShouldHaveNoFills_WhenNoAreaShows()
+    {
+        var cut = RenderChart(Line("Completed", month => month.Completed));
+
+        Assert.Empty(cut.FindAll("svg.tb-chart__fills"));
+    }
+
+    [Fact]
+    public void Render_ShouldCallItALineChart_WhenAnAreaIsBesideALine()
+    {
+        var cut = RenderChart(Area("Completed", month => month.Completed), Line("Failed", month => month.Failed));
+
+        Assert.Equal("Line chart: Completed, Failed", cut.Find("svg.tb-chart__marks").GetAttribute("aria-label"));
+    }
+
+    [Fact]
     public void Render_ShouldNameTheFigureForScreenReaders_WhenGivenAnAriaLabelAndNoTitle()
     {
         var cut = Render<TbChart<Month>>(parameters => parameters.Add(chart => chart.Items, Months)
@@ -529,6 +581,15 @@ public class TbChartTests : BunitContext
         builder.SetKey(name);
         builder.AddComponentParameter(1, nameof(TbBarSeries<Month>.Name), name);
         builder.AddComponentParameter(2, nameof(TbBarSeries<Month>.Value), value);
+        builder.CloseComponent();
+    };
+
+    private static RenderFragment Area(string name, Func<Month, object?> value) => builder =>
+    {
+        builder.OpenComponent<TbAreaSeries<Month>>(0);
+        builder.SetKey(name);
+        builder.AddComponentParameter(1, nameof(TbAreaSeries<Month>.Name), name);
+        builder.AddComponentParameter(2, nameof(TbAreaSeries<Month>.Value), value);
         builder.CloseComponent();
     };
 

@@ -25,7 +25,10 @@ Familiar apps: Excel and Google Sheets charts, Grafana panels, Highcharts' acces
 - [x] The tooltip stays while the pointer is over the plot and goes when the pointer leaves. `ChartTests.Tooltip_ShouldShowEverySeriesValueAtThePlace_WhenThePointerIsOverThePlot`
 - [x] The tooltip has no timeout. `chart.js`
 - [x] The tooltip stays inside the plot, and a name too long for the room beside the line wraps. `ChartTests.Tooltip_ShouldStayInsideThePlot_WhenThePlotIsNarrow`
-- [x] A click on the plot activates the bar or line under the pointer, or else the nearest point at that place. `ChartTests.Point_ShouldTellTheApp_WhenClickedOrChosenWithTheKeys`, `ChartTests.Point_ShouldBeTheBarUnderThePointer_WhenBarsStandSideBySide`
+- [x] A click on the plot activates the bar under the pointer, or else the nearest point at that place. A line takes no click for itself, so every browser picks the same point. `ChartTests.Point_ShouldTellTheApp_WhenClickedOrChosenWithTheKeys`, `ChartTests.Point_ShouldBeTheNearest_WhenAreasOverlap`, `ChartTests.Point_ShouldBeTheBarUnderThePointer_WhenBarsStandSideBySide`
+- [x] In a stack of areas, a click inside a band and off any point activates that band's point at the place, even where another line is nearer, and a click on a point activates that point. `ChartTests.Point_ShouldBeTheBandUnderThePointer_WhenAreasAreStacked`
+- [x] Areas that overlap take no click for themselves: a click goes to the nearest point. `ChartTests.Point_ShouldBeTheNearest_WhenAreasOverlap`
+- [x] An area's fill is drawn under the bars and every line, so it covers no other series' marks. `TbChartTests.Render_ShouldDrawEveryFillUnderTheBarsAndTheLines_WhenAreasShareAChartWithThem`
 - [x] A click on a legend button hides or shows its series. `TbChartLegendTests.Legend_ShouldHideItsSeriesAndFitTheAxisToTheRest_WhenItsButtonIsPressed`, `TbChartLegendTests.Legend_ShouldShowItsSeriesAgain_WhenItsButtonIsPressedTwice`
 - [x] With a series hidden, the axis fits the ones that show, each keeps its color, the tooltip lists only them, and the data table keeps every value. `TbChartLegendTests.Legend_ShouldHideItsSeriesAndFitTheAxisToTheRest_WhenItsButtonIsPressed`, `ChartTests.Legend_ShouldHideAndShowASeries_WhenItsButtonIsPressedWithTheKeys`
 - [x] With every series hidden, the plot says so and the legend stays. `TbChartLegendTests.Plot_ShouldSayEverySeriesIsHidden_WhenNoneShows`
@@ -36,10 +39,13 @@ Familiar apps: Excel and Google Sheets charts, Grafana panels, Highcharts' acces
 - [x] The chart is as wide as its container at any width, with each label on its grid line or its mark. `ChartTests.Labels_ShouldSitOnTheirGridLinesAndMarks_WhenTheChartIsAnyWidthAndDirection`
 - [x] An axis shows only the labels that fit, evenly spaced, and none overlap. `ChartTests.PlaceLabels_ShouldNotOverlap_WhenTheChartIsNarrow`
 - [x] In forced-colors mode, every mark shows, lines differ by their dashes and bars by their fill, and each legend key is drawn as its series' marks are. `ChartTests.Series_ShouldDifferWithoutColor_WhenColorsAreForced`
+- [x] In forced-colors mode an area keeps its line, which differs by its dashes, and loses its fill, in the plot and in its legend key. `ChartTests.Area_ShouldKeepItsLineAndLoseItsFill_WhenColorsAreForced`
+- [x] In forced-colors mode a click inside a band of a stack still activates that band's point. `ChartTests.Point_ShouldBeTheBandUnderThePointer_WhenColorsAreForcedAndFillsAreNotPainted`
+- [x] An area is filled from its line down to zero, or to the area under it in a stack, and no farther than the plot's edge. `ChartTests.Area_ShouldBeFilledFromItsLineDownToZero_WhenDrawn`, `ChartPlanTests.Build_ShouldPileAreasOnAreasAndBarsOnBars_WhenStacked`, `ChartPlanTests.Build_ShouldFillPastThePlotsEdge_WhenTheAxisStartsAboveZero`
 
 ## Touch
 
-- [x] A tap on the plot shows the tooltip for the nearest place and activates the nearest point, and the tooltip stays until a tap elsewhere. `ChartTests.Tap_ShouldShowTheTooltipAndPickThePoint_WhenThePlotIsTouched`
+- [x] A tap on the plot shows the tooltip for the nearest place and activates a point as a click there does, and the tooltip stays until a tap elsewhere. `ChartTests.Tap_ShouldShowTheTooltipAndPickThePoint_WhenThePlotIsTouched`
 - [ ] A vertical swipe that starts on the plot scrolls the page. UNCONFIRMED #332
 
 ## Focus

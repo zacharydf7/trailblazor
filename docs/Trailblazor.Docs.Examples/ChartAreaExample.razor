@@ -1,0 +1,13 @@
+<TbChart Items="Hours" X="hour => hour.Name" Title="Hikers on the ridge trail">
+    <TbAreaSeries Name="Hikers" Value="hour => hour.Hikers" Curve="ChartCurve.Smooth" />
+</TbChart>
+
+@code {
+    private static readonly Hour[] Hours =
+    [
+        new("6 AM", 4), new("8 AM", 18), new("10 AM", 46), new("Noon", 61), new("2 PM", 52), new("4 PM", 33),
+        new("6 PM", 12),
+    ];
+
+    private sealed record Hour(string Name, int Hikers);
+}

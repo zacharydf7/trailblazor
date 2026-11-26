@@ -93,14 +93,23 @@ export function attachChart(plot, events, point, noValue, activates) {
         return Math.max(0, Math.min(count - 1, place));
     };
 
-    // The series a press at the place is for: the bar or line under the pointer, or else the one whose point there
-    // is nearest, so a thin line or a short bar isn't hard to hit.
+    // A press within this many pixels of a point is on that point: a marker's size.
+    const onPoint = 6;
+
+    // The series a press at the place is for: the bar under the pointer, or else the one whose point there is
+    // nearest, so a thin line or a short bar isn't hard to hit. In a stack of areas, a press inside a band is for
+    // that band unless it is on a point. A line takes no press itself, so what is on a point is a matter of
+    // distance, the same in every browser.
     const seriesAt = (place, event) => {
         const { series } = read();
-        const under = event.target.closest?.('.tb-chart__marks [data-series]');
-        const hit = series.findIndex(one => under && one.number === Number(under.dataset.number));
-        if (hit >= 0 && series[hit].points[place]) {
-            return hit;
+        const numbered = selector => {
+            const under = event.target.closest?.(selector);
+            const found = series.findIndex(one => under && one.number === Number(under.dataset.number));
+            return found >= 0 && series[found].points[place] ? found : -1;
+        };
+        const mark = numbered('.tb-chart__marks [data-series]');
+        if (mark >= 0) {
+            return mark;
         }
 
         const box = plot.getBoundingClientRect();
@@ -113,7 +122,8 @@ export function attachChart(plot, events, point, noValue, activates) {
                 nearest = index;
             }
         });
-        return nearest;
+        const band = numbered('.tb-chart__area[data-number]');
+        return band >= 0 && away(series[nearest].points[place]) > onPoint ? band : nearest;
     };
 
     // One update a frame, for the last place the pointer was at.

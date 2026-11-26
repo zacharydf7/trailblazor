@@ -63,9 +63,9 @@ public partial class TbChart<TItem>
     [Parameter]
     public string? AriaLabel { get; set; }
 
-    /// <summary>How several <see cref="TbBarSeries{TItem}"/> share a place: side by side, stacked, or stacked as
-    /// shares of each place's total. <see cref="ChartStacking.None"/> by default. Line series are never stacked.
-    /// </summary>
+    /// <summary>How several <see cref="TbBarSeries{TItem}"/>, or several <see cref="TbAreaSeries{TItem}"/>, share a
+    /// place: each from zero, stacked, or stacked as shares of each place's total. <see cref="ChartStacking.None"/>
+    /// by default. Bars pile with bars and areas with areas, and line series are never stacked.</summary>
     [Parameter]
     public ChartStacking Stacking { get; set; }
 
@@ -93,7 +93,8 @@ public partial class TbChart<TItem>
     public ChartClasses? Classes { get; set; }
 
     /// <summary>The chart's series, and its axes when they need settings: <see cref="TbLineSeries{TItem}"/>,
-    /// <see cref="TbBarSeries{TItem}"/>, <see cref="TbXAxis"/> and <see cref="TbYAxis"/>.</summary>
+    /// <see cref="TbAreaSeries{TItem}"/>, <see cref="TbBarSeries{TItem}"/>, <see cref="TbXAxis"/> and
+    /// <see cref="TbYAxis"/>.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
@@ -248,7 +249,8 @@ public partial class TbChart<TItem>
         var items = _items = Items as IReadOnlyList<TItem> ?? [.. Items ?? []];
         List<string> places = [.. items.Select(item => ChartValues.Text(X!(item), Axes.X?.Format, culture))];
         List<ChartSeriesValues> series = [.. _series.Select(one =>
-            new ChartSeriesValues(one.Name, one.Bars, one.Line, [.. items.Select(one.ValueOf)], one.IsHidden))];
+            new ChartSeriesValues(one.Name, one.Bars, one.Line, [.. items.Select(one.ValueOf)], one.IsHidden,
+                one.Filled))];
         var axis = Axes.Y is { } y ? new ChartValueAxis(y.Min, y.Max, y.Step, y.Format) : default;
         return ChartPlan.Build(places, series, Stacking, axis, culture);
     }
@@ -291,8 +293,10 @@ public partial class TbChart<TItem>
     private string Summary()
     {
         var shown = _series.Where(one => !one.IsHidden).ToList();
+        // Areas beside lines read as a line chart, and anything beside bars as a bar and line chart.
         var kind = shown.All(one => one.Bars) ? Labels.Bars ?? Localizer[TbStrings.ChartBars]
             : shown.Any(one => one.Bars) ? Labels.BarsAndLines ?? Localizer[TbStrings.ChartBarsAndLines]
+            : shown.All(one => one.Filled) ? Labels.Areas ?? Localizer[TbStrings.ChartAreas]
             : Labels.Lines ?? Localizer[TbStrings.ChartLines];
         return string.Format(CultureInfo.CurrentCulture, Labels.Summary ?? Localizer[TbStrings.ChartSummary], kind,
             string.Join(", ", shown.Select(one => one.Name)));

@@ -265,6 +265,101 @@ public class ChartTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Point_ShouldBeTheBandUnderThePointer_WhenAreasAreStacked(string browser)
+    {
+        var page = await OpenAsync(browser, "/chart-click");
+        await ClickLowInTheEveningAsync(page, "Parts of the day");
+
+        await Expect(page.GetByTestId("picked")).ToHaveTextAsync("Evening Sat 10");
+
+        // The morning's points are on the edge of the evening's band, and a click on one picks it.
+        await page.Tb().Chart("Parts of the day").ClickPointAsync("Morning", "Sun");
+        await Expect(page.GetByTestId("picked")).ToHaveTextAsync("Morning Sun 8");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Point_ShouldBeTheBandUnderThePointer_WhenColorsAreForcedAndFillsAreNotPainted(string browser)
+    {
+        var page = await OpenAsync(browser, "/chart-click", new() { ForcedColors = ForcedColors.Active });
+        await ClickLowInTheEveningAsync(page, "Parts of the day");
+
+        await Expect(page.GetByTestId("picked")).ToHaveTextAsync("Evening Sat 10");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Point_ShouldBeTheNearest_WhenAreasOverlap(string browser)
+    {
+        var page = await OpenAsync(browser, "/chart-click");
+
+        // The evening's fill is under the pointer, which passes through it to the nearest point.
+        await ClickLowInTheEveningAsync(page, "Each from zero");
+        await Expect(page.GetByTestId("picked")).ToHaveTextAsync("Morning Sat 2");
+
+        // Sunday's evening point is inside the morning's fill, and Saturday's morning point inside the evening's.
+        await page.Tb().Chart("Each from zero").ClickPointAsync("Evening", "Sun");
+        await Expect(page.GetByTestId("picked")).ToHaveTextAsync("Evening Sun 3");
+        await page.Tb().Chart("Each from zero").ClickPointAsync("Morning", "Sat");
+        await Expect(page.GetByTestId("picked")).ToHaveTextAsync("Morning Sat 2");
+        // A line takes no click for itself, so the nearest point is the rule in every browser.
+        await Expect(Chart(page, "Each from zero").Locator("path[data-series]").First)
+            .ToHaveCSSAsync("pointer-events", "none");
+    }
+
+    // Clicks above the morning's line on Saturday, a sixth of the way from it to the evening's line, so the morning's
+    // is the nearer line, and just right of Saturday's points, where the areas start.
+    private async Task ClickLowInTheEveningAsync(IPage page, string title)
+    {
+        var plot = Chart(page, title).Locator("[data-part=plot]");
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+        await plot.ScrollIntoViewIfNeededAsync();
+        var box = await plot.BoundingBoxAsync();
+        // Where each area's line is on Saturday, the first of three places, as shares of the plot's height.
+        var lines = await plot.Locator("path[data-series]").EvaluateAllAsync<double[]>(
+            "lines => lines.map(line => line.dataset.points.split(' ')[0].split(',')[1] / 10000)");
+        var low = lines[0] - (lines[0] - lines[1]) / 6;
+        await page.Mouse.ClickAsync(box!.X + box.Width * 0.2f, box.Y + box.Height * (float)low);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Area_ShouldBeFilledFromItsLineDownToZero_WhenDrawn(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chart/area");
+        var plot = Chart(page, "Hikers on the ridge trail").Locator("[data-part=plot]");
+        var fill = plot.Locator(".tb-chart__area");
+
+        await Expect(fill).ToHaveCSSAsync("fill-opacity", "0.2");
+        await Expect(fill).Not.ToHaveCSSAsync("fill", "none");
+        var (box, filled, line) = (await plot.BoundingBoxAsync(), await fill.BoundingBoxAsync(),
+            await plot.Locator("path[data-series]").BoundingBoxAsync());
+        // The axis starts at zero, which is the plot's bottom edge, and the fill ends there.
+        Assert.InRange(filled!.Y + filled.Height - (box!.Y + box.Height), -1.5, 1.5);
+        // The line's box has half the line's thickness around it, and the fill's doesn't.
+        Assert.InRange(filled.Y - line!.Y, -0.5, 2.5);
+        Assert.InRange(filled.Width - line.Width, -3, 0.5);
+        // The fills' drawing ends at the plot's edge, for an axis that starts above zero.
+        await Expect(plot.Locator("svg.tb-chart__fills")).ToHaveCSSAsync("overflow", "hidden");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Area_ShouldKeepItsLineAndLoseItsFill_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chart/stacked-areas",
+            new() { ForcedColors = ForcedColors.Active });
+        var text = await SystemColorAsync(page, "CanvasText");
+        var chart = Chart(page, "Trail work hours by crew");
+        var lines = chart.Locator("[data-part=plot] path[data-series]");
+
+        await Expect(lines).ToHaveCountAsync(3);
+        await Expect(chart.Locator("[data-part=plot] .tb-chart__area").First).ToHaveCSSAsync("fill", "none");
+        await Expect(lines.First).ToHaveCSSAsync("stroke", text);
+        await Expect(lines.Nth(1)).Not.ToHaveCSSAsync("stroke-dasharray", "none");
+        // The legend's keys are drawn the same way: a line with its series' dashes, and no fill.
+        var keys = chart.Locator("[data-part=legend] svg");
+        await Expect(keys.Locator(".tb-chart__area").First).ToHaveCSSAsync("fill", "none");
+        await Expect(keys.Locator("line").Nth(1)).Not.ToHaveCSSAsync("stroke-dasharray", "none");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ClickPointAsync_ShouldPickThePoint_WhenItIsOnThePlotsBottomEdge(string browser)
     {
         var page = await OpenAsync(browser, "/chart-click");

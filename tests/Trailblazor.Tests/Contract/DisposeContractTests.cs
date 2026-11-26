@@ -32,6 +32,7 @@ public class DisposeContractTests : BunitContext
         [typeof(TbDockPanel)] = typeof(TbDockManager),
         [typeof(TbLineSeries<>)] = typeof(TbChart<>), [typeof(TbBarSeries<>)] = typeof(TbChart<>),
         [typeof(TbXAxis)] = typeof(TbChart<>), [typeof(TbYAxis)] = typeof(TbChart<>),
+        [typeof(TbAreaSeries<>)] = typeof(TbChart<>),
     };
 
     // Callbacks left without a handler: a handled ActiveKeyChanged makes the tabs keyed, so every tab would need a Key,

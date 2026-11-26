@@ -1,6 +1,6 @@
 namespace Trailblazor;
 
-/// <summary>How a line series joins its points.</summary>
+/// <summary>How a line series, or an area series, joins its points.</summary>
 public enum ChartCurve
 {
     /// <summary>A straight line from each point to the next. The default.</summary>

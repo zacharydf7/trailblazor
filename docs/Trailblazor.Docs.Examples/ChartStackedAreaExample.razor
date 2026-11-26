@@ -1,0 +1,15 @@
+<TbChart Items="Months" X="month => month.Name" Title="Trail work hours by crew" Stacking="ChartStacking.Stacked">
+    <TbAreaSeries Name="North crew" Value="month => month.North" />
+    <TbAreaSeries Name="South crew" Value="month => month.South" />
+    <TbAreaSeries Name="Volunteers" Value="month => month.Volunteers" />
+</TbChart>
+
+@code {
+    private static readonly Month[] Months =
+    [
+        new("Apr", 120, 90, 40), new("May", 160, 110, 85), new("Jun", 180, 140, 150), new("Jul", 170, 150, 210),
+        new("Aug", 150, 130, 190), new("Sep", 110, 100, 70),
+    ];
+
+    private sealed record Month(string Name, int North, int South, int Volunteers);
+}

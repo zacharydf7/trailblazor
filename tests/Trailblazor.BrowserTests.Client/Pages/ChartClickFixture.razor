@@ -14,6 +14,23 @@
 <TbButton OnClick="() => _days = []">No days</TbButton>
 <output data-testid="picked">@_picked</output>
 
+@* Stacked areas, where a click low in the upper band is nearer the lower band's line, and the same areas each from
+   zero, where the morning's point on Saturday is inside the evening's fill. Neither has markers, which would take
+   the clicks on a point. *@
+<div style="width: 24rem">
+    <TbChart TItem="Day" Items="Days" X="day => day.Name" Title="Parts of the day" Height="12rem"
+             Stacking="ChartStacking.Stacked"
+             OnPointClick="@(point => _picked = $"{point.Series} {point.Item.Name} {point.Value}")">
+        <TbAreaSeries Name="Morning" Value="day => day.Morning" Markers="false" />
+        <TbAreaSeries Name="Evening" Value="day => day.Evening" Markers="false" />
+    </TbChart>
+    <TbChart TItem="Day" Items="Days" X="day => day.Name" Title="Each from zero" Height="12rem"
+             OnPointClick="@(point => _picked = $"{point.Series} {point.Item.Name} {point.Value}")">
+        <TbAreaSeries Name="Morning" Value="day => day.Morning" Markers="false" />
+        <TbAreaSeries Name="Evening" Value="day => day.Evening" Markers="false" />
+    </TbChart>
+</div>
+
 @* A chart whose line is given before its bars, in a dialog that Escape closes, beside a field whose edit Escape
    cancels. *@
 <TbButton OnClick="() => _open = true">Open trend</TbButton>

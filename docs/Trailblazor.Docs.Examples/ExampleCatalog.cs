@@ -950,14 +950,17 @@ public static class ExampleCatalog
             ],
         },
         new("chart", "Chart", ExampleCategory.Content,
-            "A chart of one or more series over a list of items: bars for comparing amounts and lines for how "
-                + "something changes, with a tooltip for the values at a place and every value in a table under it.")
+            "A chart of one or more series over a list of items: bars for comparing amounts, and lines and areas "
+                + "for how something changes, with a tooltip for the values at a place and every value in a table "
+                + "under it.")
         {
             FullWidth = true,
             WhenToUse =
             [
                 "Use bars to compare amounts across a few categories, such as hikers by month or passes by season.",
                 "Use lines to show how something changes over time, such as a trail's temperature day by day.",
+                "Use an area when the amount matters as well as its change, such as hikers on a trail through the "
+                    + "day, and stacked areas for how the parts of a total change.",
             ],
             WhenNotToUse =
             [
@@ -992,6 +995,17 @@ public static class ExampleCatalog
                 new("percent", "Shares of a total", "`ChartStacking.Percent` draws each bar as its share of the "
                     + "place's total, so every stack is the same height and the axis reads from 0% to 100%. The data "
                     + "table keeps the values as given.", typeof(ChartPercentExample)),
+                new("area", "Areas", "A `TbAreaSeries` draws a line and fills the area between it and zero in a tint "
+                    + "of its color, for an amount whose size matters as well as how it changes. Its axis reaches "
+                    + "zero, as a bar's does, and it takes `Curve` and `Markers` as a line series does.",
+                    typeof(ChartAreaExample)),
+                new("stacked-areas", "Stacked areas", "`Stacking` piles area series too. Stacked, the top line is the "
+                    + "total and each band is one part of it, and as `Percent` each band is its share of the total. "
+                    + "The tooltip and the data table keep each part's own value. Areas pile with areas and bars "
+                    + "with bars, each pile from zero. Give the areas of a stack the same `Curve`, so each band's "
+                    + "lower edge follows the line under it. Without stacking, each area is filled from zero and "
+                    + "the fills of series given later are drawn in front, tinting the ones behind, which stays "
+                    + "readable for two series but not for more.", typeof(ChartStackedAreaExample)),
                 new("axes", "Axes", "A `TbXAxis` or `TbYAxis` inside the chart sets an axis's `Title` and its "
                     + "`Format`, such as `\"MMM d\"` for dates or `\"0.0\"` for one decimal, in the current culture. "
                     + "`TbYAxis` also takes `Min` and `Max` for the ends of the axis, and `Step` for the distance "
@@ -1002,10 +1016,15 @@ public static class ExampleCatalog
                     + "the one its position gives it, such as the danger color for something that went wrong.",
                     typeof(ChartCombinedExample)),
                 new("gaps", "Missing values", "A null value leaves a gap: no bar, as on Thursday here, and a break "
-                    + "in a line, as in the forecast on Wednesday. The tooltip reads \"No value\" there, which "
-                    + "`Labels.NoValue` rewords, and the arrow keys pass over it.", typeof(ChartGapsExample)),
+                    + "in a line, as in the forecast on Wednesday. An area breaks as a line does, fill and all, and "
+                    + "in a stack a missing value takes no room, so the bands above it drop at that place. The "
+                    + "tooltip reads \"No value\" there, which `Labels.NoValue` rewords, and the arrow keys pass "
+                    + "over it.", typeof(ChartGapsExample)),
                 new("below-zero", "Values below zero", "A bar for a value below zero hangs down from the zero line, "
-                    + "which is drawn darker than the other grid lines.", typeof(ChartBelowZeroExample)),
+                    + "which is drawn darker than the other grid lines, and an area below zero is filled up to "
+                    + "it. In a stack, values below zero pile downward from zero, so a series that changes sign "
+                    + "moves from one pile to the other: use bars, not areas, for values of mixed signs.",
+                    typeof(ChartBelowZeroExample)),
                 new("long", "Many points", "An axis shows only the labels it has room for, evenly spaced, and shows "
                     + "more as the chart gets wider. A line of more than 30 points has no markers. `Height` sets the "
                     + "height of the plot, and the chart is as wide as its container.", typeof(ChartLongExample)),
@@ -1015,8 +1034,9 @@ public static class ExampleCatalog
                     typeof(ChartLongNamesExample)),
                 new("click", "Acting on a point", "`OnPointClick` is raised with the item, the series' name and the "
                     + "value when the user clicks or taps a point, or presses Enter or Space while it has focus. A "
-                    + "click on the plot picks the bar or line under the pointer, or else the nearest point at that "
-                    + "place, so a thin line or a short bar isn't hard to hit.", typeof(ChartClickExample)),
+                    + "click on the plot picks the bar under the pointer, or else the nearest point at that place, "
+                    + "so a thin line or a short bar isn't hard to hit. In a stack of areas, a click inside a band "
+                    + "picks that band's point.", typeof(ChartClickExample)),
                 new("hide", "Hiding a series", "A chart with two or more series has a legend, and on an interactive "
                     + "page each of its entries is a button that hides or shows its series. The axis then fits the "
                     + "series that show: here the shuttle starts hidden, and the axis grows to fit it once it "
@@ -1033,9 +1053,9 @@ public static class ExampleCatalog
             ],
             Api =
             [
-                typeof(TbChart<>), typeof(TbLineSeries<>), typeof(TbBarSeries<>), typeof(TbXAxis), typeof(TbYAxis),
-                typeof(ChartPoint<>), typeof(ChartStacking), typeof(ChartCurve), typeof(ChartLabels),
-                typeof(ChartClasses),
+                typeof(TbChart<>), typeof(TbLineSeries<>), typeof(TbAreaSeries<>), typeof(TbBarSeries<>),
+                typeof(TbXAxis), typeof(TbYAxis), typeof(ChartPoint<>), typeof(ChartStacking), typeof(ChartCurve),
+                typeof(ChartLabels), typeof(ChartClasses),
             ],
             Anatomy = """
                 <TbChart Items="…" X="…" Title="…">
@@ -1043,6 +1063,7 @@ public static class ExampleCatalog
                     <TbYAxis Title="…" Format="…" />
                     <TbBarSeries Name="…" Value="…" />
                     <TbLineSeries Name="…" Value="…" />
+                    <TbAreaSeries Name="…" Value="…" />
                 </TbChart>
                 """,
             Keyboard =
@@ -1074,8 +1095,9 @@ public static class ExampleCatalog
                     + "names it; use that when a heading beside the chart already says what it shows. The data table "
                     + "takes the same name. With neither, the figure and its table have no name.",
                 "The drawing is an image named by its kind and its series, such as \"Bar chart: Day passes, Week "
-                    + "passes, Season passes\". `Labels.Summary` rewords it, and `Labels.Bars`, `Labels.Lines` and "
-                    + "`Labels.BarsAndLines` reword the kind.",
+                    + "passes, Season passes\". `Labels.Summary` rewords it, and `Labels.Bars`, `Labels.Lines`, "
+                    + "`Labels.Areas` and `Labels.BarsAndLines` reword the kind. Areas beside lines read as a line "
+                    + "chart, and anything beside bars as a bar and line chart.",
                 "Each series' `Name` shows in the legend and heads its column of the data table. It names the "
                     + "series' legend button too.",
                 "The drawing's name lists only the series that show.",
@@ -1095,19 +1117,21 @@ public static class ExampleCatalog
                     + "a field being edited in the dialog takes the key first. Everything it shows is in the data "
                     + "table too.",
                 "A click or a tap anywhere over a place picks a point there, so no target is smaller than the "
-                    + "place is wide.",
+                    + "place is wide. In a stack of areas, it picks the point of the band it is inside.",
                 "The eight series colors each have 3:1 contrast against the surface in both themes, and colors next "
                     + "to each other in the order stay easy to tell apart for people with red-green color blindness.",
-                "Two or more series always have a legend, whose keys are drawn as the marks are: a block for bars "
-                    + "and a stroke for a line. Two series of the same kind differ by color in the drawing, and the "
-                    + "data table tells them apart for anyone who can't use the colors.",
+                "Two or more series always have a legend, whose keys are drawn as the marks are: a block for bars, "
+                    + "a stroke for a line, and a stroke over its tint for an area. Two series of the same kind "
+                    + "differ by color in the drawing, and the data table tells them apart for anyone who can't "
+                    + "use the colors.",
                 "A hidden series' legend entry is struck through as well as dimmed, so it doesn't differ by color "
                     + "alone. Its button reads as not pressed, and in a legend without buttons \"(hidden)\" "
                     + "follows its name for screen readers, which `Labels.Hidden` rewords.",
                 "In forced-colors mode, such as Windows high contrast, every mark is drawn in the system's text "
                     + "color. Lines differ by their dashes, and bars by being filled, hollow, dashed or dotted, with "
                     + "the legend's keys drawn the same way. There are four of each, so a fifth series of a kind "
-                    + "looks like the first.",
+                    + "looks like the first. An area keeps its line, dashed as a line's is, and loses its fill, so "
+                    + "it looks like a line there.",
             ],
             AppDuties =
             [
@@ -1150,10 +1174,14 @@ public static class ExampleCatalog
                     + "to show, the chart draws again as its parent renders. A series inside a component of yours "
                     + "that renders by itself may be drawn a render behind, so have such a change render the "
                     + "chart's parent too.") { Pitfall = true },
-                new("A value beyond a `Min` or `Max` you set is drawn outside the plot.") { Pitfall = true },
-                new("Hiding a bar series changes what the others show. Side by side, they take the room it leaves; "
-                    + "stacked, they pile without it; and as shares of a total, each bar becomes its share of the "
-                    + "series that show. The tooltip and the data table keep the values as given."),
+                new("A value beyond a `Min` or `Max` you set is drawn outside the plot, and so is the foot of a bar "
+                    + "when `Min` is above zero. An area's fill ends at the plot's edge.") { Pitfall = true },
+                new("With `ChartStacking.Percent` the axis runs from 0% to 100%, and a line series is still drawn by "
+                    + "its own values, so a line whose values aren't shares between 0 and 1 runs off the plot.")
+                    { Pitfall = true },
+                new("Hiding a bar or an area series changes what the others show. Side by side, bars take the room "
+                    + "it leaves; stacked, the others pile without it; and as shares of a total, each becomes its "
+                    + "share of the series that show. The tooltip and the data table keep the values as given."),
                 new("What the user chooses in the legend holds until the app gives the series' `Hidden` a new "
                     + "value. A chart with one series has no legend, so only the app can hide or show that series."),
                 new("Right to left, the chart runs from the right: the first item is at the right edge."),
@@ -1199,7 +1227,8 @@ public static class ExampleCatalog
                     + "month\" })` and its drawing with `GetByRole(AriaRole.Img, new() { Name = \"Bar chart: "
                     + "Hikers\" })`; the point that has the tab stop is an image too.",
                 "A series' marks are under an element with `data-series` set to its `Name`: a `g` of `rect` bars, "
-                    + "or a line's `path`. A hidden series has none.",
+                    + "or the `path` of a line or of an area's line. An area's fill is a `path.tb-chart__area` in "
+                    + "`svg.tb-chart__fills`, outside its series' element. A hidden series has none.",
             ],
             Telemetry =
             [

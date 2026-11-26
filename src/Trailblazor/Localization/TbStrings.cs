@@ -62,10 +62,15 @@ public static class TbStrings
     /// <summary>"Bar chart": the kind of a chart with only bar series, in <see cref="ChartSummary"/>.</summary>
     public const string ChartBars = "Chart.Bars";
 
-    /// <summary>"Line chart": the kind of a chart with only line series, in <see cref="ChartSummary"/>.</summary>
+    /// <summary>"Line chart": the kind of a chart with only line series, or with lines beside areas, in
+    /// <see cref="ChartSummary"/>.</summary>
     public const string ChartLines = "Chart.Lines";
 
-    /// <summary>"Bar and line chart": the kind of a chart with both, in <see cref="ChartSummary"/>.</summary>
+    /// <summary>"Area chart": the kind of a chart with only area series, in <see cref="ChartSummary"/>.</summary>
+    public const string ChartAreas = "Chart.Areas";
+
+    /// <summary>"Bar and line chart": the kind of a chart with bars beside lines or areas, in
+    /// <see cref="ChartSummary"/>.</summary>
     public const string ChartBarsAndLines = "Chart.BarsAndLines";
 
     /// <summary>"Message": names the box a chat's user types in.</summary>
@@ -2082,6 +2087,7 @@ public static class TbStrings
         [ChartNoValue] = "No value",
         [ChartBars] = "Bar chart",
         [ChartLines] = "Line chart",
+        [ChartAreas] = "Area chart",
         [ChartBarsAndLines] = "Bar and line chart",
         [ChatMessage] = "Message",
         [ChatSend] = "Send",
