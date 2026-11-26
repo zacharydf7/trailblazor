@@ -1,0 +1,328 @@
+@using System.Diagnostics
+@using System.Text
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+@* Spike E. See spikes/charts/README.md. Everything a reader sees is in this markup; the script only follows the
+   pointer and the keys. *@
+<figure class="spike-chart @(Probe ? "spike-chart--probe" : null)" data-kind="@Kind" data-build="@_build">
+    <figcaption>@Title</figcaption>
+    @if (Series.Count > 1)
+    {
+        <div class="spike-chart__legend" data-part="legend">
+            @for (var index = 0; index < Series.Count; index++)
+            {
+                var name = Series[index].Name;
+                <button type="button" aria-pressed="@(_hidden.Contains(name) ? "false" : "true")"
+                        @onclick="() => Toggle(name)">
+                    <span class="spike-chart__key spike-chart__series--@(index + 1)"></span>@name
+                </button>
+            }
+        </div>
+    }
+    <div class="spike-chart__body" style="--height: @(Height)px">
+        <div class="spike-chart__y" aria-hidden="true">
+            @* The longest label, unseen, gives the column its width; the labels themselves are placed over it. *@
+            <span class="spike-chart__y-sizer">@Format(_top)</span>
+            @foreach (var tick in _ticks)
+            {
+                <span style="top: @Percent(1 - tick / _top)">@Format(tick)</span>
+            }
+        </div>
+        <div class="spike-chart__plot" data-part="plot" role="group" aria-label="@Title" @ref="_plot"
+             data-x="@string.Join('|', XLabels)" data-count="@XLabels.Count">
+            <svg class="spike-chart__marks" aria-hidden="true" focusable="false">
+                @foreach (var tick in _ticks)
+                {
+                    <line class="spike-chart__grid" x1="0" x2="100%" y1="@Percent(1 - tick / _top)"
+                          y2="@Percent(1 - tick / _top)" />
+                }
+                @if (Kind == "line")
+                {
+                    <svg class="spike-chart__paths" viewBox="0 0 10000 10000" preserveAspectRatio="none" width="100%"
+                         height="100%">
+                        @for (var index = 0; index < Series.Count; index++)
+                        {
+                            var series = Series[index];
+                            if (!_hidden.Contains(series.Name))
+                            {
+                                var dashed = series.Dashed ? "spike-chart__line--dashed" : null;
+                                <path class="spike-chart__line spike-chart__series--@(index + 1) @dashed"
+                                      data-series="@(series.Stepped ? null : index.ToString())" data-name="@series.Name"
+                                      data-values="@_values[index]" d="@_paths[index]" />
+                            }
+                        }
+                    </svg>
+                    @if (Markers)
+                    {
+                        @for (var index = 0; index < Series.Count; index++)
+                        {
+                            var series = Series[index];
+                            if (!_hidden.Contains(series.Name))
+                            {
+                                @for (var place = 0; place < series.Values.Count; place++)
+                                {
+                                    var value = series.Values[place];
+                                    <circle class="spike-chart__marker spike-chart__series--@(index + 1)" r="4"
+                                            cx="@Percent(Center(place))" cy="@Percent(1 - value / _top)" />
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    @for (var index = 0; index < Series.Count; index++)
+                    {
+                        var series = Series[index];
+                        var slot = index;
+                        if (!_hidden.Contains(series.Name))
+                        {
+                            <g class="spike-chart__series--@(index + 1)" data-series="@index" data-name="@series.Name"
+                               data-values="@_values[index]">
+                                @for (var place = 0; place < series.Values.Count; place++)
+                                {
+                                    var bar = Bar(slot, place);
+                                    <rect class="spike-chart__bar @(bar.Capped ? "spike-chart__bar--end" : null)"
+                                          x="@Percent(bar.X)" y="@Percent(bar.Y)" width="@Percent(bar.Width)"
+                                          height="@Percent(bar.Height)" />
+                                }
+                            </g>
+                        }
+                    }
+                }
+            </svg>
+            <div class="spike-chart__crosshair" hidden></div>
+            <div class="spike-chart__tooltip" data-part="tooltip" hidden></div>
+            <span class="spike-chart__focus" role="img" aria-label="@FirstPointName"></span>
+            <span class="spike-chart__focus" role="img"></span>
+        </div>
+        @* WebKit sizes a grid item that is itself a query container by the whole grid, so the container sits inside
+           one. *@
+        <div class="spike-chart__x-row" aria-hidden="true">
+            <div class="spike-chart__x" style="--count: @XLabels.Count; --chars: @XLabels.Max(label => label.Length)">
+                @for (var place = 0; place < XLabels.Count; place += _labelEvery)
+                {
+                    var at = Percent(Center(place));
+                    <span style="inset-inline-start: @at; --stride: @Stride(place)">@XLabels[place]</span>
+                }
+            </div>
+        </div>
+    </div>
+    @if (!TableInMarkup && !_tableOpened)
+    {
+        <details @ontoggle="() => _tableOpened = true">
+            <summary>Data table</summary>
+        </details>
+    }
+    else
+    {
+        <details open="@_tableOpened">
+            <summary>Data table</summary>
+            <table>
+                <caption>@Title</caption>
+                <thead>
+                    <tr>
+                        <td></td>
+                        @foreach (var series in Series)
+                        {
+                            <th scope="col">@series.Name</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var place = 0; place < XLabels.Count; place++)
+                    {
+                        <tr>
+                            <th scope="row">@XLabels[place]</th>
+                            @foreach (var series in Series)
+                            {
+                                <td>@Format(series.Values[place])</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </details>
+    }
+</figure>
+
+@code {
+    private readonly HashSet<string> _hidden = [];
+    private List<double> _ticks = [];
+    private double _top = 1;
+    private int _labelEvery = 1;
+    private bool _tableOpened;
+    private string[] _paths = [];
+    private string[] _values = [];
+    private string _build = "";
+    private ElementReference _plot;
+    private DotNetObjectReference<SpikeChart>? _reference;
+    private IJSObjectReference? _handle;
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    // "line", "columns" (side by side) or "stacked".
+    [Parameter]
+    public string Kind { get; set; } = "line";
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<string> XLabels { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<SpikeSeries> Series { get; set; } = [];
+
+    [Parameter]
+    public bool Markers { get; set; }
+
+    [Parameter]
+    public bool TableInMarkup { get; set; } = true;
+
+    // Draws every mark in black on white with no grid, so a screenshot can be measured.
+    [Parameter]
+    public bool Probe { get; set; }
+
+    [Parameter]
+    public int Height { get; set; } = 240;
+
+    [Parameter]
+    public EventCallback<string> OnActivate { get; set; }
+
+    private IEnumerable<SpikeSeries> Shown => Series.Where(series => !_hidden.Contains(series.Name));
+
+    private string? FirstPointName => Shown.FirstOrDefault() is { } first ? PointName(first, 0) : null;
+
+    protected override void OnParametersSet()
+    {
+        var scaleWatch = Stopwatch.StartNew();
+        var highest = Kind == "stacked"
+            ? Enumerable.Range(0, XLabels.Count).Max(place => Shown.Sum(series => series.Values[place]))
+            : Shown.SelectMany(series => series.Values).DefaultIfEmpty(1).Max();
+        var step = NiceStep(Math.Max(highest, 1), 5);
+        _top = Math.Ceiling(highest / step) * step;
+        _ticks = Enumerable.Range(0, (int)Math.Round(_top / step) + 1).Select(index => index * step).ToList();
+        var scale = scaleWatch.Elapsed.TotalMilliseconds;
+
+        // No plot has room for more than a few dozen labels, so a long axis leaves the rest out of the markup.
+        _labelEvery = 1;
+        while (XLabels.Count / _labelEvery > 48)
+        {
+            _labelEvery *= 2;
+        }
+
+        // Timed apart, to tell what the paths cost from what the value text costs.
+        var watch = Stopwatch.StartNew();
+        _paths = Kind == "line" ? [.. Series.Select(Path)] : [];
+        var paths = watch.Elapsed.TotalMilliseconds;
+        _values = [.. Series.Select(Values)];
+        _build = FormattableString.Invariant(
+            $"scale {scale:0.0} ms, paths {paths:0.0} ms, value text {watch.Elapsed.TotalMilliseconds - paths:0.0} ms");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _reference = DotNetObjectReference.Create(this);
+            var module = await Modules.ImportAsync("./chart.js");
+            _handle = await module.InvokeAsync<IJSObjectReference>("attachChart", _plot, _reference);
+        }
+    }
+
+    [JSInvokable]
+    public Task Activate(int series, int place) => OnActivate.InvokeAsync(PointName(Series[series], place));
+
+    private void Toggle(string name)
+    {
+        if (!_hidden.Remove(name))
+        {
+            _hidden.Add(name);
+        }
+
+        OnParametersSet();
+    }
+
+    // The step of a scale's ticks: 1, 2 or 5 times a power of ten, whichever gives about the count asked for.
+    private static double NiceStep(double span, int count)
+    {
+        var rough = span / count;
+        var power = Math.Pow(10, Math.Floor(Math.Log10(rough)));
+        var ratio = rough / power;
+        return (ratio >= 7.07 ? 10 : ratio >= 3.16 ? 5 : ratio >= 1.41 ? 2 : 1) * power;
+    }
+
+    private double Center(int place) => (place + 0.5) / XLabels.Count;
+
+    // A label shows at every stride up to its own, so thinning keeps evenly spaced labels: 0, 8, 16; then 4, 12; ...
+    // The first label has the widest stride the axis holds, so it shows on any plot with room for one label.
+    private int Stride(int place) =>
+        place == 0 ? (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)XLabels.Count) : place & -place;
+
+    // Whole numbers on a 10,000 grid, each point as its distance from the last: about half the text of full positions.
+    private string Path(SpikeSeries series)
+    {
+        var path = new StringBuilder();
+        var (lastX, lastY) = (0, 0);
+        for (var place = 0; place < series.Values.Count; place++)
+        {
+            var x = (int)Math.Round(Center(place) * 10000);
+            var y = (int)Math.Round((1 - series.Values[place] / _top) * 10000);
+            if (place == 0)
+            {
+                path.Append('M').Append(x).Append(' ').Append(y);
+            }
+            else if (series.Stepped)
+            {
+                path.Append('H').Append((int)Math.Round((double)place / XLabels.Count * 10000)).Append('V').Append(y)
+                    .Append('H').Append(x);
+            }
+            else
+            {
+                path.Append('l').Append(x - lastX).Append(' ').Append(y - lastY);
+            }
+
+            (lastX, lastY) = (x, y);
+        }
+
+        return path.ToString();
+    }
+
+    private (double X, double Y, double Width, double Height, bool Capped) Bar(int slot, int place)
+    {
+        var band = 1d / XLabels.Count;
+        var shown = Shown.ToList();
+        var value = Series[slot].Values[place];
+        if (Kind == "stacked")
+        {
+            var position = shown.IndexOf(Series[slot]);
+            var below = shown.Take(position).Sum(series => series.Values[place]);
+            return ((place + 0.25) * band, 1 - (below + value) / _top, band / 2, value / _top,
+                position == shown.Count - 1);
+        }
+
+        var width = band * 0.7 / shown.Count;
+        return ((place + 0.15) * band + shown.IndexOf(Series[slot]) * width, 1 - value / _top, width, value / _top,
+            true);
+    }
+
+    private string PointName(SpikeSeries series, int place) =>
+        $"{XLabels[place]}, {series.Name}: {Format(series.Values[place])}, {place + 1} of {XLabels.Count}";
+
+    private static string Values(SpikeSeries series) => string.Join('|', series.Values.Select(Format));
+
+    private static string Format(double value) => value.ToString("N0", CultureInfo.InvariantCulture);
+
+    private static string Percent(double fraction) =>
+        Math.Round(fraction * 100, 3).ToString(CultureInfo.InvariantCulture) + "%";
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _reference?.Dispose();
+    }
+}

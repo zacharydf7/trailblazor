@@ -8,10 +8,11 @@ public abstract class SpikeTest(SpikeFixture fixture) : IAsyncDisposable
 
     protected List<string> ScriptErrors { get; } = [];
 
+    // Options with JavaScript off open the page as the server rendered it, and don't wait for it to turn interactive.
     protected async Task<IPage> OpenAsync(string browser, string mode, string path, Uri? baseAddress = null,
-        Func<IPage, Task>? beforeNavigation = null)
+        Func<IPage, Task>? beforeNavigation = null, BrowserNewContextOptions? options = null)
     {
-        var context = await Fixture.NewContextAsync(browser);
+        var context = await Fixture.NewContextAsync(browser, options);
         _contexts.Add(context);
         var page = await context.NewPageAsync();
         if (beforeNavigation is not null)
@@ -31,9 +32,13 @@ public abstract class SpikeTest(SpikeFixture fixture) : IAsyncDisposable
         var separator = path.Contains('?') ? '&' : '?';
         var url = mode == "wasm" ? $"{path}{separator}mode=wasm" : path;
         await page.GotoAsync(new Uri(baseAddress ?? Fixture.BaseAddress, url).ToString());
-        var renderer = mode == "wasm" ? "WebAssembly" : "Server";
-        await page.Locator($"main[data-interactive][data-renderer='{renderer}']")
-            .WaitForAsync(new() { State = WaitForSelectorState.Attached });
+        if (options?.JavaScriptEnabled != false)
+        {
+            var renderer = mode == "wasm" ? "WebAssembly" : "Server";
+            await page.Locator($"main[data-interactive][data-renderer='{renderer}']")
+                .WaitForAsync(new() { State = WaitForSelectorState.Attached });
+        }
+
         return page;
     }
 

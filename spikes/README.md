@@ -11,6 +11,7 @@ spikes come before a large component and end in a recommendation.
 | [Dock keep-alive host](dock-keep-alive/README.md) | Can docked panels move between groups without losing component state or re-rendering? |
 | [Grid virtualization](grid-virtualization/README.md) | Can a Blazor data grid scroll 100,000 rows at 60 fps? |
 | [Rich text editor](rich-text-editor/README.md) | Can Trailblazor's own engine on `contenteditable` edit rich text as reliably as a mature editor engine? |
+| [Charts](charts/README.md) | Can a chart be complete as static markup, with no measuring and no script needed to show it? |
 
 ## Where spikes run
 

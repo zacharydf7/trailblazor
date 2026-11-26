@@ -301,3 +301,268 @@
 .spike-editor__toolbar [aria-pressed="mixed"] {
     background: linear-gradient(135deg, lightsteelblue 50%, transparent 50%);
 }
+
+/* Spike E: charts as static markup. See spikes/charts/README.md. */
+.spike-chart {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    font-size: 12px;
+    color: var(--tb-color-text);
+}
+
+.spike-chart__series--1 { --_series: light-dark(var(--tb-blue-600), var(--tb-blue-500)); }
+.spike-chart__series--2 { --_series: light-dark(var(--tb-amber-500), var(--tb-amber-500)); }
+.spike-chart__series--3 { --_series: light-dark(var(--tb-fuchsia-700), var(--tb-fuchsia-500)); }
+.spike-chart__series--4 { --_series: light-dark(var(--tb-green-500), var(--tb-green-600)); }
+.spike-chart__series--5 { --_series: light-dark(var(--tb-violet-700), var(--tb-violet-500)); }
+.spike-chart__series--6 { --_series: light-dark(var(--tb-rose-500), var(--tb-rose-500)); }
+.spike-chart__series--7 { --_series: light-dark(var(--tb-moss-700), var(--tb-moss-600)); }
+.spike-chart__series--8 { --_series: light-dark(var(--tb-teal-500), var(--tb-teal-500)); }
+
+.spike-chart__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+}
+
+.spike-chart__legend button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-block-size: 24px;
+    padding: 0 4px;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.spike-chart__legend button[aria-pressed="false"] {
+    color: var(--tb-color-text-muted);
+    text-decoration: line-through;
+}
+
+.spike-chart__key {
+    inline-size: 12px;
+    block-size: 12px;
+    border-radius: 2px;
+    background: var(--_series);
+}
+
+/* The value labels' column is as wide as its widest label, and the plot takes the rest. */
+.spike-chart__body {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: var(--height) auto;
+    gap: 4px 8px;
+}
+
+.spike-chart__y {
+    position: relative;
+    color: var(--tb-color-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.spike-chart__y > span {
+    position: absolute;
+    inset-inline-end: 0;
+    line-height: 1;
+    translate: 0 -50%;
+}
+
+.spike-chart__y > .spike-chart__y-sizer {
+    position: static;
+    visibility: hidden;
+}
+
+.spike-chart__plot {
+    position: relative;
+    grid-column: 2;
+}
+
+.spike-chart__marks {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    overflow: visible;
+}
+
+/* Right to left, the labels run the other way by themselves; the marks are mirrored to match. */
+.spike-chart__plot:dir(rtl) .spike-chart__marks {
+    transform: scaleX(-1);
+}
+
+.spike-chart__paths {
+    overflow: visible;
+}
+
+.spike-chart__grid {
+    stroke: var(--tb-border-subtle);
+    stroke-width: 1;
+}
+
+.spike-chart__line {
+    fill: none;
+    stroke: var(--_series);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.spike-chart__line--dashed {
+    stroke-dasharray: 6 4;
+    stroke-linecap: butt;
+}
+
+.spike-chart__marker {
+    fill: var(--_series);
+    stroke: var(--tb-color-surface);
+    stroke-width: 2;
+}
+
+.spike-chart__bar {
+    fill: var(--_series);
+}
+
+.spike-chart__bar--end {
+    clip-path: inset(0 round 4px 4px 0 0);
+}
+
+.spike-chart__x-row {
+    grid-column: 2;
+    min-inline-size: 0;
+}
+
+.spike-chart__x {
+    position: relative;
+    block-size: 1.4em;
+    color: var(--tb-color-text-muted);
+    container-type: inline-size;
+}
+
+/* A label shows only while the labels of its stride have room: the width is all or nothing, with no script. */
+.spike-chart__x > span {
+    position: absolute;
+    max-inline-size: clamp(0px,
+        calc((100cqi * var(--stride) / var(--count) - var(--chars) * 1ch - 8px) * 9999), 100cqi);
+    overflow: hidden;
+    white-space: nowrap;
+    transform: translateX(-50%);
+}
+
+.spike-chart__x:dir(rtl) > span {
+    transform: translateX(50%);
+}
+
+.spike-chart__crosshair {
+    position: absolute;
+    inset-block: 0;
+    inline-size: 1px;
+    background: var(--tb-border-strong);
+    pointer-events: none;
+}
+
+.spike-chart__tooltip {
+    position: absolute;
+    inset-block-start: 8px;
+    display: grid;
+    gap: 2px;
+    padding: 6px 8px;
+    border: 1px solid var(--tb-border-subtle);
+    border-radius: 6px;
+    background: var(--tb-color-surface-raised);
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.spike-chart__tooltip[hidden] {
+    display: none;
+}
+
+.spike-chart__tooltip-row {
+    display: grid;
+    grid-template-columns: 10px 1fr auto;
+    align-items: center;
+    gap: 6px;
+}
+
+.spike-chart__tooltip-key {
+    inline-size: 10px;
+    block-size: 2px;
+}
+
+.spike-chart__focus {
+    position: absolute;
+    inline-size: 24px;
+    block-size: 24px;
+    border-radius: 50%;
+    translate: -50% -50%;
+    pointer-events: none;
+}
+
+.spike-chart__focus:focus-visible {
+    outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+}
+
+.spike-chart--probe {
+    background: white;
+    color: black;
+}
+
+.spike-chart--probe .spike-chart__grid {
+    display: none;
+}
+
+.spike-chart--probe .spike-chart__line {
+    stroke: black;
+}
+
+.spike-chart--probe .spike-chart__bar {
+    fill: black;
+}
+
+.spike-donut {
+    inline-size: 200px;
+    block-size: 200px;
+}
+
+.spike-donut path {
+    fill: var(--_series);
+    stroke: var(--tb-color-surface);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+}
+
+@media (forced-colors: active) {
+    .spike-chart__line {
+        stroke: CanvasText;
+    }
+
+    .spike-chart__series--2.spike-chart__line { stroke-dasharray: 8 4; }
+    .spike-chart__series--3.spike-chart__line { stroke-dasharray: 2 4; }
+    .spike-chart__series--4.spike-chart__line { stroke-dasharray: 8 4 2 4; }
+    .spike-chart__series--5.spike-chart__line { stroke-dasharray: 12 4; }
+
+    .spike-chart__marker {
+        fill: CanvasText;
+        stroke: Canvas;
+    }
+
+    .spike-chart__bar {
+        fill: CanvasText;
+        stroke: CanvasText;
+        stroke-width: 2;
+    }
+
+    .spike-chart__series--2 .spike-chart__bar { fill: Canvas; }
+    .spike-chart__series--3 .spike-chart__bar { fill: Canvas; stroke-dasharray: 4 3; }
+
+    .spike-chart__key {
+        forced-color-adjust: none;
+        background: CanvasText;
+    }
+}

@@ -1,0 +1,155 @@
+@page "/chart"
+
+@* Spike E. See spikes/charts/README.md. *@
+<div dir="@Dir" data-testid="frame" style="@(Width is null ? null : $"inline-size: {Width}px")">
+    @if (Shape == "donut")
+    {
+        <figure class="spike-chart">
+            <figcaption>Jobs by status</figcaption>
+            <svg class="spike-donut" viewBox="-50 -50 100 100" role="img" aria-label="Jobs by status">
+                @for (var index = 0; index < DonutParts.Length; index++)
+                {
+                    <path class="spike-chart__series--@(index + 1)" d="@Arc(index)" />
+                }
+            </svg>
+            <ul class="spike-chart__legend" data-part="legend">
+                @for (var index = 0; index < DonutParts.Length; index++)
+                {
+                    <li><span class="spike-chart__key spike-chart__series--@(index + 1)"></span>
+                        @DonutParts[index].Name: @DonutParts[index].Count</li>
+                }
+            </ul>
+        </figure>
+    }
+    else if (_shown)
+    {
+        <SpikeChart Title="@_title" Kind="@_kind" XLabels="_labels" Series="_series" Markers="@(Shape == "line")"
+                    TableInMarkup="@(Shape != "large")" Probe="@(Shape?.StartsWith("probe") == true)"
+                    Height="@(Height ?? 240)" OnActivate="name => _activated = name" />
+    }
+</div>
+<button type="button" data-testid="show" @onclick="() => _shown = true">Show chart</button>
+<button type="button" data-testid="add" @onclick="AddPoint">Add a point</button>
+<output data-testid="activated">@_activated</output>
+<output data-testid="renders">@(++_renders)</output>
+
+@code {
+    private static readonly (string Name, int Count)[] DonutParts =
+        [("Completed", 412), ("Processing", 96), ("Queued", 61), ("Failed", 23), ("Canceled", 8)];
+
+    private static readonly string[] Months =
+        ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    private readonly Random _random = new(7);
+    private List<string> _labels = [];
+    private List<SpikeSeries> _series = [];
+    private string _title = "";
+    private string _kind = "line";
+    private string? _activated;
+    private bool _shown;
+    private int _renders;
+
+    // "line" (default), "columns", "stacked", "donut", "large", "probe" or "probe-columns".
+    [SupplyParameterFromQuery]
+    public string? Shape { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Dir { get; set; }
+
+    [SupplyParameterFromQuery]
+    public int? Width { get; set; }
+
+    [SupplyParameterFromQuery]
+    public int? Height { get; set; }
+
+    // How many points each series of the large chart has; 1,000 unless given.
+    [SupplyParameterFromQuery]
+    public int? Points { get; set; }
+
+    // "hidden" leaves the chart out until the Show button is pressed, so its first render can be timed.
+    [SupplyParameterFromQuery]
+    public string? Start { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _shown = Start != "hidden";
+        var start = new DateOnly(2024, 3, 1);
+        switch (Shape)
+        {
+            case "columns" or "stacked":
+                _title = "Jobs by month";
+                _kind = Shape;
+                _labels = [.. Months];
+                _series = [Walk("Completed", 12, 400), Walk("Failed", 12, 60), Walk("Canceled", 12, 30)];
+                break;
+            case "large":
+                _title = "Queue length";
+                var points = Points ?? 1000;
+                _labels = [.. Enumerable.Range(0, points).Select(day => Date(start.AddDays(day), "yyyy-MM-dd"))];
+                _series = [.. Enumerable.Range(1, 5).Select(queue => Walk($"Queue {queue}", points, 200 * queue))];
+                break;
+            case "probe":
+                _title = "Probe";
+                _labels = [.. Enumerable.Range(0, 11).Select(place => place.ToString(CultureInfo.InvariantCulture))];
+                _series =
+                [
+                    new("Flat", [.. Enumerable.Repeat(50d, 11)]),
+                    new("Dashed", [.. Enumerable.Repeat(80d, 11)], Dashed: true),
+                    new("Slant", [.. Enumerable.Range(0, 11).Select(place => place * 10d)]),
+                    new("Step", [.. Enumerable.Range(0, 11).Select(place => place < 5 ? 5d : 15d)], Stepped: true),
+                ];
+                break;
+            case "probe-columns":
+                _title = "Probe";
+                _kind = "columns";
+                _labels = ["A", "B", "C", "D"];
+                _series = [new("Columns", [60, 100, 30, 80])];
+                break;
+            default:
+                _title = "Jobs by day";
+                _labels = [.. Enumerable.Range(0, 30).Select(day => Date(start.AddDays(day), "MMM d"))];
+                _series = [Walk("Completed", 30, 400), Walk("Failed", 30, 60) with { Dashed = true },
+                    Walk("Canceled", 30, 30)];
+                break;
+        }
+    }
+
+    private void AddPoint()
+    {
+        _labels.Add($"New {_labels.Count}");
+        foreach (var series in _series)
+        {
+            series.Values.Add(series.Values[^1]);
+        }
+    }
+
+    // Values that wander around a level, the same on every run.
+    private SpikeSeries Walk(string name, int count, double level)
+    {
+        var values = new List<double>(count);
+        var value = level;
+        for (var place = 0; place < count; place++)
+        {
+            value = Math.Clamp(value + (_random.NextDouble() - 0.5) * level * 0.2, level * 0.3, level * 1.7);
+            values.Add(Math.Round(value));
+        }
+
+        return new SpikeSeries(name, values);
+    }
+
+    private static string Date(DateOnly date, string format) => date.ToString(format, CultureInfo.InvariantCulture);
+
+    // One part of the ring, from the top and clockwise: the outer arc, a line in, the inner arc back, and closed.
+    private static string Arc(int index)
+    {
+        const double outer = 48, inner = 30;
+        double total = DonutParts.Sum(part => part.Count);
+        var from = DonutParts.Take(index).Sum(part => part.Count) / total * Math.Tau;
+        var to = from + DonutParts[index].Count / total * Math.Tau;
+        var large = to - from > Math.PI ? 1 : 0;
+        string Point(double radius, double angle) => FormattableString.Invariant(
+            $"{radius * Math.Sin(angle):0.###} {-radius * Math.Cos(angle):0.###}");
+        return $"M{Point(outer, from)}A{outer} {outer} 0 {large} 1 {Point(outer, to)}L{Point(inner, to)}" +
+            $"A{inner} {inner} 0 {large} 0 {Point(inner, from)}Z";
+    }
+}

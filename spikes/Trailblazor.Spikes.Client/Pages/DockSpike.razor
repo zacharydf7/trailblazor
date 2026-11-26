@@ -28,7 +28,7 @@
 <output data-testid="attached">@_attached</output>
 
 @code {
-    private DockLayout _layout = null!;
+    private Dock.DockLayout _layout = null!;
     private ElementReference _dock;
     private DotNetObjectReference<DockSpike>? _reference;
     private IJSObjectReference? _handle;
@@ -53,7 +53,7 @@
     private bool NativePositioning => Positioning == "native";
 
     protected override void OnInitialized() =>
-        _layout = Layout == "single" ? DockLayout.CreateSingleGroup() : DockLayout.CreateDefault();
+        _layout = Layout == "single" ? Dock.DockLayout.CreateSingleGroup() : Dock.DockLayout.CreateDefault();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
