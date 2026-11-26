@@ -1,0 +1,15 @@
+<TbChart Items="Seasons" X="season => season.Name" Title="Passes sold by season" Stacking="ChartStacking.Stacked">
+    <TbBarSeries Name="Day passes" Value="season => season.Day" />
+    <TbBarSeries Name="Week passes" Value="season => season.Week" />
+    <TbBarSeries Name="Season passes" Value="season => season.Season" />
+</TbChart>
+
+@code {
+    private static readonly Sales[] Seasons =
+    [
+        new("Spring", 420, 130, 60), new("Summer", 980, 410, 150), new("Fall", 560, 180, 40),
+        new("Winter", 140, 30, 20),
+    ];
+
+    private sealed record Sales(string Name, int Day, int Week, int Season);
+}

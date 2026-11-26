@@ -10,8 +10,9 @@ internal sealed record ChartSeriesValues(string Name, bool Bars, ChartCurve Curv
 internal readonly record struct ChartValueAxis(double? Min, double? Max, double? Step, string? Format);
 
 // A bar as shares of the plot, from its left and top. Its value end is the one that gets rounded corners; a bar
-// inside a stack has none.
-internal readonly record struct ChartBar(double X, double Y, double Width, double Height, ChartBarEnd End);
+// inside a stack has none, and Up says which way it grows from the bar before it.
+internal readonly record struct ChartBar(double X, double Y, double Width, double Height, ChartBarEnd End,
+    bool Up = true);
 
 internal enum ChartBarEnd
 {
@@ -31,8 +32,14 @@ internal sealed class ChartPlan
     // The share of a place that its bars take; the rest is the gap between one place's bars and the next's.
     private const double BarsShare = 0.7;
 
+    // The share of its slot that a bar beside others fills, so neighbors don't touch.
+    private const double BesideShare = 0.9;
+
     // No plot has room for more labels than this, so a longer axis leaves the rest out of the markup.
     private const int MostLabels = 48;
+
+    // A step the app sets that would give more than about this many marks is passed over for the chart's own.
+    private const int MostTicks = 50;
 
     private ChartPlan(IReadOnlyList<string> places, ChartTicks ticks, IReadOnlyList<ChartSeriesPlan> series,
         IReadOnlyList<(double Y, string Text, bool Zero)> valueTicks)
@@ -82,16 +89,20 @@ internal sealed class ChartPlan
         var reached = piled.SelectMany(one => one).OfType<(double From, double To)>()
             .SelectMany(bar => new[] { bar.From, bar.To })
             .Concat(series.Where(one => !one.Bars).SelectMany(one => one.Values).OfType<double>()).ToList();
-        var ticks = TicksFor(reached, axis, stacking == ChartStacking.Percent && bars.Count > 0);
+        var shares = stacking == ChartStacking.Percent && bars.Count > 0;
+        var ticks = TicksFor(reached, axis, shares);
 
-        var format = axis.Format ?? (stacking == ChartStacking.Percent ? "P0" : "N" + ticks.Decimals);
-        var valueTicks = ticks.Values.Where(value => value >= ticks.Min && value <= ticks.Max)
+        var format = axis.Format ?? (shares ? "P0" : "N" + ticks.Decimals);
+        var valueTicks = ticks.Values
             .Select(value => (1 - ticks.Share(value), value.ToString(format, culture), value == 0)).ToList();
 
+        // A value shows up to three decimals, or one more than the axis's marks have when they are finer than that,
+        // so the table never reads a small value as zero.
+        var valueFormat = axis.Format ?? "#,0." + new string('#', Math.Max(3, ticks.Decimals + 1));
         var planned = new List<ChartSeriesPlan>(series.Count);
         foreach (var one in series)
         {
-            var text = one.Values.Select(value => value?.ToString(axis.Format ?? "#,0.###", culture)).ToList();
+            var text = one.Values.Select(value => value?.ToString(valueFormat, culture)).ToList();
             if (one.Bars)
             {
                 var slot = bars.IndexOf(one);
@@ -112,16 +123,27 @@ internal sealed class ChartPlan
     {
         var lowest = axis.Min ?? (reached.Count == 0 ? 0 : reached.Min());
         var highest = axis.Max ?? (shares ? 1 : reached.Count == 0 ? 1 : reached.Max());
-        var covered = ChartTicks.Cover(lowest, highest);
-        // An end the app set is kept as given, even off a round step; the ticks between stay on round values.
-        return new(axis.Min ?? covered.Min, axis.Max ?? covered.Max, axis.Step ?? covered.Step);
+        // An end left to the chart sits on a multiple of the step, the app's or the chart's own. An end the app set
+        // is kept as given, even off a step, and the marks stay on multiples of the step.
+        var ticks = axis.Step is { } step && (highest - lowest) / step < MostTicks
+            ? ChartTicks.Reach(lowest, highest, step) : ChartTicks.Cover(lowest, highest);
+        var (min, max) = (axis.Min ?? ticks.Min, axis.Max ?? ticks.Max);
+        if (max > min)
+        {
+            return new(min, max, ticks.Step);
+        }
+
+        // An end the app set beyond every value still needs an axis with some height: the other end moves.
+        return axis is { Min: null, Max: not null }
+            ? new(max - ticks.Step, max, ticks.Step) : new(min, min + ticks.Step, ticks.Step);
     }
 
     private static ChartBar?[] Bars((double From, double To)?[][] piled, int slot, int places, ChartStacking stacking,
         ChartTicks ticks)
     {
         var stacked = stacking != ChartStacking.None;
-        var width = BarsShare / places / (stacked ? 1 : piled.Length);
+        var slotWidth = BarsShare / places / (stacked ? 1 : piled.Length);
+        var width = slotWidth * (stacked || piled.Length == 1 ? 1 : BesideShare);
         var marks = new ChartBar?[places];
         for (var place = 0; place < places; place++)
         {
@@ -130,7 +152,8 @@ internal sealed class ChartPlan
                 continue;
             }
 
-            var left = (place + (1 - BarsShare) / 2) / places + (stacked ? 0 : slot * width);
+            var left = (place + (1 - BarsShare) / 2) / places + (stacked ? 0 : slot * slotWidth)
+                + (slotWidth - width) / 2;
             var top = 1 - ticks.Share(Math.Max(bar.From, bar.To));
             var bottom = 1 - ticks.Share(Math.Min(bar.From, bar.To));
             var up = bar.To >= bar.From;
@@ -138,7 +161,7 @@ internal sealed class ChartPlan
             var outermost = !stacked || !piled.Skip(slot + 1).Any(later =>
                 later[place] is { } other && other.To != other.From && other.To >= other.From == up);
             marks[place] = new(left, top, width, bottom - top,
-                !outermost ? ChartBarEnd.None : up ? ChartBarEnd.Top : ChartBarEnd.Bottom);
+                !outermost ? ChartBarEnd.None : up ? ChartBarEnd.Top : ChartBarEnd.Bottom, up);
         }
 
         return marks;

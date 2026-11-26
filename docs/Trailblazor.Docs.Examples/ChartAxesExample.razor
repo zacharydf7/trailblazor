@@ -1,0 +1,15 @@
+<TbChart Items="Weeks" X="week => week.Start" Title="Rainfall at the trailhead">
+    <TbXAxis Title="Week starting" Format="MMM d" />
+    <TbYAxis Title="Rainfall (mm)" Format="0.0" Max="60" Step="15" />
+    <TbBarSeries Name="Rainfall" Value="week => week.Rain" />
+</TbChart>
+
+@code {
+    private static readonly Week[] Weeks =
+    [
+        new(new(2026, 4, 6), 12.5), new(new(2026, 4, 13), 31), new(new(2026, 4, 20), 48.5),
+        new(new(2026, 4, 27), 22), new(new(2026, 5, 4), 8.5), new(new(2026, 5, 11), 17),
+    ];
+
+    private sealed record Week(DateOnly Start, double Rain);
+}

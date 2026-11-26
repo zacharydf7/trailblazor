@@ -1,0 +1,16 @@
+<TbChart Items="Days" X="day => day.Date" Title="Hikers a day this season" Height="14rem">
+    <TbXAxis Format="MMM d" />
+    <TbYAxis Min="0" />
+    <TbLineSeries Name="Hikers" Value="day => day.Hikers" />
+</TbChart>
+
+@code {
+    // A steady climb to midsummer with a bump every weekend, the same on every render.
+    private static readonly Day[] Days =
+    [
+        .. Enumerable.Range(0, 120).Select(day => new Day(new DateOnly(2026, 5, 1).AddDays(day),
+            40 + (int)(60 * Math.Sin(day / 120.0 * Math.PI)) + (day % 7 >= 5 ? 35 : 0))),
+    ];
+
+    private sealed record Day(DateOnly Date, int Hikers);
+}

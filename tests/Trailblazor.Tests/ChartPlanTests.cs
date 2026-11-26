@@ -12,9 +12,10 @@ public class ChartPlanTests
         var plan = Build(["A", "B"], [Bars("One", 10, 20), Bars("Two", 30, 40)]);
 
         Assert.Equal(new ChartTicks(0, 40, 10), plan.Ticks);
-        AssertBar(new(0.075, 0.75, 0.175, 0.25, ChartBarEnd.Top), plan.Series[0].Marks[0]);
-        AssertBar(new(0.25, 0.25, 0.175, 0.75, ChartBarEnd.Top), plan.Series[1].Marks[0]);
-        AssertBar(new(0.575, 0.5, 0.175, 0.5, ChartBarEnd.Top), plan.Series[0].Marks[1]);
+        // Each bar fills nine tenths of its slot, so the two of a place don't touch.
+        AssertBar(new(0.08375, 0.75, 0.1575, 0.25, ChartBarEnd.Top), plan.Series[0].Marks[0]);
+        AssertBar(new(0.25875, 0.25, 0.1575, 0.75, ChartBarEnd.Top), plan.Series[1].Marks[0]);
+        AssertBar(new(0.58375, 0.5, 0.1575, 0.5, ChartBarEnd.Top), plan.Series[0].Marks[1]);
     }
 
     [Fact]
@@ -40,8 +41,9 @@ public class ChartPlanTests
     {
         var plan = Build(["A"], [Bars("Gain", 5), Bars("Loss", -3)], ChartStacking.Stacked);
 
-        Assert.Equal(ChartBarEnd.Top, plan.Series[0].Marks[0]!.Value.End);
-        Assert.Equal(ChartBarEnd.Bottom, plan.Series[1].Marks[0]!.Value.End);
+        Assert.Equal((ChartBarEnd.Top, true), (plan.Series[0].Marks[0]!.Value.End, plan.Series[0].Marks[0]!.Value.Up));
+        Assert.Equal((ChartBarEnd.Bottom, false),
+            (plan.Series[1].Marks[0]!.Value.End, plan.Series[1].Marks[0]!.Value.Up));
     }
 
     [Fact]
@@ -100,6 +102,67 @@ public class ChartPlanTests
         Assert.Equal(["0 kg", "25 kg", "50 kg", "75 kg"], plan.ValueTicks.Select(tick => tick.Text));
         Assert.Equal(["60 kg"], plan.Series[0].Text);
         Assert.Equal(1 - 60d / 95, plan.Series[0].Marks[0]!.Value.Y, 9);
+    }
+
+    [Fact]
+    public void Build_ShouldMarkMultiplesOfAStepTheAppSet_WhenTheStepHasADecimal()
+    {
+        var plan = Build(["A"], [Bars("One", 9)], axis: new(Min: null, Max: 10, Step: 2.5, Format: null));
+
+        Assert.Equal(["0.0", "2.5", "5.0", "7.5", "10.0"], plan.ValueTicks.Select(tick => tick.Text));
+        Assert.Equal([1, 0.75, 0.5, 0.25, 0], plan.ValueTicks.Select(tick => tick.Y));
+    }
+
+    [Fact]
+    public void Build_ShouldEndTheAxisOnTheStepTheAppSet_WhenItsEndsAreLeftToTheChart()
+    {
+        var plan = Build(["A"], [Bars("One", 60)], axis: new(Min: null, Max: null, Step: 25, Format: null));
+
+        Assert.Equal(new ChartTicks(0, 75, 25), plan.Ticks);
+        Assert.Equal(["0", "25", "50", "75"], plan.ValueTicks.Select(tick => tick.Text));
+    }
+
+    [Theory]
+    [InlineData(100d, null, 100, 110)]
+    [InlineData(null, -5d, -5.2, -5)]
+    public void Build_ShouldKeepTheEndTheAppSetAndSomeHeight_WhenThatEndIsBeyondEveryValue(double? min, double? max,
+        double from, double to)
+    {
+        var plan = Build(["A"], [Bars("One", 60)], axis: new(min, max, Step: null, Format: null));
+
+        Assert.Equal((from, to), (plan.Ticks.Min, plan.Ticks.Max));
+    }
+
+    [Fact]
+    public void Build_ShouldPassOverAStep_WhenItWouldGiveMoreMarksThanAnAxisCanShow()
+    {
+        var plan = Build(["A"], [Bars("One", 60)], axis: new(Min: null, Max: null, Step: 0.001, Format: null));
+
+        Assert.Equal(10, plan.Ticks.Step);
+    }
+
+    [Fact]
+    public void Build_ShouldHaveNoMarks_WhenNoMultipleOfTheStepIsBetweenTheEnds()
+    {
+        var plan = Build(["A"], [Line("One", 0.7)], axis: new(Min: 0.5, Max: 0.9, Step: 1, Format: null));
+
+        Assert.Empty(plan.ValueTicks);
+    }
+
+    [Fact]
+    public void Build_ShouldKeepTheDecimalsOfSmallValues_WhenWritingThemForTheTable()
+    {
+        var plan = Build(["A", "B"], [Bars("Dose", 0.0004, 0.00025)]);
+
+        Assert.Equal(["0.0004", "0.00025"], plan.Series[0].Text);
+    }
+
+    [Fact]
+    public void Build_ShouldNotReadValuesAsShares_WhenPercentStackingHasNoBars()
+    {
+        var plan = Build(["A", "B"], [Line("Level", 10, 40)], ChartStacking.Percent);
+
+        Assert.Equal(["10", "15", "20", "25", "30", "35", "40"], plan.ValueTicks.Select(tick => tick.Text));
     }
 
     [Fact]

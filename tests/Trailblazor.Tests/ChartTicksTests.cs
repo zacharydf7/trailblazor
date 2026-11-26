@@ -75,6 +75,30 @@ public class ChartTicksTests
         Assert.Equal(decimals, ChartTicks.Cover(lowest, highest).Decimals);
     }
 
+    [Theory]
+    [InlineData(2.5, 10, 1, new[] { 0, 2.5, 5, 7.5, 10 })]
+    [InlineData(0.25, 1, 2, new[] { 0, 0.25, 0.5, 0.75, 1 })]
+    [InlineData(15, 60, 0, new double[] { 0, 15, 30, 45, 60 })]
+    public void Values_ShouldBeEveryMultipleOfTheStep_WhenTheStepHasMoreThanOneDigit(double step, double max,
+        int decimals, double[] values)
+    {
+        var ticks = new ChartTicks(0, max, step);
+
+        Assert.Equal(decimals, ticks.Decimals);
+        Assert.Equal(values, ticks.Values);
+    }
+
+    [Theory]
+    [InlineData(3, 100, 20, new double[] { 20, 40, 60, 80, 100 })]
+    [InlineData(2.5, 8, 1, new double[] { 3, 4, 5, 6, 7, 8 })]
+    [InlineData(45, 98, 10, new double[] { 50, 60, 70, 80, 90 })]
+    [InlineData(0.5, 0.9, 1, new double[0])]
+    public void Values_ShouldStayOnMultiplesOfTheStep_WhenAnEndIsNotOnOne(double min, double max, double step,
+        double[] values)
+    {
+        Assert.Equal(values, new ChartTicks(min, max, step).Values);
+    }
+
     [Fact]
     public void Share_ShouldBeTheValuesPlaceBetweenTheEnds_WhenCalled()
     {

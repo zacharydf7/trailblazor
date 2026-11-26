@@ -1,0 +1,13 @@
+<TbChart Items="Trails" X="trail => trail.Name" Title="Rescues by trail this year" Height="12rem">
+    <TbBarSeries Name="Rescues" Value="trail => trail.Rescues" />
+</TbChart>
+
+@code {
+    private static readonly Trail[] Trails =
+    [
+        new("Eagle Ridge to Pine Hollow", 7), new("Fern Gully loop", 2), new("North summit by the east face", 11),
+        new("River valley boardwalk", 1), new("Old quarry and the lookout tower", 4), new("Larch pass", 6),
+    ];
+
+    private sealed record Trail(string Name, int Rescues);
+}

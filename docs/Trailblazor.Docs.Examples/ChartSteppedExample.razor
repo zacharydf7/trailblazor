@@ -1,0 +1,14 @@
+<TbChart Items="Months" X="month => month.Name" Title="Price of a day pass">
+    <TbYAxis Format="C0" Min="0" />
+    <TbLineSeries Name="Day pass" Value="month => month.Price" Curve="ChartCurve.Stepped" />
+</TbChart>
+
+@code {
+    private static readonly Month[] Months =
+    [
+        new("Apr", 12), new("May", 12), new("Jun", 18), new("Jul", 18), new("Aug", 18), new("Sep", 14),
+        new("Oct", 14),
+    ];
+
+    private sealed record Month(string Name, decimal Price);
+}

@@ -30,7 +30,6 @@ public static class UpcomingCatalog
     public static IReadOnlyList<UpcomingComponent> All { get; } =
     [
         new("Dashboard tile layout", ExampleCategory.Layout, 204),
-        new("Charts", ExampleCategory.Content, 199),
         new("Diagram", ExampleCategory.Content, 207),
         new("Gantt chart", ExampleCategory.Content, 203),
         new("Gauges", ExampleCategory.Content, 200),

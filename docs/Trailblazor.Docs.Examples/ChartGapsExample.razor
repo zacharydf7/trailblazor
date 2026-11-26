@@ -1,0 +1,16 @@
+<TbChart Items="Days" X="day => day.Name" Title="Snow depth at the hut">
+    <TbYAxis Title="cm" />
+    <TbBarSeries Name="Measured" Value="day => day.Measured" />
+    <TbLineSeries Name="Forecast" Value="day => day.Forecast" />
+</TbChart>
+
+@code {
+    // The gauge was offline on Thursday, and no forecast was issued for Wednesday.
+    private static readonly Day[] Days =
+    [
+        new("Mon", 62, 60), new("Tue", 58, 57), new("Wed", 51, null), new("Thu", null, 48), new("Fri", 40, 43),
+        new("Sat", 36, 38), new("Sun", 33, 35),
+    ];
+
+    private sealed record Day(string Name, double? Measured, double? Forecast);
+}

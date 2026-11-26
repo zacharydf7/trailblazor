@@ -34,6 +34,25 @@ public static class TbStrings
     /// <summary>"Start slide rotation": names the button that starts a carousel turning its slides again.</summary>
     public const string CarouselStart = "Carousel.Start";
 
+    /// <summary>"Data table": the control under a chart that opens its values as a table.</summary>
+    public const string ChartTable = "Chart.Table";
+
+    /// <summary>"No data": shown in place of a chart's plot when it has no items or no series.</summary>
+    public const string ChartEmpty = "Chart.Empty";
+
+    /// <summary>"{0}: {1}": what screen readers hear for a chart's drawing; {0} is the kind of chart and {1} its
+    /// series' names.</summary>
+    public const string ChartSummary = "Chart.Summary";
+
+    /// <summary>"Bar chart": the kind of a chart with only bar series, in <see cref="ChartSummary"/>.</summary>
+    public const string ChartBars = "Chart.Bars";
+
+    /// <summary>"Line chart": the kind of a chart with only line series, in <see cref="ChartSummary"/>.</summary>
+    public const string ChartLines = "Chart.Lines";
+
+    /// <summary>"Bar and line chart": the kind of a chart with both, in <see cref="ChartSummary"/>.</summary>
+    public const string ChartBarsAndLines = "Chart.BarsAndLines";
+
     /// <summary>"Message": names the box a chat's user types in.</summary>
     public const string ChatMessage = "Chat.Message";
 
@@ -2039,6 +2058,12 @@ public static class TbStrings
         [CarouselSlideOf] = "{0} of {1}",
         [CarouselStop] = "Stop slide rotation",
         [CarouselStart] = "Start slide rotation",
+        [ChartTable] = "Data table",
+        [ChartEmpty] = "No data",
+        [ChartSummary] = "{0}: {1}",
+        [ChartBars] = "Bar chart",
+        [ChartLines] = "Line chart",
+        [ChartBarsAndLines] = "Bar and line chart",
         [ChatMessage] = "Message",
         [ChatSend] = "Send",
         [ChatAttach] = "Attach files",

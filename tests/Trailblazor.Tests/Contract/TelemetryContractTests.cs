@@ -53,6 +53,7 @@ public class TelemetryContractTests : BunitContext
         ["TbRibbonGroup"] = Part,
         ["TbSplitterPane"] = Part, ["TbStep"] = Part, ["TbSubMenu"] = Part, ["TbTableOfContentsItem"] = Part,
         ["TbTimelineItem"] = Part, ["TbToolbarSeparator"] = Part, ["TbTreeItem"] = Part, ["TbTreeItemEnd"] = Part,
+        ["TbLineSeries"] = Part, ["TbBarSeries"] = Part, ["TbXAxis"] = Part, ["TbYAxis"] = Part,
 
         ["TbFocusScope"] = Plumbing, ["TbInteractiveMark"] = Plumbing, ["TbModelField"] = Plumbing,
         ["TbRoot"] = Plumbing, ["TbStyles"] = Plumbing, ["TbThemeHead"] = Plumbing,

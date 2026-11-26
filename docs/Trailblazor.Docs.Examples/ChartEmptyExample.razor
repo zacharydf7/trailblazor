@@ -1,0 +1,10 @@
+<TbChart Items="Closures" X="closure => closure.Month" Title="Trail closures this year"
+         Labels="@(new() { Empty = "No closures so far this year" })" Height="10rem">
+    <TbBarSeries Name="Closures" Value="closure => closure.Count" />
+</TbChart>
+
+@code {
+    private static readonly Closure[] Closures = [];
+
+    private sealed record Closure(string Month, int Count);
+}

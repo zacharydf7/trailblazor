@@ -364,6 +364,18 @@
         --tb-shadow-md: 0 4px 12px light-dark(oklch(0 0 0 / 0.1), oklch(0 0 0 / 0.5));
         --tb-shadow-lg: 0 12px 32px light-dark(oklch(0 0 0 / 0.14), oklch(0 0 0 / 0.6));
 
+        /* A chart's series colors, in an order that keeps neighbors easy to tell apart for color-blind readers and
+           gives each 3:1 against the surface in both modes. Red is left out, so a series is never read as an
+           error. */
+        --tb-chart-series-1: light-dark(var(--tb-blue-600), var(--tb-blue-500));
+        --tb-chart-series-2: var(--tb-amber-500);
+        --tb-chart-series-3: light-dark(var(--tb-fuchsia-700), var(--tb-fuchsia-500));
+        --tb-chart-series-4: light-dark(var(--tb-green-500), var(--tb-green-600));
+        --tb-chart-series-5: light-dark(var(--tb-violet-700), var(--tb-violet-500));
+        --tb-chart-series-6: var(--tb-rose-500);
+        --tb-chart-series-7: light-dark(var(--tb-moss-700), var(--tb-moss-600));
+        --tb-chart-series-8: var(--tb-teal-500);
+
         --tb-motion-duration-fast: 100ms;
         --tb-motion-duration-normal: 200ms;
         --tb-motion-duration-slow: 300ms;
@@ -11745,6 +11757,267 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
             background: Highlight;
             color: HighlightText;
             forced-color-adjust: none;
+        }
+    }
+    /* A chart's markup holds every position as a share of the plot, so these rules size it and nothing is measured. */
+    .tb-chart {
+        display: grid;
+        gap: var(--tb-space-2);
+        margin: 0;
+        color: var(--tb-color-text);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-chart__title {
+        font-size: var(--tb-font-size-md);
+        font-weight: var(--tb-font-weight-semibold);
+    }
+
+    /* Each series takes the next of the theme's eight colors in the order the series first render; a ninth starts
+       over. */
+    .tb-chart__series--1 { --_tb-chart-series: var(--tb-chart-series-1); }
+    .tb-chart__series--2 { --_tb-chart-series: var(--tb-chart-series-2); }
+    .tb-chart__series--3 { --_tb-chart-series: var(--tb-chart-series-3); }
+    .tb-chart__series--4 { --_tb-chart-series: var(--tb-chart-series-4); }
+    .tb-chart__series--5 { --_tb-chart-series: var(--tb-chart-series-5); }
+    .tb-chart__series--6 { --_tb-chart-series: var(--tb-chart-series-6); }
+    .tb-chart__series--7 { --_tb-chart-series: var(--tb-chart-series-7); }
+    .tb-chart__series--8 { --_tb-chart-series: var(--tb-chart-series-8); }
+
+    .tb-chart__legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--tb-space-1) var(--tb-space-4);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .tb-chart__legend > li {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+    }
+
+    /* A key is a small drawing of its series' own mark, a bar or a stroke, sized in the pixels it is drawn in. */
+    .tb-chart__key {
+        flex: none;
+        inline-size: 12px;
+        block-size: 12px;
+    }
+
+    .tb-chart__key--line {
+        inline-size: 24px;
+    }
+
+    .tb-chart__y-title,
+    .tb-chart__x-title,
+    .tb-chart__y,
+    .tb-chart__x {
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-xs);
+    }
+
+    .tb-chart__x-title {
+        text-align: center;
+    }
+
+    /* The value labels' column is as wide as its widest label, and the plot takes the rest. */
+    .tb-chart__body {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-rows: var(--tb-chart-height, 20rem) auto;
+        gap: var(--tb-space-1) var(--tb-space-2);
+    }
+
+    .tb-chart__y {
+        position: relative;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .tb-chart__y > span {
+        position: absolute;
+        inset-inline-end: 0;
+        line-height: 1;
+        translate: 0 -50%;
+    }
+
+    .tb-chart__y > .tb-chart__y-sizer {
+        position: static;
+        visibility: hidden;
+    }
+
+    .tb-chart__plot {
+        position: relative;
+        grid-column: 2;
+    }
+
+    .tb-chart__plot--empty {
+        display: grid;
+        grid-column: 1 / -1;
+        place-items: center;
+        border: 1px dashed var(--tb-border-subtle);
+        border-radius: var(--tb-radius-md);
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-chart__marks {
+        position: absolute;
+        inset: 0;
+        inline-size: 100%;
+        block-size: 100%;
+        overflow: visible;
+    }
+
+    /* Right to left, the labels run the other way by themselves; the marks are mirrored to match. */
+    .tb-chart__plot:dir(rtl) .tb-chart__marks {
+        transform: scaleX(-1);
+    }
+
+    .tb-chart__grid {
+        stroke: var(--tb-border-subtle);
+        stroke-width: 1;
+    }
+
+    .tb-chart__grid--zero {
+        stroke: var(--tb-border-strong);
+    }
+
+    .tb-chart__lines {
+        overflow: visible;
+    }
+
+    /* The lines' drawing is stretched to the plot, and the stroke isn't stretched with it. */
+    .tb-chart__line {
+        fill: none;
+        stroke: var(--_tb-chart-series);
+        stroke-width: 2;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+        vector-effect: non-scaling-stroke;
+    }
+
+    /* A ring in the surface's color keeps a marker clear of the lines it sits on. */
+    .tb-chart__marker {
+        fill: var(--_tb-chart-series);
+        stroke: var(--tb-color-surface);
+        stroke-width: 2;
+    }
+
+    .tb-chart__bar {
+        fill: var(--_tb-chart-series);
+    }
+
+    /* Only the end that shows the value is rounded; the end at zero, or against another bar, stays square. */
+    .tb-chart__bar--top {
+        clip-path: inset(0 round 4px 4px 0 0);
+    }
+
+    .tb-chart__bar--bottom {
+        clip-path: inset(0 round 0 0 4px 4px);
+    }
+
+    .tb-chart__gap {
+        stroke: var(--tb-color-surface);
+        stroke-width: 2;
+    }
+
+    .tb-chart__x-row {
+        grid-column: 2;
+        min-inline-size: 0;
+    }
+
+    .tb-chart__x {
+        position: relative;
+        block-size: 1.5em;
+        container-type: inline-size;
+    }
+
+    /* A label shows only while the labels of its stride have room: its width is all or nothing, with no script. */
+    .tb-chart__x > span {
+        position: absolute;
+        max-inline-size: clamp(0px, calc((100cqi * var(--_tb-chart-stride) / var(--_tb-chart-count)
+            - var(--_tb-chart-chars) * 1ch - var(--tb-space-2)) * 9999), 100cqi);
+        overflow: hidden;
+        white-space: nowrap;
+        transform: translateX(-50%);
+    }
+
+    .tb-chart__x:dir(rtl) > span {
+        transform: translateX(50%);
+    }
+
+    .tb-chart__table > summary {
+        inline-size: fit-content;
+        color: var(--tb-color-text-muted);
+        cursor: pointer;
+    }
+
+    .tb-chart__table > summary:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-chart__table[open] > summary {
+        margin-block-end: var(--tb-space-2);
+    }
+
+    /* Forced colors draw every series in the text color, so lines differ by their dashes and bars by their fill.
+       There are four of each, so a fifth series looks like the first; the legend's keys are drawn the same way. */
+    @media (forced-colors: active) {
+        .tb-chart__line {
+            stroke: CanvasText;
+        }
+
+        .tb-chart__series--2.tb-chart__line,
+        .tb-chart__series--6.tb-chart__line {
+            stroke-dasharray: 8 4;
+        }
+
+        .tb-chart__series--3.tb-chart__line,
+        .tb-chart__series--7.tb-chart__line {
+            stroke-dasharray: 2 4;
+        }
+
+        .tb-chart__series--4.tb-chart__line,
+        .tb-chart__series--8.tb-chart__line {
+            stroke-dasharray: 8 4 2 4;
+        }
+
+        .tb-chart__marker {
+            fill: CanvasText;
+            stroke: Canvas;
+        }
+
+        .tb-chart__bar {
+            fill: CanvasText;
+            stroke: CanvasText;
+            stroke-width: 2;
+        }
+
+        .tb-chart__series--2 > .tb-chart__bar,
+        .tb-chart__series--6 > .tb-chart__bar {
+            fill: Canvas;
+        }
+
+        .tb-chart__series--3 > .tb-chart__bar,
+        .tb-chart__series--7 > .tb-chart__bar {
+            fill: Canvas;
+            stroke-dasharray: 4 3;
+        }
+
+        .tb-chart__series--4 > .tb-chart__bar,
+        .tb-chart__series--8 > .tb-chart__bar {
+            fill: Canvas;
+            stroke-dasharray: 1 3;
+        }
+
+        .tb-chart__grid {
+            stroke: GrayText;
+        }
+
+        .tb-chart__gap {
+            stroke: Canvas;
         }
     }
 }

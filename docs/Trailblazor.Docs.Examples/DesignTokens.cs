@@ -16,6 +16,9 @@ public static partial class DesignTokens
     private static readonly string[] DensityTokens =
         ["--tb-control-height", "--tb-control-padding-", "--tb-item-height", "--tb-row-height"];
 
+    private static readonly string[] Ordinals =
+        ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth"];
+
     // The theme tokens a block's rules read; its component tokens, such as --tb-dialog-z-index, are listed apart.
     public static IReadOnlyList<string> Read(IEnumerable<string> blocks) =>
         [.. RulesOf(blocks).SelectMany(rule => Used().Matches(rule.Body)).Select(match => match.Groups[1].Value)
@@ -44,7 +47,8 @@ public static partial class DesignTokens
             .DistinctBy(token => token.Item1).OrderBy(token => Group(token.Item1))];
 
     public static bool IsColor(string name) =>
-        name.Contains("color", StringComparison.Ordinal) || name.StartsWith("--tb-border-", StringComparison.Ordinal);
+        name.Contains("color", StringComparison.Ordinal) || name.StartsWith("--tb-border-", StringComparison.Ordinal)
+        || name.StartsWith("--tb-chart-series", StringComparison.Ordinal);
 
     // What a theme token is for, from its name: the page's colors one by one, a tone's family by its suffix and the
     // scales by their prefix. A token none of these knows gets no role, which a test catches.
@@ -85,6 +89,8 @@ public static partial class DesignTokens
         _ when name.StartsWith("--tb-space", StringComparison.Ordinal) => "Spacing step",
         _ when name.StartsWith("--tb-radius", StringComparison.Ordinal) => "Corner radius",
         _ when name.StartsWith("--tb-shadow", StringComparison.Ordinal) => "Shadow",
+        _ when name.StartsWith("--tb-chart-series", StringComparison.Ordinal) =>
+            $"A chart's {Ordinals[name[^1] - '1']} series",
         _ when name.StartsWith("--tb-motion-duration", StringComparison.Ordinal) => "Animation length",
         _ when name.StartsWith("--tb-motion-easing", StringComparison.Ordinal) => "Animation curve",
         _ when name.StartsWith("--tb-focus-ring", StringComparison.Ordinal) => "The focus ring's width and offset",

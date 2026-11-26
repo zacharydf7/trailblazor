@@ -15,8 +15,9 @@ public class ComponentContractTests : BunitContext
     // or style; TbRadio, TbCheckboxItem, TbTab, TbOption, TbToggleItem, TbSplitterPane, TbTreeItem, TbMenuRadioItem,
     // TbDialogDescription, TbColumn, TbColumnGroup, TbTableOfContentsItem, TbBreadcrumb, TbNavLink, TbNavGroup, TbStep,
     // TbCarouselSlide, TbDockPanel and TbRibbonTab only render inside their parent (see their parents' tests),
-    // TbTreeItemEnd only in a tree row's template, TbSmartPaste and TbValidationSummary only inside a TbForm, and
-    // TbDescriptionItem only inside a TbDescriptionList.
+    // TbTreeItemEnd only in a tree row's template, TbSmartPaste and TbValidationSummary only inside a TbForm,
+    // TbDescriptionItem only inside a TbDescriptionList, and TbLineSeries, TbBarSeries, TbXAxis and TbYAxis only inside
+    // a TbChart.
     internal static readonly Type[] NotRenderedAlone =
     [
         typeof(TbRoot), typeof(TbStyles), typeof(TbThemeHead), typeof(TbInteractiveMark), typeof(TbRadio<>),
@@ -27,7 +28,8 @@ public class ComponentContractTests : BunitContext
         typeof(TbTableOfContentsItem), typeof(TbBreadcrumb), typeof(TbNavLink), typeof(TbNavGroup),
         typeof(TbStep), typeof(TbCarouselSlide), typeof(TbColumnGroup<>), typeof(TbModelField),
         typeof(TbDialogHeaderActions), typeof(TbDialogHeader), typeof(TbTreeItemEnd), typeof(TbSmartPaste),
-        typeof(TbDockPanel), typeof(TbDescriptionItem), typeof(TbValidationSummary),
+        typeof(TbDockPanel), typeof(TbDescriptionItem), typeof(TbValidationSummary), typeof(TbLineSeries<>),
+        typeof(TbBarSeries<>), typeof(TbXAxis), typeof(TbYAxis),
     ];
 
     // Generic components, such as fields, are checked with string as their type argument unless listed here.

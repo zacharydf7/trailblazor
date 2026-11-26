@@ -3,8 +3,8 @@ using System.Text;
 namespace Trailblazor;
 
 // SVG paths for a line through a series' points. Points are shares of the plot, x from the left and y from the top,
-// and the path is drawn on a grid of 10,000 by 10,000 that the plot stretches. Each point is written as its whole
-// distance from the one before, which takes about half the text of full positions.
+// and the path is drawn on a grid of 10,000 by 10,000 that the plot stretches. Each point is written as a
+// whole-number offset from the one before, which takes about half the text of full positions.
 internal static class ChartPath
 {
     public const int Grid = 10000;

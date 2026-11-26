@@ -1,0 +1,13 @@
+<TbChart Items="Days" X="day => day.Name" Title="Change in snow depth">
+    <TbYAxis Title="cm" />
+    <TbBarSeries Name="Change" Value="day => day.Change" />
+</TbChart>
+
+@code {
+    private static readonly Day[] Days =
+    [
+        new("Mon", 12), new("Tue", 5), new("Wed", -8), new("Thu", -3), new("Fri", -14), new("Sat", 3), new("Sun", 9),
+    ];
+
+    private sealed record Day(string Name, double Change);
+}

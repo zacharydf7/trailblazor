@@ -8290,3 +8290,111 @@ override Trailblazor.GridGroup.GetHashCode() -> int
 override Trailblazor.GridGroup.ToString() -> string!
 static Trailblazor.GridGroup.operator !=(Trailblazor.GridGroup? left, Trailblazor.GridGroup? right) -> bool
 static Trailblazor.GridGroup.operator ==(Trailblazor.GridGroup? left, Trailblazor.GridGroup? right) -> bool
+Trailblazor.ChartClasses
+Trailblazor.ChartClasses.<Clone>$() -> Trailblazor.ChartClasses!
+Trailblazor.ChartClasses.ChartClasses() -> void
+Trailblazor.ChartClasses.Equals(Trailblazor.ChartClasses? other) -> bool
+Trailblazor.ChartClasses.Legend.get -> string?
+Trailblazor.ChartClasses.Legend.init -> void
+Trailblazor.ChartClasses.Plot.get -> string?
+Trailblazor.ChartClasses.Plot.init -> void
+Trailblazor.ChartClasses.Table.get -> string?
+Trailblazor.ChartClasses.Table.init -> void
+Trailblazor.ChartClasses.Title.get -> string?
+Trailblazor.ChartClasses.Title.init -> void
+Trailblazor.ChartLabels
+Trailblazor.ChartLabels.<Clone>$() -> Trailblazor.ChartLabels!
+Trailblazor.ChartLabels.Bars.get -> string?
+Trailblazor.ChartLabels.Bars.init -> void
+Trailblazor.ChartLabels.BarsAndLines.get -> string?
+Trailblazor.ChartLabels.BarsAndLines.init -> void
+Trailblazor.ChartLabels.ChartLabels() -> void
+Trailblazor.ChartLabels.Empty.get -> string?
+Trailblazor.ChartLabels.Empty.init -> void
+Trailblazor.ChartLabels.Equals(Trailblazor.ChartLabels? other) -> bool
+Trailblazor.ChartLabels.Lines.get -> string?
+Trailblazor.ChartLabels.Lines.init -> void
+Trailblazor.ChartLabels.Summary.get -> string?
+Trailblazor.ChartLabels.Summary.init -> void
+Trailblazor.ChartLabels.Table.get -> string?
+Trailblazor.ChartLabels.Table.init -> void
+Trailblazor.TbBarSeries<TItem>
+Trailblazor.TbBarSeries<TItem>.TbBarSeries() -> void
+Trailblazor.TbChart<TItem>
+Trailblazor.TbChart<TItem>.AriaLabel.get -> string?
+Trailblazor.TbChart<TItem>.AriaLabel.set -> void
+Trailblazor.TbChart<TItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbChart<TItem>.ChildContent.set -> void
+Trailblazor.TbChart<TItem>.Classes.get -> Trailblazor.ChartClasses?
+Trailblazor.TbChart<TItem>.Classes.set -> void
+Trailblazor.TbChart<TItem>.Height.get -> string?
+Trailblazor.TbChart<TItem>.Height.set -> void
+Trailblazor.TbChart<TItem>.Items.get -> System.Collections.Generic.IEnumerable<TItem>?
+Trailblazor.TbChart<TItem>.Items.set -> void
+Trailblazor.TbChart<TItem>.Labels.get -> Trailblazor.ChartLabels!
+Trailblazor.TbChart<TItem>.Labels.set -> void
+Trailblazor.TbChart<TItem>.Stacking.get -> Trailblazor.ChartStacking
+Trailblazor.TbChart<TItem>.Stacking.set -> void
+Trailblazor.TbChart<TItem>.TbChart() -> void
+Trailblazor.TbChart<TItem>.TelemetryName.get -> string?
+Trailblazor.TbChart<TItem>.TelemetryName.set -> void
+Trailblazor.TbChart<TItem>.Title.get -> string?
+Trailblazor.TbChart<TItem>.Title.set -> void
+Trailblazor.TbChart<TItem>.X.get -> System.Func<TItem, object?>?
+Trailblazor.TbChart<TItem>.X.set -> void
+Trailblazor.TbChartSeries<TItem>
+Trailblazor.TbChartSeries<TItem>.Color.get -> string?
+Trailblazor.TbChartSeries<TItem>.Color.set -> void
+Trailblazor.TbChartSeries<TItem>.Dispose() -> void
+Trailblazor.TbChartSeries<TItem>.Name.get -> string!
+Trailblazor.TbChartSeries<TItem>.Name.set -> void
+Trailblazor.TbChartSeries<TItem>.TbChartSeries() -> void
+Trailblazor.TbChartSeries<TItem>.Value.get -> System.Func<TItem, object?>?
+Trailblazor.TbChartSeries<TItem>.Value.set -> void
+Trailblazor.TbLineSeries<TItem>
+Trailblazor.TbLineSeries<TItem>.Curve.get -> Trailblazor.ChartCurve
+Trailblazor.TbLineSeries<TItem>.Curve.set -> void
+Trailblazor.TbLineSeries<TItem>.Markers.get -> bool?
+Trailblazor.TbLineSeries<TItem>.Markers.set -> void
+Trailblazor.TbLineSeries<TItem>.TbLineSeries() -> void
+Trailblazor.TbXAxis
+Trailblazor.TbXAxis.Dispose() -> void
+Trailblazor.TbXAxis.Format.get -> string?
+Trailblazor.TbXAxis.Format.set -> void
+Trailblazor.TbXAxis.TbXAxis() -> void
+Trailblazor.TbXAxis.Title.get -> string?
+Trailblazor.TbXAxis.Title.set -> void
+Trailblazor.TbYAxis
+Trailblazor.TbYAxis.Dispose() -> void
+Trailblazor.TbYAxis.Format.get -> string?
+Trailblazor.TbYAxis.Format.set -> void
+Trailblazor.TbYAxis.Max.get -> double?
+Trailblazor.TbYAxis.Max.set -> void
+Trailblazor.TbYAxis.Min.get -> double?
+Trailblazor.TbYAxis.Min.set -> void
+Trailblazor.TbYAxis.Step.get -> double?
+Trailblazor.TbYAxis.Step.set -> void
+Trailblazor.TbYAxis.TbYAxis() -> void
+Trailblazor.TbYAxis.Title.get -> string?
+Trailblazor.TbYAxis.Title.set -> void
+const Trailblazor.TbStrings.ChartBars = "Chart.Bars" -> string!
+const Trailblazor.TbStrings.ChartBarsAndLines = "Chart.BarsAndLines" -> string!
+const Trailblazor.TbStrings.ChartEmpty = "Chart.Empty" -> string!
+const Trailblazor.TbStrings.ChartLines = "Chart.Lines" -> string!
+const Trailblazor.TbStrings.ChartSummary = "Chart.Summary" -> string!
+const Trailblazor.TbStrings.ChartTable = "Chart.Table" -> string!
+override Trailblazor.ChartClasses.Equals(object? obj) -> bool
+override Trailblazor.ChartClasses.GetHashCode() -> int
+override Trailblazor.ChartClasses.ToString() -> string!
+override Trailblazor.ChartLabels.Equals(object? obj) -> bool
+override Trailblazor.ChartLabels.GetHashCode() -> int
+override Trailblazor.ChartLabels.ToString() -> string!
+override Trailblazor.TbChart<TItem>.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbChart<TItem>.OnParametersSet() -> void
+override Trailblazor.TbChartSeries<TItem>.OnInitialized() -> void
+override Trailblazor.TbChartSeries<TItem>.OnParametersSet() -> void
+static Trailblazor.ChartClasses.operator !=(Trailblazor.ChartClasses? left, Trailblazor.ChartClasses? right) -> bool
+static Trailblazor.ChartClasses.operator ==(Trailblazor.ChartClasses? left, Trailblazor.ChartClasses? right) -> bool
+static Trailblazor.ChartLabels.operator !=(Trailblazor.ChartLabels? left, Trailblazor.ChartLabels? right) -> bool
+static Trailblazor.ChartLabels.operator ==(Trailblazor.ChartLabels? left, Trailblazor.ChartLabels? right) -> bool
+~override Trailblazor.TbChart<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

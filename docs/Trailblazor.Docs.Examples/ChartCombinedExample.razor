@@ -1,0 +1,13 @@
+<TbChart Items="Months" X="month => month.Name" Title="Bookings and cancellations">
+    <TbBarSeries Name="Bookings" Value="month => month.Bookings" />
+    <TbLineSeries Name="Cancellations" Value="month => month.Cancellations" Color="var(--tb-color-danger)" />
+</TbChart>
+
+@code {
+    private static readonly Month[] Months =
+    [
+        new("May", 180, 22), new("Jun", 260, 31), new("Jul", 340, 75), new("Aug", 320, 48), new("Sep", 210, 18),
+    ];
+
+    private sealed record Month(string Name, int Bookings, int Cancellations);
+}

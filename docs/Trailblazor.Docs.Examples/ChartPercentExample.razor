@@ -1,0 +1,12 @@
+<TbChart Items="Trails" X="trail => trail.Name" Title="Share of hikers by trail difficulty"
+         Stacking="ChartStacking.Percent">
+    <TbBarSeries Name="First visit" Value="trail => trail.FirstVisit" />
+    <TbBarSeries Name="Returning" Value="trail => trail.Returning" />
+</TbChart>
+
+@code {
+    private static readonly Visits[] Trails =
+        [new("Easy", 640, 210), new("Moderate", 380, 420), new("Hard", 90, 310)];
+
+    private sealed record Visits(string Name, int FirstVisit, int Returning);
+}

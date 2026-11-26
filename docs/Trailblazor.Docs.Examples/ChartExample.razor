@@ -1,0 +1,13 @@
+<TbChart Items="Months" X="month => month.Name" Title="Hikers by month">
+    <TbBarSeries Name="Hikers" Value="month => month.Hikers" />
+</TbChart>
+
+@code {
+    private static readonly Month[] Months =
+    [
+        new("Jan", 120), new("Feb", 150), new("Mar", 310), new("Apr", 540), new("May", 880), new("Jun", 1240),
+        new("Jul", 1460), new("Aug", 1390), new("Sep", 920), new("Oct", 610), new("Nov", 260), new("Dec", 140),
+    ];
+
+    private sealed record Month(string Name, int Hikers);
+}

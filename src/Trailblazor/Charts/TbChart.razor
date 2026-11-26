@@ -1,0 +1,202 @@
+@namespace Trailblazor
+@using System.Globalization
+@typeparam TItem
+@inherits TbComponentBase
+@inject ITbLocalizer Localizer
+
+@{ _changed = false; }
+<figure @attributes="AdditionalAttributes" aria-label="@AriaLabel"
+        style="@Styles.Join(Height is null ? null : $"--tb-chart-height: {Height}", Style)"
+        class="@ClassNames.Join("tb-chart", Class)">
+    <CascadingValue Value="this" IsFixed="true">
+        <CascadingValue Value="Axes" IsFixed="true">@ChildContent</CascadingValue>
+    </CascadingValue>
+    @* Every position is a share of the plot, so the same markup fits any size and nothing is measured: marks the
+       browser can place by percentage are plain SVG shapes, lines are paths in a nested SVG stretched over the plot,
+       and text is HTML around the plot. *@
+    @{
+        var plan = Plan();
+        var series = _series;
+        var empty = plan.Places.Count == 0 || series.Count == 0;
+        var markers = plan.Places.Count <= MostMarkers;
+    }
+    @if (Title is not null)
+    {
+        <figcaption data-part="title" class="@ClassNames.Join("tb-chart__title", Classes?.Title)">@Title</figcaption>
+    }
+    @if (series.Count > 1)
+    {
+        <ul data-part="legend" class="@ClassNames.Join("tb-chart__legend", Classes?.Legend)">
+            @for (var index = 0; index < series.Count; index++)
+            {
+                @* A key is drawn as its series' own mark, so it looks as the mark does in every theme and mode. *@
+                <li>
+                    @if (series[index].Bars)
+                    {
+                        <svg class="@ClassNames.Join("tb-chart__key", Slot(index))" style="@Color(index)"
+                             aria-hidden="true" focusable="false">
+                            <rect class="tb-chart__bar" x="1" y="1" width="10" height="10" />
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg class="tb-chart__key tb-chart__key--line" aria-hidden="true" focusable="false">
+                            <line class="@ClassNames.Join("tb-chart__line", Slot(index))" style="@Color(index)"
+                                  x1="1" y1="6" x2="23" y2="6" />
+                        </svg>
+                    }
+                    @series[index].Name
+                </li>
+            }
+        </ul>
+    }
+    @if (Axes.Y?.Title is { } valueTitle && !empty)
+    {
+        <div data-part="y-title" class="tb-chart__y-title">@valueTitle</div>
+    }
+    <div class="tb-chart__body">
+        @if (empty)
+        {
+            <div data-part="plot" class="@ClassNames.Join("tb-chart__plot", "tb-chart__plot--empty", Classes?.Plot)">
+                @(Labels.Empty ?? Localizer[TbStrings.ChartEmpty])
+            </div>
+        }
+        else
+        {
+            <div class="tb-chart__y" aria-hidden="true">
+                @* The longest label, unseen, gives the column its width; WebKit won't place the labels by percentage
+                   inside a column sized by the grid alone. *@
+                <span class="tb-chart__y-sizer">
+                    @plan.ValueTicks.Select(tick => tick.Text).MaxBy(text => text.Length)
+                </span>
+                @foreach (var tick in plan.ValueTicks)
+                {
+                    <span style="top: @Percent(tick.Y)">@tick.Text</span>
+                }
+            </div>
+            <div data-part="plot" class="@ClassNames.Join("tb-chart__plot", Classes?.Plot)">
+                <svg class="tb-chart__marks" role="img" aria-label="@Summary()" focusable="false">
+                    @foreach (var tick in plan.ValueTicks)
+                    {
+                        <line class="@(tick.Zero ? "tb-chart__grid tb-chart__grid--zero" : "tb-chart__grid")" x1="0"
+                              x2="100%" y1="@Percent(tick.Y)" y2="@Percent(tick.Y)" />
+                    }
+                    @for (var index = 0; index < series.Count; index++)
+                    {
+                        var drawn = plan.Series[index];
+                        if (drawn.Bars)
+                        {
+                            <g data-series="@drawn.Name" class="@Slot(index)" style="@Color(index)">
+                                @foreach (var mark in drawn.Marks)
+                                {
+                                    if (mark is { } bar)
+                                    {
+                                        <rect class="@BarClass(bar.End)" x="@Percent(bar.X)" y="@Percent(bar.Y)"
+                                              width="@Percent(bar.Width)" height="@Percent(bar.Height)" />
+                                    }
+                                }
+                            </g>
+                        }
+                    }
+                    @* A bar inside a stack ends where the next one starts; a line in the surface's color parts them. *@
+                    @foreach (var drawn in plan.Series)
+                    {
+                        foreach (var mark in drawn.Marks)
+                        {
+                            if (mark is { End: ChartBarEnd.None, Height: > 0 } bar)
+                            {
+                                var end = Percent(bar.Up ? bar.Y : bar.Y + bar.Height);
+                                <line class="tb-chart__gap" x1="@Percent(bar.X)" x2="@Percent(bar.X + bar.Width)"
+                                      y1="@end" y2="@end" />
+                            }
+                        }
+                    }
+                    @* An SVG inside another is an image of its own to a screen reader unless it is hidden from it. *@
+                    <svg class="tb-chart__lines" viewBox="@LinesBox" preserveAspectRatio="none" aria-hidden="true"
+                         width="100%" height="100%">
+                        @for (var index = 0; index < series.Count; index++)
+                        {
+                            var drawn = plan.Series[index];
+                            if (!drawn.Bars)
+                            {
+                                <path data-series="@drawn.Name" class="@ClassNames.Join("tb-chart__line", Slot(index))"
+                                      style="@Color(index)" d="@drawn.Path" />
+                            }
+                        }
+                    </svg>
+                    @for (var index = 0; index < series.Count; index++)
+                    {
+                        var drawn = plan.Series[index];
+                        if (!drawn.Bars && (series[index].HasMarkers ?? markers))
+                        {
+                            <g class="@Slot(index)" style="@Color(index)">
+                                @foreach (var point in drawn.Points)
+                                {
+                                    if (point is { } at)
+                                    {
+                                        <circle class="tb-chart__marker" r="4" cx="@Percent(at.X)"
+                                                cy="@Percent(at.Y)" />
+                                    }
+                                }
+                            </g>
+                        }
+                    }
+                </svg>
+            </div>
+            @* WebKit sizes a grid item that is itself a query container by the whole grid, so the query container is
+               a child of the grid item instead. *@
+            <div class="tb-chart__x-row" aria-hidden="true">
+                <div class="tb-chart__x"
+                     style="--_tb-chart-count: @plan.Places.Count; --_tb-chart-chars: @Longest(plan)">
+                    @for (var place = 0; place < plan.Places.Count; place += plan.LabelEvery)
+                    {
+                        var at = Percent(plan.Middle(place));
+                        <span style="inset-inline-start: @at; --_tb-chart-stride: @plan.Stride(place)">
+                            @plan.Places[place]
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    @if (Axes.X?.Title is { } placeTitle && !empty)
+    {
+        <div data-part="x-title" class="tb-chart__x-title">@placeTitle</div>
+    }
+    @if (!empty)
+    {
+        <details data-part="table" class="@ClassNames.Join("tb-chart__table", Classes?.Table)">
+            <summary>@(Labels.Table ?? Localizer[TbStrings.ChartTable])</summary>
+            <TbTable Size="Size.Small" aria-label="@(Title ?? AriaLabel)">
+                <thead>
+                    <tr>
+                        @if (Axes.X?.Title is { } heading)
+                        {
+                            <th scope="col">@heading</th>
+                        }
+                        else
+                        {
+                            <td></td>
+                        }
+                        @foreach (var one in plan.Series)
+                        {
+                            <th scope="col">@one.Name</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var place = 0; place < plan.Places.Count; place++)
+                    {
+                        <tr>
+                            <th scope="row">@plan.Places[place]</th>
+                            @foreach (var one in plan.Series)
+                            {
+                                <td>@one.Text[place]</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </TbTable>
+        </details>
+    }
+</figure>

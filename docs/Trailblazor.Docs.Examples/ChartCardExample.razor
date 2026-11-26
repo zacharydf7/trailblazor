@@ -1,0 +1,14 @@
+<TbCard Title="Bookings this week" Subtitle="Huts on the ridge loop, by night" Style="max-inline-size: 28rem">
+    <TbChart Items="Nights" X="night => night.Name" AriaLabel="Bookings this week" Height="10rem">
+        <TbBarSeries Name="Booked beds" Value="night => night.Beds" />
+    </TbChart>
+</TbCard>
+
+@code {
+    private static readonly Night[] Nights =
+    [
+        new("Mon", 8), new("Tue", 11), new("Wed", 14), new("Thu", 19), new("Fri", 32), new("Sat", 36), new("Sun", 21),
+    ];
+
+    private sealed record Night(string Name, int Beds);
+}

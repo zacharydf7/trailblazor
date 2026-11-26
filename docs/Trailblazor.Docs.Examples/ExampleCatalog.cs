@@ -949,6 +949,182 @@ public static class ExampleCatalog
                     + "recorded.",
             ],
         },
+        new("chart", "Chart", ExampleCategory.Content,
+            "A chart of one or more series over a list of items: bars for comparing amounts and lines for how "
+                + "something changes, with every value in a table under it.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use bars to compare amounts across a few categories, such as hikers by month or passes by season.",
+                "Use lines to show how something changes over time, such as a trail's temperature day by day.",
+            ],
+            WhenNotToUse =
+            [
+                "For one number, show the number: a chart of a single value says less than the value does.",
+                "When readers need exact values more than the shape, use a [table](components/table) or a "
+                    + "[data grid](components/data-grid).",
+                "For how far along one task is, use a [progress bar](components/progress).",
+                "Don't put two measures with different units on one chart: it has one value axis, and two charts "
+                    + "read better than two scales.",
+            ],
+            Related = ["table", "data-grid", "progress", "async-content"],
+            Sections =
+            [
+                new("basic", "Bars", "`Items` is the list the chart draws, one place along the chart for each item in "
+                    + "the order given, and `X` says what each item is called. A `TbBarSeries` draws a bar from zero "
+                    + "for each item's `Value`, which can be any number type. `Title` names the chart and shows above "
+                    + "it. The value axis runs between round values that hold every bar.", typeof(ChartExample)),
+                new("lines", "Lines", "A `TbLineSeries` draws a line through its values. `Curve` sets how the points "
+                    + "are joined: with straight lines by default, or with a `Smooth` curve that never rises above or "
+                    + "dips below the points it joins. With two or more series, a legend names each one. A chart with "
+                    + "only lines starts its axis at a round value near the lowest one, not at zero, as this one "
+                    + "starts at 10. A series of up to 30 points has a marker on each one, and `Markers` turns them "
+                    + "on or off.", typeof(ChartLineExample)),
+                new("steps", "Steps", "`Curve=\"ChartCurve.Stepped\"` holds each value level until the next point, "
+                    + "then jumps, for something that changes at once, such as a price. `TbYAxis` with `Min=\"0\"` "
+                    + "starts this line's axis at zero.", typeof(ChartSteppedExample)),
+                new("stacking", "Stacked bars", "`Stacking=\"ChartStacking.Stacked\"` piles the bar series on top of "
+                    + "one another, so each stack's height is the place's total. Without it, the bars of a place "
+                    + "stand side by side. Line series are never stacked.", typeof(ChartStackedExample)),
+                new("percent", "Shares of a total", "`ChartStacking.Percent` draws each bar as its share of the "
+                    + "place's total, so every stack is the same height and the axis reads from 0% to 100%. The data "
+                    + "table keeps the values as given.", typeof(ChartPercentExample)),
+                new("axes", "Axes", "A `TbXAxis` or `TbYAxis` inside the chart sets an axis's `Title` and its "
+                    + "`Format`, such as `\"MMM d\"` for dates or `\"0.0\"` for one decimal, in the current culture. "
+                    + "`TbYAxis` also takes `Min` and `Max` for the ends of the axis, and `Step` for the distance "
+                    + "between its marks, which sit on multiples of the step. Without them the chart picks round "
+                    + "values.", typeof(ChartAxesExample)),
+                new("combined", "Bars with a line", "Bar and line series share a chart and its one value axis, so "
+                    + "give them values in the same unit. `Color` gives a series a CSS color of its own in place of "
+                    + "the one its position gives it, such as the danger color for something that went wrong.",
+                    typeof(ChartCombinedExample)),
+                new("gaps", "Missing values", "A null value leaves a gap: no bar, as on Thursday here, and a break "
+                    + "in a line, as in the forecast on Wednesday.", typeof(ChartGapsExample)),
+                new("below-zero", "Values below zero", "A bar for a value below zero hangs down from the zero line, "
+                    + "which is drawn darker than the other grid lines.", typeof(ChartBelowZeroExample)),
+                new("long", "Many points", "An axis shows only the labels it has room for, evenly spaced, and shows "
+                    + "more as the chart gets wider. A line of more than 30 points has no markers. `Height` sets the "
+                    + "height of the plot, and the chart is as wide as its container.", typeof(ChartLongExample)),
+                new("long-names", "Long names", "A label is never wrapped or cut short: it shows in full, or not at "
+                    + "all when its neighbors leave it no room. With long names on a narrow chart, most places go "
+                    + "unlabeled, so keep names along the axis short and put the full ones in the text or a table.",
+                    typeof(ChartLongNamesExample)),
+                new("empty", "No data", "A chart with no items, or no series, says so in place of its plot. "
+                    + "`Labels.Empty` rewords it for what the chart shows, such as \"No closures so far this year\".",
+                    typeof(ChartEmptyExample)),
+                new("card", "In a card", "Where a heading beside the chart already names it, leave `Title` out and "
+                    + "name the chart for screen readers with `AriaLabel`.", typeof(ChartCardExample)),
+            ],
+            Api =
+            [
+                typeof(TbChart<>), typeof(TbLineSeries<>), typeof(TbBarSeries<>), typeof(TbXAxis), typeof(TbYAxis),
+                typeof(ChartStacking), typeof(ChartCurve), typeof(ChartLabels), typeof(ChartClasses),
+            ],
+            Anatomy = """
+                <TbChart Items="…" X="…" Title="…">
+                    <TbXAxis Title="…" Format="…" />
+                    <TbYAxis Title="…" Format="…" />
+                    <TbBarSeries Name="…" Value="…" />
+                    <TbLineSeries Name="…" Value="…" />
+                </TbChart>
+                """,
+            Labeling =
+            [
+                "The chart is a figure named by its `Title`, which shows above it. Without a title, `AriaLabel` "
+                    + "names it; use that when a heading beside the chart already says what it shows. The data table "
+                    + "takes the same name. With neither, the figure and its table have no name.",
+                "The drawing is an image named by its kind and its series, such as \"Bar chart: Day passes, Week "
+                    + "passes, Season passes\". `Labels.Summary` rewords it, and `Labels.Bars`, `Labels.Lines` and "
+                    + "`Labels.BarsAndLines` reword the kind.",
+                "Each series' `Name` shows in the legend and heads its column of the data table.",
+            ],
+            Accessibility =
+            [
+                "Every value is in a table under the chart, in a disclosure anyone can open, so nothing is only in "
+                    + "the drawing. Its rows are the items and its columns the series.",
+                "Screen readers hear the drawing as one image, then reach the table for the values. The axis labels "
+                    + "are hidden from them, since the table says the same.",
+                "The eight series colors each have 3:1 contrast against the surface in both themes, and colors next "
+                    + "to each other in the order stay easy to tell apart for people with red-green color blindness.",
+                "Two or more series always have a legend, whose keys are drawn as the marks are: a block for bars "
+                    + "and a stroke for a line. Two series of the same kind differ by color in the drawing, and the "
+                    + "data table tells them apart for anyone who can't use the colors.",
+                "In forced-colors mode, such as Windows high contrast, every mark is drawn in the system's text "
+                    + "color. Lines differ by their dashes, and bars by being filled, hollow, dashed or dotted, with "
+                    + "the legend's keys drawn the same way. There are four of each, so a fifth series of a kind "
+                    + "looks like the first.",
+            ],
+            AppDuties =
+            [
+                "Give the chart a `Title` or an `AriaLabel`.",
+                "Name each series for what it measures, with its unit where that isn't plain, as in \"Rainfall "
+                    + "(mm)\".",
+                "Say what matters about the chart in the text beside it, such as \"Bookings peak on Saturday\", "
+                    + "since a drawing's point is easy to miss and screen readers hear only its kind and its series.",
+                "A change to the data isn't announced. Say what changed in text near the chart when it matters.",
+                "Check a `Color` you set for 3:1 contrast against the surface in both themes.",
+            ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
+            BeforeInteractive =
+            [
+                "It is drawn as markup with every position a share of the plot, so it all renders the same before "
+                    + "the page is interactive, at any width, with nothing measured in script. The data table opens "
+                    + "without script too.",
+            ],
+            Notes =
+            [
+                new("While `Items` is null or empty the chart says \"No data\", which is wrong for data that is "
+                    + "still loading. Put a chart that loads its data in an [async content]"
+                    + "(components/async-content), which shows the loading and the failed load.") { Pitfall = true },
+                new("Each item is one place along the chart, and the places are evenly spaced, whatever the `X` "
+                    + "values are. Dates a week apart and dates a day apart sit the same distance from each other."),
+                new("Series take the theme's eight series colors in the order they first render, and a ninth starts "
+                    + "over at the first. A series inside an `@if` that shows later goes last, in the legend and the "
+                    + "table too. Past four or five series a chart is hard to read; show fewer, or several small "
+                    + "charts."),
+                new("A value that isn't a number throws, naming its series. A value that is null, or isn't finite, "
+                    + "leaves a gap."),
+                new("When a series' `Value` reads something from outside the item, such as a field that picks what "
+                    + "to show, the chart draws again as its parent renders. A series inside a component of yours "
+                    + "that renders by itself may be drawn a render behind, so have such a change render the "
+                    + "chart's parent too.") { Pitfall = true },
+                new("A value beyond a `Min` or `Max` you set is drawn outside the plot.") { Pitfall = true },
+                new("Right to left, the chart runs from the right: the first item is at the right edge."),
+                new("Every item's values are in the page's markup twice, in the drawing and in the table, so a chart "
+                    + "of thousands of points makes a large page. Draw a summary, such as a value a day in place "
+                    + "of one a minute."),
+            ],
+            Target = new("figure", "Hikers by month"),
+            Blocks = ["tb-chart", "tb-table"],
+            DataParts =
+            [
+                new("title", "The chart's title."),
+                new("legend", "The list of series names with their keys."),
+                new("y-title", "The value axis's title."),
+                new("plot", "The area the series are drawn in, or the message when there is nothing to draw."),
+                new("x-title", "The title of the axis the items run along."),
+                new("table", "The disclosure that holds the data table."),
+            ],
+            Scenario = new("basic", "it finds the chart by its title, checks what its drawing is called, and reads "
+                + "July's value from the data table.") { WithoutHelpers = true },
+            TestingTips =
+            [
+                "Find a chart with `GetByRole(AriaRole.Figure, new() { Name = \"Hikers by month\" })`, and its "
+                    + "drawing inside it with `GetByRole(AriaRole.Img)`.",
+                "Read values from the data table, not from the drawing: each row's header is the item and each "
+                    + "column's header a series' `Name`. The table is in the markup while its disclosure is closed, "
+                    + "so bUnit reads it at once; in a browser, open \"Data table\" first.",
+                "A series' marks are under an element with `data-series` set to its `Name`: a `g` of `rect` bars, "
+                    + "or a line's `path`.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"hikers-by-month\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders. Nothing about it can be used, so it counts nothing else. What it shows is never "
+                    + "recorded.",
+            ],
+        },
         new("carousel", "Carousel", ExampleCategory.Content,
             "Slides shown one at a time, such as featured trails or photos, with buttons to move between them.")
         {

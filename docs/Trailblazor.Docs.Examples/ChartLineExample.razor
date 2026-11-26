@@ -1,0 +1,18 @@
+<TbChart Items="Days" X="day => day.Date" Title="Trail temperature">
+    <TbXAxis Format="MMM d" />
+    <TbYAxis Title="°C" />
+    <TbLineSeries Name="Summit" Value="day => day.Summit" Curve="ChartCurve.Smooth" />
+    <TbLineSeries Name="Valley" Value="day => day.Valley" Curve="ChartCurve.Smooth" />
+</TbChart>
+
+@code {
+    private static readonly Day[] Days =
+    [
+        new(new(2026, 7, 1), 14, 22), new(new(2026, 7, 2), 15, 24), new(new(2026, 7, 3), 13, 23),
+        new(new(2026, 7, 4), 12, 20), new(new(2026, 7, 5), 13, 21), new(new(2026, 7, 6), 16, 25),
+        new(new(2026, 7, 7), 18, 27), new(new(2026, 7, 8), 19, 29), new(new(2026, 7, 9), 17, 28),
+        new(new(2026, 7, 10), 16, 26),
+    ];
+
+    private sealed record Day(DateOnly Date, double Summit, double Valley);
+}
