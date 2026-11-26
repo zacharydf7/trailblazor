@@ -1315,12 +1315,12 @@ Trailblazor.GridRequest.StartIndex.get -> int
 Trailblazor.GridRequest.StartIndex.init -> void
 Trailblazor.GridResult<TItem>
 Trailblazor.GridResult<TItem>.<Clone>$() -> Trailblazor.GridResult<TItem>!
-Trailblazor.GridResult<TItem>.Deconstruct(out System.Collections.Generic.IReadOnlyList<TItem>! Items, out int TotalCount) -> void
+Trailblazor.GridResult<TItem>.Deconstruct(out System.Collections.Generic.IReadOnlyList<TItem>! Items, out int? TotalCount) -> void
 Trailblazor.GridResult<TItem>.Equals(Trailblazor.GridResult<TItem>? other) -> bool
-Trailblazor.GridResult<TItem>.GridResult(System.Collections.Generic.IReadOnlyList<TItem>! Items, int TotalCount) -> void
+Trailblazor.GridResult<TItem>.GridResult(System.Collections.Generic.IReadOnlyList<TItem>! Items, int? TotalCount) -> void
 Trailblazor.GridResult<TItem>.Items.get -> System.Collections.Generic.IReadOnlyList<TItem>!
 Trailblazor.GridResult<TItem>.Items.init -> void
-Trailblazor.GridResult<TItem>.TotalCount.get -> int
+Trailblazor.GridResult<TItem>.TotalCount.get -> int?
 Trailblazor.GridResult<TItem>.TotalCount.init -> void
 Trailblazor.GridSort
 Trailblazor.GridSort.<Clone>$() -> Trailblazor.GridSort!
@@ -8153,3 +8153,11 @@ Trailblazor.DataGridLabels.FilterRemoveCondition.get -> string?
 Trailblazor.DataGridLabels.FilterRemoveCondition.init -> void
 const Trailblazor.TbStrings.DataGridFilterAddCondition = "DataGrid.FilterAddCondition" -> string!
 const Trailblazor.TbStrings.DataGridFilterRemoveCondition = "DataGrid.FilterRemoveCondition" -> string!
+Trailblazor.GridResult<TItem>.HasMore.get -> bool
+Trailblazor.GridResult<TItem>.HasMore.init -> void
+Trailblazor.DataGridLabels.RangeOfMany.get -> string?
+Trailblazor.DataGridLabels.RangeOfMany.init -> void
+Trailblazor.DataGridLabels.RowsShownAtLeast.get -> string?
+Trailblazor.DataGridLabels.RowsShownAtLeast.init -> void
+const Trailblazor.TbStrings.DataGridRangeOfMany = "DataGrid.RangeOfMany" -> string!
+const Trailblazor.TbStrings.DataGridRowsShownAtLeast = "DataGrid.RowsShownAtLeast" -> string!

@@ -1642,6 +1642,10 @@ public static class TbStrings
     /// count of all rows.</summary>
     public const string DataGridRange = "DataGrid.Range";
 
+    /// <summary>"{0}–{1} of many": the rows a data grid's page shows when its provider doesn't count them and more
+    /// follow; {0} and {1} are the first and last.</summary>
+    public const string DataGridRangeOfMany = "DataGrid.RangeOfMany";
+
     /// <summary>"Pages of {0}": names a data grid's pages; {0} is the grid's name.</summary>
     public const string DataGridPages = "DataGrid.Pages";
 
@@ -1737,6 +1741,10 @@ public static class TbStrings
     /// <summary>"Rows shown: {0}.": read out when a data grid's filters change; {0} is how many rows meet them.
     /// </summary>
     public const string DataGridRowsShown = "DataGrid.RowsShown";
+
+    /// <summary>"Rows shown: at least {0}.": read out when a data grid's filters change, its provider doesn't count
+    /// the rows that meet them and more follow the page; {0} is how many show so far.</summary>
+    public const string DataGridRowsShownAtLeast = "DataGrid.RowsShownAtLeast";
 
     /// <summary>"{0} can't hold that value.": shown when an edited data grid cell's value doesn't fit its field, such
     /// as a number too large; {0} is the column.</summary>
@@ -2460,6 +2468,7 @@ public static class TbStrings
         [DataGridExportPdf] = "PDF",
         [DataGridOrder] = "Order",
         [DataGridRange] = "{0}–{1} of {2}",
+        [DataGridRangeOfMany] = "{0}–{1} of many",
         [DataGridPages] = "Pages of {0}",
         [DataGridPageSize] = "Rows per page",
         [DataGridFilter] = "Filter {0}",
@@ -2468,6 +2477,7 @@ public static class TbStrings
         [DataGridFilterYes] = "Yes",
         [DataGridFilterNo] = "No",
         [DataGridRowsShown] = "Rows shown: {0}.",
+        [DataGridRowsShownAtLeast] = "Rows shown: at least {0}.",
         [DataGridEditInvalid] = "{0} can't hold that value.",
         [DataGridSave] = "Save",
         [DataGridSaveRow] = "Save {0}",

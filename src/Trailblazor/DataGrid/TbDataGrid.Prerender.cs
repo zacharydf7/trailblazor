@@ -49,7 +49,7 @@ public partial class TbDataGrid<TItem>
             return Task.CompletedTask;
         }
 
-        var kept = new PrerenderedRows(_totals.Count == 0 ? _loaded : null, _rows, _total);
+        var kept = new PrerenderedRows(_totals.Count == 0 ? _loaded : null, _rows, _total, CountUnknown, _uncounted);
         if (PrerenderedState.ComesBack(kept, out var failure))
         {
             Persisted?.PersistAsJson(PrerenderKey, kept);
@@ -104,6 +104,9 @@ public partial class TbDataGrid<TItem>
 
         ShowRows(kept.Items);
         _total = kept.TotalCount;
+        // An uncounted grid goes on from the rows the prerender reached, and the count it learned if any.
+        (_uncounted, _reached, _ended) = (kept.Uncounted, kept.TotalCount, kept.Uncounted && !kept.HasMore);
+        _countedFor = kept.Uncounted ? CountKey : null;
         _loaded = kept.Asked;
         return true;
     }
@@ -112,5 +115,6 @@ public partial class TbDataGrid<TItem>
 
     private string Name => AriaLabel ?? nameof(TbDataGrid<TItem>);
 
-    private sealed record PrerenderedRows(string? Asked, List<TItem> Items, int TotalCount);
+    private sealed record PrerenderedRows(string? Asked, List<TItem> Items, int TotalCount, bool HasMore,
+        bool Uncounted);
 }

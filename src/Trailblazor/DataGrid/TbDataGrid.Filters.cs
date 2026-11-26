@@ -269,7 +269,9 @@ public partial class TbDataGrid<TItem>
         // A provider that finds nothing says so itself.
         if (ReferenceEquals(next, _filters) && !_failed && (RowCount > 0 || DataProvider is null))
         {
-            Announcer.Polite(Format(Labels.RowsShown, TbStrings.DataGridRowsShown, RowCount));
+            Announcer.Polite(CountUnknown
+                ? Format(Labels.RowsShownAtLeast, TbStrings.DataGridRowsShownAtLeast, RowCount)
+                : Format(Labels.RowsShown, TbStrings.DataGridRowsShown, RowCount));
         }
     }
 

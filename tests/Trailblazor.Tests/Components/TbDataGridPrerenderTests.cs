@@ -159,13 +159,47 @@ public class TbDataGridPrerenderTests : BunitContext
         Assert.Equal(["Pine Hollow", "Eagle Ridge"], Names(cut));
     }
 
+    [Fact]
+    public void PrerenderKey_ShouldKeepOfferingTheNextPage_WhenTheProviderDoesNotCountTheRows()
+    {
+        Prerender(UncountedAsync);
+
+        var cut = RenderGrid(UncountedAsync);
+
+        Assert.Single(_requests);
+        Assert.Equal("1–2 of many", cut.Find("[data-part=summary]").TextContent.Trim());
+        Assert.Equal("2", cut.Find("[data-part=pager] nav").GetAttribute("data-page-count"));
+    }
+
+    [Fact]
+    public async Task PrerenderKey_ShouldKeepThePagesItReached_WhenTheUserMovesAfterTheRestore()
+    {
+        Prerender(UncountedAsync, page: 2);
+        var cut = RenderGrid(UncountedAsync, page: 2);
+
+        await cut.Tb().Grid("Hikes").GoToPageAsync(1);
+
+        Assert.Equal("1–2 of 4", cut.Find("[data-part=summary]").TextContent.Trim());
+        Assert.Equal("2", cut.Find("[data-part=pager] nav").GetAttribute("data-page-count"));
+    }
+
+    private Task<GridResult<Hike>> UncountedAsync(GridRequest request)
+    {
+        _requests.Add(request);
+        var page = Page(request);
+        return Task.FromResult(new GridResult<Hike>(page.Items, null)
+        {
+            HasMore = request.StartIndex + page.Items.Count < Hikes.Length,
+        });
+    }
+
     // Renders the grid as a static pass, keeps what it persists, and leaves the renderer interactive for the next grid.
     private IRenderedComponent<TbDataGrid<Hike>> Prerender(Func<GridRequest, Task<GridResult<Hike>>>? load = null,
-        bool total = false, int passes = 1)
+        bool total = false, int passes = 1, int page = 1)
     {
         _ = State;
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
-        var cut = RenderGrid(load ?? LoadAsync, total);
+        var cut = RenderGrid(load ?? LoadAsync, total, page);
         for (var pass = 1; pass < passes; pass++)
         {
             cut.Render();
@@ -195,10 +229,10 @@ public class TbDataGridPrerenderTests : BunitContext
         [.. cut.FindAll("[data-part=row]").Select(row => row.Children[0].TextContent.Trim())];
 
     private IRenderedComponent<TbDataGrid<Hike>> RenderGrid(Func<GridRequest, Task<GridResult<Hike>>> load,
-        bool total = false) =>
+        bool total = false, int page = 1) =>
         Render<TbDataGrid<Hike>>(parameters => parameters.Add(grid => grid.DataProvider, (request, _) => load(request))
             .Add(grid => grid.AriaLabel, "Hikes").Add(grid => grid.PageSize, 2).Add(grid => grid.PrerenderKey, "hikes")
-            .Add(grid => grid.KeySelector, hike => hike.Id)
+            .Add(grid => grid.KeySelector, hike => hike.Id).Add(grid => grid.Page, page)
             .Add(grid => grid.ChildContent, (RenderFragment)(builder => Columns(builder, total))));
 
     private static void Columns(RenderTreeBuilder builder, bool total)

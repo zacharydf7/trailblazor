@@ -1,0 +1,25 @@
+@* Rows from a server that doesn't count them, a page at a time. *@
+<TbDataGrid TItem="Sighting" DataProvider="LoadSightingsAsync" AriaLabel="Bird sightings"
+            KeySelector="sighting => sighting.Id" PageSize="5" ShowFirstLast Size="Size.Small">
+    <TbColumn Field="sighting => sighting.Bird" />
+    <TbColumn Field="sighting => sighting.Trail" />
+</TbDataGrid>
+
+@code {
+    private static readonly string[] Birds = ["Steller's jay", "Varied thrush", "Osprey", "Dipper", "Raven"];
+
+    private static readonly Sighting[] Sightings = [.. Enumerable.Range(1, 13).Select(id =>
+        new Sighting(id, Birds[id % Birds.Length], id % 2 == 0 ? "Eagle Ridge" : "Cedar Flats"))];
+
+    // Stands in for a server whose count would be slow: it takes one row more than the page, to know whether more
+    // follow, and gives no count.
+    private static async Task<GridResult<Sighting>> LoadSightingsAsync(GridRequest request, CancellationToken cancel)
+    {
+        await Task.Delay(400, cancel);
+        var size = request.Count ?? Sightings.Length;
+        var taken = Sightings.Skip(request.StartIndex).Take(size + 1).ToList();
+        return new([.. taken.Take(size)], null) { HasMore = taken.Count > size };
+    }
+
+    private sealed record Sighting(int Id, string Bird, string Trail);
+}

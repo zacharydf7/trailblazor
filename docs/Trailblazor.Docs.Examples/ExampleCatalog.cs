@@ -13432,6 +13432,12 @@ public static class ExampleCatalog
                     + "filter as a `Where` must join those with or, or refuse them. The [data grid from a "
                     + "database](recipes/grid-from-database) recipe does this with an EF Core query.",
                     typeof(DataGridServerExample)),
+                new("uncounted-rows", "Rows without a count", "When counting the rows would be slow, a provider can "
+                    + "leave `TotalCount` null and set `HasMore` while more rows follow the page, such as by taking "
+                    + "one row more than asked. The pager then offers the pages up to the furthest reached and the "
+                    + "next, with no first or last page buttons, and reads \"of many\", until the page that says no "
+                    + "more follow gives the count. A virtualized grid needs the count, and throws when a page comes "
+                    + "back without one.", typeof(DataGridUncountedExample)),
                 new("prerendered-rows", "Rows from a prerendered page", "On a prerendered page, a grid with a "
                     + "`DataProvider` and no `Virtualize` asks it twice: once while the page prerenders and again "
                     + "when it turns interactive, and the prerendered rows give way to the loading row in between. "
@@ -13562,7 +13568,8 @@ public static class ExampleCatalog
             Announcements =
             [
                 "Every change of sort is read out, such as \"Sorted by Name, ascending.\"",
-                "After a filter changes, the count of rows shown is read out, such as \"Rows shown: 2.\"",
+                "After a filter changes, the count of rows shown is read out, such as \"Rows shown: 2.\", or "
+                    + "\"Rows shown: at least 10.\" when the `DataProvider` doesn't count the rows and more follow.",
                 "A failed load and a `DataProvider` load with no rows are read out. With `EmptyContent`, set "
                     + "`Labels.Empty` to what should be read out.",
                 "A failed export reads \"Couldn't export the rows.\", or `Labels.ExportFailed`, and the rows shown "
@@ -13723,7 +13730,8 @@ public static class ExampleCatalog
                 new("loading", "The message shown while rows load."),
                 new("empty", "The message shown when there are no rows."),
                 new("failed", "The message and Retry button shown when rows fail to load."),
-                new("summary", "The text that says which rows the page shows, such as \"1–10 of 42\"."),
+                new("summary", "The text that says which rows the page shows, such as \"1–10 of 42\", or \"1–10 of "
+                    + "many\" without a count."),
                 new("pager", "The pagination under the grid."),
             ],
             Anatomy = """
@@ -13754,6 +13762,8 @@ public static class ExampleCatalog
                     + "page, click the header's link, and `GoToPageAsync` follows the pager's.",
                 "With a `StateHref`, start a test at a view by opening the page at an address with "
                     + "`GridState.ToQueryParameters` in its query.",
+                "Without a count, the pager offers only one page past the furthest reached, so `GoToPageAsync` "
+                    + "goes a page at a time beyond it.",
                 "In a filter menu, `FilterAsync(\"Sites\", \"At least\", \"16\")` picks a condition too, and "
                     + "`FilterAsync(\"Sites\", \"At most\", \"8\", FilterJoin.Or, \"At least\", \"40\")` sets two.",
                 "`FilterChoicesAsync(\"Region\", \"North ridge\")` leaves exactly those values picked, in a menu's "

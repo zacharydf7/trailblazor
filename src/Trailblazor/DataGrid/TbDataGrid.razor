@@ -364,7 +364,8 @@
             @if (PageCount > 1)
             {
                 <TbPagination Page="_page" PageChanged="PageFromPagerAsync" PageCount="PageCount" Size="Size.Small"
-                              ShowFirstLast="ShowFirstLast" PageHref="@(StateHref is null ? null : PageLink)"
+                              ShowFirstLast="ShowFirstLast && !CountUnknown"
+                              PageHref="@(StateHref is null ? null : PageLink)"
                               AriaLabel="@(AriaLabel is null ? null
                                   : Format(Labels.Pages, TbStrings.DataGridPages, AriaLabel))" />
             }

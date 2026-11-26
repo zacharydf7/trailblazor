@@ -48,6 +48,14 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // How many rows the filters leave; unlike _total, it doesn't count group headings.
     private int _matched;
     private int _total;
+
+    // A provider that doesn't count its rows says only whether more follow each page, so the grid keeps the furthest
+    // row it has reached and, once a page says none follow, the count. Both start again when the sorts or filters
+    // change, or on a refresh.
+    private bool _uncounted;
+    private int _reached;
+    private bool _ended;
+    private string? _countedFor;
     private int _page = 1;
     private int? _pageSize;
     private bool _loading;
@@ -511,7 +519,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
-    private int PageCount => _pageSize is { } size ? Math.Max(1, (_total + size - 1) / size) : 1;
+    private bool CountUnknown => _uncounted && !_ended;
+
+    // Without a count, the pager offers the pages up to the furthest reached, and the next.
+    private int PageCount => _pageSize is not { } size ? 1
+        : CountUnknown ? (_reached + size - 1) / size + 1 : Math.Max(1, (_total + size - 1) / size);
 
     // A provider's rows aren't all loaded, so a box can't select them all.
     private bool CanSelectAll => !(Virtualize && DataProvider is not null);
@@ -840,6 +852,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     {
         (_itemsSeen, _itemsCountSeen) = (Items, ItemsCount);
         _rowVersion++;
+        _countedFor = null;
         await ShowAsync(force: true);
         StateHasChanged();
     }
@@ -1037,19 +1050,28 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             throw new OperationCanceledException(request.CancellationToken);
         }
 
+        // Virtualize sizes its scroll by the count, so it can't take a page that only says more follow.
+        if (result.TotalCount is not { } total)
+        {
+            throw new InvalidOperationException($"A virtualized {nameof(TbDataGrid<TItem>)} needs the "
+                + $"{nameof(GridResult<TItem>.TotalCount)} of each {nameof(GridResult<TItem>)}; give it, or page the "
+                + "grid instead.");
+        }
+
         _loading = false;
         List<TItem> rows = [.. result.Items];
         ShowRows(rows);
         _totals = new(result.Totals);
         _rowsStart = request.StartIndex;
-        _total = result.TotalCount;
+        _total = total;
+        _uncounted = false;
         if (_total == 0)
         {
             Announcer.Polite(EmptyLabel);
         }
 
         StateHasChanged();
-        return new(rows.Select((row, index) => new GridLine(row, request.StartIndex + index)), result.TotalCount);
+        return new(rows.Select((row, index) => new GridLine(row, request.StartIndex + index)), total);
     }
 
     // The render is captured before it is asked for, since it can finish while StateHasChanged runs.
@@ -2001,17 +2023,62 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         ShowRows([.. result.Items]);
         _totals = new(result.Totals);
-        _total = result.TotalCount;
-        if (_total == 0)
+        if (result.TotalCount is { } count)
         {
-            Announcer.Polite(EmptyLabel);
+            _uncounted = false;
+            _total = count;
+        }
+        else
+        {
+            TakeUncounted(request.StartIndex, result.Items.Count, result.HasMore);
         }
 
         // Fewer rows than before can leave the page past the last one, so the last page shows instead.
         if (_page > PageCount)
         {
             await GoToPageAsync(PageCount);
+            return;
         }
+
+        if (_total == 0)
+        {
+            Announcer.Polite(EmptyLabel);
+        }
+    }
+
+    // An empty page right after the furthest row reached ends the rows there. One past it, as from an old link, only
+    // sends the pager back to the page after the furthest, which a load answers in one more step.
+    // The rows the count is for: another page size, sort or filter starts it again.
+    private string CountKey => $"{_pageSize}|{string.Join(",", _sorts)}|{FiltersKey}";
+
+    private void TakeUncounted(int start, int count, bool hasMore)
+    {
+        if (!_uncounted || _countedFor != CountKey)
+        {
+            (_uncounted, _reached, _ended, _countedFor) = (true, 0, false, CountKey);
+        }
+
+        if (count == 0 && start > 0)
+        {
+            if (start <= _reached)
+            {
+                (_reached, _ended) = (start, true);
+            }
+        }
+        else if (hasMore)
+        {
+            // A page that reaches past the rows known, as after rows were added, takes back a count learned before.
+            if (start + count > _reached)
+            {
+                (_reached, _ended) = (start + count, false);
+            }
+        }
+        else
+        {
+            (_reached, _ended) = (start + count, true);
+        }
+
+        _total = _reached;
     }
 
     private async Task ShowLoadFailedAsync(Exception exception)
@@ -2920,7 +2987,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private string Format(string? label, string key, params object?[] args) =>
         string.Format(CultureInfo.CurrentCulture, Text(label, key), args);
 
-    private string RangeText(int first, int last) => Format(Labels.Range, TbStrings.DataGridRange, first, last, _total);
+    private string RangeText(int first, int last) => CountUnknown
+        ? Format(Labels.RangeOfMany, TbStrings.DataGridRangeOfMany, first, last)
+        : Format(Labels.Range, TbStrings.DataGridRange, first, last, _total);
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

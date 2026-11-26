@@ -37,6 +37,12 @@ public sealed record DataGridLabels
     /// <see cref="TbStrings.DataGridRange"/>.</summary>
     public string? Range { get; init; }
 
+    /// <summary>The pager's count of rows shown when the <see cref="TbDataGrid{TItem}.DataProvider"/> doesn't count
+    /// them and more follow, with <c>{0}</c> and <c>{1}</c> for the first and last row on the page, such as "Trails
+    /// {0} to {1} of many". Leave it null for the app's text for <see cref="TbStrings.DataGridRangeOfMany"/>.
+    /// </summary>
+    public string? RangeOfMany { get; init; }
+
     /// <summary>The words of the row handles when rows can be moved: each handle's name, with <c>{0}</c> for the
     /// row's label, and its hint, its menu's items and what's read out after a move.</summary>
     public SortableLabels RowHandles { get; init; } = new();
@@ -276,6 +282,12 @@ public sealed record DataGridLabels
     /// <summary>Read out when a data grid's filters change; <c>{0}</c> is how many rows meet them: "Rows shown: {0}."
     /// in English. Leave it null for the app's text for <see cref="TbStrings.DataGridRowsShown"/>.</summary>
     public string? RowsShown { get; init; }
+
+    /// <summary>What's read out when the filters change, the <see cref="TbDataGrid{TItem}.DataProvider"/> doesn't
+    /// count the rows that meet them and more follow the page, with <c>{0}</c> for those shown so far: "Rows shown: at
+    /// least {0}." in English.
+    /// Leave it null for the app's text for <see cref="TbStrings.DataGridRowsShownAtLeast"/>.</summary>
+    public string? RowsShownAtLeast { get; init; }
 
     /// <summary>Names a data grid's totals row for screen readers: "Totals" in English. Leave it null for the app's
     /// text for <see cref="TbStrings.DataGridTotals"/>.</summary>
