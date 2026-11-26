@@ -57,6 +57,8 @@ public abstract partial class BrowserTest(BrowserFixture fixture) : IAsyncDispos
         "The library's scripts warn in the page's console, not the panel's window's.";
     protected const string AddsToThePagesBody =
         "The page's own script adds its popup to the page's body, which the panel's window doesn't show.";
+    protected const string OpensAModalAsItLoads =
+        "The page opens a modal dialog as it loads, which leaves the panel inert before it has a window of its own.";
 
     // Waits until the window has closed, which it may have done already.
     protected static async Task ClosedAsync(IPage window)

@@ -18,6 +18,7 @@ public class GridBatchTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task PasteAsync_ShouldMarkThePastedCells_WhenTheGridIsInAModalDialog(string browser)
     {
+        Assert.SkipWhen(Popped, OpensAModalAsItLoads);
         var page = await OpenAsync(browser, "/grid-batch-dialog");
 
         await page.Tb().Grid("Hikes").PasteAsync("Pine Hollow", "Name", "Pine loop\t7");
