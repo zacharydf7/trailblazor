@@ -6,16 +6,17 @@ namespace Trailblazor.BrowserTests.Scenarios;
 public class ChartScenarioTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task HikersByMonth_ShouldSayWhatItDrawsAndHoldJulysValue_WhenRead(string browser)
+    public async Task RescuesByMonth_ShouldShowAMonthsBusiestDay_WhenItsBarIsClicked(string browser)
     {
-        var page = await OpenAsync(browser, "/examples/chart/basic");
-        var chart = page.GetByRole(AriaRole.Figure, new() { Name = "Hikers by month" });
+        var page = await OpenAsync(browser, "/examples/chart/click");
+        var chart = page.Tb().Chart("Rescues by month");
 
-        // A chart has no helper of its own: it is a figure named by its title, with its drawing as an image inside.
-        await Expect(chart.GetByRole(AriaRole.Img)).ToHaveAccessibleNameAsync("Bar chart: Hikers");
-        // Values are read from the data table, which opens under the chart; each row's header is the item's name.
-        await chart.GetByText("Data table").ClickAsync();
-        await Expect(chart.GetByRole(AriaRole.Row, new() { Name = "Jul" }).GetByRole(AriaRole.Cell))
-            .ToHaveTextAsync("1,460");
+        // Values are read as the chart's data table writes them, by series and place.
+        Assert.Equal(["Rescues"], await chart.SeriesAsync());
+        Assert.Equal("9", await chart.ValueAsync("Rescues", "Jul"));
+
+        // A click on a point returns once the app's OnPointClick has run.
+        await chart.ClickPointAsync("Rescues", "Jul");
+        await Expect(page.GetByText("Jul: 9 rescues, most of them on July 4.")).ToBeVisibleAsync();
     }
 }

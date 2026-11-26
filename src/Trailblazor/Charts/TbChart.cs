@@ -1,11 +1,14 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+using Trailblazor.Primitives;
 
 namespace Trailblazor;
 
 /// <summary>A chart of one or more series over a list of items: lines for how something changes, bars for comparing
 /// amounts. It is drawn as markup that needs no script to show, with its values in a data table under it for anyone
-/// who can't read the drawing.</summary>
+/// who can't read the drawing. On an interactive page a tooltip follows the pointer, and the arrow keys move between
+/// its points.</summary>
 [CascadingTypeParameter(nameof(TItem))]
 public partial class TbChart<TItem>
 {
@@ -18,9 +21,17 @@ public partial class TbChart<TItem>
     // The lines' drawing has this box however large the plot is, and is stretched to fit it.
     private static readonly string LinesBox = $"0 0 {ChartPath.Grid} {ChartPath.Grid}";
 
+    private readonly string _plotId = $"tb-chart-{Guid.NewGuid():N}-plot";
     private readonly List<TbChartSeries<TItem>> _series = [];
+    private IReadOnlyList<TItem> _items = [];
+    private ElementReference _plot;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<ChartEvents>? _events;
+    private (string Point, string NoValue, bool Activates) _sent;
+    private int _commits;
     private bool _changed;
     private bool _redrawn;
+    private bool _disposed;
 
     /// <summary>A label this chart's use is counted under, such as <c>"jobs-by-month"</c>, so the app can count how
     /// often people see it through the <c>Trailblazor</c> meter. Controls that share a label count together; a control
@@ -63,6 +74,11 @@ public partial class TbChart<TItem>
     [Parameter]
     public string? Height { get; set; }
 
+    /// <summary>Raised when the user clicks or taps a point, or presses Enter or Space on one, with its item, its
+    /// series and its value. With it, the plot shows a pointer cursor once the page is interactive.</summary>
+    [Parameter]
+    public EventCallback<ChartPoint<TItem>> OnPointClick { get; set; }
+
     /// <summary>The words the chart shows and says to screen readers.</summary>
     [Parameter]
     public ChartLabels Labels { get; set; } = new();
@@ -91,10 +107,80 @@ public partial class TbChart<TItem>
     }
 
     /// <inheritdoc />
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         _redrawn = false;
         Telemetry.Rendered(TelemetryName);
+        if (!RendererInfo.IsInteractive)
+        {
+            return;
+        }
+
+        try
+        {
+            if (firstRender)
+            {
+                await AttachAsync();
+            }
+            else if (_handle is not null && ScriptSettings() is var settings && settings != _sent)
+            {
+                _sent = settings;
+                await _handle.InvokeVoidAsync("update", settings.Point, settings.NoValue, settings.Activates);
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the chart went with it.
+        }
+    }
+
+    private async Task AttachAsync()
+    {
+        var module = await Modules.ImportAsync("./_content/Trailblazor/chart.js");
+        if (_disposed)
+        {
+            return;
+        }
+
+        _sent = ScriptSettings();
+        _events = DotNetObjectReference.Create(new ChartEvents(DispatchExceptionAsync, OnActivateAsync, _plotId));
+        var handle = await module.InvokeAsync<IJSObjectReference?>("attachChart", _plot, _events, _sent.Point,
+            _sent.NoValue, _sent.Activates);
+        if (_disposed && handle is not null)
+        {
+            await handle.DisposeHandleAsync();
+            return;
+        }
+
+        _handle = handle;
+    }
+
+    // What the script needs beyond the markup: how a point is named, and whether activating one is heard.
+    private (string Point, string NoValue, bool Activates) ScriptSettings() =>
+        (Labels.Point ?? Localizer[TbStrings.ChartPoint], Labels.NoValue ?? Localizer[TbStrings.ChartNoValue],
+            OnPointClick.HasDelegate);
+
+    // The script names the series by its number among the chart's series and the place along the chart. A call that
+    // arrives after the data changed may name a point that is gone, and is passed over.
+    private async Task OnActivateAsync(int series, int place, string input)
+    {
+        if (series < 0 || series >= _series.Count || place < 0 || place >= _items.Count
+            || _series[series].ValueOf(_items[place]) is not { } value)
+        {
+            return;
+        }
+
+        Telemetry.Used(TelemetryName, "activate", input == "keyboard" ? "keyboard" : "pointer");
+        try
+        {
+            await OnPointClick.InvokeAsync(new(_items[place], _series[series].Name, value));
+        }
+        finally
+        {
+            // Counted once the app's handler has run, which the testing helpers wait for.
+            _commits++;
+            StateHasChanged();
+        }
     }
 
     internal void AddSeries(TbChartSeries<TItem> series)
@@ -138,7 +224,7 @@ public partial class TbChart<TItem>
     private ChartPlan Plan()
     {
         var culture = CultureInfo.CurrentCulture;
-        var items = Items as IReadOnlyList<TItem> ?? [.. Items ?? []];
+        var items = _items = Items as IReadOnlyList<TItem> ?? [.. Items ?? []];
         List<string> places = [.. items.Select(item => ChartValues.Text(X!(item), Axes.X?.Format, culture))];
         List<ChartSeriesValues> series = [.. _series.Select(one =>
             new ChartSeriesValues(one.Name, one.Bars, one.Line, [.. items.Select(one.ValueOf)]))];
@@ -159,6 +245,23 @@ public partial class TbChart<TItem>
 
     private static int Longest(ChartPlan plan) => plan.Places.Max(place => place.Length);
 
+    // One line for each place, for the script to read. A name with a line break in it would count as two.
+    private static string Places(ChartPlan plan) =>
+        string.Join('\n', plan.Places.Select(place => place.ReplaceLineEndings(" ")));
+
+    // One line for each place, for the script to read: a value as the table writes it, empty where there is none.
+    private static string Values(ChartSeriesPlan drawn) => string.Join('\n', drawn.Text);
+
+    // Where the keys and the pointer find each of a series' values, as whole steps of the 10,000 grid: the middle of
+    // a bar's value end, or a line's point. A place with no value has a dash.
+    private static string Points(ChartSeriesPlan drawn) => string.Join(' ', drawn.Bars
+        ? drawn.Marks.Select(mark => mark is { } bar
+            ? Spot(bar.X + bar.Width / 2, bar.Up ? bar.Y : bar.Y + bar.Height) : "-")
+        : drawn.Points.Select(point => point is { } at ? Spot(at.X, at.Y) : "-"));
+
+    private static string Spot(double x, double y) => string.Create(CultureInfo.InvariantCulture,
+        $"{Math.Round(x * ChartPath.Grid)},{Math.Round(y * ChartPath.Grid)}");
+
     private static string Percent(double share) =>
         Math.Round(share * 100, 3).ToString(CultureInfo.InvariantCulture) + "%";
 
@@ -170,5 +273,17 @@ public partial class TbChart<TItem>
             : Labels.Lines ?? Localizer[TbStrings.ChartLines];
         return string.Format(CultureInfo.CurrentCulture, Labels.Summary ?? Localizer[TbStrings.ChartSummary], kind,
             string.Join(", ", _series.Select(one => one.Name)));
+    }
+
+    /// <summary>Stops the chart's script from following the pointer and the keys.</summary>
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _events?.Dispose();
     }
 }

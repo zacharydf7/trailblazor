@@ -1,8 +1,12 @@
 @namespace Trailblazor
 @using System.Globalization
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
 @typeparam TItem
 @inherits TbComponentBase
+@implements IAsyncDisposable
 @inject ITbLocalizer Localizer
+@inject JsModuleLoader Modules
 
 @{ _changed = false; }
 <figure @attributes="AdditionalAttributes" aria-label="@AriaLabel"
@@ -55,13 +59,7 @@
         <div data-part="y-title" class="tb-chart__y-title">@valueTitle</div>
     }
     <div class="tb-chart__body">
-        @if (empty)
-        {
-            <div data-part="plot" class="@ClassNames.Join("tb-chart__plot", "tb-chart__plot--empty", Classes?.Plot)">
-                @(Labels.Empty ?? Localizer[TbStrings.ChartEmpty])
-            </div>
-        }
-        else
+        @if (!empty)
         {
             <div class="tb-chart__y" aria-hidden="true">
                 @* The longest label, unseen, gives the column its width; WebKit won't place the labels by percentage
@@ -74,7 +72,19 @@
                     <span style="top: @Percent(tick.Y)">@tick.Text</span>
                 }
             </div>
-            <div data-part="plot" class="@ClassNames.Join("tb-chart__plot", Classes?.Plot)">
+        }
+        @* The plot is one element whether it has anything to draw or not, so the script stays on it. The script reads
+           each place's name from it, and each series' values and points from the series' own element. *@
+        <div @ref="_plot" id="@_plotId" data-part="plot" data-places="@(empty ? null : Places(plan))"
+             data-activates="@(RendererInfo.IsInteractive && OnPointClick.HasDelegate ? "" : null)"
+             data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
+             class="@ClassNames.Join("tb-chart__plot", empty ? "tb-chart__plot--empty" : null, Classes?.Plot)">
+            @if (empty)
+            {
+                @(Labels.Empty ?? Localizer[TbStrings.ChartEmpty])
+            }
+            else
+            {
                 <svg class="tb-chart__marks" role="img" aria-label="@Summary()" focusable="false">
                     @foreach (var tick in plan.ValueTicks)
                     {
@@ -86,7 +96,8 @@
                         var drawn = plan.Series[index];
                         if (drawn.Bars)
                         {
-                            <g data-series="@drawn.Name" class="@Slot(index)" style="@Color(index)">
+                            <g data-series="@drawn.Name" data-number="@index" data-values="@Values(drawn)"
+                               data-points="@Points(drawn)" class="@Slot(index)" style="@Color(index)">
                                 @foreach (var mark in drawn.Marks)
                                 {
                                     if (mark is { } bar)
@@ -119,8 +130,9 @@
                             var drawn = plan.Series[index];
                             if (!drawn.Bars)
                             {
-                                <path data-series="@drawn.Name" class="@ClassNames.Join("tb-chart__line", Slot(index))"
-                                      style="@Color(index)" d="@drawn.Path" />
+                                <path data-series="@drawn.Name" data-number="@index" data-values="@Values(drawn)"
+                                      data-points="@Points(drawn)" style="@Color(index)" d="@drawn.Path"
+                                      class="@ClassNames.Join("tb-chart__line", Slot(index))" />
                             }
                         }
                     </svg>
@@ -142,7 +154,16 @@
                         }
                     }
                 </svg>
-            </div>
+            }
+            @* The script shows these, moves them and names them, and Blazor never writes inside them: the line at the
+               place the pointer or the keys are on, the tooltip, and the two elements focus moves between. *@
+            <div class="tb-chart__crosshair" hidden></div>
+            <div data-part="tooltip" class="tb-chart__tooltip" hidden></div>
+            <span class="tb-chart__focus"></span>
+            <span class="tb-chart__focus"></span>
+        </div>
+        @if (!empty)
+        {
             @* WebKit sizes a grid item that is itself a query container by the whole grid, so the query container is
                a child of the grid item instead. *@
             <div class="tb-chart__x-row" aria-hidden="true">

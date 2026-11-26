@@ -16,6 +16,15 @@ public sealed record ChartLabels
     /// its series' names. Leave it null for the app's text for <see cref="TbStrings.ChartSummary"/>.</summary>
     public string? Summary { get; init; }
 
+    /// <summary>What screen readers hear for a point the keys are on, with <c>{0}</c> for its place, <c>{1}</c> for
+    /// its series, <c>{2}</c> for its value, <c>{3}</c> for its position along the chart and <c>{4}</c> for how many
+    /// places there are. Leave it null for the app's text for <see cref="TbStrings.ChartPoint"/>.</summary>
+    public string? Point { get; init; }
+
+    /// <summary>What the tooltip shows for a series that has no value at a place. Leave it null for the app's text
+    /// for <see cref="TbStrings.ChartNoValue"/>.</summary>
+    public string? NoValue { get; init; }
+
     /// <summary>The kind of a chart with only bar series, for <see cref="Summary"/>. Leave it null for the app's text
     /// for <see cref="TbStrings.ChartBars"/>.</summary>
     public string? Bars { get; init; }

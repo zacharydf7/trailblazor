@@ -10,16 +10,17 @@ public class ChartScenarioTests : BunitContext
     public ChartScenarioTests() => this.AddTrailblazor();
 
     [Fact]
-    public void HikersByMonth_ShouldSayWhatItDrawsAndHoldJulysValue_WhenRead()
+    public async Task RescuesByMonth_ShouldShowAMonthsBusiestDay_WhenItsBarIsClicked()
     {
-        var cut = Render<ChartExample>();
-        var chart = cut.Find("figure");
+        var cut = Render<ChartClickExample>();
+        var chart = cut.Tb().Chart("Rescues by month");
 
-        // A chart has no helper of its own: it is a figure named by its title, with its drawing as an image inside.
-        Assert.Equal("Hikers by month", chart.QuerySelector("figcaption")!.TextContent);
-        Assert.Equal("Bar chart: Hikers", chart.QuerySelector("[role=img]")!.GetAttribute("aria-label"));
-        // Values are read from the data table, where each row's header is the item's name.
-        var july = chart.QuerySelectorAll("tbody tr").Single(row => row.QuerySelector("th")!.TextContent == "Jul");
-        Assert.Equal("1,460", july.QuerySelector("td")!.TextContent);
+        // Values are read as the chart's data table writes them, by series and place.
+        Assert.Equal(["Rescues"], chart.Series);
+        Assert.Equal("9", chart.Value("Rescues", "Jul"));
+
+        // A click on a point returns once the app's OnPointClick has run.
+        await chart.ClickPointAsync("Rescues", "Jul");
+        Assert.Contains("Jul: 9 rescues, most of them on July 4.", cut.Markup);
     }
 }

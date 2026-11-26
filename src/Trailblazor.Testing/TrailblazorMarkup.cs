@@ -57,6 +57,14 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
             ?? throw new InvalidOperationException("The menu's script hasn't attached, as it does once the menu "
                 + "renders interactively.");
 
+    // What the chart script tells the chart whose plot has this id, as a point is activated.
+    public ChartEvents Chart(string? plotId) => Js.Invocations["attachChart"]
+        .Select(call => call.Arguments.ElementAtOrDefault(1) as DotNetObjectReference<ChartEvents>)
+        .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value)
+        .LastOrDefault(events => events.PlotId == plotId)
+            ?? throw new InvalidOperationException("The chart's script hasn't attached, as it does once the chart "
+                + "renders interactively.");
+
     // The reports the splitter script sends for the splitter that holds the pane with this id, as its panes resize.
     public SplitterReport Splitter(string pane) => Js.Invocations["attachSplitter"]
         .Select(call => call.Arguments.ElementAtOrDefault(1) as DotNetObjectReference<SplitterReport>)
@@ -601,6 +609,12 @@ public sealed class TrailblazorMarkup
         .Where(prompt => label is null
             || prompt.QuerySelector(":scope > [data-part=composer] > [data-part=label]")!.TextContent.Trim() == label)
         .ToList(), "AI prompt", label));
+
+    /// <summary>The <c>TbChart</c> with this <c>Title</c> or <c>AriaLabel</c>, or the only one in the markup when no
+    /// name is given.</summary>
+    public TbChartDriver Chart(string? name = null) => new(() => Only(_findAll("figure.tb-chart")
+        .Where(chart => name is null || name == (chart.GetAttribute("aria-label")
+            ?? chart.QuerySelector(":scope > [data-part=title]")?.TextContent)).ToList(), "chart", name), _scripts);
 
     /// <summary>The <c>TbCarousel</c> with this <c>AriaLabel</c>, or the only one in the markup when no name is
     /// given.</summary>
@@ -6560,4 +6574,60 @@ public sealed class TbValidationSummaryDriver
                 + string.Join(", ", Messages.Select(shown => $"\"{shown}\"")) + ".");
         await link.ClickAsync(new MouseEventArgs());
     }
+}
+
+/// <summary>A <c>TbChart</c>, found by its <c>Title</c> or <c>AriaLabel</c>.</summary>
+public sealed class TbChartDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
+
+    internal TbChartDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+
+    /// <summary>The names of the chart's series, in the order its legend and data table list them.</summary>
+    public IReadOnlyList<string> Series =>
+        [.. _find().QuerySelectorAll("[data-part=table] thead tr > :not(:first-child)").Select(Text)];
+
+    /// <summary>What the chart's items are called along it, in order.</summary>
+    public IReadOnlyList<string> Places => [.. _find().QuerySelectorAll("[data-part=table] tbody th").Select(Text)];
+
+    /// <summary>The value of this series at this place, as the chart's data table writes it, or an empty string
+    /// where the series has no value. A series or a place the chart doesn't have throws.</summary>
+    public string Value(string series, string place)
+    {
+        var (column, row) = Find(series, place);
+        var cells = _find().QuerySelectorAll("[data-part=table] tbody tr")[row].QuerySelectorAll("td");
+        return cells[column].TextContent;
+    }
+
+    /// <summary>Activates this series' point at this place, as a click on it does, and waits for the app's
+    /// <c>OnPointClick</c> to run. A series or a place the chart doesn't have throws, and so do a place where the
+    /// series has no value and a chart with no <c>OnPointClick</c>.</summary>
+    public async Task ClickPointAsync(string series, string place)
+    {
+        var plot = _find().QuerySelector(":scope > .tb-chart__body > [data-part=plot]")!;
+        if (!plot.HasAttribute("data-activates"))
+        {
+            throw new InvalidOperationException("The chart has no OnPointClick, so a click on a point does nothing.");
+        }
+
+        var (column, row) = Find(series, place);
+        if (Value(series, place).Length == 0)
+        {
+            throw new InvalidOperationException($"\"{series}\" has no value at \"{place}\".");
+        }
+
+        var events = _scripts.Chart(plot.Id);
+        await _scripts.InvokeAsync(() => events.OnActivate(column, row, "pointer"));
+    }
+
+    private (int Column, int Row) Find(string series, string place)
+    {
+        var (column, row) = (Series.ToList().IndexOf(series), Places.ToList().IndexOf(place));
+        return column < 0 ? throw new InvalidOperationException($"The chart has no series named \"{series}\".")
+            : row < 0 ? throw new InvalidOperationException($"The chart has no place named \"{place}\".")
+            : (column, row);
+    }
+
+    private static string Text(IElement element) => element.TextContent;
 }

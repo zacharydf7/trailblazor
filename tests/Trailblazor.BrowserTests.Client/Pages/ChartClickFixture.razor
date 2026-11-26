@@ -1,0 +1,44 @@
+@page "/chart-click"
+
+@* Two bars to a place, one short and one tall, so a test can tell which of them a click picked. The chart is narrow,
+   so that low in the tall bar the short bar's end is the nearer of the two. Monday's morning bar has no height, so its
+   point is on the plot's bottom edge. *@
+<div style="width: 24rem">
+    <TbChart TItem="Day" Items="_days" X="day => day.Name" Title="Visits" Height="12rem"
+             OnPointClick="@(point => _picked = $"{point.Series} {point.Item.Name} {point.Value}")">
+        <TbBarSeries Name="Morning" Value="day => day.Morning" />
+        <TbBarSeries Name="Evening" Value="day => day.Evening" />
+    </TbChart>
+</div>
+<TbButton OnClick="() => _days = Days[..2]">Two days</TbButton>
+<TbButton OnClick="() => _days = []">No days</TbButton>
+<output data-testid="picked">@_picked</output>
+
+@* A chart whose line is given before its bars, in a dialog that Escape closes, beside a field whose edit Escape
+   cancels. *@
+<TbButton OnClick="() => _open = true">Open trend</TbButton>
+<TbDialog @bind-Open="_open" Title="Trend">
+    <TbChart TItem="Day" Items="Days" X="day => day.Name" AriaLabel="Evenings and mornings" Height="10rem">
+        <TbLineSeries Name="Evening" Value="day => day.Evening" />
+        <TbBarSeries Name="Morning" Value="day => day.Morning" />
+    </TbChart>
+    <TbInPlaceEditor Label="Trend name" @bind-Value="_name">
+        <Editor>
+            <TbTextField TValue="string" @bind-Value="context.Draft" AriaLabel="Trend name" />
+        </Editor>
+    </TbInPlaceEditor>
+    <TbButton OnClick="() => _noted++">Note</TbButton>
+    <output data-testid="noted">@_noted</output>
+</TbDialog>
+
+@code {
+    private static readonly Day[] Days = [new("Sat", 2, 10), new("Sun", 8, 3), new("Mon", 0, 5)];
+
+    private Day[] _days = Days;
+    private string? _picked;
+    private bool _open;
+    private int _noted;
+    private string? _name = "Weekend";
+
+    private sealed record Day(string Name, int Morning, int Evening);
+}

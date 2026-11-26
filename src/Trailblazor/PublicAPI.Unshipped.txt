@@ -8389,7 +8389,6 @@ override Trailblazor.ChartClasses.ToString() -> string!
 override Trailblazor.ChartLabels.Equals(object? obj) -> bool
 override Trailblazor.ChartLabels.GetHashCode() -> int
 override Trailblazor.ChartLabels.ToString() -> string!
-override Trailblazor.TbChart<TItem>.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbChart<TItem>.OnParametersSet() -> void
 override Trailblazor.TbChartSeries<TItem>.OnInitialized() -> void
 override Trailblazor.TbChartSeries<TItem>.OnParametersSet() -> void
@@ -8398,3 +8397,29 @@ static Trailblazor.ChartClasses.operator ==(Trailblazor.ChartClasses? left, Trai
 static Trailblazor.ChartLabels.operator !=(Trailblazor.ChartLabels? left, Trailblazor.ChartLabels? right) -> bool
 static Trailblazor.ChartLabels.operator ==(Trailblazor.ChartLabels? left, Trailblazor.ChartLabels? right) -> bool
 ~override Trailblazor.TbChart<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.ChartLabels.NoValue.get -> string?
+Trailblazor.ChartLabels.NoValue.init -> void
+Trailblazor.ChartLabels.Point.get -> string?
+Trailblazor.ChartLabels.Point.init -> void
+Trailblazor.ChartPoint<TItem>
+Trailblazor.ChartPoint<TItem>.<Clone>$() -> Trailblazor.ChartPoint<TItem>!
+Trailblazor.ChartPoint<TItem>.ChartPoint(TItem Item, string! Series, double Value) -> void
+Trailblazor.ChartPoint<TItem>.Deconstruct(out TItem Item, out string! Series, out double Value) -> void
+Trailblazor.ChartPoint<TItem>.Equals(Trailblazor.ChartPoint<TItem>? other) -> bool
+Trailblazor.ChartPoint<TItem>.Item.get -> TItem
+Trailblazor.ChartPoint<TItem>.Item.init -> void
+Trailblazor.ChartPoint<TItem>.Series.get -> string!
+Trailblazor.ChartPoint<TItem>.Series.init -> void
+Trailblazor.ChartPoint<TItem>.Value.get -> double
+Trailblazor.ChartPoint<TItem>.Value.init -> void
+Trailblazor.TbChart<TItem>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbChart<TItem>.OnPointClick.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.ChartPoint<TItem>!>
+Trailblazor.TbChart<TItem>.OnPointClick.set -> void
+const Trailblazor.TbStrings.ChartNoValue = "Chart.NoValue" -> string!
+const Trailblazor.TbStrings.ChartPoint = "Chart.Point" -> string!
+override Trailblazor.ChartPoint<TItem>.Equals(object? obj) -> bool
+override Trailblazor.ChartPoint<TItem>.GetHashCode() -> int
+override Trailblazor.ChartPoint<TItem>.ToString() -> string!
+override Trailblazor.TbChart<TItem>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+static Trailblazor.ChartPoint<TItem>.operator !=(Trailblazor.ChartPoint<TItem>? left, Trailblazor.ChartPoint<TItem>? right) -> bool
+static Trailblazor.ChartPoint<TItem>.operator ==(Trailblazor.ChartPoint<TItem>? left, Trailblazor.ChartPoint<TItem>? right) -> bool

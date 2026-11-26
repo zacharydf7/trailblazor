@@ -951,7 +951,7 @@ public static class ExampleCatalog
         },
         new("chart", "Chart", ExampleCategory.Content,
             "A chart of one or more series over a list of items: bars for comparing amounts and lines for how "
-                + "something changes, with every value in a table under it.")
+                + "something changes, with a tooltip for the values at a place and every value in a table under it.")
         {
             FullWidth = true,
             WhenToUse =
@@ -974,7 +974,9 @@ public static class ExampleCatalog
                 new("basic", "Bars", "`Items` is the list the chart draws, one place along the chart for each item in "
                     + "the order given, and `X` says what each item is called. A `TbBarSeries` draws a bar from zero "
                     + "for each item's `Value`, which can be any number type. `Title` names the chart and shows above "
-                    + "it. The value axis runs between round values that hold every bar.", typeof(ChartExample)),
+                    + "it. The value axis runs between round values that hold every bar. On an interactive page, a "
+                    + "tooltip shows the values at the place the pointer is over, and the arrow keys move between "
+                    + "the points.", typeof(ChartExample)),
                 new("lines", "Lines", "A `TbLineSeries` draws a line through its values. `Curve` sets how the points "
                     + "are joined: with straight lines by default, or with a `Smooth` curve that never rises above or "
                     + "dips below the points it joins. With two or more series, a legend names each one. A chart with "
@@ -1000,7 +1002,8 @@ public static class ExampleCatalog
                     + "the one its position gives it, such as the danger color for something that went wrong.",
                     typeof(ChartCombinedExample)),
                 new("gaps", "Missing values", "A null value leaves a gap: no bar, as on Thursday here, and a break "
-                    + "in a line, as in the forecast on Wednesday.", typeof(ChartGapsExample)),
+                    + "in a line, as in the forecast on Wednesday. The tooltip reads \"No value\" there, which "
+                    + "`Labels.NoValue` rewords, and the arrow keys pass over it.", typeof(ChartGapsExample)),
                 new("below-zero", "Values below zero", "A bar for a value below zero hangs down from the zero line, "
                     + "which is drawn darker than the other grid lines.", typeof(ChartBelowZeroExample)),
                 new("long", "Many points", "An axis shows only the labels it has room for, evenly spaced, and shows "
@@ -1010,6 +1013,10 @@ public static class ExampleCatalog
                     + "all when its neighbors leave it no room. With long names on a narrow chart, most places go "
                     + "unlabeled, so keep names along the axis short and put the full ones in the text or a table.",
                     typeof(ChartLongNamesExample)),
+                new("click", "Acting on a point", "`OnPointClick` is raised with the item, the series' name and the "
+                    + "value when the user clicks or taps a point, or presses Enter or Space while it has focus. A "
+                    + "click on the plot picks the bar or line under the pointer, or else the nearest point at that "
+                    + "place, so a thin line or a short bar isn't hard to hit.", typeof(ChartClickExample)),
                 new("empty", "No data", "A chart with no items, or no series, says so in place of its plot. "
                     + "`Labels.Empty` rewords it for what the chart shows, such as \"No closures so far this year\".",
                     typeof(ChartEmptyExample)),
@@ -1019,7 +1026,8 @@ public static class ExampleCatalog
             Api =
             [
                 typeof(TbChart<>), typeof(TbLineSeries<>), typeof(TbBarSeries<>), typeof(TbXAxis), typeof(TbYAxis),
-                typeof(ChartStacking), typeof(ChartCurve), typeof(ChartLabels), typeof(ChartClasses),
+                typeof(ChartPoint<>), typeof(ChartStacking), typeof(ChartCurve), typeof(ChartLabels),
+                typeof(ChartClasses),
             ],
             Anatomy = """
                 <TbChart Items="…" X="…" Title="…">
@@ -1029,6 +1037,27 @@ public static class ExampleCatalog
                     <TbLineSeries Name="…" Value="…" />
                 </TbChart>
                 """,
+            Keyboard =
+            [
+                new(["Right", "Left"], "Moves to the next or the previous point of the series, passing over a place "
+                    + "where the series has no value.") { When = "On the plot" },
+                new(["Down", "Up"], "Moves to the same place in the next or the previous series that has a value "
+                    + "there, in the legend's order.") { When = "On the plot" },
+                new(["Home", "End"], "Moves to the first or the last point of the series.") { When = "On the plot" },
+                new(["Enter", "Space"], "Raises `OnPointClick` for the point, when the chart has one.")
+                    { When = "On the plot" },
+                new(["Escape"], "Hides the tooltip and leaves focus where it is.")
+                    { When = "While the tooltip shows" },
+                new(["Enter", "Space"], "Opens or closes the data table.") { When = "On \"Data table\"" },
+            ],
+            RightToLeftKeys = "Left moves to the next point and Right to the previous one, as the chart runs from "
+                + "the right.",
+            Announcements =
+            [
+                "As focus moves to a point, it is read by its place, its series, its value and its position, as in "
+                    + "\"Jul 2, Valley: 24, 2 of 10\". `Labels.Point` rewords it.",
+                "Choosing a point announces nothing by itself; what the app then shows is the app's to announce.",
+            ],
             Labeling =
             [
                 "The chart is a figure named by its `Title`, which shows above it. Without a title, `AriaLabel` "
@@ -1043,8 +1072,18 @@ public static class ExampleCatalog
             [
                 "Every value is in a table under the chart, in a disclosure anyone can open, so nothing is only in "
                     + "the drawing. Its rows are the items and its columns the series.",
-                "Screen readers hear the drawing as one image, then reach the table for the values. The axis labels "
-                    + "are hidden from them, since the table says the same.",
+                "Screen readers hear the drawing as one image, then reach the table for the values. On an "
+                    + "interactive page the point that has the tab stop is a second image, named for the point. The "
+                    + "axis labels are hidden from them, since the table says the same.",
+                "On an interactive page the plot is one tab stop, on the point last visited or else the first. The "
+                    + "focus ring is drawn around the point, and the tooltip shows the values at its place.",
+                "The tooltip shows on hover and on focus, stays for as long as the pointer is over the plot or a "
+                    + "point has focus, and never times out. After a tap it stays until a tap elsewhere. Escape "
+                    + "hides it wherever focus is, and a dialog around the chart stays open for that press, unless "
+                    + "a field being edited in the dialog takes the key first. Everything it shows is in the data "
+                    + "table too.",
+                "A click or a tap anywhere over a place picks a point there, so no target is smaller than the "
+                    + "place is wide.",
                 "The eight series colors each have 3:1 contrast against the surface in both themes, and colors next "
                     + "to each other in the order stay easy to tell apart for people with red-green color blindness.",
                 "Two or more series always have a legend, whose keys are drawn as the marks are: a block for bars "
@@ -1063,14 +1102,18 @@ public static class ExampleCatalog
                 "Say what matters about the chart in the text beside it, such as \"Bookings peak on Saturday\", "
                     + "since a drawing's point is easy to miss and screen readers hear only its kind and its series.",
                 "A change to the data isn't announced. Say what changed in text near the chart when it matters.",
+                "With `OnPointClick`, say in text near the chart what choosing a point does, as in \"Pick a month "
+                    + "to see its busiest day\": a point reads as an image, with nothing to say it can be chosen.",
                 "Check a `Color` you set for 3:1 contrast against the surface in both themes.",
             ],
-            Modes = new(ModeSupport.Full, ModeSupport.Full),
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It is drawn as markup with every position a share of the plot, so it all renders the same before "
                     + "the page is interactive, at any width, with nothing measured in script. The data table opens "
                     + "without script too.",
+                "The tooltip, the keys between points and `OnPointClick` start once the page is interactive; until "
+                    + "then, and on a static page, the plot takes no focus and shows no pointer cursor.",
             ],
             Notes =
             [
@@ -1096,6 +1139,7 @@ public static class ExampleCatalog
                     + "of one a minute."),
             ],
             Target = new("figure", "Hikers by month"),
+            Ready = new("[data-part=plot]", "the plot"),
             Blocks = ["tb-chart", "tb-table"],
             DataParts =
             [
@@ -1104,25 +1148,34 @@ public static class ExampleCatalog
                 new("y-title", "The value axis's title."),
                 new("plot", "The area the series are drawn in, or the message when there is nothing to draw."),
                 new("x-title", "The title of the axis the items run along."),
+                new("tooltip", "The values at the place the pointer or the keys are on."),
                 new("table", "The disclosure that holds the data table."),
             ],
-            Scenario = new("basic", "it finds the chart by its title, checks what its drawing is called, and reads "
-                + "July's value from the data table.") { WithoutHelpers = true },
+            Scenario = new("click", "it reads a month's value, clicks that month's bar, and checks what the app "
+                + "shows for it."),
             TestingTips =
             [
-                "Find a chart with `GetByRole(AriaRole.Figure, new() { Name = \"Hikers by month\" })`, and its "
-                    + "drawing inside it with `GetByRole(AriaRole.Img)`.",
-                "Read values from the data table, not from the drawing: each row's header is the item and each "
-                    + "column's header a series' `Name`. The table is in the markup while its disclosure is closed, "
-                    + "so bUnit reads it at once; in a browser, open \"Data table\" first.",
+                "`cut.Tb().Chart(\"Rescues by month\")` in bUnit and `page.Tb().Chart(\"Rescues by month\")` in "
+                    + "Playwright find a chart by its `Title` or `AriaLabel`.",
+                "`Series` and `Places` list what the chart draws, and `Value(series, place)` reads a value as the "
+                    + "data table writes it (`SeriesAsync()`, `PlacesAsync()` and `ValueAsync(series, place)` in "
+                    + "Playwright).",
+                "`ClickPointAsync(series, place)` clicks a point and returns once the app's `OnPointClick` has "
+                    + "run. It throws for a chart with no `OnPointClick`, and for a place where the series has no "
+                    + "value.",
+                "Without the helpers, find a chart with `GetByRole(AriaRole.Figure, new() { Name = \"Hikers by "
+                    + "month\" })` and its drawing with `GetByRole(AriaRole.Img, new() { Name = \"Bar chart: "
+                    + "Hikers\" })`; the point that has the tab stop is an image too.",
                 "A series' marks are under an element with `data-series` set to its `Name`: a `g` of `rect` bars, "
                     + "or a line's `path`.",
             ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"hikers-by-month\"`, it counts `trailblazor.control.shown` as it "
-                    + "first renders. Nothing about it can be used, so it counts nothing else. What it shows is never "
-                    + "recorded.",
+                    + "first renders, and `trailblazor.control.used` with the action `activate` and the input "
+                    + "`keyboard` or `pointer` each time a point is clicked or chosen with Enter or Space, when the "
+                    + "chart has an `OnPointClick`. Moving over the chart or between its points isn't counted, and "
+                    + "what it shows is never recorded.",
             ],
         },
         new("carousel", "Carousel", ExampleCategory.Content,

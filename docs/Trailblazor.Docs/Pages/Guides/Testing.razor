@@ -382,6 +382,14 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Chart(name).ClickPointAsync(series, place)</code></th>
+                        <td>
+                            Activates a point as a click on it does. <code>Series</code> and <code>Places</code> list
+                            what the chart draws, and <code>Value(series, place)</code> reads a value as the
+                            chart's data table writes it.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Chip(text).ClickAsync()</code></th>
                         <td>
                             Clicks the chip, which toggles it, runs its <code>OnClick</code> or follows its link.
@@ -1847,6 +1855,10 @@
             + "slide and waits until it appears and the app's `ActiveIndexChanged` has run, as `PreviousAsync()` "
             + "and `GoToAsync(index)` do; "
             + "`ActiveIndexAsync()` reads which slide shows, and `CountAsync()` how many there are."),
+        new("Chart", "Its Title or AriaLabel, or none for the only one", "`Chart(name).ClickPointAsync(series, "
+            + "place)` clicks a point once the page is interactive and waits until the app's `OnPointClick` has "
+            + "run; `SeriesAsync()` and `PlacesAsync()` list what the chart draws, and `ValueAsync(series, place)` "
+            + "reads a value as the chart's data table writes it."),
         new("Chip", "Its text", "`Chip(text).ClickAsync()` clicks it once the page is interactive and waits until "
             + "the app's handlers have run; `RemoveAsync()` presses its remove button and waits for `OnRemove`, and "
             + "`SelectedAsync()` reads whether it's selected. `ChipGroup(name)` finds a group by its `AriaLabel`, "

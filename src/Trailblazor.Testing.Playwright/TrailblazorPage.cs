@@ -293,6 +293,10 @@ public sealed class TrailblazorPage(ILocator scope)
     /// given.</summary>
     public TbCarouselLocator Carousel(string? name = null) => new(scope, name);
 
+    /// <summary>The <c>TbChart</c> with this <c>Title</c> or <c>AriaLabel</c>, or the only one in the scope when no
+    /// name is given.</summary>
+    public TbChartLocator Chart(string? name = null) => new(scope, name);
+
     /// <summary>The <c>TbChat</c> with this <c>AriaLabel</c>, or the only one in the scope when no name is given.
     /// </summary>
     public TbChatLocator Chat(string? name = null) => new(scope, name);

@@ -44,6 +44,13 @@ public static class TbStrings
     /// series' names.</summary>
     public const string ChartSummary = "Chart.Summary";
 
+    /// <summary>"{0}, {1}: {2}, {3} of {4}": what screen readers hear for a chart's point; {0} is its place, {1}
+    /// its series, {2} its value, {3} its position along the chart and {4} the number of places.</summary>
+    public const string ChartPoint = "Chart.Point";
+
+    /// <summary>"No value": what a chart's tooltip shows for a series with no value at a place.</summary>
+    public const string ChartNoValue = "Chart.NoValue";
+
     /// <summary>"Bar chart": the kind of a chart with only bar series, in <see cref="ChartSummary"/>.</summary>
     public const string ChartBars = "Chart.Bars";
 
@@ -2061,6 +2068,8 @@ public static class TbStrings
         [ChartTable] = "Data table",
         [ChartEmpty] = "No data",
         [ChartSummary] = "{0}: {1}",
+        [ChartPoint] = "{0}, {1}: {2}, {3} of {4}",
+        [ChartNoValue] = "No value",
         [ChartBars] = "Bar chart",
         [ChartLines] = "Line chart",
         [ChartBarsAndLines] = "Bar and line chart",

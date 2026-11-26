@@ -38,7 +38,7 @@ public class DriverParityTests
         ["TbVirtualList"] = "VirtualList", ["TbOverlay"] = "Overlay", ["TbHotkeysHelp"] = "Dialog",
         ["TbFab"] = "Button",
         ["TbTimePicker"] = "TimePicker", ["TbChip"] = "Chip", ["TbChipGroup"] = "ChipGroup",
-        ["TbCarousel"] = "Carousel", ["TbChat"] = "Chat", ["TbAiPrompt"] = "AiPrompt", ["TbKanban"] = "Kanban",
+        ["TbChart"] = "Chart", ["TbCarousel"] = "Carousel", ["TbChat"] = "Chat", ["TbAiPrompt"] = "AiPrompt", ["TbKanban"] = "Kanban",
         ["TbCascader"] = "Cascader", ["TbMenubar"] = "Menubar", ["TbLightbox"] = "Lightbox", ["TbForm"] = "Form",
         ["TbMarkdownEditor"] = "MarkdownEditor", ["TbMentionInput"] = "MentionInput", ["TbTour"] = "Tour",
         ["TbTooltip"] = "Tooltip", ["TbDrawer"] = "Dialog",
@@ -106,7 +106,7 @@ public class DriverParityTests
         ["TbTable"] = NotInteractive,
         ["TbHighlight"] = NotInteractive,
         ["TbThemeHead"] = NotInteractive, ["TbTimeline"] = NotInteractive, ["TbWatermark"] = NotInteractive,
-        ["TbChart"] = NotInteractive, ["TbLineSeries"] = "part of TbChart", ["TbBarSeries"] = "part of TbChart",
+        ["TbLineSeries"] = "part of TbChart", ["TbBarSeries"] = "part of TbChart",
         ["TbXAxis"] = "part of TbChart", ["TbYAxis"] = "part of TbChart",
     };
 

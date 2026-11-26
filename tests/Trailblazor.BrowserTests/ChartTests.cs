@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class ChartTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -104,6 +106,300 @@ public class ChartTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.StartsWith(text, bars[0]);
         Assert.Equal(bars, await Chart(page, "Passes sold by season").Locator("[data-part=legend] svg")
             .EvaluateAllAsync<string[]>(FillsAndDashes));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Keys_ShouldMoveBetweenNamedPoints_WhenThePlotHasFocus(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chart/lines");
+        var chart = Chart(page, "Trail temperature");
+        var plot = chart.Locator("[data-part=plot]");
+        var tooltip = chart.Locator("[data-part=tooltip]");
+        var focused = page.Locator(":focus");
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+
+        // The plot is one tab stop, on its first point until another has been visited.
+        await Expect(plot.Locator("[tabindex='0']")).ToHaveCountAsync(1);
+        await plot.Locator("[tabindex='0']").FocusAsync();
+        await Expect(focused).ToHaveRoleAsync(AriaRole.Img);
+        await Expect(focused).ToHaveAccessibleNameAsync("Jul 1, Summit: 14, 1 of 10");
+        await Expect(tooltip).ToContainTextAsync("Jul 1");
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(focused).ToHaveAccessibleNameAsync("Jul 2, Summit: 15, 2 of 10");
+        await Expect(tooltip).ToContainTextAsync("Jul 2");
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(focused).ToHaveAccessibleNameAsync("Jul 2, Valley: 24, 2 of 10");
+        await page.Keyboard.PressAsync("End");
+        await Expect(focused).ToHaveAccessibleNameAsync("Jul 10, Valley: 26, 10 of 10");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(focused).ToHaveAccessibleNameAsync("Jul 10, Valley: 26, 10 of 10");
+        await page.Keyboard.PressAsync("Home");
+        await Expect(focused).ToHaveAccessibleNameAsync("Jul 1, Valley: 22, 1 of 10");
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(focused).ToHaveAccessibleNameAsync("Jul 1, Summit: 14, 1 of 10");
+        await Expect(plot.Locator("[tabindex='0']")).ToHaveCountAsync(1);
+
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(tooltip).ToBeHiddenAsync();
+        await Expect(focused).ToHaveRoleAsync(AriaRole.Img);
+
+        // The point focus left is no longer an image of its own.
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(focused).ToHaveAccessibleNameAsync("Jul 2, Summit: 15, 2 of 10");
+        await Expect(plot.GetByRole(AriaRole.Img)).ToHaveCountAsync(2);
+
+        // The next tab stop after the plot is the data table's disclosure, and Shift+Tab comes back to the point last
+        // visited, which is still the plot's one tab stop.
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(focused).ToHaveTextAsync("Data table");
+        await page.Keyboard.PressAsync("Shift+Tab");
+        await Expect(focused).ToHaveAccessibleNameAsync("Jul 2, Summit: 15, 2 of 10");
+        await Expect(plot.Locator("[tabindex='0']")).ToHaveCountAsync(1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Keys_ShouldSwapLeftAndRight_WhenTheChartRunsRightToLeft(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chart/lines");
+        await page.EvaluateAsync("() => { document.documentElement.dir = 'rtl'; }");
+        var plot = Chart(page, "Trail temperature").Locator("[data-part=plot]");
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+        await plot.Locator("[tabindex='0']").FocusAsync();
+        var first = await page.Locator(":focus").BoundingBoxAsync();
+
+        await page.Keyboard.PressAsync("ArrowLeft");
+
+        await Expect(page.Locator(":focus")).ToHaveAccessibleNameAsync("Jul 2, Summit: 15, 2 of 10");
+        var second = await page.Locator(":focus").BoundingBoxAsync();
+        Assert.True(second!.X < first!.X, $"The second point is at {second.X}, and the first at {first.X}.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Keys_ShouldStepOverAGap_WhenASeriesHasNoValueAtAPlace(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chart/gaps");
+        var plot = Chart(page, "Snow depth at the hut").Locator("[data-part=plot]");
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+        await plot.Locator("[tabindex='0']").FocusAsync();
+        var focused = page.Locator(":focus");
+        await Expect(focused).ToHaveAccessibleNameAsync("Mon, Measured: 62, 1 of 7");
+
+        // The forecast has no value on Wednesday, and nothing was measured on Thursday.
+        await page.Keyboard.PressAsync("ArrowRight");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(focused).ToHaveAccessibleNameAsync("Wed, Measured: 51, 3 of 7");
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(focused).ToHaveAccessibleNameAsync("Wed, Measured: 51, 3 of 7");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(focused).ToHaveAccessibleNameAsync("Fri, Measured: 40, 5 of 7");
+        await Expect(plot.Locator("[data-part=tooltip]")).ToContainTextAsync("Forecast43");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldShowEverySeriesValueAtThePlace_WhenThePointerIsOverThePlot(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chart/gaps");
+        var chart = Chart(page, "Snow depth at the hut");
+        var plot = chart.Locator("[data-part=plot]");
+        var tooltip = chart.Locator("[data-part=tooltip]");
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+        var box = await plot.BoundingBoxAsync();
+
+        // Thursday is the fourth of seven places, and has a forecast but no measurement.
+        await page.Mouse.MoveAsync(box!.X + box.Width * 3.5f / 7, box.Y + 10);
+        await Expect(tooltip).ToBeVisibleAsync();
+        await Expect(tooltip.Locator(".tb-chart__tooltip-place")).ToHaveTextAsync("Thu");
+        await Expect(tooltip.Locator(".tb-chart__tooltip-row")).ToHaveTextAsync(["MeasuredNo value", "Forecast48"]);
+        var line = await plot.Locator(".tb-chart__crosshair").BoundingBoxAsync();
+        Assert.InRange(line!.X - (box.X + box.Width * 3.5f / 7), -1.5, 1.5);
+
+        await page.Mouse.MoveAsync(box.X + box.Width * 0.5f / 7, box.Y + 10);
+        await Expect(tooltip.Locator(".tb-chart__tooltip-place")).ToHaveTextAsync("Mon");
+
+        await page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height + 80);
+        await Expect(tooltip).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Point_ShouldTellTheApp_WhenClickedOrChosenWithTheKeys(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chart/click");
+        var plot = Chart(page, "Rescues by month").Locator("[data-part=plot]");
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+        var box = await plot.BoundingBoxAsync();
+
+        // July is the third of five places; a click anywhere over it picks its bar.
+        await page.Mouse.ClickAsync(box!.X + box.Width * 2.5f / 5, box.Y + 10);
+        await Expect(page.GetByText("Jul: 9 rescues, most of them on July 4.")).ToBeVisibleAsync();
+
+        await plot.Locator("[tabindex='0']").FocusAsync();
+        await page.Keyboard.PressAsync("End");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByText("Sep: 3 rescues, most of them on September 6.")).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("Home");
+        await page.Keyboard.PressAsync("Space");
+        await Expect(page.GetByText("May: 2 rescues, most of them on May 24.")).ToBeVisibleAsync();
+
+        // A screen reader's click on the point that has focus has no position, and picks that point.
+        await page.Keyboard.PressAsync("ArrowRight");
+        await page.Locator(":focus").EvaluateAsync("point => point.click()");
+        await Expect(page.GetByText("Jun: 5 rescues, most of them on June 14.")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Point_ShouldBeTheBarUnderThePointer_WhenBarsStandSideBySide(string browser)
+    {
+        var page = await OpenAsync(browser, "/chart-click");
+        var plot = Chart(page, "Visits").Locator("[data-part=plot]");
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+        var box = await plot.BoundingBoxAsync();
+
+        // Low inside Saturday's tall evening bar, where the short morning bar's end is the nearer of the two.
+        await page.Mouse.ClickAsync(box!.X + box.Width * 0.225f, box.Y + box.Height * 0.95f);
+        await Expect(page.GetByTestId("picked")).ToHaveTextAsync("Evening Sat 10");
+
+        // Over the morning bar's column but above the bar, which no mark is under: the nearest end is its own.
+        await page.Mouse.ClickAsync(box.X + box.Width * 0.108f, box.Y + box.Height * 0.4f);
+        await Expect(page.GetByTestId("picked")).ToHaveTextAsync("Morning Sat 2");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ClickPointAsync_ShouldPickThePoint_WhenItIsOnThePlotsBottomEdge(string browser)
+    {
+        var page = await OpenAsync(browser, "/chart-click");
+
+        // Monday's morning bar has no height, so its point is on the plot's bottom edge, where the click lands on the
+        // grid line drawn there.
+        await page.Tb().Chart("Visits").ClickPointAsync("Morning", "Mon");
+
+        await Expect(page.GetByTestId("picked")).ToHaveTextAsync("Morning Mon 0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Points_ShouldFollowTheData_WhenTheItemsChange(string browser)
+    {
+        var page = await OpenAsync(browser, "/chart-click");
+        var plot = Chart(page, "Visits").Locator("[data-part=plot]");
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+        await plot.Locator("[tabindex='0']").FocusAsync();
+        await page.Keyboard.PressAsync("End");
+        await Expect(page.Locator(":focus")).ToHaveAccessibleNameAsync("Mon, Morning: 0, 3 of 3");
+
+        // Monday goes, so the tab stop goes back to the first point, which is now one of two.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Two days" }).ClickAsync();
+        await Expect(plot.Locator("[tabindex='0']")).ToHaveAccessibleNameAsync("Sat, Morning: 2, 1 of 2");
+
+        // With nothing to draw, the plot has no tab stop and nothing named.
+        await page.GetByRole(AriaRole.Button, new() { Name = "No days" }).ClickAsync();
+        await Expect(plot).ToContainTextAsync("No data");
+        await Expect(plot.Locator("[tabindex], [role]")).ToHaveCountAsync(0);
+        await Expect(plot.Locator("[data-part=tooltip]")).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Escape_ShouldHideTheTooltipAndLeaveTheDialogOpen_WhenTheChartIsInADialog(string browser)
+    {
+        var page = await OpenAsync(browser, "/chart-click");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open trend" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Trend" });
+        var chart = Chart(page, "Evenings and mornings");
+        var plot = chart.Locator("[data-part=plot]");
+        var tooltip = chart.Locator("[data-part=tooltip]");
+        var note = dialog.GetByRole(AriaRole.Button, new() { Name = "Note" });
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+
+        // The line is given before the bars, and comes first for the keys and in the tooltip as it does in the legend.
+        await plot.Locator("[tabindex='0']").FocusAsync();
+        await Expect(page.Locator(":focus")).ToHaveAccessibleNameAsync("Sat, Evening: 10, 1 of 3");
+        await Expect(tooltip.Locator(".tb-chart__tooltip-name")).ToHaveTextAsync(["Evening", "Morning"]);
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(page.Locator(":focus")).ToHaveAccessibleNameAsync("Sat, Morning: 2, 1 of 3");
+
+        // If Escape closed the dialog, the click on its Note button below would fail.
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(tooltip).ToBeHiddenAsync();
+        await note.ClickAsync();
+        await Expect(dialog.GetByTestId("noted")).ToHaveTextAsync("1");
+
+        // With focus elsewhere in the dialog, Escape hides the tooltip the pointer shows, and the next one closes the
+        // dialog.
+        var box = await plot.BoundingBoxAsync();
+        await page.Mouse.MoveAsync(box!.X + box.Width / 2, box.Y + 10);
+        await Expect(tooltip).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(tooltip).ToBeHiddenAsync();
+        await note.ClickAsync();
+        await Expect(dialog.GetByTestId("noted")).ToHaveTextAsync("2");
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(dialog).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Escape_ShouldCancelAnEditFirst_WhenThePointerRestsOnAChartInTheSameDialog(string browser)
+    {
+        var page = await OpenAsync(browser, "/chart-click");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open trend" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Trend" });
+        var chart = Chart(page, "Evenings and mornings");
+        var plot = chart.Locator("[data-part=plot]");
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+        var name = page.Tb().InPlaceEditor("Trend name");
+        await name.EditAsync();
+        var box = await plot.BoundingBoxAsync();
+        await page.Mouse.MoveAsync(box!.X + box.Width / 2, box.Y + 10);
+        await Expect(chart.Locator("[data-part=tooltip]")).ToBeVisibleAsync();
+
+        // The field being edited hears Escape before the chart and the dialog do, and keeps it.
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(name.InPlaceEditor.Locator("[data-part=editor]")).ToHaveCountAsync(0);
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Note" }).ClickAsync();
+        await Expect(dialog.GetByTestId("noted")).ToHaveTextAsync("1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldStayInsideThePlot_WhenThePlotIsNarrow(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chart/stacking",
+            new() { ViewportSize = new() { Width = 320, Height = 800 } });
+        var chart = Chart(page, "Passes sold by season");
+        var plot = chart.Locator("[data-part=plot]");
+        var tooltip = chart.Locator("[data-part=tooltip]");
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+        var box = await plot.BoundingBoxAsync();
+
+        // The tooltip is on the side of the line with more room, and its names wrap when that isn't room enough.
+        (float Share, string Place)[] spots = [(0.05f, "Spring"), (0.45f, "Summer"), (0.55f, "Fall"), (0.95f, "Winter")];
+        foreach (var (share, place) in spots)
+        {
+            await page.Mouse.MoveAsync(box!.X + box.Width * share, box.Y + 10);
+            await Expect(tooltip.Locator(".tb-chart__tooltip-place")).ToHaveTextAsync(place);
+            var shown = await tooltip.BoundingBoxAsync();
+            Assert.InRange(shown!.X, box.X - 1, box.X + box.Width);
+            Assert.InRange(shown.X + shown.Width, box.X, box.X + box.Width + 1);
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tap_ShouldShowTheTooltipAndPickThePoint_WhenThePlotIsTouched(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chart/click", new() { HasTouch = true });
+        var chart = Chart(page, "Rescues by month");
+        var plot = chart.Locator("[data-part=plot]");
+        var tooltip = chart.Locator("[data-part=tooltip]");
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+        var box = await plot.BoundingBoxAsync();
+
+        await page.Touchscreen.TapAsync(box!.X + box.Width * 2.5f / 5, box.Y + box.Height / 2);
+
+        await Expect(page.GetByText("Jul: 9 rescues, most of them on July 4.")).ToBeVisibleAsync();
+        await Expect(tooltip.Locator(".tb-chart__tooltip-place")).ToHaveTextAsync("Jul");
+
+        // The finger left the plot as it lifted, and the tooltip stays until a tap somewhere else.
+        var text = await page.GetByText("Jul: 9 rescues").BoundingBoxAsync();
+        await page.Touchscreen.TapAsync(text!.X + 5, text.Y + 5);
+        await Expect(tooltip).ToBeHiddenAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

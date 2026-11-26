@@ -674,3 +674,9 @@ Trailblazor.Testing.TbGridDriver.AddRowAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbGridDriver.NewRow.get -> AngleSharp.Dom.IElement!
 Trailblazor.Testing.TbGridDriver.CollapseGroupAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbGridDriver.ExpandGroupAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbChartDriver
+Trailblazor.Testing.TbChartDriver.ClickPointAsync(string! series, string! place) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbChartDriver.Places.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbChartDriver.Series.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbChartDriver.Value(string! series, string! place) -> string!
+Trailblazor.Testing.TrailblazorMarkup.Chart(string? name = null) -> Trailblazor.Testing.TbChartDriver!

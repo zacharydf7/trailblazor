@@ -28,6 +28,10 @@
         <TbOption Value="@("South")">South</TbOption>
     </TbSelect>
     <TbColorPicker Label="Slow marker" Value="@_color" ValueChanged="ColorAsync" />
+    <TbChart TItem="string" Items="@(["Ridge", "Lake"])" X="name => name" AriaLabel="Slow counts" Height="6rem"
+             OnPointClick="PointAsync">
+        <TbBarSeries Name="Letters" Value="name => name.Length" />
+    </TbChart>
     <TbDatePicker TDate="DateOnly" Label="Slow day" Value="_day" ValueChanged="DayAsync" />
     <TbCalendar TDate="DateOnly" Label="Slow hike" Value="_hike" ValueChanged="HikeAsync" />
     <TbFileUpload Label="Slow map" Value="_map" ValueChanged="MapAsync" />
@@ -144,6 +148,8 @@
     private Task RegionAsync(string? region) => SlowlyAsync($"region {region}", () => _region = region);
 
     private Task ColorAsync(string? color) => SlowlyAsync($"color {color}", () => _color = color);
+
+    private Task PointAsync(ChartPoint<string> point) => SlowlyAsync($"point {point.Item} {point.Value}");
 
     private Task PaceAsync(int pace) => SlowlyAsync($"pace {pace}", () => _pace = pace);
 

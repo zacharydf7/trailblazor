@@ -33,7 +33,7 @@ public static class AccessibilityStatusCatalog
         new("qr-code", None, Tested, None),
         new("avatar", None, Tested, None),
         new("timeline", None, Tested, None),
-        new("chart", None, Tested, None),
+        new("chart", Tested, Tested, None),
         new("carousel", Tested, Tested, Tested),
         new("virtual-list", Tested, None, None),
         new("chat", Tested, NotYet, None),

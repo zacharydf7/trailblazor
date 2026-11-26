@@ -1,0 +1,21 @@
+<TbStack Gap="3">
+    <TbChart TItem="Month" Items="Months" X="month => month.Name" Title="Rescues by month" OnPointClick="Show">
+        <TbBarSeries Name="Rescues" Value="month => month.Rescues" />
+    </TbChart>
+    <TbText>@(_picked is null ? "Pick a month to see its busiest day." : _picked)</TbText>
+</TbStack>
+
+@code {
+    private static readonly Month[] Months =
+    [
+        new("May", 2, "May 24"), new("Jun", 5, "June 14"), new("Jul", 9, "July 4"), new("Aug", 7, "August 16"),
+        new("Sep", 3, "September 6"),
+    ];
+
+    private string? _picked;
+
+    private void Show(ChartPoint<Month> point) =>
+        _picked = $"{point.Item.Name}: {point.Value} rescues, most of them on {point.Item.BusiestDay}.";
+
+    private sealed record Month(string Name, int Rescues, string BusiestDay);
+}
