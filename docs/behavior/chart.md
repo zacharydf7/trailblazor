@@ -41,6 +41,7 @@ Familiar apps: Excel and Google Sheets charts, Grafana panels, Highcharts' acces
 - [x] In forced-colors mode, every mark shows, lines differ by their dashes and bars by their fill, and each legend key is drawn as its series' marks are. `ChartTests.Series_ShouldDifferWithoutColor_WhenColorsAreForced`
 - [x] In forced-colors mode an area keeps its line, which differs by its dashes, and loses its fill, in the plot and in its legend key. `ChartTests.Area_ShouldKeepItsLineAndLoseItsFill_WhenColorsAreForced`
 - [x] In forced-colors mode a click inside a band of a stack still activates that band's point. `ChartTests.Point_ShouldBeTheBandUnderThePointer_WhenColorsAreForcedAndFillsAreNotPainted`
+- [x] A bar stops at the plot's edge when the axis's `Min` or `Max` is short of it, and a bar whose value is beyond the axis is cut square there. `ChartPlanTests.Build_ShouldStopABarAtThePlotsEdge_WhenTheAxisStartsAboveZero`, `ChartPlanTests.Build_ShouldCutABarSquareAtThePlotsEdge_WhenItsValueIsBeyondTheAxis`
 - [x] An area is filled from its line down to zero, or to the area under it in a stack, and no farther than the plot's edge. `ChartTests.Area_ShouldBeFilledFromItsLineDownToZero_WhenDrawn`, `ChartPlanTests.Build_ShouldPileAreasOnAreasAndBarsOnBars_WhenStacked`, `ChartPlanTests.Build_ShouldFillPastThePlotsEdge_WhenTheAxisStartsAboveZero`
 
 ## Touch

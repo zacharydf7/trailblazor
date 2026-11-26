@@ -91,6 +91,25 @@ public class TbChartTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldDrawABarCutAtThePlotsEdgeSquareAndWithoutASeam_WhenItsValueIsBeyondTheAxis()
+    {
+        var cut = RenderChart(Bars("Completed", month => month.Completed), builder =>
+        {
+            builder.OpenComponent<TbYAxis>(0);
+            builder.AddComponentParameter(1, nameof(TbYAxis.Max), 30d);
+            builder.CloseComponent();
+        });
+
+        // March's 40 is past the axis's end at 30.
+        Assert.Equal(["tb-chart__bar tb-chart__bar--top", "tb-chart__bar tb-chart__bar--top", "tb-chart__bar"],
+            cut.FindAll("g[data-series='Completed'] rect").Select(bar => bar.ClassName));
+        Assert.Equal(("0%", "100%"), (cut.FindAll("g[data-series='Completed'] rect")[2].GetAttribute("y"),
+            cut.FindAll("g[data-series='Completed'] rect")[2].GetAttribute("height")));
+        // The seam is for bars that meet in a stack.
+        Assert.Empty(cut.FindAll("line.tb-chart__gap"));
+    }
+
+    [Fact]
     public void Render_ShouldFillUnderALine_WhenGivenAnAreaSeries()
     {
         var cut = RenderChart(Area("Completed", month => month.Completed), Area("Failed", month => month.Failed));

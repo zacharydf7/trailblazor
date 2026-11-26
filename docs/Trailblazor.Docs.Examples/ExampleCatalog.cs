@@ -1174,8 +1174,9 @@ public static class ExampleCatalog
                     + "to show, the chart draws again as its parent renders. A series inside a component of yours "
                     + "that renders by itself may be drawn a render behind, so have such a change render the "
                     + "chart's parent too.") { Pitfall = true },
-                new("A value beyond a `Min` or `Max` you set is drawn outside the plot, and so is the foot of a bar "
-                    + "when `Min` is above zero. An area's fill ends at the plot's edge.") { Pitfall = true },
+                new("A line's value beyond a `Min` or `Max` you set is drawn outside the plot. A bar or an area's "
+                    + "fill stops at the plot's edge, and a bar cut short there has a square end.")
+                    { Pitfall = true },
                 new("With `ChartStacking.Percent` the axis runs from 0% to 100%, and a line series is still drawn by "
                     + "its own values, so a line whose values aren't shares between 0 and 1 runs off the plot.")
                     { Pitfall = true },

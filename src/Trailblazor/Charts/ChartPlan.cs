@@ -13,15 +13,20 @@ internal sealed record ChartSeriesValues(string Name, bool Bars, ChartCurve Curv
 internal readonly record struct ChartValueAxis(double? Min, double? Max, double? Step, string? Format);
 
 // A bar as shares of the plot, from its left and top. Its value end is the one that gets rounded corners; a bar
-// inside a stack has none, and Up says which way it grows from the bar before it.
+// inside a stack has none, nor has one cut off at the plot's edge, and Up says which way it grows from the bar
+// before it.
 internal readonly record struct ChartBar(double X, double Y, double Width, double Height, ChartBarEnd End,
     bool Up = true);
 
 internal enum ChartBarEnd
 {
+    // Against the next bar of its stack, with a seam between the two.
     None,
     Top,
     Bottom,
+
+    // Cut off at the plot's edge, because the bar's value is beyond the axis.
+    Cut,
 }
 
 // One series as a chart draws it: bars, or a line's path with the points it passes through, and for an area the
@@ -182,14 +187,18 @@ internal sealed class ChartPlan
 
             var left = (place + (1 - BarsShare) / 2) / places + (stacked ? 0 : slot * slotWidth)
                 + (slotWidth - width) / 2;
-            var top = 1 - ticks.Share(Math.Max(bar.From, bar.To));
-            var bottom = 1 - ticks.Share(Math.Min(bar.From, bar.To));
+            // A bar stops at the plot's edge when an end of the axis that the app set is short of it.
+            var top = Math.Clamp(1 - ticks.Share(Math.Max(bar.From, bar.To)), 0, 1);
+            var bottom = Math.Clamp(1 - ticks.Share(Math.Min(bar.From, bar.To)), 0, 1);
             var up = bar.To >= bar.From;
-            // In a stack only the bar farthest from zero on its side has a free end.
+            // In a stack only the bar farthest from zero on its side has a free end. A bar whose value is beyond the
+            // axis is cut off square: a rounded end would say the value is there. A stack's total can be a rounding
+            // error past the axis's end, which is no reason to cut it.
             var outermost = !stacked || !piled.Skip(slot + 1).Any(later =>
                 later[place] is { } other && other.To != other.From && other.To >= other.From == up);
-            marks[place] = new(left, top, width, bottom - top,
-                !outermost ? ChartBarEnd.None : up ? ChartBarEnd.Top : ChartBarEnd.Bottom, up);
+            var cut = ticks.Share(bar.To) is < -ChartTicks.Slack or > 1 + ChartTicks.Slack;
+            marks[place] = new(left, top, width, bottom - top, !outermost ? ChartBarEnd.None
+                : cut ? ChartBarEnd.Cut : up ? ChartBarEnd.Top : ChartBarEnd.Bottom, up);
         }
 
         return marks;

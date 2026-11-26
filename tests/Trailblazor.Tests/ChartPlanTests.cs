@@ -105,6 +105,37 @@ public class ChartPlanTests
     }
 
     [Fact]
+    public void Build_ShouldStopABarAtThePlotsEdge_WhenTheAxisStartsAboveZero()
+    {
+        var plan = Build(["A"], [Bars("One", 10)], axis: new(Min: 5, Max: null, Step: null, Format: null));
+
+        // The bar's foot at zero is below the axis, and its value end is in the plot and still rounded.
+        Assert.Equal((5d, 10d), (plan.Ticks.Min, plan.Ticks.Max));
+        AssertBar(new(0.15, 0, 0.7, 1, ChartBarEnd.Top), plan.Series[0].Marks[0]);
+    }
+
+    [Theory]
+    [InlineData(10, 0d, 0.5)]
+    [InlineData(-10, 0.5, 0.5)]
+    public void Build_ShouldCutABarSquareAtThePlotsEdge_WhenItsValueIsBeyondTheAxis(double value, double y,
+        double height)
+    {
+        var plan = Build(["A"], [Bars("One", value)], axis: new(Min: -5, Max: 5, Step: null, Format: null));
+
+        // The value is off the axis, so the bar has no rounded end to say it stops there.
+        AssertBar(new(0.15, y, 0.7, height, ChartBarEnd.Cut), plan.Series[0].Marks[0]);
+    }
+
+    [Fact]
+    public void Build_ShouldKeepAStacksRoundedEnd_WhenItsTotalIsARoundingErrorPastTheAxis()
+    {
+        // These three shares add up to a hair over 1, the end of the axis.
+        var plan = Build(["A"], [Bars("One", 6), Bars("Two", 23), Bars("Three", 1)], ChartStacking.Percent);
+
+        Assert.Equal(ChartBarEnd.Top, plan.Series[2].Marks[0]!.Value.End);
+    }
+
+    [Fact]
     public void Build_ShouldMarkMultiplesOfAStepTheAppSet_WhenTheStepHasADecimal()
     {
         var plan = Build(["A"], [Bars("One", 9)], axis: new(Min: null, Max: 10, Step: 2.5, Format: null));
