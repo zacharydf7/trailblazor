@@ -280,6 +280,31 @@ public class ChartPlanTests
     }
 
     [Fact]
+    public void Build_ShouldPlaceLinesAndBarsWhereTheItemsAre_WhenTheScaleIsContinuous()
+    {
+        var along = ChartAlong.Continuous([0, 10, 40], bars: true, format: null, markFormat: null, English);
+
+        var plan = ChartPlan.Build(["0", "10", "40"], [Bars("One", 10, 20, 40), Line("Two", 40, 20, 0)],
+            ChartStacking.None, default, English, along);
+
+        // A bar is as wide as the smallest gap between two values allows, and is centered on its item.
+        AssertBar(new(0.03, 0.75, 0.14, 0.25, ChartBarEnd.Top), plan.Series[0].Marks[0]);
+        AssertBar(new(0.83, 0, 0.14, 1, ChartBarEnd.Top), plan.Series[0].Marks[2]);
+        Assert.Equal("M1000 0l2000 5000l6000 5000", plan.Series[1].Path);
+        // The axis labels its marks, not its items.
+        Assert.Equal([("0", 8), ("10", 1), ("20", 2), ("30", 1), ("40", 4)],
+            plan.Labels.Select(label => (label.Text, label.Stride)));
+    }
+
+    [Fact]
+    public void Labels_ShouldBeThePlacesWithTheirStrides_WhenTheScaleIsEven()
+    {
+        var plan = Build(["A", "B", "C"], [Line("One", 1, 2, 3)]);
+
+        Assert.Equal([(1 / 6d, "A", 4), (0.5, "B", 1), (5 / 6d, "C", 2)], plan.Labels);
+    }
+
+    [Fact]
     public void Build_ShouldLeaveAGap_WhenAValueIsMissing()
     {
         var plan = Build(["A", "B", "C"], [Bars("Count", null, 5, 5), Line("Level", 1, null, 3)]);

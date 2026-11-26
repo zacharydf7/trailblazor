@@ -69,7 +69,23 @@ internal readonly record struct ChartTicks(double Min, double Max, double Step)
         return decimals;
     }
 
-    private static double StepFor(double span, int count)
+    // The shortest step of 1, 2 or 5 times a power of ten that is no shorter than a length.
+    internal static double StepNoLessThan(double length)
+    {
+        var power = Math.Pow(10, Math.Floor(Math.Log10(length)));
+        var ratio = length / power;
+        return (ratio <= 1 + Slack ? 1 : ratio <= 2 + Slack ? 2 : ratio <= 5 + Slack ? 5 : 10) * power;
+    }
+
+    // The next shorter step of 1, 2 or 5 times a power of ten: 2 after 5, 1 after 2, and 0.5 after 1.
+    internal static double StepBelow(double step)
+    {
+        var power = Math.Pow(10, Math.Floor(Math.Log10(step) + Slack));
+        var ratio = step / power;
+        return ratio > 5 - Slack ? 2 * power : ratio > 2 - Slack ? power : power / 2;
+    }
+
+    internal static double StepFor(double span, int count)
     {
         var rough = span / count;
         var power = Math.Pow(10, Math.Floor(Math.Log10(rough)));

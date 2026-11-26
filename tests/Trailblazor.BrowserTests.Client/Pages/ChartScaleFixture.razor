@@ -1,0 +1,14 @@
+@page "/chart-scale"
+
+@* Three marks, the first and the last on the plot's edges, so on a narrow chart those two labels are the only ones
+   that show, each reaching inward from its edge. *@
+<TbChart TItem="Year" Items="Years" X="year => year.Number" Title="Snowfall by year" Height="10rem">
+    <TbXAxis Scale="ChartScale.Continuous" />
+    <TbLineSeries Name="Snowfall" Value="year => year.Snowfall" />
+</TbChart>
+
+@code {
+    private static readonly Year[] Years = [new(2020, 310), new(2021, 280), new(2022, 345)];
+
+    private sealed record Year(int Number, int Snowfall);
+}

@@ -1,0 +1,16 @@
+<TbChart Items="Readings" X="reading => reading.Day" Title="Snow depth at the pass">
+    <TbXAxis Scale="ChartScale.Continuous" Format="MMM d" />
+    <TbYAxis Title="cm" />
+    <TbLineSeries Name="Depth" Value="reading => reading.Depth" />
+</TbChart>
+
+@code {
+    // The ranger measures on patrol days, which aren't evenly spaced.
+    private static readonly Reading[] Readings =
+    [
+        new(new(2026, 1, 3), 42), new(new(2026, 1, 6), 55), new(new(2026, 1, 7), 61), new(new(2026, 1, 15), 96),
+        new(new(2026, 1, 24), 88), new(new(2026, 2, 2), 120), new(new(2026, 2, 4), 131), new(new(2026, 2, 19), 102),
+    ];
+
+    private sealed record Reading(DateOnly Day, int Depth);
+}

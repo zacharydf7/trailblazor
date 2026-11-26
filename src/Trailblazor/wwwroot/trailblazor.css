@@ -12076,6 +12076,12 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         transform: translateX(50%);
     }
 
+    /* A label on the plot's edge starts or ends there instead of centering on its mark, in either writing
+       direction. */
+    .tb-chart__x > span[data-edge] {
+        transform: none;
+    }
+
     .tb-chart__table > summary {
         inline-size: fit-content;
         color: var(--tb-color-text-muted);

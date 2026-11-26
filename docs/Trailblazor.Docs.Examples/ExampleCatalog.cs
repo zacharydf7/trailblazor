@@ -1011,6 +1011,19 @@ public static class ExampleCatalog
                     + "`TbYAxis` also takes `Min` and `Max` for the ends of the axis, and `Step` for the distance "
                     + "between its marks, which sit on multiples of the step. Without them the chart picks round "
                     + "values.", typeof(ChartAxesExample)),
+                new("scale", "A time scale", "By default each item is one place, and the places are evenly spaced. "
+                    + "`Scale=\"ChartScale.Continuous\"` on `TbXAxis` places each item by its `X` value, a number or "
+                    + "a date, so the gaps between items show: these readings were taken on patrol days, not every "
+                    + "day. The plot runs from the first value to the last, and the axis marks round times that the "
+                    + "chart picks to suit the span, no finer than the items are spaced: here, every seventh day. "
+                    + "`Format` writes the items in the tooltip and the data table, and `MarkFormat` the marks, "
+                    + "which without it read as a time, a day, a month or a year. Marks by the hour show no date, so "
+                    + "give times that span several days a `MarkFormat` such as `\"MMM d HH:mm\"`. The tooltip "
+                    + "goes to the item nearest the pointer.", typeof(ChartScaleExample)),
+                new("scale-numbers", "A number scale", "Numbers are placed the same way: each point of this profile "
+                    + "sits at its distance along the trail, and the axis marks whole kilometers. A whole-number "
+                    + "`X`, such as a year, is marked by whole numbers, written without digit grouping.",
+                    typeof(ChartProfileExample)),
                 new("combined", "Bars with a line", "Bar and line series share a chart and its one value axis, so "
                     + "give them values in the same unit. `Color` gives a series a CSS color of its own in place of "
                     + "the one its position gives it, such as the danger color for something that went wrong.",
@@ -1055,11 +1068,11 @@ public static class ExampleCatalog
             [
                 typeof(TbChart<>), typeof(TbLineSeries<>), typeof(TbAreaSeries<>), typeof(TbBarSeries<>),
                 typeof(TbXAxis), typeof(TbYAxis), typeof(ChartPoint<>), typeof(ChartStacking), typeof(ChartCurve),
-                typeof(ChartLabels), typeof(ChartClasses),
+                typeof(ChartScale), typeof(ChartLabels), typeof(ChartClasses),
             ],
             Anatomy = """
                 <TbChart Items="…" X="…" Title="…">
-                    <TbXAxis Title="…" Format="…" />
+                    <TbXAxis Title="…" Format="…" Scale="…" />
                     <TbYAxis Title="…" Format="…" />
                     <TbBarSeries Name="…" Value="…" />
                     <TbLineSeries Name="…" Value="…" />
@@ -1116,8 +1129,11 @@ public static class ExampleCatalog
                     + "hides it wherever focus is, and a dialog around the chart stays open for that press, unless "
                     + "a field being edited in the dialog takes the key first. Everything it shows is in the data "
                     + "table too.",
-                "A click or a tap anywhere over a place picks a point there, so no target is smaller than the "
-                    + "place is wide. In a stack of areas, it picks the point of the band it is inside.",
+                "A click or a tap anywhere over a place picks a point there, so on an even scale no target is "
+                    + "smaller than the place is wide. In a stack of areas, it picks the point of the band it is "
+                    + "inside. On a continuous scale an item's target is the stretch nearer to it than to its "
+                    + "neighbors, so items close together are hard to tell apart with a pointer; the arrow keys "
+                    + "still reach each one.",
                 "The eight series colors each have 3:1 contrast against the surface in both themes, and colors next "
                     + "to each other in the order stay easy to tell apart for people with red-green color blindness.",
                 "Two or more series always have a legend, whose keys are drawn as the marks are: a block for bars, "
@@ -1162,14 +1178,24 @@ public static class ExampleCatalog
                 new("While `Items` is null or empty the chart says \"No data\", which is wrong for data that is "
                     + "still loading. Put a chart that loads its data in an [async content]"
                     + "(components/async-content), which shows the loading and the failed load.") { Pitfall = true },
-                new("Each item is one place along the chart, and the places are evenly spaced, whatever the `X` "
-                    + "values are. Dates a week apart and dates a day apart sit the same distance from each other."),
+                new("By default each item is one place along the chart, and the places are evenly spaced, whatever "
+                    + "the `X` values are: dates a week apart and dates a day apart sit the same distance from each "
+                    + "other. `Scale=\"ChartScale.Continuous\"` on `TbXAxis` places them by value."),
+                new("On a continuous scale a line joins the items in the order given, and the arrow keys move in "
+                    + "that order, so give the items in order of `X`. Items with the same `X` share one spot, where "
+                    + "the pointer reaches only the first of them; the keys reach each."),
+                new("Dates are placed by their clock time as written: a `DateTimeOffset`'s offset and a `DateTime`'s "
+                    + "kind aren't applied, so convert the times to one zone first.") { Pitfall = true },
+                new("On a continuous scale an item's bars together take seven tenths of the smallest gap between two "
+                    + "`X` values, so one close pair makes every bar thin: bars suit values a regular step apart. "
+                    + "The plot has half that gap as room at each end while a bar series shows.") { Pitfall = true },
                 new("Series take the theme's eight series colors in the order they first render, and a ninth starts "
                     + "over at the first. A series inside an `@if` that shows later goes last, in the legend and the "
                     + "table too. Past four or five series a chart is hard to read; show fewer, or several small "
                     + "charts."),
                 new("A value that isn't a number throws, naming its series. A value that is null, or isn't finite, "
-                    + "leaves a gap."),
+                    + "leaves a gap. On a continuous scale, an `X` that isn't a finite number, a `DateTime`, a "
+                    + "`DateTimeOffset` or a `DateOnly` throws, null included."),
                 new("When a series' `Value` reads something from outside the item, such as a field that picks what "
                     + "to show, the chart draws again as its parent renders. A series inside a component of yours "
                     + "that renders by itself may be drawn a render behind, so have such a change render the "
@@ -1224,6 +1250,8 @@ public static class ExampleCatalog
                 "Without the helpers, a legend button is `GetByRole(AriaRole.Button, new() { Name = \"Shuttle\" })`, "
                     + "with `aria-pressed` true while its series shows. A hidden series' legend entry has "
                     + "`data-hidden`, to restyle it by.",
+                "On a continuous scale the axis's labels are its round marks, not the items. `Places` still lists "
+                    + "the items, as the data table does.",
                 "Without the helpers, find a chart with `GetByRole(AriaRole.Figure, new() { Name = \"Hikers by "
                     + "month\" })` and its drawing with `GetByRole(AriaRole.Img, new() { Name = \"Bar chart: "
                     + "Hikers\" })`; the point that has the tab stop is an image too.",

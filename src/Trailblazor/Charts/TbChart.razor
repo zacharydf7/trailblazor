@@ -109,6 +109,7 @@
         @* The plot is one element whether it has anything to draw or not, so the script stays on it. The script reads
            each place's name from it, and each series' values and points from the series' own element. *@
         <div @ref="_plot" id="@_plotId" data-part="plot" data-places="@(blank ? null : Places(plan))"
+             data-at="@(blank ? null : At(plan))"
              data-activates="@(RendererInfo.IsInteractive && OnPointClick.HasDelegate ? "" : null)"
              data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
              class="@ClassNames.Join("tb-chart__plot", blank ? "tb-chart__plot--empty" : null, Classes?.Plot)">
@@ -223,12 +224,13 @@
                a child of the grid item instead. *@
             <div class="tb-chart__x-row" aria-hidden="true">
                 <div class="tb-chart__x"
-                     style="--_tb-chart-count: @plan.Places.Count; --_tb-chart-chars: @Longest(plan)">
-                    @for (var place = 0; place < plan.Places.Count; place += plan.LabelEvery)
+                     style="--_tb-chart-count: @Steps(plan); --_tb-chart-chars: @Longest(plan)">
+                    @foreach (var label in plan.Labels)
                     {
-                        var at = Percent(plan.Middle(place));
-                        <span style="inset-inline-start: @at; --_tb-chart-stride: @plan.Stride(place)">
-                            @plan.Places[place]
+                        @* A mark on the plot's edge has its label inside the plot, not half out of it. *@
+                        var edge = label.X <= 0 ? "start" : label.X >= 1 ? "end" : null;
+                        <span data-edge="@edge" style="@Along(label.X, edge); --_tb-chart-stride: @label.Stride">
+                            @label.Text
                         </span>
                     }
                 </div>

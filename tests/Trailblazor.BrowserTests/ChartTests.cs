@@ -83,6 +83,88 @@ public class ChartTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Scale_ShouldPlaceItemsByTheirDatesAndFollowTheNearest_WhenContinuous(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chart/scale");
+        var chart = Chart(page, "Snow depth at the pass");
+        var plot = chart.Locator("[data-part=plot]");
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+        var box = await plot.BoundingBoxAsync();
+
+        // The readings run from January 3 to February 19, 47 days, and the fourth, of January 15, is 12 days in.
+        var fourth = await plot.Locator("circle.tb-chart__marker").Nth(3).BoundingBoxAsync();
+        Assert.InRange(fourth!.X + fourth.Width / 2 - (box!.X + box.Width * 12 / 47), -1, 1);
+
+        // A fifth of the way along is January 12, nearer the reading of the 15th than the one of the 7th. On an even
+        // scale it would be the second of the eight readings.
+        await page.Mouse.MoveAsync(box.X + box.Width * 0.2f, box.Y + 10);
+        await Expect(chart.Locator(".tb-chart__tooltip-place")).ToHaveTextAsync("Jan 15");
+        var line = await plot.Locator(".tb-chart__crosshair").BoundingBoxAsync();
+        Assert.InRange(line!.X - (box.X + box.Width * 12 / 47), -1.5, 1.5);
+
+        // The keys still go item by item.
+        await plot.Locator("[tabindex='0']").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(page.Locator(":focus")).ToHaveAccessibleNameAsync("Jan 6, Depth: 55, 2 of 8");
+
+        // The axis marks every seventh day, and shows only the marks that fit. The first mark is on the plot's
+        // edge, and its label starts there.
+        await Expect(chart.Locator(".tb-chart__x > span")).ToHaveTextAsync(
+            ["Jan 3", "Jan 10", "Jan 17", "Jan 24", "Jan 31", "Feb 7", "Feb 14"]);
+        var first = await chart.Locator(".tb-chart__x > span").First.BoundingBoxAsync();
+        Assert.InRange(first!.X - box.X, -1, 1);
+
+        // Right to left, the first reading is at the right edge, its label ends there, and the pointer still finds
+        // the nearest reading.
+        await page.SetViewportSizeAsync(1280, 800);
+        await page.EvaluateAsync("() => { document.documentElement.dir = 'rtl'; }");
+        box = await plot.BoundingBoxAsync();
+        first = await chart.Locator(".tb-chart__x > span").First.BoundingBoxAsync();
+        Assert.InRange(first!.X + first.Width - (box!.X + box.Width), -1, 1);
+        await page.Mouse.MoveAsync(box.X + box.Width * 0.8f, box.Y + 10);
+        await Expect(chart.Locator(".tb-chart__tooltip-place")).ToHaveTextAsync("Jan 15");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ScaleLabels_ShouldNotOverlap_WhenMarksAreOnThePlotsEdges(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chart/scale-numbers");
+        var chart = Chart(page, "Elevation along the ridge trail");
+        await Expect(chart.Locator(".tb-chart__x > span")).ToHaveTextAsync(
+            ["0 km", "1 km", "2 km", "3 km", "4 km", "5 km", "6 km"]);
+
+        // The labels at 0 and 6 km start and end at the plot's edges, so each reaches farther toward its neighbor
+        // than a centered label does. No two labels overlap at any width, as the marks draw closer.
+        for (var width = 420; width >= 180; width -= 6)
+        {
+            await page.SetViewportSizeAsync(width, 800);
+            var labels = await ShownPlaceLabelsAsync(chart);
+            Assert.True(labels.Count >= 1, $"No label shows at {width} pixels.");
+            Assert.All(labels.Zip(labels.Skip(1)), pair => Assert.True(pair.Second[0] >= pair.First[1],
+                $"At {width} pixels a label starts at {pair.Second[0]}, before the one before it ends at "
+                + $"{pair.First[1]}."));
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ScaleLabels_ShouldNotOverlap_WhenOnlyTheTwoOnThePlotsEdgesShow(string browser)
+    {
+        var page = await OpenAsync(browser, "/chart-scale");
+        var chart = Chart(page, "Snowfall by year");
+        await Expect(chart.Locator(".tb-chart__x > span")).ToHaveTextAsync(["2020", "2021", "2022"]);
+
+        // The middle label goes first as the chart narrows, and the two on the edges reach toward each other.
+        for (var width = 300; width >= 96; width -= 4)
+        {
+            await page.SetViewportSizeAsync(width, 600);
+            var labels = await ShownPlaceLabelsAsync(chart);
+            Assert.All(labels.Zip(labels.Skip(1)), pair => Assert.True(pair.Second[0] >= pair.First[1],
+                $"At {width} pixels a label starts at {pair.Second[0]}, before the one before it ends at "
+                + $"{pair.First[1]}."));
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Series_ShouldDifferWithoutColor_WhenColorsAreForced(string browser)
     {
         var page = await OpenAsync(browser, "/examples/chart/lines", new() { ForcedColors = ForcedColors.Active });

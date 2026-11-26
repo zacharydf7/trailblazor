@@ -252,7 +252,10 @@ public partial class TbChart<TItem>
             new ChartSeriesValues(one.Name, one.Bars, one.Line, [.. items.Select(one.ValueOf)], one.IsHidden,
                 one.Filled))];
         var axis = Axes.Y is { } y ? new ChartValueAxis(y.Min, y.Max, y.Step, y.Format) : default;
-        return ChartPlan.Build(places, series, Stacking, axis, culture);
+        var bars = series.Any(one => one.Bars && !one.Hidden);
+        var along = Axes.X is { Scale: ChartScale.Continuous } x
+            ? ChartAlong.Continuous([.. items.Select(X!)], bars, x.Format, x.MarkFormat, culture) : null;
+        return ChartPlan.Build(places, series, Stacking, axis, culture, along);
     }
 
     private static string Slot(int index) => $"tb-chart__series--{index % Slots + 1}";
@@ -266,7 +269,28 @@ public partial class TbChart<TItem>
         _ => "tb-chart__bar",
     };
 
-    private static int Longest(ChartPlan plan) => plan.Places.Max(place => place.Length);
+    // The room a label needs, in characters: the longest one's, and half as much again when a label is on one of
+    // the plot's edges, since that one isn't centered on its mark and reaches farther toward its neighbor. With a
+    // label on each edge the two may be the only ones showing, and they need a whole label's room each.
+    private static int Longest(ChartPlan plan)
+    {
+        var longest = plan.Labels.Max(label => label.Text.Length);
+        var (start, end) = (plan.Labels.Any(label => label.X <= 0), plan.Labels.Any(label => label.X >= 1));
+        return start && end ? longest * 2 : start || end ? (longest * 3 + 1) / 2 : longest;
+    }
+
+    // Where a label is along the axis: at its mark, or against the plot's far end when its mark is on that edge.
+    private static string Along(double x, string? edge) =>
+        edge == "end" ? "inset-inline-end: 0" : $"inset-inline-start: {Percent(x)}";
+
+    private static string Steps(ChartPlan plan) =>
+        Math.Round(plan.Along.Steps, 3).ToString(CultureInfo.InvariantCulture);
+
+    // Where each place is along a continuous chart, for the script to find the one nearest the pointer, as whole
+    // steps of the 10,000 grid. The script works out an even chart's places itself.
+    private static string? At(ChartPlan plan) => !plan.Along.ByValue ? null
+        : string.Join(' ', plan.Along.At.Select(at => Math.Round(at * ChartPath.Grid)
+            .ToString(CultureInfo.InvariantCulture)));
 
     // One line for each place, for the script to read. A name with a line break in it would count as two.
     private static string Places(ChartPlan plan) =>

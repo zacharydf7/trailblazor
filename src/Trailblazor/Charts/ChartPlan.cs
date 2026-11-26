@@ -51,12 +51,13 @@ internal sealed class ChartPlan
     private const int MostTicks = 50;
 
     private ChartPlan(IReadOnlyList<string> places, ChartTicks ticks, IReadOnlyList<ChartSeriesPlan> series,
-        IReadOnlyList<(double Y, string Text, bool Zero)> valueTicks)
+        IReadOnlyList<(double Y, string Text, bool Zero)> valueTicks, ChartAlong along)
     {
         Places = places;
         Ticks = ticks;
         Series = series;
         ValueTicks = valueTicks;
+        Along = along;
         LabelEvery = 1;
         while (places.Count / LabelEvery > MostLabels)
         {
@@ -65,6 +66,9 @@ internal sealed class ChartPlan
     }
 
     public IReadOnlyList<string> Places { get; }
+
+    // Where the places are along the chart.
+    public ChartAlong Along { get; }
 
     public ChartTicks Ticks { get; }
 
@@ -77,17 +81,27 @@ internal sealed class ChartPlan
     public int LabelEvery { get; }
 
     // The middle of a place, as a share of the plot from its left.
-    public double Middle(int place) => (place + 0.5) / Places.Count;
+    public double Middle(int place) => Along.At[place];
 
     // A place's label shows whenever labels this many places apart have room, so thinning keeps them evenly spaced:
     // every eighth, then every fourth, and so on. The first label's stride is the widest the axis holds, so it shows
     // on any plot with room for one label.
-    public int Stride(int place) =>
-        place == 0 ? (int)BitOperations.RoundUpToPowerOf2((uint)Places.Count) : place & -place;
+    public int Stride(int place) => Stride(place, Places.Count);
+
+    // The labels along the chart: each with its share of the plot from the left, its text, and its stride. An even
+    // scale labels its places, and a continuous one its marks.
+    public IEnumerable<(double X, string Text, int Stride)> Labels => Along.ByValue
+        ? Along.Marks.Select((mark, index) => (mark.X, mark.Text, Stride(index, Along.Marks.Count)))
+        : Enumerable.Range(0, (Places.Count + LabelEvery - 1) / LabelEvery).Select(index => index * LabelEvery)
+            .Select(place => (Middle(place), Places[place], Stride(place)));
+
+    private static int Stride(int index, int count) =>
+        index == 0 ? (int)BitOperations.RoundUpToPowerOf2((uint)count) : index & -index;
 
     public static ChartPlan Build(IReadOnlyList<string> places, IReadOnlyList<ChartSeriesValues> series,
-        ChartStacking stacking, ChartValueAxis axis, CultureInfo culture)
+        ChartStacking stacking, ChartValueAxis axis, CultureInfo culture, ChartAlong? along = null)
     {
+        along ??= ChartAlong.Even(places.Count);
         // Bars pile with bars and areas with areas.
         var bars = series.Where(one => one.Bars && !one.Hidden).ToList();
         var areas = series.Where(one => one.Filled && !one.Hidden).ToList();
@@ -121,28 +135,28 @@ internal sealed class ChartPlan
             else if (one.Bars)
             {
                 var slot = bars.IndexOf(one);
-                planned.Add(new(one.Name, true, "", [], Bars(piled, slot, places.Count, stacking, ticks), text));
+                planned.Add(new(one.Name, true, "", [], Bars(piled, slot, along, stacking, ticks), text));
             }
             else if (one.Filled)
             {
                 // An area's line runs along the top of its part of the pile, and its floor along the bottom.
                 var parts = filled[areas.IndexOf(one)];
                 (double X, double Y)?[] points = [.. parts.Select((part, place) => part is { } at
-                    ? ((double, double)?)((place + 0.5) / places.Count, 1 - ticks.Share(at.To)) : null)];
+                    ? ((double, double)?)(along.At[place], 1 - ticks.Share(at.To)) : null)];
                 (double X, double Y)?[] floor = [.. parts.Select((part, place) => part is { } at
-                    ? ((double, double)?)((place + 0.5) / places.Count, 1 - ticks.Share(at.From)) : null)];
+                    ? ((double, double)?)(along.At[place], 1 - ticks.Share(at.From)) : null)];
                 planned.Add(new(one.Name, false, ChartPath.Line(points, one.Curve), points, [], text,
                     Fill: ChartPath.Area(points, floor, one.Curve)));
             }
             else
             {
                 (double X, double Y)?[] points = [.. one.Values.Select((value, place) =>
-                    value is { } at ? ((double, double)?)((place + 0.5) / places.Count, 1 - ticks.Share(at)) : null)];
+                    value is { } at ? ((double, double)?)(along.At[place], 1 - ticks.Share(at)) : null)];
                 planned.Add(new(one.Name, false, ChartPath.Line(points, one.Curve), points, [], text));
             }
         }
 
-        return new(places, ticks, planned, valueTicks);
+        return new(places, ticks, planned, valueTicks, along);
     }
 
     // Where each value of these series starts and ends: from zero, or on top of the series before it.
@@ -171,11 +185,12 @@ internal sealed class ChartPlan
             ? new(max - ticks.Step, max, ticks.Step) : new(min, min + ticks.Step, ticks.Step);
     }
 
-    private static ChartBar?[] Bars((double From, double To)?[][] piled, int slot, int places, ChartStacking stacking,
-        ChartTicks ticks)
+    private static ChartBar?[] Bars((double From, double To)?[][] piled, int slot, ChartAlong along,
+        ChartStacking stacking, ChartTicks ticks)
     {
         var stacked = stacking != ChartStacking.None;
-        var slotWidth = BarsShare / places / (stacked ? 1 : piled.Length);
+        var places = along.At.Count;
+        var slotWidth = BarsShare * along.Slot / (stacked ? 1 : piled.Length);
         var width = slotWidth * (stacked || piled.Length == 1 ? 1 : BesideShare);
         var marks = new ChartBar?[places];
         for (var place = 0; place < places; place++)
@@ -185,7 +200,7 @@ internal sealed class ChartPlan
                 continue;
             }
 
-            var left = (place + (1 - BarsShare) / 2) / places + (stacked ? 0 : slot * slotWidth)
+            var left = along.At[place] - BarsShare * along.Slot / 2 + (stacked ? 0 : slot * slotWidth)
                 + (slotWidth - width) / 2;
             // A bar stops at the plot's edge when an end of the axis that the app set is short of it.
             var top = Math.Clamp(1 - ticks.Share(Math.Max(bar.From, bar.To)), 0, 1);

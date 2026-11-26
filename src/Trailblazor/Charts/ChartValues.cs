@@ -13,7 +13,7 @@ internal static class ChartValues
             return null;
         }
 
-        if (value is Enum || Type.GetTypeCode(value.GetType()) is not (>= TypeCode.SByte and <= TypeCode.Decimal))
+        if (!IsNumber(value))
         {
             throw new InvalidOperationException(
                 $"The chart series \"{series}\" got a value of type {value.GetType().Name}, which isn't a number.");
@@ -22,6 +22,10 @@ internal static class ChartValues
         var number = Convert.ToDouble(value, CultureInfo.InvariantCulture);
         return double.IsFinite(number) ? number : null;
     }
+
+    // Whether a value is of a number type. An enum is not, though it has a number under it.
+    public static bool IsNumber(object value) =>
+        value is not Enum && Type.GetTypeCode(value.GetType()) is >= TypeCode.SByte and <= TypeCode.Decimal;
 
     // An enum reads as its name in words, and a date without a time of day as a short date, unless a format says
     // otherwise.

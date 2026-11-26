@@ -29,6 +29,9 @@ export function attachChart(plot, events, point, noValue, activates) {
         }
 
         const places = plot.dataset.places === undefined ? [] : plot.dataset.places.split('\n');
+        // Where each place is along the chart, as a share from its start: evenly spaced unless the plot has data-at.
+        const at = plot.dataset.at === undefined ? places.map((_, place) => (place + 0.5) / places.length)
+            : plot.dataset.at.split(' ').map(x => x / 10000);
         const series = [...plot.querySelectorAll('.tb-chart__marks [data-series]')].map(element => ({
             number: Number(element.dataset.number),
             name: element.dataset.series,
@@ -39,7 +42,7 @@ export function attachChart(plot, events, point, noValue, activates) {
                 return point === '-' ? null : { x: x / 10000, y: y / 10000 };
             }),
         })).sort((one, other) => one.number - other.number);
-        model = { places, series };
+        model = { places, series, at };
         return model;
     }
 
@@ -62,7 +65,7 @@ export function attachChart(plot, events, point, noValue, activates) {
             return;
         }
 
-        const x = across((place + 0.5) / places.length);
+        const x = across(read().at[place]);
         crosshair.style.left = `${x * 100}%`;
         crosshair.hidden = false;
         const rows = series.map((one, index) => {
@@ -88,9 +91,15 @@ export function attachChart(plot, events, point, noValue, activates) {
 
     const placeAt = clientX => {
         const box = plot.getBoundingClientRect();
-        const count = read().places.length;
-        const place = Math.floor(across((clientX - box.left) / box.width) * count);
-        return Math.max(0, Math.min(count - 1, place));
+        const share = across((clientX - box.left) / box.width);
+        const { at } = read();
+        let nearest = 0;
+        at.forEach((x, place) => {
+            if (Math.abs(x - share) < Math.abs(at[nearest] - share)) {
+                nearest = place;
+            }
+        });
+        return nearest;
     };
 
     // A press within this many pixels of a point is on that point: a marker's size.
@@ -363,7 +372,7 @@ export function attachChart(plot, events, point, noValue, activates) {
     });
     observer.observe(plot, {
         subtree: true, childList: true, attributes: true,
-        attributeFilter: ['data-places', 'data-points', 'data-values'],
+        attributeFilter: ['data-places', 'data-at', 'data-points', 'data-values'],
     });
 
     plot.addEventListener('pointermove', onPointerMove);

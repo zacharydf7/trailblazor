@@ -8444,3 +8444,10 @@ Trailblazor.TbAreaSeries<TItem>.Markers.get -> bool?
 Trailblazor.TbAreaSeries<TItem>.Markers.set -> void
 Trailblazor.TbAreaSeries<TItem>.TbAreaSeries() -> void
 const Trailblazor.TbStrings.ChartAreas = "Chart.Areas" -> string!
+Trailblazor.ChartScale
+Trailblazor.ChartScale.Continuous = 1 -> Trailblazor.ChartScale
+Trailblazor.ChartScale.Even = 0 -> Trailblazor.ChartScale
+Trailblazor.TbXAxis.Scale.get -> Trailblazor.ChartScale
+Trailblazor.TbXAxis.Scale.set -> void
+Trailblazor.TbXAxis.MarkFormat.get -> string?
+Trailblazor.TbXAxis.MarkFormat.set -> void
