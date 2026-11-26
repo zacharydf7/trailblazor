@@ -3,7 +3,8 @@
 # Trailblazor
 
 An MIT-licensed Blazor UI component library for .NET 10: accessible by default, styled with design tokens and
-cascade layers, and built on the browser's native `<dialog>`, Popover API and anchor positioning.
+cascade layers, and built on the browser's native `<dialog>` and Popover API, with a small script placing popups
+beside what opens them.
 
 ## Why Trailblazor
 
@@ -21,6 +22,11 @@ Trailblazor is in development, and there are no packages yet. Try the components
 https://trailblazor.dev/. For a coding assistant, every page
 is also published as Markdown, listed in https://trailblazor.dev/llms.txt (or all in one file,
 llms-full.txt).
+
+Trailblazor works in static server rendering and in the Server, WebAssembly and Auto render modes. Blazor Hybrid,
+such as .NET MAUI, isn't tested yet. It needs at least Chrome or Edge 123, Firefox 128 or Safari 17.5, for CSS
+`light-dark()`, relative colors and the Popover API; newer features, such as `@scope`, are used only where the
+browser has them.
 
 ## Repository layout
 

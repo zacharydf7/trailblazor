@@ -280,8 +280,8 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     // A field's text doesn't show the values it reads from outside, such as a loop's variable, so those are compared.
     protected override void OnParametersSet()
     {
-        var captured = Captured.Of(Field);
-        if (Field?.ToString() != _field?.ToString() || !captured.SequenceEqual(_captured))
+        if (!SameMembers(Field, _field) && Captured.Of(Field) is var captured
+            && (Field?.ToString() != _field?.ToString() || !captured.SequenceEqual(_captured)))
         {
             _field = Field;
             _captured = captured;
@@ -531,6 +531,18 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
         MemberExpression parent when PathOf(parent) is { } path => $"{path}.{member.Member.Name}",
         _ => null,
     };
+
+    // A new field naming the same members from the item down is unchanged, so it needn't be written out as text.
+    private static bool SameMembers(Expression<Func<TItem, object?>>? field, Expression<Func<TItem, object?>>? last)
+    {
+        var (now, before) = (Body(field), Body(last));
+        while (now is MemberExpression member && before is MemberExpression earlier && member.Member == earlier.Member)
+        {
+            (now, before) = (member.Expression, earlier.Expression);
+        }
+
+        return now is ParameterExpression && before is ParameterExpression;
+    }
 
     // A field written as item => item.Count reaches here boxed, as a conversion around the member.
     private static Expression? Body(Expression<Func<TItem, object?>>? field) =>

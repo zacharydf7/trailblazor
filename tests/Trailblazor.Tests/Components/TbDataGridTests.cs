@@ -24,6 +24,8 @@ public class TbDataGridTests : BunitContext
 
     private sealed record Town(string City);
 
+    private sealed record Spot(int Id, string Name, Spot? Parent);
+
     private sealed record Trip(Town From, Town To);
 
     private enum Season { Summer, AllYear }
@@ -396,6 +398,45 @@ public class TbDataGridTests : BunitContext
             })));
 
         Assert.Equal("Pine ", Row(cut, "1").QuerySelector("td")!.TextContent);
+    }
+
+    [Fact]
+    public void Render_ShouldShowTheNewField_WhenAColumnsFieldNamesAnotherMember()
+    {
+        RenderFragment Columns(Expression<Func<Trail, object?>> field) => builder =>
+        {
+            builder.OpenComponent<TbColumn<Trail>>(0);
+            builder.AddAttribute(1, nameof(TbColumn<Trail>.Id), "shown");
+            builder.AddAttribute(2, nameof(TbColumn<Trail>.Field), field);
+            builder.CloseComponent();
+        };
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, Trails)
+            .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.KeySelector, trail => trail.Id)
+            .Add(grid => grid.ChildContent, Columns(trail => trail.Name)));
+
+        cut.Render(parameters => parameters.Add(grid => grid.ChildContent, Columns(trail => trail.Id)));
+
+        Assert.Equal("1", Row(cut, "1").QuerySelector("td")!.TextContent);
+    }
+
+    [Fact]
+    public void Render_ShouldShowTheNewField_WhenAColumnsFieldReachesOneMemberDeeper()
+    {
+        RenderFragment Columns(Expression<Func<Spot, object?>> field) => builder =>
+        {
+            builder.OpenComponent<TbColumn<Spot>>(0);
+            builder.AddAttribute(1, nameof(TbColumn<Spot>.Id), "shown");
+            builder.AddAttribute(2, nameof(TbColumn<Spot>.Field), field);
+            builder.CloseComponent();
+        };
+        Spot[] spots = [new(1, "Fern Gully", new(2, "Coast", null))];
+        var cut = Render<TbDataGrid<Spot>>(parameters => parameters.Add(grid => grid.Items, spots)
+            .Add(grid => grid.AriaLabel, "Spots").Add(grid => grid.KeySelector, spot => spot.Id)
+            .Add(grid => grid.ChildContent, Columns(spot => spot.Name)));
+
+        cut.Render(parameters => parameters.Add(grid => grid.ChildContent, Columns(spot => spot.Parent!.Name)));
+
+        Assert.Equal("Coast", cut.Find("tbody tr[data-part=row] td").TextContent);
     }
 
     [Fact]
