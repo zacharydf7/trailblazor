@@ -12,6 +12,14 @@ public sealed record ChartLabels
     /// for <see cref="TbStrings.ChartEmpty"/>.</summary>
     public string? Empty { get; init; }
 
+    /// <summary>Shown in place of the plot when every series is hidden. Leave it null for the app's text for
+    /// <see cref="TbStrings.ChartAllHidden"/>.</summary>
+    public string? AllHidden { get; init; }
+
+    /// <summary>What screen readers hear after a hidden series' name in a legend that has no buttons. Leave it null
+    /// for the app's text for <see cref="TbStrings.ChartHidden"/>.</summary>
+    public string? Hidden { get; init; }
+
     /// <summary>What screen readers hear for the drawing, with <c>{0}</c> for the kind of chart and <c>{1}</c> for
     /// its series' names. Leave it null for the app's text for <see cref="TbStrings.ChartSummary"/>.</summary>
     public string? Summary { get; init; }

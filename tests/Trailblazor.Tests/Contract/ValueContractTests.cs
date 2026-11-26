@@ -14,7 +14,10 @@ public class ValueContractTests : BunitContext
 
     // Pairs of components that only render inside their parent, whose own tests set them there.
     private static readonly HashSet<string> InsideParent =
-        ["TbTreeItem`1.Expanded", "TbNavGroup.Expanded", "TbSplitterPane.Size", "TbSplitterPane.Collapsed"];
+    [
+        "TbTreeItem`1.Expanded", "TbNavGroup.Expanded", "TbSplitterPane.Size", "TbSplitterPane.Collapsed",
+        "TbLineSeries`1.Hidden", "TbBarSeries`1.Hidden",
+    ];
 
     // Files come only from the browser, so there is no sample to set.
     private static readonly HashSet<string> NoSample = ["TbFileUpload.Value"];

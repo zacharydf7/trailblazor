@@ -8423,3 +8423,15 @@ override Trailblazor.ChartPoint<TItem>.ToString() -> string!
 override Trailblazor.TbChart<TItem>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 static Trailblazor.ChartPoint<TItem>.operator !=(Trailblazor.ChartPoint<TItem>? left, Trailblazor.ChartPoint<TItem>? right) -> bool
 static Trailblazor.ChartPoint<TItem>.operator ==(Trailblazor.ChartPoint<TItem>? left, Trailblazor.ChartPoint<TItem>? right) -> bool
+Trailblazor.ChartLabels.AllHidden.get -> string?
+Trailblazor.ChartLabels.AllHidden.init -> void
+Trailblazor.TbChart<TItem>.CanHideSeries.get -> bool
+Trailblazor.TbChart<TItem>.CanHideSeries.set -> void
+Trailblazor.TbChartSeries<TItem>.Hidden.get -> bool
+Trailblazor.TbChartSeries<TItem>.Hidden.set -> void
+Trailblazor.TbChartSeries<TItem>.HiddenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbChartSeries<TItem>.HiddenChanged.set -> void
+const Trailblazor.TbStrings.ChartAllHidden = "Chart.AllHidden" -> string!
+Trailblazor.ChartLabels.Hidden.get -> string?
+Trailblazor.ChartLabels.Hidden.init -> void
+const Trailblazor.TbStrings.ChartHidden = "Chart.Hidden" -> string!

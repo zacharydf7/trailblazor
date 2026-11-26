@@ -31,6 +31,8 @@
     <TbChart TItem="string" Items="@(["Ridge", "Lake"])" X="name => name" AriaLabel="Slow counts" Height="6rem"
              OnPointClick="PointAsync">
         <TbBarSeries Name="Letters" Value="name => name.Length" />
+        <TbBarSeries Name="Vowels" Value="name => name.Count(letter => Vowels.Contains(letter))"
+                     Hidden="_vowelsHidden" HiddenChanged="VowelsAsync" />
     </TbChart>
     <TbDatePicker TDate="DateOnly" Label="Slow day" Value="_day" ValueChanged="DayAsync" />
     <TbCalendar TDate="DateOnly" Label="Slow hike" Value="_hike" ValueChanged="HikeAsync" />
@@ -131,7 +133,10 @@
     private string? _tab = "maps";
     private Signature? _signature;
     private int _days;
+    private const string Vowels = "aeiou";
+
     private bool _open;
+    private bool _vowelsHidden;
     private string? _step = "dates";
     private string _slow = "";
     private bool _closable = true;
@@ -150,6 +155,8 @@
     private Task ColorAsync(string? color) => SlowlyAsync($"color {color}", () => _color = color);
 
     private Task PointAsync(ChartPoint<string> point) => SlowlyAsync($"point {point.Item} {point.Value}");
+
+    private Task VowelsAsync(bool hidden) => SlowlyAsync($"vowels hidden {hidden}", () => _vowelsHidden = hidden);
 
     private Task PaceAsync(int pace) => SlowlyAsync($"pace {pace}", () => _pace = pace);
 

@@ -6,6 +6,12 @@ namespace Trailblazor.Testing.Playwright;
 /// <summary>A <c>TbChart</c>, found by its <c>Title</c> or <c>AriaLabel</c>, or the only one in the scope.</summary>
 public sealed class TbChartLocator(ILocator scope, string? name)
 {
+    // Whether the plot draws this series.
+    private const string Drawn = """
+        (chart, series) => [...chart.querySelectorAll('.tb-chart__marks [data-series]')]
+            .some(marks => marks.dataset.series === series)
+        """;
+
     // Where a series' point at a place is in the plot, as "x,y" in shares of its box, or what the chart lacks:
     // "series", "place" or, where the series has nothing at the place, "value".
     private const string Spot = """
@@ -64,9 +70,48 @@ public sealed class TbChartLocator(ILocator scope, string? name)
             .EvaluateAsync<string>("cell => cell.textContent");
     }
 
+    /// <summary>Whether this series is hidden: left out of the drawing, with its values still in the data table. A
+    /// series the chart doesn't have throws.</summary>
+    public async Task<bool> IsSeriesHiddenAsync(string series) => !(await SeriesAsync()).Contains(series)
+        ? throw new InvalidOperationException(Missing("series", series, ""))
+        : !await Chart.EvaluateAsync<bool>(Drawn, series);
+
+    /// <summary>Hides this series, if it shows, by pressing its button in the legend, and waits for the app's
+    /// <c>HiddenChanged</c> to run. A series the chart doesn't have throws, and so does a legend with no buttons: a
+    /// chart with one series, or with <c>CanHideSeries</c> off. It waits for the page to be interactive first.
+    /// </summary>
+    public Task HideSeriesAsync(string series) => SetHiddenAsync(series, true);
+
+    /// <summary>Shows this series, if it is hidden, by pressing its button in the legend, and waits for the app's
+    /// <c>HiddenChanged</c> to run. It throws as <see cref="HideSeriesAsync"/> does.</summary>
+    public Task ShowSeriesAsync(string series) => SetHiddenAsync(series, false);
+
+    private async Task SetHiddenAsync(string series, bool hidden)
+    {
+        // A prerendered legend has no buttons until the page is interactive.
+        await Assertions.Expect(Plot).ToHaveAttributeAsync("data-ready", "");
+        if (await IsSeriesHiddenAsync(series) == hidden)
+        {
+            return;
+        }
+
+        var button = Chart.Locator("[data-part=legend] button")
+            .And(Chart.GetByRole(AriaRole.Button, new() { Name = series, Exact = true }));
+        if (await button.CountAsync() == 0)
+        {
+            throw new InvalidOperationException($"The chart's legend has no button for \"{series}\".");
+        }
+
+        await Commit.CountedAsync(Plot, "data-commits", async () =>
+        {
+            await button.ClickAsync();
+            return true;
+        });
+    }
+
     /// <summary>Clicks this series' point at this place, and waits for the app's <c>OnPointClick</c> to run. A
-    /// series or a place the chart doesn't have throws, and so do a place where the series has no value and a chart
-    /// with no <c>OnPointClick</c>.</summary>
+    /// series or a place the chart doesn't have throws, and so do a hidden series, a place where the series has no
+    /// value and a chart with no <c>OnPointClick</c>.</summary>
     public async Task ClickPointAsync(string series, string place)
     {
         await Assertions.Expect(Plot).ToHaveAttributeAsync("data-ready", "");
@@ -78,7 +123,9 @@ public sealed class TbChartLocator(ILocator scope, string? name)
         var spot = await Plot.EvaluateAsync<string>(Spot, new[] { series, place });
         if (!spot.Contains(','))
         {
-            throw new InvalidOperationException(Missing(spot, series, place));
+            // The plot has no marks for a hidden series, which the data table still lists.
+            var hidden = spot == "series" && (await SeriesAsync()).Contains(series);
+            throw new InvalidOperationException(Missing(hidden ? "hidden" : spot, series, place));
         }
 
         var shares = spot.Split(',').Select(share => float.Parse(share, CultureInfo.InvariantCulture)).ToArray();
@@ -94,6 +141,7 @@ public sealed class TbChartLocator(ILocator scope, string? name)
     {
         "series" => $"The chart has no series named \"{series}\".",
         "place" => $"The chart has no place named \"{place}\".",
+        "hidden" => $"\"{series}\" is hidden.",
         _ => $"\"{series}\" has no value at \"{place}\".",
     };
 }

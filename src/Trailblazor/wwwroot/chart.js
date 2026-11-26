@@ -341,7 +341,13 @@ export function attachChart(plot, events, point, noValue, activates) {
     const own = [crosshair, tooltip, ...proxies];
     const observer = new (viewOf(plot).MutationObserver)(changes => {
         if (changes.some(change => !own.some(mine => mine.contains(change.target)))) {
+            // A series hidden or shown moves the ones after it, and the tab stop stays with its own series.
+            const number = active && model?.series[active.series]?.number;
             model = null;
+            if (active) {
+                active.series = read().series.findIndex(one => one.number === number);
+            }
+
             settle();
         }
     });

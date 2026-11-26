@@ -15,7 +15,7 @@ Familiar apps: Excel and Google Sheets charts, Grafana panels, Highcharts' acces
 - [x] Escape hides the tooltip and leaves focus where it is. `ChartTests.Keys_ShouldMoveBetweenNamedPoints_WhenThePlotHasFocus`
 - [x] Escape hides a tooltip the pointer shows while focus is elsewhere, and a dialog around the chart stays open for that press. `ChartTests.Escape_ShouldHideTheTooltipAndLeaveTheDialogOpen_WhenTheChartIsInADialog`
 - [x] Escape goes first to a field being edited in the same dialog, even while the pointer shows the tooltip. `ChartTests.Escape_ShouldCancelAnEditFirst_WhenThePointerRestsOnAChartInTheSameDialog`
-- [ ] Tab reaches each legend button, and Enter or Space hides or shows its series. #199
+- [x] Tab reaches each legend button, and Enter or Space hides or shows its series, with focus left on the button. `ChartTests.Legend_ShouldHideAndShowASeries_WhenItsButtonIsPressedWithTheKeys`
 - [x] Tab reaches the data table's disclosure, and Enter or Space opens it. `ChartTests.Table_ShouldOpenFromTheKeyboard_WhenItsDisclosureHasFocus`
 
 ## Pointer
@@ -26,7 +26,13 @@ Familiar apps: Excel and Google Sheets charts, Grafana panels, Highcharts' acces
 - [x] The tooltip has no timeout. `chart.js`
 - [x] The tooltip stays inside the plot, and a name too long for the room beside the line wraps. `ChartTests.Tooltip_ShouldStayInsideThePlot_WhenThePlotIsNarrow`
 - [x] A click on the plot activates the bar or line under the pointer, or else the nearest point at that place. `ChartTests.Point_ShouldTellTheApp_WhenClickedOrChosenWithTheKeys`, `ChartTests.Point_ShouldBeTheBarUnderThePointer_WhenBarsStandSideBySide`
-- [ ] A click on a legend button hides or shows its series. #199
+- [x] A click on a legend button hides or shows its series. `TbChartLegendTests.Legend_ShouldHideItsSeriesAndFitTheAxisToTheRest_WhenItsButtonIsPressed`, `TbChartLegendTests.Legend_ShouldShowItsSeriesAgain_WhenItsButtonIsPressedTwice`
+- [x] With a series hidden, the axis fits the ones that show, each keeps its color, the tooltip lists only them, and the data table keeps every value. `TbChartLegendTests.Legend_ShouldHideItsSeriesAndFitTheAxisToTheRest_WhenItsButtonIsPressed`, `ChartTests.Legend_ShouldHideAndShowASeries_WhenItsButtonIsPressedWithTheKeys`
+- [x] With every series hidden, the plot says so and the legend stays. `TbChartLegendTests.Plot_ShouldSayEverySeriesIsHidden_WhenNoneShows`
+- [x] A hidden series' legend entry is struck through as well as dimmed. `ChartTests.Legend_ShouldHideAndShowASeries_WhenItsButtonIsPressedWithTheKeys`
+- [x] With `CanHideSeries` off, and on a static page, the legend is plain text, and a hidden series' entry is still marked. `TbChartLegendTests.Legend_ShouldHaveNoButtons_WhenSeriesCannotBeHiddenOrThePageIsStatic`
+- [x] What the user chooses in the legend holds until the app gives the series' `Hidden` a new value, and the app setting it tells the app nothing. `TbChartLegendTests.Hidden_ShouldHideTheSeriesAndTellTheApp_WhenTheAppOnlyListens`, `TbChartLegendTests.Hidden_ShouldTakeTheAppsValueAgain_WhenTheAppSetsItAfterTheUserChoseAnother`, `TbChartLegendTests.Hidden_ShouldLeaveTheSeriesOutAndNotTellTheApp_WhenTheAppSetsIt`
+- [x] A click or a key on a point of a series hidden meanwhile is passed over. `TbChartLegendTests.Activate_ShouldPassOverAHiddenSeries_WhenTheScriptNamesOne`
 - [x] The chart is as wide as its container at any width, with each label on its grid line or its mark. `ChartTests.Labels_ShouldSitOnTheirGridLinesAndMarks_WhenTheChartIsAnyWidthAndDirection`
 - [x] An axis shows only the labels that fit, evenly spaced, and none overlap. `ChartTests.PlaceLabels_ShouldNotOverlap_WhenTheChartIsNarrow`
 - [x] In forced-colors mode, every mark shows, lines differ by their dashes and bars by their fill, and each legend key is drawn as its series' marks are. `ChartTests.Series_ShouldDifferWithoutColor_WhenColorsAreForced`
@@ -41,6 +47,9 @@ Familiar apps: Excel and Google Sheets charts, Grafana panels, Highcharts' acces
 - [x] The focus ring is drawn around the point that has focus. `trailblazor.css`
 - [x] When the data changes, the tab stop stays on its point if the point is still there, or else goes to the first one, and an empty chart has no tab stop. `ChartTests.Points_ShouldFollowTheData_WhenTheItemsChange`
 - [x] Each point that takes focus is named by its place, its series, its value and its position, such as "March, Completed: 42, 3 of 12". `ChartTests.Keys_ShouldMoveBetweenNamedPoints_WhenThePlotHasFocus`
+- [x] The tab stop stays with its own series when another is hidden or shown, and goes to the first point when its own series is hidden. `ChartTests.Legend_ShouldHideAndShowASeries_WhenItsButtonIsPressedWithTheKeys`
+- [x] In a legend without buttons, a hidden series' entry reads "(hidden)" to screen readers. `TbChartLegendTests.Legend_ShouldHaveNoButtons_WhenSeriesCannotBeHiddenOrThePageIsStatic`
+- [x] A legend button is pressed while its series shows, and the drawing's name lists only the series that show. `TbChartLegendTests.Legend_ShouldHideItsSeriesAndFitTheAxisToTheRest_WhenItsButtonIsPressed`
 - [ ] A screen reader speaks that name as focus moves between points. UNCONFIRMED #332
 - [x] A click with no position on the point that has focus, as a screen reader sends, activates that point. `ChartTests.Point_ShouldTellTheApp_WhenClickedOrChosenWithTheKeys`
 - [ ] A screen reader's own command for activating the point reaches it. UNCONFIRMED #332

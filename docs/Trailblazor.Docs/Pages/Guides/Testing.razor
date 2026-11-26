@@ -385,8 +385,11 @@
                         <th scope="row"><code>Chart(name).ClickPointAsync(series, place)</code></th>
                         <td>
                             Activates a point as a click on it does. <code>Series</code> and <code>Places</code> list
-                            what the chart draws, and <code>Value(series, place)</code> reads a value as the
-                            chart's data table writes it.
+                            the chart's series, hidden ones too, and its places, and
+                            <code>Value(series, place)</code> reads a value as the
+                            chart's data table writes it. <code>HideSeriesAsync(series)</code> and
+                            <code>ShowSeriesAsync(series)</code> press a legend button, and
+                            <code>IsSeriesHidden(series)</code> reads whether a series is hidden.
                         </td>
                     </tr>
                     <tr>
@@ -1857,8 +1860,11 @@
             + "`ActiveIndexAsync()` reads which slide shows, and `CountAsync()` how many there are."),
         new("Chart", "Its Title or AriaLabel, or none for the only one", "`Chart(name).ClickPointAsync(series, "
             + "place)` clicks a point once the page is interactive and waits until the app's `OnPointClick` has "
-            + "run; `SeriesAsync()` and `PlacesAsync()` list what the chart draws, and `ValueAsync(series, place)` "
-            + "reads a value as the chart's data table writes it."),
+            + "run; `SeriesAsync()` and `PlacesAsync()` list the chart's series, hidden ones too, and its places, "
+            + "and `ValueAsync(series, place)` "
+            + "reads a value as the chart's data table writes it. `HideSeriesAsync(series)` and "
+            + "`ShowSeriesAsync(series)` press a legend button and wait until the app's `HiddenChanged` has run, "
+            + "and `IsSeriesHiddenAsync(series)` reads whether a series is hidden."),
         new("Chip", "Its text", "`Chip(text).ClickAsync()` clicks it once the page is interactive and waits until "
             + "the app's handlers have run; `RemoveAsync()` presses its remove button and waits for `OnRemove`, and "
             + "`SelectedAsync()` reads whether it's selected. `ChipGroup(name)` finds a group by its `AriaLabel`, "

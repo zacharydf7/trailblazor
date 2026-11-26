@@ -11799,6 +11799,40 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         gap: var(--tb-space-2);
     }
 
+    /* A legend entry that hides and shows its series is a button that looks as the plain entry does. */
+    .tb-chart__legend-button {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+        min-block-size: 1.5rem;
+        /* Room for the focus ring around the entry, taken back so the entry lines up with the plain ones. */
+        margin-inline: calc(-1 * var(--tb-space-1));
+        padding: 0 var(--tb-space-1);
+        border: 0;
+        border-radius: var(--tb-radius-sm);
+        background: none;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .tb-chart__legend-button:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: 2px;
+    }
+
+    /* A hidden series' entry is struck through as well as dimmed, so it doesn't differ by color alone. A button is
+       struck through itself, since a line through the entry around it stops at the button. */
+    .tb-chart__legend > [data-hidden],
+    .tb-chart__legend > [data-hidden] > .tb-chart__legend-button {
+        color: var(--tb-color-text-muted);
+        text-decoration: line-through;
+    }
+
+    .tb-chart__legend > [data-hidden] .tb-chart__key {
+        opacity: 0.4;
+    }
+
     /* A key is a small drawing of its series' own mark, a bar or a stroke, sized in the pixels it is drawn in. */
     .tb-chart__key {
         flex: none;

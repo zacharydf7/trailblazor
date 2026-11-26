@@ -745,3 +745,6 @@ Trailblazor.Testing.Playwright.TbChartLocator.SeriesAsync() -> System.Threading.
 Trailblazor.Testing.Playwright.TbChartLocator.TbChartLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TbChartLocator.ValueAsync(string! series, string! place) -> System.Threading.Tasks.Task<string!>!
 Trailblazor.Testing.Playwright.TrailblazorPage.Chart(string? name = null) -> Trailblazor.Testing.Playwright.TbChartLocator!
+Trailblazor.Testing.Playwright.TbChartLocator.HideSeriesAsync(string! series) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbChartLocator.IsSeriesHiddenAsync(string! series) -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbChartLocator.ShowSeriesAsync(string! series) -> System.Threading.Tasks.Task!

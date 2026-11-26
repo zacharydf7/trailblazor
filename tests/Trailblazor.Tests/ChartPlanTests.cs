@@ -166,6 +166,32 @@ public class ChartPlanTests
     }
 
     [Fact]
+    public void Build_ShouldLeaveAHiddenSeriesOutOfTheDrawingAndTheAxis_WhenGivenOne()
+    {
+        var plan = Build(["A"], [Bars("One", 10) with { Hidden = true }, Bars("Two", 4),
+            Line("Three", 100) with { Hidden = true }]);
+
+        Assert.Equal((0d, 4d), (plan.Ticks.Min, plan.Ticks.Max));
+        // The one bar that shows has the whole of the place's share, as a lone series does.
+        AssertBar(new(0.15, 0, 0.7, 1, ChartBarEnd.Top), plan.Series[1].Marks[0]);
+        // A hidden series keeps its text, for the data table.
+        Assert.Equal((true, 0, "10"), (plan.Series[0].Hidden, plan.Series[0].Marks.Count, plan.Series[0].Text[0]));
+        Assert.Equal((true, "", 0, "100"), (plan.Series[2].Hidden, plan.Series[2].Path, plan.Series[2].Points.Count,
+            plan.Series[2].Text[0]));
+    }
+
+    [Fact]
+    public void Build_ShouldPileOnlyTheSeriesThatShow_WhenOneOfAStackIsHidden()
+    {
+        var plan = Build(["A"], [Bars("One", 10), Bars("Two", 30) with { Hidden = true }, Bars("Three", 10)],
+            ChartStacking.Stacked);
+
+        Assert.Equal((0d, 20d), (plan.Ticks.Min, plan.Ticks.Max));
+        AssertBar(new(0.15, 0.5, 0.7, 0.5, ChartBarEnd.None), plan.Series[0].Marks[0]);
+        AssertBar(new(0.15, 0, 0.7, 0.5, ChartBarEnd.Top), plan.Series[2].Marks[0]);
+    }
+
+    [Fact]
     public void Build_ShouldLeaveAGap_WhenAValueIsMissing()
     {
         var plan = Build(["A", "B", "C"], [Bars("Count", null, 5, 5), Line("Level", 1, null, 3)]);

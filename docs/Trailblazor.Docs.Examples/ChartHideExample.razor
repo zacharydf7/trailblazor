@@ -1,0 +1,20 @@
+<TbStack Gap="3">
+    <TbChart Items="Days" X="day => day.Name" Title="Visitors by entrance">
+        <TbLineSeries Name="North gate" Value="day => day.North" />
+        <TbLineSeries Name="South gate" Value="day => day.South" />
+        <TbLineSeries Name="Shuttle" Value="day => day.Shuttle" @bind-Hidden="_shuttleHidden" />
+    </TbChart>
+    <TbText>@(_shuttleHidden ? "Shuttle riders are hidden." : "Shuttle riders are shown.")</TbText>
+</TbStack>
+
+@code {
+    private static readonly Day[] Days =
+    [
+        new("Mon", 120, 80, 310), new("Tue", 135, 95, 290), new("Wed", 150, 90, 340), new("Thu", 140, 110, 360),
+        new("Fri", 190, 150, 520),
+    ];
+
+    private bool _shuttleHidden = true;
+
+    private sealed record Day(string Name, int North, int South, int Shuttle);
+}

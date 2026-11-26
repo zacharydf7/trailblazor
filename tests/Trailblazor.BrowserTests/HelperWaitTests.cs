@@ -641,6 +641,8 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
                 await tb.Hotkey("Alt+J").PressAsync();
             },
             () => tb.Chart("Slow counts").ClickPointAsync("Letters", "Lake"),
+            () => tb.Chart("Slow counts").HideSeriesAsync("Vowels"),
+            () => tb.Chart("Slow counts").ShowSeriesAsync("Vowels"),
         })
         {
             await act();
@@ -653,7 +655,8 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
             "step gear", "slide 0", "hike 2026-05-02", "map ridge.gpx",
             "paced 40", "town Be", "town Ashland", "climb 20-60",
             "town Ashland", "town Bend", "town ", "town Ashland", "town ",
-            "guide copied", "hotkey pressed", "section jump", "point Lake 4"], seen);
+            "guide copied", "hotkey pressed", "section jump", "point Lake 4", "vowels hidden True",
+            "vowels hidden False"], seen);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

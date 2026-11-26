@@ -6600,9 +6600,39 @@ public sealed class TbChartDriver
         return cells[column].TextContent;
     }
 
+    /// <summary>Whether this series is hidden: left out of the drawing, with its values still in the data table. A
+    /// series the chart doesn't have throws.</summary>
+    public bool IsSeriesHidden(string series) => !Series.Contains(series)
+        ? throw new InvalidOperationException($"The chart has no series named \"{series}\".")
+        : !_find().QuerySelectorAll(".tb-chart__marks [data-series]")
+            .Any(marks => marks.GetAttribute("data-series") == series);
+
+    /// <summary>Hides this series, if it shows, as pressing its button in the legend does, and waits for the app's
+    /// <c>HiddenChanged</c> to run. A series the chart doesn't have throws, and so does a legend with no buttons: a
+    /// chart with one series, with <c>CanHideSeries</c> off, or on a static page.</summary>
+    public Task HideSeriesAsync(string series) => SetHiddenAsync(series, true);
+
+    /// <summary>Shows this series, if it is hidden, as pressing its button in the legend does, and waits for the
+    /// app's <c>HiddenChanged</c> to run. It throws as <see cref="HideSeriesAsync"/> does.</summary>
+    public Task ShowSeriesAsync(string series) => SetHiddenAsync(series, false);
+
+    private async Task SetHiddenAsync(string series, bool hidden)
+    {
+        if (IsSeriesHidden(series) == hidden)
+        {
+            return;
+        }
+
+        // The legend lists the series in the data table's order.
+        var button = _find().QuerySelectorAll("[data-part=legend] > li")
+            .ElementAtOrDefault(Series.ToList().IndexOf(series))?.QuerySelector("button")
+            ?? throw new InvalidOperationException($"The chart's legend has no button for \"{series}\".");
+        await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
     /// <summary>Activates this series' point at this place, as a click on it does, and waits for the app's
-    /// <c>OnPointClick</c> to run. A series or a place the chart doesn't have throws, and so do a place where the
-    /// series has no value and a chart with no <c>OnPointClick</c>.</summary>
+    /// <c>OnPointClick</c> to run. A series or a place the chart doesn't have throws, and so do a hidden series, a
+    /// place where the series has no value and a chart with no <c>OnPointClick</c>.</summary>
     public async Task ClickPointAsync(string series, string place)
     {
         var plot = _find().QuerySelector(":scope > .tb-chart__body > [data-part=plot]")!;
@@ -6612,6 +6642,11 @@ public sealed class TbChartDriver
         }
 
         var (column, row) = Find(series, place);
+        if (IsSeriesHidden(series))
+        {
+            throw new InvalidOperationException($"\"{series}\" is hidden.");
+        }
+
         if (Value(series, place).Length == 0)
         {
             throw new InvalidOperationException($"\"{series}\" has no value at \"{place}\".");

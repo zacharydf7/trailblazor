@@ -9,6 +9,8 @@ public abstract class TbChartSeries<TItem> : ComponentBase, IDisposable
 {
     private object? _shown;
     private Func<TItem, object?>? _value;
+    private bool _hidden;
+    private bool _hiddenGiven;
 
     [CascadingParameter]
     private TbChart<TItem>? Chart { get; set; }
@@ -31,7 +33,21 @@ public abstract class TbChartSeries<TItem> : ComponentBase, IDisposable
     [Parameter]
     public string? Color { get; set; }
 
+    /// <summary>Whether the series is left out of the drawing. The chart's axis then fits the series that show, the
+    /// legend still lists the series, and the data table keeps its values. On an interactive page the series' entry
+    /// in the legend is a button that hides and shows it; bind this to follow or set that from the app. What the
+    /// user chooses there holds until the app gives this a new value. False by default.</summary>
+    [Parameter]
+    public bool Hidden { get; set; }
+
+    /// <summary>Raised with the new value when the user hides or shows the series from the legend.</summary>
+    [Parameter]
+    public EventCallback<bool> HiddenChanged { get; set; }
+
     internal abstract bool Bars { get; }
+
+    // What the user last chose in the legend, or what the app last set if that came later.
+    internal bool IsHidden => _hidden;
 
     internal virtual ChartCurve Line => ChartCurve.Straight;
 
@@ -41,6 +57,12 @@ public abstract class TbChartSeries<TItem> : ComponentBase, IDisposable
     private string Kind => GetType().Name.Split('`')[0];
 
     internal double? ValueOf(TItem item) => ChartValues.Number(Value!(item), Name);
+
+    internal async Task SetHiddenAsync(bool hidden)
+    {
+        _hidden = hidden;
+        await HiddenChanged.InvokeAsync(hidden);
+    }
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -61,8 +83,13 @@ public abstract class TbChartSeries<TItem> : ComponentBase, IDisposable
             throw new InvalidOperationException($"{Kind} needs a {nameof(Name)} and a {nameof(Value)}.");
         }
 
+        if (Hidden != _hiddenGiven)
+        {
+            _hiddenGiven = _hidden = Hidden;
+        }
+
         // The chart draws before its series take their parameters, so a series that changed has it draw again.
-        object shown = (Name, Value.Method, Color, Line, HasMarkers);
+        object shown = (Name, Value.Method, Color, Line, HasMarkers, IsHidden);
         if (!shown.Equals(_shown))
         {
             _shown = shown;

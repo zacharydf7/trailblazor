@@ -359,6 +359,72 @@ public class ChartTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Legend_ShouldHideAndShowASeries_WhenItsButtonIsPressedWithTheKeys(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chart/lines");
+        var chart = Chart(page, "Trail temperature");
+        var plot = chart.Locator("[data-part=plot]");
+        var summit = chart.GetByRole(AriaRole.Button, new() { Name = "Summit" });
+        await Expect(plot).ToHaveAttributeAsync("data-ready", "");
+        await Expect(summit).ToHaveAttributeAsync("aria-pressed", "true");
+
+        // The tab stop is put on a point of the second series.
+        await plot.Locator("[tabindex='0']").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(page.Locator(":focus")).ToHaveAccessibleNameAsync("Jul 2, Valley: 24, 2 of 10");
+
+        await summit.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(summit).ToHaveAttributeAsync("aria-pressed", "false");
+        await Expect(summit).ToBeFocusedAsync();
+        // The entry is struck through, so it doesn't differ from the others by color alone.
+        await Expect(summit).ToHaveCSSAsync("text-decoration-line", "line-through");
+        await Expect(plot.Locator("path[data-series]")).ToHaveCountAsync(1);
+        await Expect(chart.GetByRole(AriaRole.Img, new() { Name = "Line chart: Valley", Exact = true }))
+            .ToBeVisibleAsync();
+        // The valley alone starts the axis at 20, where the two together started it at 10.
+        await Expect(chart.Locator(".tb-chart__y > span:not(.tb-chart__y-sizer)").First).ToHaveTextAsync("20");
+        // The tab stop stays with its own series, and the tooltip lists only the series that shows.
+        await Expect(plot.Locator("[tabindex='0']")).ToHaveAccessibleNameAsync("Jul 2, Valley: 24, 2 of 10");
+        var box = await plot.BoundingBoxAsync();
+        await page.Mouse.MoveAsync(box!.X + box.Width / 2, box.Y + 10);
+        await Expect(chart.Locator(".tb-chart__tooltip-name")).ToHaveTextAsync(["Valley"]);
+
+        await page.Keyboard.PressAsync("Space");
+
+        await Expect(summit).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(summit).ToHaveCSSAsync("text-decoration-line", "none");
+        await Expect(plot.Locator("path[data-series]")).ToHaveCountAsync(2);
+        await Expect(plot.Locator("[tabindex='0']")).ToHaveAccessibleNameAsync("Jul 2, Valley: 24, 2 of 10");
+
+        // Tab goes on to the next legend button. Hiding the series the tab stop is on sends it to the first point.
+        var valley = chart.GetByRole(AriaRole.Button, new() { Name = "Valley" });
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(valley).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(valley).ToHaveAttributeAsync("aria-pressed", "false");
+        await Expect(plot.Locator("[tabindex='0']")).ToHaveAccessibleNameAsync("Jul 1, Summit: 14, 1 of 10");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldHideTheSeriesOnceInteractive_WhenThePageIsStillPrerendered(string browser)
+    {
+        var (page, held) = await OpenHeldAsync(browser, "/examples/chart/lines");
+        var chart = page.Tb().Chart("Trail temperature");
+
+        var hiding = chart.HideSeriesAsync("Summit");
+        await page.WaitForTimeoutAsync(300);
+        held.SetResult();
+        await hiding;
+
+        Assert.True(await chart.IsSeriesHiddenAsync("Summit"));
+        await Expect(chart.Chart.GetByRole(AriaRole.Button, new() { Name = "Summit" }))
+            .ToHaveAttributeAsync("aria-pressed", "false");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tooltip_ShouldStayInsideThePlot_WhenThePlotIsNarrow(string browser)
     {
         var page = await OpenAsync(browser, "/examples/chart/stacking",

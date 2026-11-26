@@ -40,6 +40,14 @@ public static class TbStrings
     /// <summary>"No data": shown in place of a chart's plot when it has no items or no series.</summary>
     public const string ChartEmpty = "Chart.Empty";
 
+    /// <summary>"Every series is hidden": shown in place of a chart's plot when all of its series are hidden.
+    /// </summary>
+    public const string ChartAllHidden = "Chart.AllHidden";
+
+    /// <summary>"(hidden)": what screen readers hear after a hidden series' name in a chart's legend that has no
+    /// buttons.</summary>
+    public const string ChartHidden = "Chart.Hidden";
+
     /// <summary>"{0}: {1}": what screen readers hear for a chart's drawing; {0} is the kind of chart and {1} its
     /// series' names.</summary>
     public const string ChartSummary = "Chart.Summary";
@@ -2067,6 +2075,8 @@ public static class TbStrings
         [CarouselStart] = "Start slide rotation",
         [ChartTable] = "Data table",
         [ChartEmpty] = "No data",
+        [ChartAllHidden] = "Every series is hidden",
+        [ChartHidden] = "(hidden)",
         [ChartSummary] = "{0}: {1}",
         [ChartPoint] = "{0}, {1}: {2}, {3} of {4}",
         [ChartNoValue] = "No value",

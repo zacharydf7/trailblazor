@@ -1017,6 +1017,14 @@ public static class ExampleCatalog
                     + "value when the user clicks or taps a point, or presses Enter or Space while it has focus. A "
                     + "click on the plot picks the bar or line under the pointer, or else the nearest point at that "
                     + "place, so a thin line or a short bar isn't hard to hit.", typeof(ChartClickExample)),
+                new("hide", "Hiding a series", "A chart with two or more series has a legend, and on an interactive "
+                    + "page each of its entries is a button that hides or shows its series. The axis then fits the "
+                    + "series that show: here the shuttle starts hidden, and the axis grows to fit it once it "
+                    + "shows. A series keeps its color while others are hidden, and the data table keeps every "
+                    + "value. With every series hidden the plot reads \"Every series is hidden\", which "
+                    + "`Labels.AllHidden` rewords. `Hidden` on a series hides it from the start, and "
+                    + "`@bind-Hidden` tells the app when the user changes it. `CanHideSeries=\"false\"` leaves the "
+                    + "legend as plain text.", typeof(ChartHideExample)),
                 new("empty", "No data", "A chart with no items, or no series, says so in place of its plot. "
                     + "`Labels.Empty` rewords it for what the chart shows, such as \"No closures so far this year\".",
                     typeof(ChartEmptyExample)),
@@ -1048,6 +1056,7 @@ public static class ExampleCatalog
                     { When = "On the plot" },
                 new(["Escape"], "Hides the tooltip and leaves focus where it is.")
                     { When = "While the tooltip shows" },
+                new(["Enter", "Space"], "Hides or shows the series.") { When = "On a legend button" },
                 new(["Enter", "Space"], "Opens or closes the data table.") { When = "On \"Data table\"" },
             ],
             RightToLeftKeys = "Left moves to the next point and Right to the previous one, as the chart runs from "
@@ -1057,6 +1066,7 @@ public static class ExampleCatalog
                 "As focus moves to a point, it is read by its place, its series, its value and its position, as in "
                     + "\"Jul 2, Valley: 24, 2 of 10\". `Labels.Point` rewords it.",
                 "Choosing a point announces nothing by itself; what the app then shows is the app's to announce.",
+                "A legend button reads as pressed while its series shows and as not pressed once it is hidden.",
             ],
             Labeling =
             [
@@ -1066,7 +1076,9 @@ public static class ExampleCatalog
                 "The drawing is an image named by its kind and its series, such as \"Bar chart: Day passes, Week "
                     + "passes, Season passes\". `Labels.Summary` rewords it, and `Labels.Bars`, `Labels.Lines` and "
                     + "`Labels.BarsAndLines` reword the kind.",
-                "Each series' `Name` shows in the legend and heads its column of the data table.",
+                "Each series' `Name` shows in the legend and heads its column of the data table. It names the "
+                    + "series' legend button too.",
+                "The drawing's name lists only the series that show.",
             ],
             Accessibility =
             [
@@ -1089,6 +1101,9 @@ public static class ExampleCatalog
                 "Two or more series always have a legend, whose keys are drawn as the marks are: a block for bars "
                     + "and a stroke for a line. Two series of the same kind differ by color in the drawing, and the "
                     + "data table tells them apart for anyone who can't use the colors.",
+                "A hidden series' legend entry is struck through as well as dimmed, so it doesn't differ by color "
+                    + "alone. Its button reads as not pressed, and in a legend without buttons \"(hidden)\" "
+                    + "follows its name for screen readers, which `Labels.Hidden` rewords.",
                 "In forced-colors mode, such as Windows high contrast, every mark is drawn in the system's text "
                     + "color. Lines differ by their dashes, and bars by being filled, hollow, dashed or dotted, with "
                     + "the legend's keys drawn the same way. There are four of each, so a fifth series of a kind "
@@ -1114,6 +1129,9 @@ public static class ExampleCatalog
                     + "without script too.",
                 "The tooltip, the keys between points and `OnPointClick` start once the page is interactive; until "
                     + "then, and on a static page, the plot takes no focus and shows no pointer cursor.",
+                "The legend's entries are plain text until the page is interactive, and on a static page. A series "
+                    + "whose `Hidden` is set is left out of the drawing either way, and its legend entry is struck "
+                    + "through.",
             ],
             Notes =
             [
@@ -1133,6 +1151,11 @@ public static class ExampleCatalog
                     + "that renders by itself may be drawn a render behind, so have such a change render the "
                     + "chart's parent too.") { Pitfall = true },
                 new("A value beyond a `Min` or `Max` you set is drawn outside the plot.") { Pitfall = true },
+                new("Hiding a bar series changes what the others show. Side by side, they take the room it leaves; "
+                    + "stacked, they pile without it; and as shares of a total, each bar becomes its share of the "
+                    + "series that show. The tooltip and the data table keep the values as given."),
+                new("What the user chooses in the legend holds until the app gives the series' `Hidden` a new "
+                    + "value. A chart with one series has no legend, so only the app can hide or show that series."),
                 new("Right to left, the chart runs from the right: the first item is at the right edge."),
                 new("Every item's values are in the page's markup twice, in the drawing and in the table, so a chart "
                     + "of thousands of points makes a large page. Draw a summary, such as a value a day in place "
@@ -1144,7 +1167,8 @@ public static class ExampleCatalog
             DataParts =
             [
                 new("title", "The chart's title."),
-                new("legend", "The list of series names with their keys."),
+                new("legend", "The list of series names with their keys, each a button on an interactive page "
+                    + "unless `CanHideSeries` is false."),
                 new("y-title", "The value axis's title."),
                 new("plot", "The area the series are drawn in, or the message when there is nothing to draw."),
                 new("x-title", "The title of the axis the items run along."),
@@ -1157,25 +1181,33 @@ public static class ExampleCatalog
             [
                 "`cut.Tb().Chart(\"Rescues by month\")` in bUnit and `page.Tb().Chart(\"Rescues by month\")` in "
                     + "Playwright find a chart by its `Title` or `AriaLabel`.",
-                "`Series` and `Places` list what the chart draws, and `Value(series, place)` reads a value as the "
-                    + "data table writes it (`SeriesAsync()`, `PlacesAsync()` and `ValueAsync(series, place)` in "
-                    + "Playwright).",
+                "`Series` and `Places` list the chart's series, hidden ones too, and its places, and `Value(series, "
+                    + "place)` reads a value as the data table writes it (`SeriesAsync()`, `PlacesAsync()` and "
+                    + "`ValueAsync(series, place)` in Playwright).",
                 "`ClickPointAsync(series, place)` clicks a point and returns once the app's `OnPointClick` has "
-                    + "run. It throws for a chart with no `OnPointClick`, and for a place where the series has no "
-                    + "value.",
+                    + "run. It throws for a chart with no `OnPointClick`, for a hidden series, and for a place "
+                    + "where the series has no value.",
+                "`HideSeriesAsync(series)` and `ShowSeriesAsync(series)` press the series' legend button unless it "
+                    + "is already hidden or shown, and return once the app's `HiddenChanged` has run. They throw "
+                    + "for a legend with no buttons.",
+                "`IsSeriesHidden(series)` reads whether a series is hidden (`IsSeriesHiddenAsync(series)` in "
+                    + "Playwright).",
+                "Without the helpers, a legend button is `GetByRole(AriaRole.Button, new() { Name = \"Shuttle\" })`, "
+                    + "with `aria-pressed` true while its series shows. A hidden series' legend entry has "
+                    + "`data-hidden`, to restyle it by.",
                 "Without the helpers, find a chart with `GetByRole(AriaRole.Figure, new() { Name = \"Hikers by "
                     + "month\" })` and its drawing with `GetByRole(AriaRole.Img, new() { Name = \"Bar chart: "
                     + "Hikers\" })`; the point that has the tab stop is an image too.",
                 "A series' marks are under an element with `data-series` set to its `Name`: a `g` of `rect` bars, "
-                    + "or a line's `path`.",
+                    + "or a line's `path`. A hidden series has none.",
             ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"hikers-by-month\"`, it counts `trailblazor.control.shown` as it "
                     + "first renders, and `trailblazor.control.used` with the action `activate` and the input "
                     + "`keyboard` or `pointer` each time a point is clicked or chosen with Enter or Space, when the "
-                    + "chart has an `OnPointClick`. Moving over the chart or between its points isn't counted, and "
-                    + "what it shows is never recorded.",
+                    + "chart has an `OnPointClick`. A legend button counts the action `hide` or `show`. Moving "
+                    + "over the chart or between its points isn't counted, and what it shows is never recorded.",
             ],
         },
         new("carousel", "Carousel", ExampleCategory.Content,

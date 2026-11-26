@@ -22,7 +22,10 @@
         var plan = Plan();
         var series = _series;
         var empty = plan.Places.Count == 0 || series.Count == 0;
+        // With every series hidden there is nothing to draw, and the legend and the table stay.
+        var blank = empty || plan.Series.All(one => one.Hidden);
         var markers = plan.Places.Count <= MostMarkers;
+        var toggles = CanHideSeries && RendererInfo.IsInteractive;
     }
     @if (Title is not null)
     {
@@ -33,33 +36,54 @@
         <ul data-part="legend" class="@ClassNames.Join("tb-chart__legend", Classes?.Legend)">
             @for (var index = 0; index < series.Count; index++)
             {
+                var one = series[index];
+                var number = index;
                 @* A key is drawn as its series' own mark, so it looks as the mark does in every theme and mode. *@
-                <li>
-                    @if (series[index].Bars)
+                RenderFragment entry =
+                    @<text>
+                        @if (one.Bars)
+                        {
+                            <svg class="@ClassNames.Join("tb-chart__key", Slot(number))" style="@Color(number)"
+                                 aria-hidden="true" focusable="false">
+                                <rect class="tb-chart__bar" x="1" y="1" width="10" height="10" />
+                            </svg>
+                        }
+                        else
+                        {
+                            <svg class="tb-chart__key tb-chart__key--line" aria-hidden="true" focusable="false">
+                                <line class="@ClassNames.Join("tb-chart__line", Slot(number))" style="@Color(number)"
+                                      x1="1" y1="6" x2="23" y2="6" />
+                            </svg>
+                        }
+                        @one.Name
+                    </text>;
+                <li data-hidden="@(one.IsHidden ? "" : null)">
+                    @if (toggles)
                     {
-                        <svg class="@ClassNames.Join("tb-chart__key", Slot(index))" style="@Color(index)"
-                             aria-hidden="true" focusable="false">
-                            <rect class="tb-chart__bar" x="1" y="1" width="10" height="10" />
-                        </svg>
+                        @* Pressed while its series shows. *@
+                        <button type="button" class="tb-chart__legend-button"
+                                aria-pressed="@(one.IsHidden ? "false" : "true")"
+                                @onclick="() => ToggleAsync(one)">@entry</button>
                     }
                     else
                     {
-                        <svg class="tb-chart__key tb-chart__key--line" aria-hidden="true" focusable="false">
-                            <line class="@ClassNames.Join("tb-chart__line", Slot(index))" style="@Color(index)"
-                                  x1="1" y1="6" x2="23" y2="6" />
-                        </svg>
+                        @entry
+                        @* Without a button to say so, a screen reader hears that the series is hidden in words. *@
+                        if (one.IsHidden)
+                        {
+                            <span class="tb-visually-hidden">@(Labels.Hidden ?? Localizer[TbStrings.ChartHidden])</span>
+                        }
                     }
-                    @series[index].Name
                 </li>
             }
         </ul>
     }
-    @if (Axes.Y?.Title is { } valueTitle && !empty)
+    @if (Axes.Y?.Title is { } valueTitle && !blank)
     {
         <div data-part="y-title" class="tb-chart__y-title">@valueTitle</div>
     }
     <div class="tb-chart__body">
-        @if (!empty)
+        @if (!blank)
         {
             <div class="tb-chart__y" aria-hidden="true">
                 @* The longest label, unseen, gives the column its width; WebKit won't place the labels by percentage
@@ -75,13 +99,17 @@
         }
         @* The plot is one element whether it has anything to draw or not, so the script stays on it. The script reads
            each place's name from it, and each series' values and points from the series' own element. *@
-        <div @ref="_plot" id="@_plotId" data-part="plot" data-places="@(empty ? null : Places(plan))"
+        <div @ref="_plot" id="@_plotId" data-part="plot" data-places="@(blank ? null : Places(plan))"
              data-activates="@(RendererInfo.IsInteractive && OnPointClick.HasDelegate ? "" : null)"
              data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
-             class="@ClassNames.Join("tb-chart__plot", empty ? "tb-chart__plot--empty" : null, Classes?.Plot)">
+             class="@ClassNames.Join("tb-chart__plot", blank ? "tb-chart__plot--empty" : null, Classes?.Plot)">
             @if (empty)
             {
                 @(Labels.Empty ?? Localizer[TbStrings.ChartEmpty])
+            }
+            else if (blank)
+            {
+                @(Labels.AllHidden ?? Localizer[TbStrings.ChartAllHidden])
             }
             else
             {
@@ -94,7 +122,7 @@
                     @for (var index = 0; index < series.Count; index++)
                     {
                         var drawn = plan.Series[index];
-                        if (drawn.Bars)
+                        if (drawn.Bars && !drawn.Hidden)
                         {
                             <g data-series="@drawn.Name" data-number="@index" data-values="@Values(drawn)"
                                data-points="@Points(drawn)" class="@Slot(index)" style="@Color(index)">
@@ -128,7 +156,7 @@
                         @for (var index = 0; index < series.Count; index++)
                         {
                             var drawn = plan.Series[index];
-                            if (!drawn.Bars)
+                            if (!drawn.Bars && !drawn.Hidden)
                             {
                                 <path data-series="@drawn.Name" data-number="@index" data-values="@Values(drawn)"
                                       data-points="@Points(drawn)" style="@Color(index)" d="@drawn.Path"
@@ -139,7 +167,7 @@
                     @for (var index = 0; index < series.Count; index++)
                     {
                         var drawn = plan.Series[index];
-                        if (!drawn.Bars && (series[index].HasMarkers ?? markers))
+                        if (!drawn.Bars && !drawn.Hidden && (series[index].HasMarkers ?? markers))
                         {
                             <g class="@Slot(index)" style="@Color(index)">
                                 @foreach (var point in drawn.Points)
@@ -162,7 +190,7 @@
             <span class="tb-chart__focus"></span>
             <span class="tb-chart__focus"></span>
         </div>
-        @if (!empty)
+        @if (!blank)
         {
             @* WebKit sizes a grid item that is itself a query container by the whole grid, so the query container is
                a child of the grid item instead. *@
@@ -180,7 +208,7 @@
             </div>
         }
     </div>
-    @if (Axes.X?.Title is { } placeTitle && !empty)
+    @if (Axes.X?.Title is { } placeTitle && !blank)
     {
         <div data-part="x-title" class="tb-chart__x-title">@placeTitle</div>
     }

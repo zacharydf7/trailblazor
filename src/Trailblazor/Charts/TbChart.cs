@@ -74,6 +74,11 @@ public partial class TbChart<TItem>
     [Parameter]
     public string? Height { get; set; }
 
+    /// <summary>Whether the user can hide and show each series from the legend, whose entries are then buttons on
+    /// an interactive page. True by default. A series' own <c>Hidden</c> hides it either way.</summary>
+    [Parameter]
+    public bool CanHideSeries { get; set; } = true;
+
     /// <summary>Raised when the user clicks or taps a point, or presses Enter or Space on one, with its item, its
     /// series and its value. With it, the plot shows a pointer cursor once the page is interactive.</summary>
     [Parameter]
@@ -164,7 +169,7 @@ public partial class TbChart<TItem>
     // arrives after the data changed may name a point that is gone, and is passed over.
     private async Task OnActivateAsync(int series, int place, string input)
     {
-        if (series < 0 || series >= _series.Count || place < 0 || place >= _items.Count
+        if (series < 0 || series >= _series.Count || place < 0 || place >= _items.Count || _series[series].IsHidden
             || _series[series].ValueOf(_items[place]) is not { } value)
         {
             return;
@@ -178,6 +183,22 @@ public partial class TbChart<TItem>
         finally
         {
             // Counted once the app's handler has run, which the testing helpers wait for.
+            _commits++;
+            StateHasChanged();
+        }
+    }
+
+    // The legend's button for a series: the app hears the change when it has bound the series' Hidden.
+    private async Task ToggleAsync(TbChartSeries<TItem> series)
+    {
+        var hidden = !series.IsHidden;
+        Telemetry.Used(TelemetryName, hidden ? "hide" : "show");
+        try
+        {
+            await series.SetHiddenAsync(hidden);
+        }
+        finally
+        {
             _commits++;
             StateHasChanged();
         }
@@ -227,7 +248,7 @@ public partial class TbChart<TItem>
         var items = _items = Items as IReadOnlyList<TItem> ?? [.. Items ?? []];
         List<string> places = [.. items.Select(item => ChartValues.Text(X!(item), Axes.X?.Format, culture))];
         List<ChartSeriesValues> series = [.. _series.Select(one =>
-            new ChartSeriesValues(one.Name, one.Bars, one.Line, [.. items.Select(one.ValueOf)]))];
+            new ChartSeriesValues(one.Name, one.Bars, one.Line, [.. items.Select(one.ValueOf)], one.IsHidden))];
         var axis = Axes.Y is { } y ? new ChartValueAxis(y.Min, y.Max, y.Step, y.Format) : default;
         return ChartPlan.Build(places, series, Stacking, axis, culture);
     }
@@ -265,14 +286,16 @@ public partial class TbChart<TItem>
     private static string Percent(double share) =>
         Math.Round(share * 100, 3).ToString(CultureInfo.InvariantCulture) + "%";
 
-    // What a screen reader hears for the drawing: the kind of chart and its series, as "Bar chart: Completed, Failed".
+    // What a screen reader hears for the drawing: the kind of chart and the series it shows, as "Bar chart:
+    // Completed, Failed".
     private string Summary()
     {
-        var kind = _series.All(one => one.Bars) ? Labels.Bars ?? Localizer[TbStrings.ChartBars]
-            : _series.Any(one => one.Bars) ? Labels.BarsAndLines ?? Localizer[TbStrings.ChartBarsAndLines]
+        var shown = _series.Where(one => !one.IsHidden).ToList();
+        var kind = shown.All(one => one.Bars) ? Labels.Bars ?? Localizer[TbStrings.ChartBars]
+            : shown.Any(one => one.Bars) ? Labels.BarsAndLines ?? Localizer[TbStrings.ChartBarsAndLines]
             : Labels.Lines ?? Localizer[TbStrings.ChartLines];
         return string.Format(CultureInfo.CurrentCulture, Labels.Summary ?? Localizer[TbStrings.ChartSummary], kind,
-            string.Join(", ", _series.Select(one => one.Name)));
+            string.Join(", ", shown.Select(one => one.Name)));
     }
 
     /// <summary>Stops the chart's script from following the pointer and the keys.</summary>
