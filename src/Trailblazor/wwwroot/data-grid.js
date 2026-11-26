@@ -970,13 +970,13 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
     const startEdit = cell => cell.dispatchEvent(new CustomEvent('tb-edit-start', { bubbles: true }));
 
     // What's typed on a cell replaces its field's value once the server has drawn it. It goes in as typing does, since a
-    // number box drops a lone minus sign set through its value. A select, a checkbox or a time box just opens.
+    // number box drops a lone minus sign set through its value. A select or a checkbox just opens.
     let typed = null;
     const takeTyped = field => {
         const { cell, text } = typed;
         typed = null;
         if (field.closest('td, th') === cell && field.closest('[data-part=editor]')
-            && field.matches('input:not([type=time]), textarea') && !field.readOnly) {
+            && field.matches('input, textarea') && !field.readOnly) {
             field.select();
             field.ownerDocument.execCommand('insertText', false, text);
         }

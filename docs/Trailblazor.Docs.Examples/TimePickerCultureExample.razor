@@ -1,0 +1,10 @@
+@using System.Globalization
+
+<TbTimePicker TTime="TimeOnly" Label="Departure" @bind-Value="_departure" Culture="German"
+              HelperText="Shown and typed in German's 24-hour form, such as 17:45." />
+
+@code {
+    private static readonly CultureInfo German = CultureInfo.GetCultureInfo("de-DE");
+
+    private TimeOnly? _departure = new(17, 45);
+}

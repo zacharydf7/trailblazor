@@ -453,6 +453,9 @@ public static class TbStrings
     /// no Min; {0} is the latest.</summary>
     public const string TimePickerAtMost = "TimePicker.AtMost";
 
+    /// <summary>"Choose a time": names the button that opens a time picker's list of times.</summary>
+    public const string TimePickerOpen = "TimePicker.Open";
+
     /// <summary>"Date": names a date-time picker's date box.</summary>
     public const string DateTimePickerDate = "DateTimePicker.Date";
 
@@ -2086,6 +2089,7 @@ public static class TbStrings
         [TimePickerOutOfRange] = "Choose a time from {0} to {1}.",
         [TimePickerAtLeast] = "Choose {0} or later.",
         [TimePickerAtMost] = "Choose {0} or earlier.",
+        [TimePickerOpen] = "Choose a time",
         [DateTimePickerDate] = "Date",
         [DateTimePickerTime] = "Time",
         [DateTimePickerOutOfRange] = "Choose a date and time from {0} to {1}.",

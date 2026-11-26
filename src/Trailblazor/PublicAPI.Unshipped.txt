@@ -8116,3 +8116,10 @@ static Trailblazor.KanbanLane<TItem>.operator !=(Trailblazor.KanbanLane<TItem>? 
 static Trailblazor.KanbanLane<TItem>.operator ==(Trailblazor.KanbanLane<TItem>? left, Trailblazor.KanbanLane<TItem>? right) -> bool
 Trailblazor.TbThemeHead.Nonce.get -> string?
 Trailblazor.TbThemeHead.Nonce.set -> void
+const Trailblazor.TbStrings.TimePickerOpen = "TimePicker.Open" -> string!
+override Trailblazor.TbTimePicker<TTime>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+Trailblazor.TbTimePicker<TTime>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbTimePicker<TTime>.Culture.get -> System.Globalization.CultureInfo?
+Trailblazor.TbTimePicker<TTime>.Culture.set -> void
+Trailblazor.TimePickerLabels.Open.get -> string?
+Trailblazor.TimePickerLabels.Open.init -> void

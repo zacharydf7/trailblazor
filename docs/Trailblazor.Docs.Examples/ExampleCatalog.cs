@@ -9590,7 +9590,7 @@ public static class ExampleCatalog
             ],
         },
         new("time-picker", "Time picker", ExampleCategory.Inputs,
-            "Chooses a time of day in the browser's own time box, shown in the user's language.")
+            "Chooses a time of day, typed in the app's culture or picked from a list of times.")
         {
             WhenToUse =
             [
@@ -9602,45 +9602,63 @@ public static class ExampleCatalog
                 "For a day, use a [date picker](components/date-picker).",
             ],
             Related = ["date-picker", "number-field", "form"],
+            Pattern = new("combobox", "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/"),
             Sections =
             [
                 new("value", "Value", "`@bind-Value` holds the time. `TTime` can be `TimeOnly`, or `TimeSpan` from "
-                    + "midnight. The browser shows the time in the user's own language, such as 8:30 AM or 08:30.",
-                    typeof(TimePickerExample)),
-                new("limits", "Earliest, latest and steps", "`Min` and `Max` set the earliest and latest times, and a "
-                    + "time outside them shows a message. A `Min` after `Max` is a range across midnight. `Step` sets "
-                    + "how far apart the times are, such as 15 minutes; a step that isn't a whole number of minutes "
-                    + "adds seconds to the box.", typeof(TimePickerLimitsExample)),
+                    + "midnight. The box shows the time in the `Culture`'s form, such as 8:30 AM or 08:30, and reads "
+                    + "it back that way, or as a 24-hour time such as 20:30 in any culture. The clock button, or Down "
+                    + "in the box, opens a list of times.", typeof(TimePickerExample)),
+                new("limits", "Earliest, latest and steps", "`Min` and `Max` set the earliest and latest times. The "
+                    + "list holds only those, and a typed time outside them shows a message. A `Min` after `Max` is a "
+                    + "range across midnight, and the list runs from `Min` past midnight to `Max`. `Step` sets how "
+                    + "far apart the listed times are, such as 15 minutes. Without a step, or with one under five "
+                    + "minutes, the list is every half hour, and a step that isn't a whole number of minutes adds "
+                    + "seconds to the box.", typeof(TimePickerLimitsExample)),
+                new("culture", "Culture", "`Culture` sets the form the box shows and reads times in, here German's "
+                    + "24-hour form. Without it, the picker follows the current culture.",
+                    typeof(TimePickerCultureExample)),
                 new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the time from changing. "
                     + "`Disabled` takes the field out of the tab order and the post.", typeof(TimePickerStatesExample)),
             ],
             Api = [typeof(TbTimePicker<>), typeof(TimePickerLabels), typeof(FieldClasses)],
+            Ready = new("[data-part=input]", "the input"),
             Keyboard =
             [
-                new(["Left", "Right"], "Moves between the hours, minutes and, in some languages, AM or PM.")
-                    { When = "In the box" },
-                new(["Up", "Down"], "Changes the part with focus. The minutes move by `Step`.") { When = "In the box" },
-                new(["0-9"], "Types the part with focus.") { When = "In the box" },
+                new(["Down"], "Opens the list on the chosen time, or the first listed time after it; with none "
+                    + "chosen, on the first time.") { When = "While closed" },
+                new(["Alt+Down"], "Opens the list without moving into it.") { When = "While closed" },
+                new(["Up"], "Opens the list on the chosen time, or the first listed time after it; with none chosen, "
+                    + "on the last time.") { When = "While closed" },
+                new(["A character"], "Types in the box and opens the list. Leaving the box takes the typed time.")
+                    { When = "While closed" },
+                new(["Down", "Up"], "Moves to the next or previous time, wrapping around.") { When = "While open" },
+                new(["Enter"], "Picks the time in focus and closes the list; with none in focus, closes it and takes "
+                    + "the typed time.") { When = "While open" },
+                new(["Escape"], "Closes the list, keeping the time.") { When = "While open" },
             ],
             Labeling =
             [
-                "The box is named by the `Label`. Each part of the time is announced by the browser, such as "
-                    + "\"hours\" and \"minutes\".",
+                "The box is named by the `Label`. It is a combobox that controls the list of times, and the time in "
+                    + "focus in the list is its active descendant, so focus never leaves the box.",
+                "The clock button is named \"Choose a time\", or `Labels.Open`. It stays out of the tab order, since "
+                    + "Down opens the list from the box.",
             ],
             Announcements =
             [
                 "A time outside `Min` and `Max` shows a message that is read out once, as on a "
                     + "[text field](components/text-field).",
+                "The time in focus in the list is read out as the arrows move, as in an "
+                    + "[autocomplete](components/autocomplete).",
             ],
             Accessibility =
             [
-                "The time box is the browser's own, so its keys, its parts' names and its look in forced-colors mode "
-                    + "are the ones people know from other sites.",
+                "The box and its list follow the WAI-ARIA combobox pattern, with a listbox popup.",
             ],
             AppDuties =
             [
-                "The box shows the time in the browser's language, not the app's `Culture`, but its value is always "
-                    + "24-hour `HH:mm`, so a test reads and fills it that way.",
+                "Set the request's culture, or `Culture`, to the user's, so the box shows and reads times the way "
+                    + "they write them.",
             ],
             Notes =
             [
@@ -9651,22 +9669,27 @@ public static class ExampleCatalog
             Modes = new(ModeSupport.Full, ModeSupport.Partial),
             BeforeInteractive =
             [
-                "It is the browser's own time box either way, so the time can be chosen and a static form still posts "
-                    + "it.",
+                "Before the page is interactive it is the browser's own time box, shown in the browser's language, so "
+                    + "the time can still be chosen and a static form posts it.",
             ],
-            Target = new("textbox", "Start time"),
-            Blocks = ["tb-field"],
+            Target = new("combobox", "Start time"),
+            Blocks = ["tb-field", "tb-select"],
             DataParts =
             [
                 .. FieldParts,
-                new("input", "The time box."),
+                new("input", "The box the time is typed in, or the browser's own time box before the page is "
+                    + "interactive."),
+                new("listbox", "The list of times."),
+                new("option", "A time in the list."),
+                new("toggle", "The clock button that opens and closes the list."),
             ],
             Scenario = new("value", "it chooses a time and checks the value and what the app shows."),
             TestingTips =
             [
                 "`page.Tb().TimePicker(\"Start time\")` in Playwright, or `cut.Tb().TimePicker(\"Start time\")` in "
                     + "bUnit, finds the time picker by its label.",
-                "`ChooseAsync(new TimeOnly(14, 30))` sets the time however the box displays it.",
+                "`ChooseAsync(new TimeOnly(14, 30))` types the time in 24-hour form, which the box reads in every "
+                    + "culture.",
                 "`ValueAsync()` or `Value` reads the time.",
             ],
         },
@@ -13442,7 +13465,7 @@ public static class ExampleCatalog
                 new(["Enter", "F2"], "Moves into the cell's fields, or starts editing an `Editable` cell.")
                     { When = "With cell navigation" },
                 new(["A character"], "Starts editing an `Editable` cell, with what's typed replacing a text, "
-                    + "number or date field's value; a select, a checkbox or a time box just opens.")
+                    + "number, date or time field's value; a select or checkbox just opens.")
                     { When = "With cell navigation" },
                 new(["Enter"], "On a cell with nothing to go into, clicks the row, raising `OnRowClick` and, with "
                     + "`RowClickSelects`, selecting or unselecting it.") { When = "With cell navigation" },

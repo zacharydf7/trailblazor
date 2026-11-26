@@ -15,16 +15,19 @@ public class TbTimePickerTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldShowTheTimeInTheTimeBoxWithItsLimitsAndStep_WhenGivenThem()
+    public void Render_ShouldShowTheTimeAndListATimeForEachStepWithinTheLimits_WhenGivenThem()
     {
         var cut = RenderPicker(new TimeOnly(8, 30), parameters => parameters
-            .Add(picker => picker.Min, new TimeOnly(6, 0)).Add(picker => picker.Max, new TimeOnly(18, 0))
-            .Add(picker => picker.Step, TimeSpan.FromMinutes(15)));
+            .Add(picker => picker.Min, new TimeOnly(8, 0)).Add(picker => picker.Max, new TimeOnly(10, 0))
+            .Add(picker => picker.Step, TimeSpan.FromMinutes(30)));
 
-        var input = cut.Find("input[type=time]");
-        Assert.Equal(("08:30", "06:00", "18:00", "900"), (input.GetAttribute("value"), input.GetAttribute("min"),
-            input.GetAttribute("max"), input.GetAttribute("step")));
+        var input = cut.Find("input[role=combobox]");
+        Assert.Equal(("8:30 AM", "08:30"), (Plain(input.GetAttribute("value")), input.GetAttribute("data-value")));
         Assert.Equal(input.Id, cut.Find("label").GetAttribute("for"));
+        Assert.Equal(cut.Find("[role=listbox]").Id, input.GetAttribute("aria-controls"));
+        Assert.Equal(["8:00 AM", "8:30 AM", "9:00 AM", "9:30 AM", "10:00 AM"],
+            cut.FindAll("[data-part=option]").Select(option => Plain(option.TextContent)));
+        Assert.Equal("true", cut.Find("[data-time='08:30']").GetAttribute("aria-selected"));
     }
 
     [Fact]
@@ -33,7 +36,136 @@ public class TbTimePickerTests : BunitContext
         var cut = RenderPicker(new TimeOnly(8, 30, 15),
             parameters => parameters.Add(picker => picker.Step, TimeSpan.FromSeconds(5)));
 
-        Assert.Equal("08:30:15", cut.Find("input").GetAttribute("value"));
+        Assert.Equal("8:30:15 AM", Plain(cut.Find("input").GetAttribute("value")));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(1)]
+    [InlineData(4)]
+    public void Render_ShouldListEveryHalfHour_WhenTheStepIsUnderFiveMinutes(int? minutes)
+    {
+        var cut = RenderPicker(null, parameters => parameters.Add(picker => picker.Step,
+            minutes is { } step ? TimeSpan.FromMinutes(step) : null));
+
+        var times = cut.FindAll("[data-part=option]").Select(option => option.GetAttribute("data-time")).ToList();
+        Assert.Equal(48, times.Count);
+        Assert.Equal(("00:00", "00:30", "23:30"), (times[0], times[1], times[^1]));
+    }
+
+    [Fact]
+    public void Render_ShouldRunTheListPastMidnight_WhenMinIsAfterMax()
+    {
+        var cut = RenderPicker(null, parameters => parameters.Add(picker => picker.Min, new TimeOnly(22, 0))
+            .Add(picker => picker.Max, new TimeOnly(2, 0)).Add(picker => picker.Step, TimeSpan.FromHours(1)));
+
+        Assert.Equal(["22:00", "23:00", "00:00", "01:00", "02:00"],
+            cut.FindAll("[data-part=option]").Select(option => option.GetAttribute("data-time")));
+    }
+
+    [Theory]
+    [InlineData(8, 30, "08:30")]
+    [InlineData(8, 40, "09:00")]
+    [InlineData(23, 50, "00:00")]
+    public void Render_ShouldStartTheKeysAtTheChosenTimeOrTheNextListedOne_WhenATimeIsChosen(int hour, int minute,
+        string start)
+    {
+        var cut = RenderPicker(new TimeOnly(hour, minute));
+
+        Assert.Equal(start, Assert.Single(cut.FindAll("[data-start]")).GetAttribute("data-time"));
+    }
+
+    [Theory]
+    [InlineData(1, "01:00")]
+    [InlineData(23, "23:00")]
+    [InlineData(3, "22:00")]
+    public void Render_ShouldStartTheKeysAtTheChosenTime_WhenTheListRunsPastMidnight(int hour, string start)
+    {
+        var cut = RenderPicker(new TimeOnly(hour, 0), parameters => parameters
+            .Add(picker => picker.Min, new TimeOnly(22, 0)).Add(picker => picker.Max, new TimeOnly(2, 0))
+            .Add(picker => picker.Step, TimeSpan.FromHours(1)));
+
+        Assert.Equal(start, Assert.Single(cut.FindAll("[data-start]")).GetAttribute("data-time"));
+    }
+
+    [Fact]
+    public void Render_ShouldStartTheKeysAtTheFirstTime_WhenNoTimeIsChosen()
+    {
+        var cut = RenderPicker(null);
+
+        Assert.Empty(cut.FindAll("[data-start]"));
+    }
+
+    [Fact]
+    public async Task Click_ShouldChooseTheTime_WhenATimeInTheListIsClicked()
+    {
+        var cut = RenderPicker(null);
+
+        await cut.Find("[data-time='09:30']").ClickAsync();
+
+        Assert.Equal([new TimeOnly(9, 30)], _changes);
+        Assert.Equal("9:30 AM", Plain(cut.Find("input").GetAttribute("value")));
+    }
+
+    [Theory]
+    [InlineData("9:15 PM")]
+    [InlineData("9:15 pm")]
+    [InlineData("21:15")]
+    public async Task Change_ShouldReadTheTime_WhenTypedInTheCulturesFormOrIn24HourForm(string text)
+    {
+        var cut = RenderPicker(null);
+
+        await cut.Find("input").ChangeAsync(new ChangeEventArgs { Value = text });
+
+        Assert.Equal([new TimeOnly(21, 15)], _changes);
+    }
+
+    [Fact]
+    public async Task Render_ShouldShowAndReadTwentyFourHourTimes_WhenTheCultureWritesThem()
+    {
+        var cut = RenderPicker(new TimeOnly(21, 15),
+            parameters => parameters.Add(picker => picker.Culture, CultureInfo.GetCultureInfo("de-DE")));
+        Assert.Equal("21:15", cut.Find("input").GetAttribute("value"));
+        Assert.Equal("21:30", cut.Find("[data-time='21:30']").TextContent);
+
+        await cut.Find("input").ChangeAsync(new ChangeEventArgs { Value = "7:05" });
+
+        Assert.Equal([new TimeOnly(7, 5)], _changes);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Render_ShouldLeaveOutTheClockButton_WhenTheTimeCantChange(bool readOnly)
+    {
+        var cut = RenderPicker(null, parameters => parameters.Add(picker => picker.ReadOnly, readOnly)
+            .Add(picker => picker.Disabled, !readOnly));
+
+        Assert.Empty(cut.FindAll("[data-part=toggle]"));
+    }
+
+    [Fact]
+    public void Render_ShouldNameTheClockButtonAndKeepItOutOfTheTabOrder_WhenInteractive()
+    {
+        var cut = RenderPicker(null);
+
+        var toggle = cut.Find("[data-part=toggle]");
+        Assert.Equal(("Choose a time", "-1"), (toggle.GetAttribute("aria-label"), toggle.GetAttribute("tabindex")));
+    }
+
+    [Fact]
+    public void Render_ShouldBeTheBrowsersTimeBoxWithItsLimitsAndStep_WhenTheFormIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", false));
+
+        var cut = RenderPicker(new TimeOnly(8, 30), parameters => parameters
+            .Add(picker => picker.Min, new TimeOnly(6, 0)).Add(picker => picker.Max, new TimeOnly(18, 0))
+            .Add(picker => picker.Step, TimeSpan.FromMinutes(15)));
+
+        var input = cut.Find("input[type=time]");
+        Assert.Equal(("08:30", "06:00", "18:00", "900"), (input.GetAttribute("value"), input.GetAttribute("min"),
+            input.GetAttribute("max"), input.GetAttribute("step")));
+        Assert.Empty(cut.FindAll("[role=listbox], [data-part=toggle]"));
     }
 
     [Fact]
@@ -142,13 +274,13 @@ public class TbTimePickerTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldShowTimeSpanLimitsAsTimes_WhenBoundToATimeSpan()
+    public void Render_ShouldListTimesWithinTimeSpanLimits_WhenBoundToATimeSpan()
     {
         var cut = Render<TbTimePicker<TimeSpan>>(parameters => parameters.Add(picker => picker.Label, "Start")
             .Add(picker => picker.Min, new TimeSpan(9, 0, 0)).Add(picker => picker.Max, new TimeSpan(17, 30, 0)));
 
-        var input = cut.Find("input");
-        Assert.Equal(("09:00", "17:30"), (input.GetAttribute("min"), input.GetAttribute("max")));
+        var times = cut.FindAll("[data-part=option]").Select(option => option.GetAttribute("data-time")).ToList();
+        Assert.Equal(("09:00", "17:30"), (times[0], times[^1]));
     }
 
     [Fact]
@@ -182,7 +314,9 @@ public class TbTimePickerTests : BunitContext
 
     // Newer ICU versions write a narrow no-break space before AM and PM.
     private static string ErrorText(IRenderedComponent<IComponent> cut) =>
-        cut.Find("[data-part=error]").TextContent.Trim().Replace('\u202F', ' ');
+        Plain(cut.Find("[data-part=error]").TextContent.Trim());
+
+    private static string Plain(string? text) => text?.Replace('\u202F', ' ') ?? "";
 
     private static ComponentParameterCollectionBuilder<TbTimePicker<TimeOnly>> NineToFive(
         ComponentParameterCollectionBuilder<TbTimePicker<TimeOnly>> parameters) =>

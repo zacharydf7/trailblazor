@@ -46,7 +46,7 @@ public class GridDateEditTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task TimeCell_ShouldOpenItsEditKeepingTheTime_WhenADigitIsTypedOnIt(string browser)
+    public async Task TimeCell_ShouldStartItsEditWithWhatWasTyped_WhenADigitIsTypedOnIt(string browser)
     {
         var page = await OpenAsync(browser, "/grid-date-edit");
         var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trips" });
@@ -57,9 +57,9 @@ public class GridDateEditTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await page.Keyboard.PressAsync("9");
 
-        var box = cell.Locator("[data-part=editor] input[type=time]");
+        var box = cell.Locator("[data-part=editor] input[role=combobox]");
         await Expect(box).ToBeFocusedAsync();
-        await Expect(box).ToHaveValueAsync("07:30");
+        await Expect(box).ToHaveValueAsync("9");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

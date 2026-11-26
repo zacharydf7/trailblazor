@@ -112,9 +112,9 @@ internal static class ContractRules
         }
 
         await use;
-        // Each combobox is typed in once more without moving the time on, so its delayed search is still pending at
-        // dispose.
-        var typing = cut.FindAll("input[role=combobox]")
+        // Each combobox that searches as it's typed in is typed in once more without moving the time on, so its delayed
+        // search is still pending at dispose.
+        var typing = cut.FindAll("input[role=combobox]").Where(box => box.HasAttribute("blazor:oninput"))
             .Select(box => box.InputAsync(new ChangeEventArgs { Value = "Cedar" })).ToList();
         var references = context.JSInterop.Invocations.SelectMany(call => call.Arguments).Where(IsObjectReference)
             .ToList();

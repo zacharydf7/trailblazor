@@ -21,6 +21,9 @@ internal static class BuiltInIcons
     public static Icon Calendar { get; } =
         new("<path d=\"M7 2h2v2h6V2h2v2h3v18H4V4h3zM6 10v10h12V10zm0-2h12V6H6zm2 4h3v3H8z\" />");
 
+    public static Icon Clock { get; } = new("<path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 "
+        + "8 8 0 0 1 0-16zm-1 3v6.6l4.8 2.9 1-1.7-3.8-2.3V7z\" />");
+
     public static Icon Palette { get; } = new("<path d=\"M12 3a9 9 0 1 0 0 18 2 2 0 0 0 1.5-3.3 2 2 0 0 1 "
         + "1.5-3.3h2.2A4.8 4.8 0 0 0 22 9.6C21.4 5.8 17.2 3 12 3zM7 12.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 "
         + "1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm4.5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 "

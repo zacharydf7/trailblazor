@@ -2,13 +2,45 @@
 @typeparam TTime where TTime : struct
 @inherits TbBoxedFieldBase<TTime?>
 
-@* The browser's own time box shows the time in the user's language and handles the keys for each part. It works the
-   same before the page is interactive, so a static form posts the time too. *@
-@Layout(Classes, @<input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId"
-                        data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
-                        data-ready="@(RendererInfo.IsInteractive ? "" : null)"
-                        name="@InputNameAttribute" type="time" value="@Text" min="@IsoOf(Min)" max="@IsoOf(Max)"
-                        step="@StepSeconds" @onchange="args => SetTextAsync(args.Value as string)" disabled="@Disabled"
-                        readonly="@ReadOnly" aria-required="@AriaRequired"
-                        aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
-                        class="@ClassNames.Join("tb-field__input", Classes?.Input)" />, Start, End)
+@Layout(Classes, @<text>
+    @if (RendererInfo.IsInteractive)
+    {
+        var times = ListTimes;
+        var start = StartTime(times);
+        @* The box shows and reads times in the culture's form, and the list offers one for each step. Tests wait for
+           the committed time, which data-value gives them in 24-hour form. *@
+        <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
+               type="text" autocomplete="off" value="@Text" @onchange="args => SetTextAsync(args.Value as string)"
+               data-value="@(IsoOf(Value) ?? "")" role="combobox"
+               aria-autocomplete="none" aria-expanded="false" aria-controls="@ListboxId" disabled="@Disabled"
+               readonly="@ReadOnly" aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
+               aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
+        <div @ref="_listbox" id="@ListboxId" popover="manual" role="listbox" data-part="listbox"
+             aria-labelledby="@(ShownLabel is null ? null : LabelId)"
+             class="tb-select__listbox">
+            @for (var index = 0; index < times.Count; index++)
+            {
+                var time = times[index];
+                <div id="@($"{ListboxId}-{index}")" role="option" data-part="option" class="tb-select__option"
+                     data-time="@IsoOf(FromTime(time))" data-start="@(time == start ? "" : null)"
+                     aria-selected="@(Value is { } chosen && ToTime(chosen) == time ? "true" : "false")"
+                     @onclick="_pick.For(time)">@Shown(time)</div>
+            }
+        </div>
+    }
+    else
+    {
+        @* Before the page is interactive the browser's own time box stands in, so a static form posts the time. *@
+        <input @attributes="ControlAttributes" data-part="input" id="@InputId"
+               data-static="@(AssignedRenderMode is null ? "" : null)" name="@InputNameAttribute" type="time"
+               value="@IsoOf(Value)" min="@IsoOf(Min)" max="@IsoOf(Max)" step="@StepSeconds" disabled="@Disabled"
+               readonly="@ReadOnly" aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
+               aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
+    }
+</text>, Start, Joined(End, RendererInfo.IsInteractive && !Disabled && !ReadOnly ? Toggle : null))
+
+@code {
+    // The keys open the list from the box, so the button is for a pointer and stays out of the Tab order.
+    private RenderFragment Toggle => @<TbIconButton Icon="BuiltInIcons.Clock" AriaLabel="@OpenLabel" Size="Size.Small"
+                                                    tabindex="-1" data-part="toggle" />;
+}

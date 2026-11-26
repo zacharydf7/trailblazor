@@ -15,4 +15,8 @@ public sealed record TimePickerLabels
     /// <summary>The message for a time after <c>Max</c> when there is no <c>Min</c>, with <c>{0}</c> for the latest
     /// time. Leave it null for the app's text for <see cref="TbStrings.TimePickerAtMost"/>.</summary>
     public string? AtMost { get; init; }
+
+    /// <summary>The name of the button that opens the list of times. Leave it null for the app's text for
+    /// <see cref="TbStrings.TimePickerOpen"/>.</summary>
+    public string? Open { get; init; }
 }

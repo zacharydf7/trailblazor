@@ -111,7 +111,6 @@ public class LocatedFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TimePicker_ShouldWorkTheFieldItIsGiven_WhenTheAppDrawsTheLabelItself(string browser)
     {
-        Assert.SkipWhen(browser == "webkit", NoTimeBox);
         var page = await OpenAsync(browser, "/drawn-labels");
         var start = page.Tb().TimePicker(page.Locator("#start"));
 

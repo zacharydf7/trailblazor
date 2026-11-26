@@ -1,16 +1,27 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+using Trailblazor.Primitives;
 
 namespace Trailblazor;
 
-/// <summary>Chooses a time of day in the browser's own time box, which shows it in the user's language. Bind it with
-/// <c>@bind-Value</c> to a <see cref="TimeOnly"/>, or to a <see cref="TimeSpan"/> from midnight that is under 24 hours.
+/// <summary>Chooses a time of day, typed in the box in the <see cref="Culture"/>'s form or picked from a list of times.
+/// Bind it with <c>@bind-Value</c> to a <see cref="TimeOnly"/>, or to a <see cref="TimeSpan"/> from midnight that is
+/// under 24 hours. Before the page is interactive it is the browser's own time box, so a static form posts the time.
 /// </summary>
-public partial class TbTimePicker<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TTime> where TTime
-    : struct
+public partial class TbTimePicker<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TTime>
+    : IAsyncDisposable where TTime : struct
 {
+    private readonly ItemHandlers<TimeOnly, Func<Task>> _pick;
     private ElementReference _input;
+    private ElementReference _listbox;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<AutocompleteEvents>? _events;
+
+    /// <summary>Creates the picker.</summary>
+    public TbTimePicker() => _pick = new(time => () => Disabled || ReadOnly ? Task.CompletedTask
+        : SetValueAsync(FromTime(time)));
 
     /// <summary>The earliest time that can be chosen. A <see cref="Min"/> after <see cref="Max"/> is a range across
     /// midnight, such as 10 PM to 6 AM.</summary>
@@ -21,10 +32,16 @@ public partial class TbTimePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
     [Parameter]
     public TTime? Max { get; set; }
 
-    /// <summary>How far apart the times that can be chosen are, such as 15 minutes; the browser's arrows move by it. A
-    /// step that isn't a whole number of minutes adds seconds to the box. Defaults to a minute.</summary>
+    /// <summary>How far apart the times in the list are, such as 15 minutes. Without a step, or with one under five
+    /// minutes, the list is every half hour; a step that isn't a whole number of minutes adds seconds to the box.
+    /// </summary>
     [Parameter]
     public TimeSpan? Step { get; set; }
+
+    /// <summary>The culture whose form the box shows and reads times in, such as <c>9:30 PM</c> or <c>21:30</c>.
+    /// Defaults to the current culture. The box reads a 24-hour time, such as <c>21:30</c>, in any culture.</summary>
+    [Parameter]
+    public CultureInfo? Culture { get; set; }
 
     /// <summary>The words the picker shows.</summary>
     [Parameter]
@@ -48,8 +65,89 @@ public partial class TbTimePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
         ? step.TotalSeconds.ToString(CultureInfo.InvariantCulture)
         : null;
 
+    private CultureInfo TimeCulture => Culture ?? CultureInfo.CurrentCulture;
+
+    private string TimePattern => ShowsSeconds ? "T" : "t";
+
+    [Inject]
+    private JsModuleLoader Modules { get; set; } = default!;
+
+    private string ListboxId => $"{InputId}-times";
+
+    private string OpenLabel => Labels.Open ?? Localizer[TbStrings.TimePickerOpen];
+
+    // The list runs from Min, or midnight, a step at a time, and keeps the times within Min and Max.
+    private List<TimeOnly> ListTimes
+    {
+        get
+        {
+            var step = Step is { } given && given >= TimeSpan.FromMinutes(5) ? given : TimeSpan.FromMinutes(30);
+            var first = Min is { } min ? ToTime(min) : TimeOnly.MinValue;
+            var times = new List<TimeOnly>();
+            for (var offset = TimeSpan.Zero; offset < TimeSpan.FromDays(1); offset += step)
+            {
+                var time = first.Add(offset);
+                if (ValueError(FromTime(time)) is null)
+                {
+                    times.Add(time);
+                }
+            }
+
+            return times;
+        }
+    }
+
+    // The keys start from the chosen time, or the first listed time after it.
+    private TimeOnly? StartTime(List<TimeOnly> times)
+    {
+        if (Value is not { } value || times.Count == 0)
+        {
+            return null;
+        }
+
+        // The list can run past midnight, so a time's place is how far it comes after the list's first.
+        var first = times[0];
+        var chosen = ToTime(value) - first;
+        var after = times.FindIndex(time => time - first >= chosen);
+        return times[after < 0 ? 0 : after];
+    }
+
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (!firstRender || !RendererInfo.IsInteractive)
+        {
+            return;
+        }
+
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/time-picker.js");
+            if (IsDisposed)
+            {
+                return;
+            }
+
+            // The list's opening and closing need nothing from the server.
+            _events = DotNetObjectReference.Create(
+                new AutocompleteEvents(DispatchExceptionAsync, _ => Task.CompletedTask, () => Task.CompletedTask));
+            var handle = await module.InvokeAsync<IJSObjectReference?>("createTimePicker", _input, _listbox, _events);
+            if (handle is not null && IsDisposed)
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _handle = handle;
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -63,8 +161,8 @@ public partial class TbTimePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
 
     private protected override bool Pastable => SmartPasteField.Takes(typeof(TTime));
 
-    // The time box reads and writes 24-hour times, whatever the user sees.
-    private protected override string? FormatValue(TTime? value) => IsoOf(value);
+    private protected override string? FormatValue(TTime? value) =>
+        value is { } time ? ToTime(time).ToString(TimePattern, TimeCulture) : null;
 
     private protected override bool TryParse(string? text, out TTime? value, out string? error)
     {
@@ -75,8 +173,10 @@ public partial class TbTimePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
             return true;
         }
 
-        if (!TimeOnly.TryParseExact(text, ["HH:mm", "HH:mm:ss", "HH:mm:ss.FFF"], CultureInfo.InvariantCulture,
-                DateTimeStyles.None, out var time))
+        // A 24-hour time, which the browser's own box and the testing helpers give, reads in every culture.
+        if (!TimeOnly.TryParseExact(text.Trim(), ["H:mm", "HH:mm:ss", "HH:mm:ss.FFF"], CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out var time)
+            && !TimeOnly.TryParse(text, TimeCulture, DateTimeStyles.AllowWhiteSpaces, out time))
         {
             error = Message(TbStrings.FieldInvalid);
             return false;
@@ -117,7 +217,9 @@ public partial class TbTimePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
         value is { } time ? ToTime(time).ToString(ShowsSeconds ? "HH:mm:ss" : "HH:mm", CultureInfo.InvariantCulture)
             : null;
 
-    private static string Shown(TTime time) => ToTime(time).ToString("t", CultureInfo.CurrentCulture);
+    private string Shown(TTime time) => ToTime(time).ToString("t", TimeCulture);
+
+    private string Shown(TimeOnly time) => time.ToString(TimePattern, TimeCulture);
 
     private static TimeOnly ToTime(TTime value) => value switch
     {
@@ -133,4 +235,17 @@ public partial class TbTimePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
     private string OutOfRangeLabel => Labels.OutOfRange ?? Localizer[TbStrings.TimePickerOutOfRange];
     private string AtLeastLabel => Labels.AtLeast ?? Localizer[TbStrings.TimePickerAtLeast];
     private string AtMostLabel => Labels.AtMost ?? Localizer[TbStrings.TimePickerAtMost];
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        // Blazor calls only DisposeAsync when both exist, so the field's own cleanup has to run from here.
+        Dispose();
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _events?.Dispose();
+    }
 }

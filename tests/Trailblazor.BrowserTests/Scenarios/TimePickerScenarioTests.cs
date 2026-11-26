@@ -8,8 +8,6 @@ public class TimePickerScenarioTests(BrowserFixture fixture) : BrowserTest(fixtu
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task StartTime_ShouldGiveTheAppTheTime_WhenATimeIsChosen(string browser)
     {
-        // Playwright's WebKit for Windows shows the time as a plain text box, whose edits never reach the page.
-        Assert.SkipWhen(browser == "webkit" && OperatingSystem.IsWindows(), "WebKit on Windows has no time box.");
         var page = await OpenAsync(browser, "/examples/time-picker/value");
         var start = page.Tb().TimePicker("Start time");
         var time = new TimeOnly(7, 45);

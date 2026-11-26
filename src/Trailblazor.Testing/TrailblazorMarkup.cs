@@ -499,7 +499,7 @@ public sealed class TrailblazorMarkup
         new(() => Field(label, "textarea.tb-markdown-editor__input"));
 
     /// <summary>The <c>TbTimePicker</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
-    public TbTimePickerDriver TimePicker(string label) => new(() => Field(label, "input[type=time][data-part=input]"));
+    public TbTimePickerDriver TimePicker(string label) => new(() => Field(label, "input[data-part=input]"));
 
     /// <summary>The <c>TbDatePicker</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbDatePickerDriver DatePicker(string label) =>
@@ -1489,10 +1489,11 @@ public sealed class TbTimePickerDriver : TbFieldDriver
     internal TbTimePickerDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>The time the field holds, or null when it has none.</summary>
-    public TimeOnly? Value => _find().GetAttribute("value") is { Length: > 0 } text
+    public TimeOnly? Value => (_find().GetAttribute("data-value") ?? _find().GetAttribute("value")) is
+        { Length: > 0 } text
         ? TimeOnly.ParseExact(text, ["HH:mm", "HH:mm:ss", "HH:mm:ss.FFF"], CultureInfo.InvariantCulture) : null;
 
-    /// <summary>Sets the time and commits it, as filling the browser's time box does; null clears it. A time the
+    /// <summary>Sets the time and commits it, as typing it in the box does; null clears it. A time the
     /// field can't take shows its error, as in a browser. On a static page, or when the field is read-only or
     /// disabled, this throws.</summary>
     public async Task ChooseAsync(TimeOnly? time)
@@ -1505,7 +1506,7 @@ public sealed class TbTimePickerDriver : TbFieldDriver
                 + "posts with its form; render it on an interactive page to choose a time.");
         }
 
-        // The browser's time box holds the time in 24-hour form, with seconds only when it has them.
+        // Both boxes read the time in 24-hour form, with seconds only when it has them.
         await input.ChangeAsync(new ChangeEventArgs
         {
             Value = time is { } chosen ? chosen.ToString(chosen.Second == 0 && chosen.Millisecond == 0 ? "HH:mm"

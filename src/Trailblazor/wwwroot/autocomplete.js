@@ -74,7 +74,10 @@ export function createAutocomplete(input, listbox, events) {
         }
 
         const index = list.indexOf(active);
-        setActive(index < 0 ? (step > 0 ? list[0] : list.at(-1)) : list[(index + step + list.length) % list.length]);
+        // With none active, the keys start from an option marked data-start, such as a time picker's chosen time.
+        const start = list.find(option => option.hasAttribute('data-start'));
+        setActive(index < 0 ? start ?? (step > 0 ? list[0] : list.at(-1))
+            : list[(index + step + list.length) % list.length]);
     };
 
     const onInput = () => {
