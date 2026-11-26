@@ -65,8 +65,6 @@ public class GridDateEditTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task DateAndTimeCell_ShouldTabThroughItsBoxesAndSaveTheTime_WhenATimeIsTypedInIt(string browser)
     {
-        // The WebKit build Playwright uses on Windows shows a text box for a time box, whose edits never reach the app.
-        Assert.SkipWhen(browser == "webkit", "WebKit on Windows has no time box.");
         var page = await OpenAsync(browser, "/grid-date-edit");
         var (cell, editor) = await StartEditAsync(page, "Booked");
         await Expect(editor.Locator("[data-part=date-input]")).ToBeFocusedAsync();

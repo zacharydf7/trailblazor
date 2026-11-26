@@ -23,10 +23,11 @@ public sealed class TbDateTimePickerLocator(ILocator scope, ILocator field) : Tb
     /// <summary>The box the date is typed in.</summary>
     public ILocator DateInput => Group.Locator("[data-part=date-input]");
 
-    /// <summary>The browser's own time box.</summary>
+    /// <summary>The box the time is typed in.</summary>
     public ILocator TimeInput => Group.Locator("[data-part=time-input]");
 
-    /// <summary>Types the date in the field's own format, fills the time and waits until the field has taken both; null
+    /// <summary>Types the date in the field's own format and the time in 24-hour form, which the box reads in every
+    /// culture, and waits until the field has taken both; null
     /// clears the date. A statically rendered field gets the value in the browser's own date and time box.</summary>
     public async Task ChooseAsync(DateTime? value)
     {
@@ -57,13 +58,13 @@ public sealed class TbDateTimePickerLocator(ILocator scope, ILocator field) : Tb
             return;
         }
 
+        var time = chosen.ToString(TimeFormat(chosen), CultureInfo.InvariantCulture);
         await Commit.WaitAsync(TimeInput, async () =>
         {
-            // Filling a time box always raises a change, even with the time it already shows, since that text may hide the
-            // value's seconds.
-            await TimeInput.FillAsync(chosen.ToString(TimeFormat(chosen), CultureInfo.InvariantCulture));
+            var changes = await TimeInput.InputValueAsync() != time;
+            await TimeInput.FillAsync(time);
             await TimeInput.PressAsync("Tab");
-            return true;
+            return changes;
         });
         await Assertions.Expect(Group).ToHaveAttributeAsync("data-value",
             new Regex($"^{chosen.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture)}"));

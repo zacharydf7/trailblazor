@@ -453,7 +453,8 @@ public static class TbStrings
     /// no Min; {0} is the latest.</summary>
     public const string TimePickerAtMost = "TimePicker.AtMost";
 
-    /// <summary>"Choose a time": names the button that opens a time picker's list of times.</summary>
+    /// <summary>"Choose a time": names the button that opens a time picker's or date-time picker's list of
+    /// times.</summary>
     public const string TimePickerOpen = "TimePicker.Open";
 
     /// <summary>"Date": names a date-time picker's date box.</summary>

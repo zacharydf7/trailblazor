@@ -4,8 +4,6 @@ namespace Trailblazor.BrowserTests;
 
 public class LocatedFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
-    private const string NoTimeBox = "WebKit on Windows has no time box.";
-
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helpers_ShouldWorkTheFieldTheyAreGiven_WhenTheAppDrawsTheLabelItself(string browser)
     {
@@ -86,7 +84,6 @@ public class LocatedFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task DateTimePicker_ShouldWorkThePickerItIsGiven_WhenFoundByALocator(string browser)
     {
-        Assert.SkipWhen(browser == "webkit", NoTimeBox);
         var page = await OpenAsync(browser, "/located-parts");
         var starts = page.Tb().DateTimePicker(page.Locator("#starts"));
 

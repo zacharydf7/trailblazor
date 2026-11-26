@@ -1,0 +1,11 @@
+@page "/date-time-picker-german"
+@using System.Globalization
+
+@* A culture that writes 24-hour times, where the time box can already show the text a test fills. *@
+<TbDateTimePicker TDateTime="DateTime" Label="Ends" @bind-Value="_end" Culture="_german" />
+<output data-testid="end">@(_end?.ToString("yyyy-MM-dd HH:mm") ?? "none")</output>
+
+@code {
+    private readonly CultureInfo _german = CultureInfo.GetCultureInfo("de-DE");
+    private DateTime? _end;
+}

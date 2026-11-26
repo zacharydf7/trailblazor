@@ -1724,8 +1724,9 @@
             + "such as a date the field can't read, to test its error."),
         new("Time picker", "Its label", "`TimePicker(label).ChooseAsync(time)` fills the time and waits until the app "
             + "has it, and `ValueAsync()` reads it."),
-        new("Date-time picker", "Its label", "`DateTimePicker(label).ChooseAsync(value)` types the date and fills the "
-            + "time, and `ValueAsync()` reads them. `EnterAsync(text)` types text as it is in the date box."),
+        new("Date-time picker", "Its label", "`DateTimePicker(label).ChooseAsync(value)` types the date in the field's "
+            + "format and the time in 24-hour form, and `ValueAsync()` reads them. `EnterAsync(text)` types text as it "
+            + "is in the date box."),
         new("Date range picker", "Its label", "`DateRangePicker(label).ChooseAsync(start, end)` picks the dates, and "
             + "`RangeAsync()` reads them. `EnterAsync(start, end)` types text as it is in each box, and null leaves a "
             + "box unchanged."),

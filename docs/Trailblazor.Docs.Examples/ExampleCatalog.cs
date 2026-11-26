@@ -9694,8 +9694,8 @@ public static class ExampleCatalog
             ],
         },
         new("date-time-picker", "Date-time picker", ExampleCategory.Inputs,
-            "Chooses a date and a time of day: the date typed or picked in a calendar, the time in the browser's own "
-                + "time box.")
+            "Chooses a date and a time of day, typed in the app's culture or picked from a calendar and a list of "
+                + "times.")
         {
             WhenToUse =
             [
@@ -9714,8 +9714,9 @@ public static class ExampleCatalog
             [
                 new("value", "Value", "`@bind-Value` holds the date and time. The date is typed in its box or "
                     + "picked in the calendar; a typed date follows the field's format but may leave out leading zeros "
-                    + "or give the year in two digits. The time is set in the browser's own time box, shown in the "
-                    + "user's language. A date chosen with no time is midnight, and a time set first waits for a date. "
+                    + "or give the year in two digits. The time is typed in the `Culture`'s form, such as 2:30 PM, "
+                    + "or in 24-hour form, or picked from the time box's list; the clock button, or Down in the box, "
+                    + "opens it. A date chosen with no time is midnight, and a time set first waits for a date. "
                     + "`TDateTime` can be `DateTime`, shown as written, or `DateTimeOffset`, shown in the app's "
                     + "[time zone](guides/time-zones); a date and time the user chooses takes that zone's offset. "
                     + "`ShowWeekNumbers` numbers the calendar's weeks, as on the "
@@ -9723,9 +9724,13 @@ public static class ExampleCatalog
                     typeof(DateTimePickerExample)),
                 new("limits", "Earliest, latest and steps", "`Min` and `Max` set the earliest and latest moments; a "
                     + "value outside them shows a message, and the calendar marks the days outside them as "
-                    + "unavailable. `IsDateDisabled` rules out whole days. `Step` sets how far apart the times are, "
-                    + "such as 15 minutes. `Clearable` shows a button that clears both boxes.",
+                    + "unavailable. `IsDateDisabled` rules out whole days. `Step` sets how far apart the listed times "
+                    + "are, such as 15 minutes; without a step, or with one under five minutes, the list is every half "
+                    + "hour. `Clearable` shows a button that clears both boxes.",
                     typeof(DateTimePickerLimitsExample)),
+                new("culture", "Culture", "`Culture` sets the date's format, the month and day names, the first day of "
+                    + "the week and the time's form, here German's day-first dates and 24-hour times.",
+                    typeof(DateTimePickerCultureExample)),
                 new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the value from changing: the "
                     + "boxes can't be edited and the calendar button turns off. `Disabled` takes the field out of the "
                     + "tab order and the post.", typeof(DateTimePickerStatesExample)),
@@ -9742,10 +9747,18 @@ public static class ExampleCatalog
                 new(["Enter", "Space"], "Picks the day, keeps the time, closes the calendar and returns focus to the "
                     + "button.") { When = "In the calendar" },
                 new(["Escape"], "Closes the calendar without changing the date.") { When = "In the calendar" },
-                new(["Left", "Right"], "Moves between the hours, minutes and, in some languages, AM or PM.")
-                    { When = "In the time box" },
-                new(["Up", "Down"], "Changes the part with focus. The minutes move by `Step`.")
-                    { When = "In the time box" },
+                new(["Down"], "Opens the list of times on the chosen time, or the first listed time after it; with "
+                    + "none chosen, on the first time.") { When = "In the time box, list closed" },
+                new(["Alt+Down"], "Opens the list without moving into it.") { When = "In the time box, list closed" },
+                new(["Up"], "Opens the list on the chosen time, or the first listed time after it; with none chosen, "
+                    + "on the last time.") { When = "In the time box, list closed" },
+                new(["A character"], "Types in the box and opens the list. Leaving the box takes the typed time.")
+                    { When = "In the time box, list closed" },
+                new(["Down", "Up"], "Moves to the next or previous time, wrapping around.")
+                    { When = "In the time box, list open" },
+                new(["Enter"], "Picks the time in focus and closes the list; with none in focus, closes it and takes "
+                    + "the typed time.") { When = "In the time box, list open" },
+                new(["Escape"], "Closes the list, keeping the time.") { When = "In the time box, list open" },
             ],
             Labeling =
             [
@@ -9753,16 +9766,22 @@ public static class ExampleCatalog
                     + "`Labels.Date` and `Labels.Time`.",
                 "The date box shows the format as its placeholder unless `Placeholder` sets another.",
                 "The calendar button and the calendar are named \"Choose a date\", or by `Labels.Open`.",
+                "The time box is a combobox that controls its list of times, which is named like the box. The time "
+                    + "in focus in the list is its active descendant, so focus never leaves the box.",
+                "The clock button is named \"Choose a time\", or by `Labels.OpenTimes`, and stays out of the tab "
+                    + "order, since Down opens the list from the box.",
             ],
             Announcements =
             [
                 "A date that can't be read or chosen, and a value outside `Min` and `Max`, show a message that is read "
                     + "out once, as on a [text field](components/text-field).",
+                "The time in focus in the list of times is read out as the arrows move, as in an "
+                    + "[autocomplete](components/autocomplete).",
             ],
             Accessibility =
             [
-                "The calendar is a [calendar](components/calendar) in a popover, and the time box is the browser's "
-                    + "own, so their keys and forced-colors looks are the ones people know.",
+                "The calendar is a [calendar](components/calendar) in a popover, and the time box and its list "
+                    + "follow the WAI-ARIA combobox pattern, as a [time picker](components/time-picker) does.",
                 "A message from typing marks only the box it is about as invalid.",
             ],
             AppDuties =
@@ -9773,7 +9792,8 @@ public static class ExampleCatalog
                 "A static form shows a `DateTimeOffset` in the app's time zone but posts it with no offset, and "
                     + "Blazor reads it in the server's, so an unchanged value moves unless the two zones match. Bind a "
                     + "`DateTime` in a static form and add the user's offset after the post.",
-                "The time box shows the time in the browser's language, not the app's `Culture`.",
+                "Set the request's culture, or `Culture`, to the user's, so both boxes show and read dates and "
+                    + "times the way they write them.",
             ],
             Notes =
             [
@@ -9790,12 +9810,15 @@ public static class ExampleCatalog
             ],
             Ready = new("[data-part=trigger]", "the button that opens the calendar"),
             Target = new("group", "Guided hike starts"),
-            Blocks = ["tb-field"],
+            Blocks = ["tb-field", "tb-select"],
             DataParts =
             [
                 .. FieldParts,
                 new("date-input", "The box the date is typed in."),
-                new("time-input", "The browser's own time box."),
+                new("time-input", "The box the time is typed in."),
+                new("listbox", "The time box's list of times."),
+                new("option", "A time in the list."),
+                new("toggle", "The clock button that opens and closes the list of times."),
                 new("clear", "The button that clears the date and time."),
                 new("popover", "The calendar button and the calendar it opens."),
                 new("input", "The browser's own date and time box, shown before the page is interactive."),
@@ -9806,8 +9829,10 @@ public static class ExampleCatalog
                 "For a `DateTimeOffset`, cascade a `TimeZoneInfo` or set `options.Times.TimeZone`, so `Value` and the "
                     + "chosen offset are the same on every machine ([time zones](guides/time-zones)).",
                 "`await page.Tb().DateTimePicker(\"Guided hike starts\").ChooseAsync(start)` from "
-                    + "`Trailblazor.Testing.Playwright` types the date in the field's own format, fills the time and "
-                    + "waits until the field has taken both.",
+                    + "`Trailblazor.Testing.Playwright` types the date in the field's own format and the time in "
+                    + "24-hour form, which the box reads in every culture, and waits until the field has taken both.",
+                "Before pressing keys in the time box, wait for its `data-ready`, which it gets once its list's keys "
+                    + "work.",
                 "In bUnit, `cut.Tb().DateTimePicker(\"Guided hike starts\")` from `Trailblazor.Testing` has the same "
                     + "`ChooseAsync(start)`, and `Value` reads it.",
                 "`EnterAsync(text)` types text as it is in the date box, in either package, to test the field's "

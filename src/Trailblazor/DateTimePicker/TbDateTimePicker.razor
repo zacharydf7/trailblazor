@@ -32,13 +32,37 @@
                     </CascadingValue>
                 </CascadingValue>
             </TbPopover>
-            @* The browser's own time box shows the time in the user's language and handles the keys for each part. *@
-            <input data-part="time-input" id="@TimeId" name="@NameOf("Time")" type="time" value="@TimeText"
-                   @onchange="args => SetTimeTextAsync(args.Value as string)" step="@StepSeconds"
+            @* The time box shows and reads times in the culture's form, and its list offers one for each step. *@
+            <input @ref="_timeInput" data-part="time-input" id="@TimeId" name="@NameOf("Time")" type="text"
+                   autocomplete="off" value="@TimeText" @onchange="args => SetTimeTextAsync(args.Value as string)"
+                   role="combobox" aria-autocomplete="none" aria-expanded="false" aria-controls="@TimeListId"
                    disabled="@Disabled" readonly="@ReadOnly" aria-labelledby="@Names(TimeId)"
                    aria-required="@AriaRequired" aria-invalid="@AriaInvalid(_timeBad)"
                    aria-describedby="@InputDescribedBy"
                    class="@ClassNames.Join("tb-field__input", "tb-date-time__time", Classes?.Input)" />
+            <div @ref="_timeList" id="@TimeListId" popover="manual" role="listbox" data-part="listbox"
+                 aria-labelledby="@Names(TimeId)" class="tb-select__listbox">
+                @{
+                    var times = ListTimes;
+                    var start = TimeList.Start(times, ChosenTime);
+                }
+                @for (var index = 0; index < times.Count; index++)
+                {
+                    var time = times[index];
+                    <div id="@($"{TimeListId}-{index}")" role="option" data-part="option" class="tb-select__option"
+                         data-time="@time.ToString(ShowsSeconds ? "HH:mm:ss" : "HH:mm", CultureInfo.InvariantCulture)"
+                         data-start="@(time == start ? "" : null)"
+                         aria-selected="@(time == ChosenTime ? "true" : "false")"
+                         @onclick="_pickTime.For(time)">@TimeOfDay(time)</div>
+                }
+            </div>
+            @if (!Disabled && !ReadOnly)
+            {
+                @* The keys open the list from the time box, so the button is for a pointer and stays out of the tab
+                   order. *@
+                <TbIconButton Icon="BuiltInIcons.Clock" AriaLabel="@OpenTimesLabel" Size="Size.Small" tabindex="-1"
+                              data-part="toggle" />
+            }
             @if (Clearable && !Disabled && !ReadOnly && HasEntry)
             {
                 <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@ClearLabel" aria-describedby="@ClearDescribedBy"

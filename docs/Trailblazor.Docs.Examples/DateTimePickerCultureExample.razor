@@ -1,0 +1,10 @@
+@using System.Globalization
+
+<TbDateTimePicker TDateTime="DateTime" Label="Shuttle leaves" @bind-Value="_leaves" Culture="German"
+                  HelperText="Shown and typed in German's form, such as 14.06.2026 and 17:45." />
+
+@code {
+    private static readonly CultureInfo German = CultureInfo.GetCultureInfo("de-DE");
+
+    private DateTime? _leaves = new(2026, 6, 14, 17, 45, 0);
+}

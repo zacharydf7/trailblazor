@@ -788,7 +788,6 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task DateTimePicker_ShouldReturnOnceTheAppHasRunItsCallback_WhenItsHandlerIsSlow(string browser)
     {
-        Assert.SkipWhen(browser == "webkit", "WebKit on Windows has no time box.");
         var page = await OpenAsync(browser, "/helpers-slow");
 
         await page.Tb().DateTimePicker("Slow start").ChooseAsync(new DateTime(2026, 5, 2, 9, 30, 0));

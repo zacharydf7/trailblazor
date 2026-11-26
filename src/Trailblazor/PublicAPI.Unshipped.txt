@@ -8123,3 +8123,7 @@ Trailblazor.TbTimePicker<TTime>.Culture.get -> System.Globalization.CultureInfo?
 Trailblazor.TbTimePicker<TTime>.Culture.set -> void
 Trailblazor.TimePickerLabels.Open.get -> string?
 Trailblazor.TimePickerLabels.Open.init -> void
+Trailblazor.DateTimePickerLabels.OpenTimes.get -> string?
+Trailblazor.DateTimePickerLabels.OpenTimes.init -> void
+Trailblazor.TbDateTimePicker<TDateTime>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbDateTimePicker<TDateTime>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!

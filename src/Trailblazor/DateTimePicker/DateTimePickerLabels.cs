@@ -15,6 +15,10 @@ public sealed record DateTimePickerLabels
     /// <see cref="TbStrings.DatePickerOpen"/>.</summary>
     public string? Open { get; init; }
 
+    /// <summary>Names the button that opens the time box's list of times. Leave it null for the app's text for
+    /// <see cref="TbStrings.TimePickerOpen"/>.</summary>
+    public string? OpenTimes { get; init; }
+
     /// <summary>The words of the calendar that opens, such as its previous and next buttons. Leave it null for the
     /// app's text.</summary>
     public CalendarLabels? Calendar { get; init; }

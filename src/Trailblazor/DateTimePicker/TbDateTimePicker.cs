@@ -1,18 +1,25 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
+using Trailblazor.Primitives;
+using Microsoft.JSInterop;
 using static Trailblazor.CalendarDates;
 
 namespace Trailblazor;
 
 /// <summary>Chooses a date and a time of day: the date typed into a box or picked in a calendar beside it, and the time
-/// in the browser's own time box. Bind it with <c>@bind-Value</c> to a <see cref="DateTime"/> or
+/// typed in the <see cref="Culture"/>'s form or picked from a list of times. Bind it with <c>@bind-Value</c> to a <see cref="DateTime"/> or
 /// <see cref="DateTimeOffset"/>. It shows a <see cref="DateTime"/> as written, and a <see cref="DateTimeOffset"/> in
 /// the app's time zone, which <see cref="TimeZone"/> explains; a date chosen with no time is midnight.</summary>
 public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDateTime>
-    where TDateTime : struct
+    : IAsyncDisposable where TDateTime : struct
 {
+    private readonly ItemHandlers<TimeOnly, Func<Task>> _pickTime;
     private ElementReference _dateInput;
+    private ElementReference _timeInput;
+    private ElementReference _timeList;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<AutocompleteEvents>? _events;
     private bool _open;
     private bool _lastOpen;
     private TbCalendar<DateOnly>? _calendar;
@@ -52,8 +59,9 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
     [Parameter]
     public bool ShowWeekNumbers { get; set; }
 
-    /// <summary>How far apart the times that can be chosen are, such as 15 minutes; the time box's arrows move by it. A
-    /// step that isn't a whole number of minutes adds seconds to the box. Defaults to a minute.</summary>
+    /// <summary>How far apart the times in the time box's list are, such as 15 minutes. Without a step, or with one
+    /// under five minutes, the list is every half hour; a step that isn't a whole number of minutes adds seconds to the
+    /// box.</summary>
     [Parameter]
     public TimeSpan? Step { get; set; }
 
@@ -64,7 +72,8 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
 
     /// <summary>The culture for the date's format, the month and day names, and the first day of the week. Defaults to
     /// the current culture. Dates are always Gregorian, like the grid, even for a culture with its own calendar, such as
-    /// th-TH. The time box shows the time in the browser's language.</summary>
+    /// th-TH. It also sets the form the time box shows and reads times in, such as 9:30 PM or 21:30; the box reads a
+    /// 24-hour time in any culture.</summary>
     [Parameter]
     public CultureInfo? Culture { get; set; }
 
@@ -137,7 +146,21 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
     // A static page shows the browser's own date and time box in place of the two boxes.
     private protected override string ControlId => RendererInfo.IsInteractive ? DateId : InputId;
 
+    /// <summary>Creates the picker.</summary>
+    public TbDateTimePicker() => _pickTime = new(time => () => Disabled || ReadOnly ? Task.CompletedTask
+        : SetTimeTextAsync(TimeOfDay(time)));
+
+    [Inject]
+    private JsModuleLoader Modules { get; set; } = default!;
+
     private string TimeId => $"{InputId}-time";
+
+    private string TimeListId => $"{InputId}-times";
+
+    // Min and Max are moments, not times of day, so the list holds the whole day.
+    private List<TimeOnly> ListTimes => TimeList.From(TimeOnly.MinValue, Step, _ => true);
+
+    private TimeOnly? ChosenTime => Chosen is { } chosen ? TimeOnly.FromDateTime(chosen) : null;
 
     private CultureInfo DateCulture => CalendarDates.Gregorian(Culture ?? CultureInfo.CurrentCulture);
 
@@ -153,7 +176,7 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
 
     private string? DateText => _dateText ?? ChosenDate?.ToString(DateFormat, DateCulture);
 
-    private string? TimeText => _timeText ?? (Chosen is { } chosen ? TimeOfDay(TimeOnly.FromDateTime(chosen)) : null);
+    private string? TimeText => _timeText ?? (ChosenTime is { } time ? TimeOfDay(time) : null);
 
     private DateOnly? MinDate => Min is { } min ? DateOnly.FromDateTime(WallClock(min)) : null;
 
@@ -243,7 +266,7 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
         }
 
         var date = picked ?? ChosenDate;
-        TimeOnly? time = Chosen is { } chosen ? TimeOnly.FromDateTime(chosen) : null;
+        var time = ChosenTime;
         string? dateError = null;
         _dateBad = _dateText is not null && !TryReadDate(_dateText, out date, out dateError);
         _timeBad = _timeText is not null && !TryReadTime(_timeText, out time);
@@ -303,8 +326,7 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
         return true;
     }
 
-    // The time box reads and writes 24-hour times, whatever the user sees.
-    private static bool TryReadTime(string text, out TimeOnly? time)
+    private bool TryReadTime(string text, out TimeOnly? time)
     {
         time = null;
         if (string.IsNullOrWhiteSpace(text))
@@ -312,8 +334,7 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
             return true;
         }
 
-        if (!TimeOnly.TryParseExact(text, ["HH:mm", "HH:mm:ss", "HH:mm:ss.FFF"], CultureInfo.InvariantCulture,
-                DateTimeStyles.None, out var read))
+        if (!TimeList.TryRead(text, DateCulture, out var read))
         {
             return false;
         }
@@ -370,8 +391,8 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
     // A message from typing belongs to the box that has it; any other belongs to both.
     private string? AriaInvalid(bool bad) => ShowsInvalid && (bad || !(_dateBad || _timeBad)) ? "true" : null;
 
-    private string TimeOfDay(TimeOnly time) =>
-        time.ToString(ShowsSeconds ? "HH:mm:ss" : "HH:mm", CultureInfo.InvariantCulture);
+    // The time box shows times in the culture's form.
+    private string TimeOfDay(TimeOnly time) => time.ToString(ShowsSeconds ? "T" : "t", DateCulture);
 
     private string Shown(TDateTime value) => WallClock(value).ToString("g", DateCulture);
 
@@ -400,4 +421,53 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
     private string OutOfRangeLabel => Labels.OutOfRange ?? Localizer[TbStrings.DateTimePickerOutOfRange];
     private string AtLeastLabel => Labels.AtLeast ?? Localizer[TbStrings.TimePickerAtLeast];
     private string AtMostLabel => Labels.AtMost ?? Localizer[TbStrings.TimePickerAtMost];
+    private string OpenTimesLabel => Labels.OpenTimes ?? Localizer[TbStrings.TimePickerOpen];
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (!firstRender || !RendererInfo.IsInteractive)
+        {
+            return;
+        }
+
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/time-picker.js");
+            if (IsDisposed)
+            {
+                return;
+            }
+
+            // The list's opening and closing need nothing from the server.
+            _events = DotNetObjectReference.Create(
+                new AutocompleteEvents(DispatchExceptionAsync, _ => Task.CompletedTask, () => Task.CompletedTask));
+            var handle = await module.InvokeAsync<IJSObjectReference?>("createTimePicker", _timeInput, _timeList,
+                _events);
+            if (handle is not null && IsDisposed)
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _handle = handle;
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        // Blazor calls only DisposeAsync when both exist, so the field's own cleanup has to run from here.
+        Dispose();
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _events?.Dispose();
+    }
 }

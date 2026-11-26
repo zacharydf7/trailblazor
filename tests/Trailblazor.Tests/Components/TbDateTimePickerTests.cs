@@ -27,7 +27,7 @@ public class TbDateTimePickerTests : BunitContext
         var cut = RenderPicker(June3At2);
 
         Assert.Equal("6/3/2026", DateBox(cut).GetAttribute("value"));
-        Assert.Equal("14:30", TimeBox(cut).GetAttribute("value"));
+        Assert.Equal("2:30 PM", TimeText(cut));
         Assert.Equal("MM/DD/YYYY", DateBox(cut).GetAttribute("placeholder"));
         Assert.Equal("2026-06-03T14:30", cut.Find("[role=group]").GetAttribute("data-value"));
     }
@@ -94,7 +94,7 @@ public class TbDateTimePickerTests : BunitContext
         await DateBox(cut).ChangeAsync(new ChangeEventArgs { Value = "6/12/2026" });
 
         Assert.Equal([new DateTime(2026, 6, 12)], _changes);
-        Assert.Equal("00:00", TimeBox(cut).GetAttribute("value"));
+        Assert.Equal("12:00 AM", TimeText(cut));
     }
 
     [Fact]
@@ -118,7 +118,7 @@ public class TbDateTimePickerTests : BunitContext
         await DateBox(cut).ChangeAsync(new ChangeEventArgs { Value = "" });
 
         Assert.Equal([(DateTime?)null], _changes);
-        Assert.Equal("14:30", TimeBox(cut).GetAttribute("value"));
+        Assert.Equal("2:30 PM", TimeText(cut));
     }
 
     [Fact]
@@ -236,6 +236,7 @@ public class TbDateTimePickerTests : BunitContext
             state == "Disabled" ? picker => picker.Disabled : picker => picker.ReadOnly, true));
 
         Assert.True(cut.Find("[data-part=popover] [aria-haspopup]").HasAttribute("disabled"));
+        Assert.Empty(cut.FindAll("[data-part=toggle]"));
     }
 
     [Fact]
@@ -257,7 +258,7 @@ public class TbDateTimePickerTests : BunitContext
 
         cut.Render(parameters => parameters.Add(picker => picker.Value, June3At2));
 
-        Assert.Equal("14:30", TimeBox(cut).GetAttribute("value"));
+        Assert.Equal("2:30 PM", TimeText(cut));
     }
 
     [Fact]
@@ -303,12 +304,68 @@ public class TbDateTimePickerTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldListATimeForEachHalfHourWithTheChosenOneSelected_WhenInteractive()
+    {
+        var cut = RenderPicker(new DateTime(2026, 6, 3, 14, 30, 0));
+
+        var options = cut.FindAll("[data-part=option]");
+        Assert.Equal(48, options.Count);
+        Assert.Equal(TimeBox(cut).GetAttribute("aria-controls"), cut.Find("[role=listbox]").Id);
+        Assert.Equal("true", cut.Find("[data-time='14:30']").GetAttribute("aria-selected"));
+        Assert.Equal("14:30", cut.Find("[data-start]").GetAttribute("data-time"));
+        Assert.Equal("Choose a time", cut.Find("[data-part=toggle]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public async Task Click_ShouldSetTheTimeOnTheChosenDay_WhenATimeInTheListIsClicked()
+    {
+        var cut = RenderPicker(new DateTime(2026, 6, 3, 14, 30, 0));
+
+        await cut.Find("[data-time='09:00']").ClickAsync();
+
+        Assert.Equal(new DateTime(2026, 6, 3, 9, 0, 0), Assert.Single(_changes));
+        Assert.Equal("9:00 AM", TimeText(cut));
+    }
+
+    [Theory]
+    [InlineData("4:45 PM")]
+    [InlineData("16:45")]
+    public async Task Change_ShouldReadTheTime_WhenTypedInTheCulturesFormOrIn24HourForm(string text)
+    {
+        var cut = RenderPicker(new DateTime(2026, 6, 3, 14, 30, 0));
+
+        await TimeBox(cut).ChangeAsync(new ChangeEventArgs { Value = text });
+
+        Assert.Equal(new DateTime(2026, 6, 3, 16, 45, 0), Assert.Single(_changes));
+    }
+
+    [Fact]
+    public async Task Change_ShouldShowAndReadTwentyFourHourTimes_WhenTheCultureWritesThem()
+    {
+        var cut = RenderPicker(new DateTime(2026, 6, 3, 14, 30, 0), culture: CultureInfo.GetCultureInfo("de-DE"));
+        Assert.Equal(("14:30", "09:30"), (TimeText(cut), cut.Find("[data-time='09:30']").TextContent));
+
+        await TimeBox(cut).ChangeAsync(new ChangeEventArgs { Value = "16:45" });
+
+        Assert.Equal(new DateTime(2026, 6, 3, 16, 45, 0), Assert.Single(_changes));
+    }
+
+    [Fact]
+    public void Render_ShouldListATimeForEachStep_WhenGivenAStep()
+    {
+        var cut = RenderPicker(null, parameters => parameters.Add(picker => picker.Step, TimeSpan.FromMinutes(15)));
+
+        var times = cut.FindAll("[data-part=option]").Select(option => option.GetAttribute("data-time")).ToList();
+        Assert.Equal((96, "00:15", "23:45"), (times.Count, times[1], times[^1]));
+    }
+
+    [Fact]
     public void Render_ShouldShowSeconds_WhenTheStepIsUnderAMinute()
     {
         var cut = RenderPicker(new DateTime(2026, 6, 3, 14, 30, 15),
             parameters => parameters.Add(picker => picker.Step, TimeSpan.FromSeconds(5)));
 
-        Assert.Equal(("14:30:15", "5"), (TimeBox(cut).GetAttribute("value"), TimeBox(cut).GetAttribute("step")));
+        Assert.Equal("2:30:15 PM", TimeText(cut));
     }
 
     [Fact]
@@ -318,7 +375,7 @@ public class TbDateTimePickerTests : BunitContext
         // 14:30 at UTC+5 is 9:30 at UTC; the cascaded zone is UTC−7, where it's 2:30 in the morning.
         var cut = RenderOffsetPicker(new DateTimeOffset(June3At2, TimeSpan.FromHours(5)), changes,
             cascaded: Zone(-7));
-        Assert.Equal(("6/3/2026", "02:30"), (DateBox(cut).GetAttribute("value"), TimeBox(cut).GetAttribute("value")));
+        Assert.Equal(("6/3/2026", "2:30 AM"), (DateBox(cut).GetAttribute("value"), TimeText(cut)));
 
         await TimeBox(cut).ChangeAsync(new ChangeEventArgs { Value = "09:15" });
 
@@ -332,7 +389,7 @@ public class TbDateTimePickerTests : BunitContext
         _time.SetLocalTimeZone(Zone(9));
         var changes = new List<DateTimeOffset?>();
         var cut = RenderOffsetPicker(new DateTimeOffset(June3At2, TimeSpan.Zero), changes);
-        Assert.Equal("07:30", TimeBox(cut).GetAttribute("value"));
+        Assert.Equal("7:30 AM", TimeText(cut));
 
         await DateBox(cut).ChangeAsync(new ChangeEventArgs { Value = "6/12/2026" });
 
@@ -347,7 +404,7 @@ public class TbDateTimePickerTests : BunitContext
         var cut = RenderOffsetPicker(new DateTimeOffset(June3At2, TimeSpan.Zero), [], cascaded: Zone(9),
             configure: parameters => parameters.Add(picker => picker.TimeZone, Zone(2)));
 
-        Assert.Equal("16:30", TimeBox(cut).GetAttribute("value"));
+        Assert.Equal("4:30 PM", TimeText(cut));
     }
 
     private static TimeZoneInfo Zone(int hours) =>
@@ -411,6 +468,10 @@ public class TbDateTimePickerTests : BunitContext
 
     private static AngleSharp.Dom.IElement DateBox(IRenderedComponent<IComponent> cut) =>
         cut.Find("input[data-part=date-input]");
+
+    // Newer ICU versions write a narrow no-break space before AM and PM.
+    private static string TimeText(IRenderedComponent<IComponent> cut) =>
+        TimeBox(cut).GetAttribute("value")?.Replace('\u202F', ' ') ?? "";
 
     private static AngleSharp.Dom.IElement TimeBox(IRenderedComponent<IComponent> cut) =>
         cut.Find("input[data-part=time-input]");

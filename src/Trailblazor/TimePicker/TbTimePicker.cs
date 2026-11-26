@@ -76,41 +76,12 @@ public partial class TbTimePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
 
     private string OpenLabel => Labels.Open ?? Localizer[TbStrings.TimePickerOpen];
 
-    // The list runs from Min, or midnight, a step at a time, and keeps the times within Min and Max.
-    private List<TimeOnly> ListTimes
-    {
-        get
-        {
-            var step = Step is { } given && given >= TimeSpan.FromMinutes(5) ? given : TimeSpan.FromMinutes(30);
-            var first = Min is { } min ? ToTime(min) : TimeOnly.MinValue;
-            var times = new List<TimeOnly>();
-            for (var offset = TimeSpan.Zero; offset < TimeSpan.FromDays(1); offset += step)
-            {
-                var time = first.Add(offset);
-                if (ValueError(FromTime(time)) is null)
-                {
-                    times.Add(time);
-                }
-            }
+    // The list runs from Min, or midnight, and keeps the times within Min and Max.
+    private List<TimeOnly> ListTimes => TimeList.From(Min is { } min ? ToTime(min) : TimeOnly.MinValue, Step,
+        time => ValueError(FromTime(time)) is null);
 
-            return times;
-        }
-    }
-
-    // The keys start from the chosen time, or the first listed time after it.
-    private TimeOnly? StartTime(List<TimeOnly> times)
-    {
-        if (Value is not { } value || times.Count == 0)
-        {
-            return null;
-        }
-
-        // The list can run past midnight, so a time's place is how far it comes after the list's first.
-        var first = times[0];
-        var chosen = ToTime(value) - first;
-        var after = times.FindIndex(time => time - first >= chosen);
-        return times[after < 0 ? 0 : after];
-    }
+    private TimeOnly? StartTime(List<TimeOnly> times) =>
+        TimeList.Start(times, Value is { } value ? ToTime(value) : null);
 
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
@@ -173,10 +144,7 @@ public partial class TbTimePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
             return true;
         }
 
-        // A 24-hour time, which the browser's own box and the testing helpers give, reads in every culture.
-        if (!TimeOnly.TryParseExact(text.Trim(), ["H:mm", "HH:mm:ss", "HH:mm:ss.FFF"], CultureInfo.InvariantCulture,
-                DateTimeStyles.None, out var time)
-            && !TimeOnly.TryParse(text, TimeCulture, DateTimeStyles.AllowWhiteSpaces, out time))
+        if (!TimeList.TryRead(text, TimeCulture, out var time))
         {
             error = Message(TbStrings.FieldInvalid);
             return false;

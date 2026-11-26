@@ -1,7 +1,7 @@
 # Date-time picker
 
-Pattern: a date box with the date picker dialog, beside the browser's own time input, in a group with a label, help and
-messages
+Pattern: a date box with the date picker dialog, beside a time box with a combobox list of times, in a group with a
+label, help and messages; the browser's own date and time input before the page is interactive
 
 Familiar apps: the start of a calendar event, a ride or shuttle booking
 
@@ -14,6 +14,8 @@ Familiar apps: the start of a calendar event, a ride or shuttle booking
 - [x] A date that can't be read, or that IsDateDisabled rules out, shows a message, keeps the value and marks only the date box invalid; fixing it takes the message back. `TbDateTimePickerTests.Change_ShouldShowAMessageAndKeepTheValue_WhenTheDateCantBeRead`, `TbDateTimePickerTests.Change_ShouldRefuseTheDate_WhenIsDateDisabledRulesItOut`, `TbDateTimePickerTests.Change_ShouldTakeBackTheMessage_WhenTheDateIsFixed`
 - [x] A value before the earliest or after the latest shows a message naming the limits; one on a limit shows none. `TbDateTimePickerTests.Change_ShouldShowAMessage_WhenTheValueIsOutsideTheLimits`, `TbDateTimePickerTests.Change_ShouldShowNoMessage_WhenTheValueIsOnTheLimit`
 - [x] Enter on the calendar button opens the calendar on the chosen day; arrows move and Enter picks, keeping the time and returning focus to the button. `DateTimePickerTests.Picker_ShouldPickADayWithTheKeysAndKeepTheTime_WhenTheCalendarButtonIsPressed`
+- [x] The time box reads a time in the culture's form or in 24-hour form, and shows it in the culture's form. `TbDateTimePickerTests.Change_ShouldReadTheTime_WhenTypedInTheCulturesFormOrIn24HourForm`, `TbDateTimePickerTests.Render_ShouldShowTheDateAndTimeInTheirBoxes_WhenGivenAValue`, `TbDateTimePickerTests.Change_ShouldShowAndReadTwentyFourHourTimes_WhenTheCultureWritesThem`, `DateTimePickerTests.ChooseAsync_ShouldSetMidnight_WhenTheCultureWritesTwentyFourHourTimes`
+- [x] Down in the time box opens its list on the chosen time; Down moves, and Enter picks a time, keeping the date and leaving focus in the box. `DateTimePickerTests.Picker_ShouldKeepTheDateAndPickTheTime_WhenTheTimeBoxsListIsUsedWithTheKeys`
 - [x] Tab moves from the date box to the calendar button, then to the time box, which is named after the label. `DateTimePickerTests.Picker_ShouldMoveFromTheDateToTheCalendarButtonToTheTime_WhenTabIsPressed`
 - [x] A DateTime keeps its kind. `TbDateTimePickerTests.Change_ShouldKeepTheKind_WhenTheDateTimeIsUtc`
 - [x] A DateTimeOffset shows in the shared zone (the picker's own TimeZone, then a cascaded zone, then the app's, then the TimeProvider's local zone), and a chosen value takes that zone's offset for its date. `TbDateTimePickerTests.Change_ShouldShowAndSetTheTimeInTheCascadedZone_WhenOneIsCascaded`, `TbDateTimePickerTests.Change_ShouldShowAndSetTheTimeInTheAppsZone_WhenTheOptionsGiveOne`, `TbDateTimePickerTests.TimeZone_ShouldWin_WhenAZoneIsAlsoCascadedAndInTheOptions`, `TbDateTimePickerTests.Change_ShouldTakeTheOffsetOfTheAppsTimeZone_WhenTheFirstValueIsChosen`, `TbDateTimePickerTests.Change_ShouldTakeTheZonesOffsetForThatDate_WhenGivenATimeZone`
@@ -22,11 +24,12 @@ Familiar apps: the start of a calendar event, a ride or shuttle booking
 
 - [x] Clicking a day sets the date and keeps the time; days outside Min and Max are marked unavailable. `TbDateTimePickerTests.Pick_ShouldSetTheDateAndKeepTheTime_WhenADayIsClicked`, `TbDateTimePickerTests.Render_ShouldLimitTheCalendarToTheDaysOfMinAndMax_WhenGivenThem`
 - [x] The clear button clears both boxes and moves focus to the date box. `TbDateTimePickerTests.Clear_ShouldClearBothBoxesAndFocusTheDateBox_WhenPressed`
-- [x] A disabled or read-only picker turns off its calendar button. `TbDateTimePickerTests.Render_ShouldTurnOffTheCalendarButton_WhenTheFieldIsTurnedOff`
+- [x] The clock button opens the list of times with focus kept in the time box, and clicking a time sets it on the chosen day; the list holds a time for each step, or each half hour with no step, the chosen one selected. `DateTimePickerTests.Picker_ShouldPickTheClickedTime_WhenTheClockButtonOpensTheList`, `TbDateTimePickerTests.Click_ShouldSetTheTimeOnTheChosenDay_WhenATimeInTheListIsClicked`, `TbDateTimePickerTests.Render_ShouldListATimeForEachHalfHourWithTheChosenOneSelected_WhenInteractive`, `TbDateTimePickerTests.Render_ShouldListATimeForEachStep_WhenGivenAStep`
+- [x] A disabled or read-only picker turns off its calendar button and has no clock button. `TbDateTimePickerTests.Render_ShouldTurnOffTheCalendarButton_WhenTheFieldIsTurnedOff`
 
 ## Touch
 
-- [ ] Tapping the time box opens the device's own time picker. UNCONFIRMED
+- [ ] Tapping the clock button opens the list of times, and tapping a time picks it. UNCONFIRMED
 
 ## Focus
 
@@ -40,4 +43,4 @@ Familiar apps: the start of a calendar event, a ride or shuttle booking
 
 ## Not applicable
 
-- One box for both the date and the time: the date box reads the app's format and opens a calendar, and the browser's own time box gives the keys people know for a time.
+- One box for both the date and the time: the date box reads the app's format and opens a calendar, and the time box reads the culture's form and opens a list of times.

@@ -1,13 +1,10 @@
+using System.Text.RegularExpressions;
 using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
 public class DateTimePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
-    // Safari has a time box, but the WebKit build Playwright uses on Windows shows a text box whose edits never reach
-    // the page.
-    private const string NoTimeBox = "WebKit on Windows has no time box.";
-
     private static ILocator OpenButton(IPage page) => page.GetByRole(AriaRole.Button, new() { Name = "Choose a date" });
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -58,7 +55,6 @@ public class DateTimePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Picker_ShouldKeepTheDate_WhenTheTimeBoxIsFilled(string browser)
     {
-        Assert.SkipWhen(browser == "webkit", NoTimeBox);
         var page = await OpenAsync(browser, "/date-time-picker");
         var time = page.Tb().DateTimePicker("Starts").TimeInput;
 
@@ -69,9 +65,51 @@ public class DateTimePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Picker_ShouldKeepTheDateAndPickTheTime_WhenTheTimeBoxsListIsUsedWithTheKeys(string browser)
+    {
+        var page = await OpenAsync(browser, "/date-time-picker");
+        var time = page.Tb().DateTimePicker("Starts").TimeInput;
+        await Expect(time).ToHaveAttributeAsync("data-ready", "");
+        await time.FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(time).ToHaveAttributeAsync("aria-expanded", "true");
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.GetByTestId("start")).ToHaveTextAsync("2026-06-03 15:00");
+        await Expect(time).ToHaveValueAsync(new Regex(@"^3:00\sPM$"));
+        await Expect(time).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Picker_ShouldPickTheClickedTime_WhenTheClockButtonOpensTheList(string browser)
+    {
+        var page = await OpenAsync(browser, "/date-time-picker");
+        var time = page.Tb().DateTimePicker("Starts").TimeInput;
+        await Expect(time).ToHaveAttributeAsync("data-ready", "");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Choose a time" }).ClickAsync();
+        await Expect(time).ToBeFocusedAsync();
+        await page.Locator($"[id='{await time.GetAttributeAsync("aria-controls")}'] [data-time='09:30']").ClickAsync();
+
+        await Expect(page.GetByTestId("start")).ToHaveTextAsync("2026-06-03 09:30");
+        await Expect(time).ToHaveAttributeAsync("aria-expanded", "false");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ChooseAsync_ShouldSetMidnight_WhenTheCultureWritesTwentyFourHourTimes(string browser)
+    {
+        var page = await OpenAsync(browser, "/date-time-picker-german");
+
+        await page.Tb().DateTimePicker("Ends").ChooseAsync(new DateTime(2026, 6, 4, 0, 0, 0));
+
+        await Expect(page.GetByTestId("end")).ToHaveTextAsync("2026-06-04 00:00");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ChooseAsync_ShouldTypeTheDateAndFillTheTime_WhenUsedFromTheTestingHelpers(string browser)
     {
-        Assert.SkipWhen(browser == "webkit", NoTimeBox);
         var page = await OpenAsync(browser, "/date-time-picker");
 
         await page.Tb().DateTimePicker("Starts").ChooseAsync(new DateTime(2026, 9, 14, 16, 45, 0));

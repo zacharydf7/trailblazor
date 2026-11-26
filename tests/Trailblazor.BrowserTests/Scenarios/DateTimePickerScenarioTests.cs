@@ -8,8 +8,6 @@ public class DateTimePickerScenarioTests(BrowserFixture fixture) : BrowserTest(f
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task HikeStart_ShouldHoldTheChosenDateAndTime_WhenBothAreChosen(string browser)
     {
-        // Playwright's WebKit for Windows shows the time as a plain text box, whose edits never reach the page.
-        Assert.SkipWhen(browser == "webkit" && OperatingSystem.IsWindows(), "WebKit on Windows has no time box.");
         var page = await OpenAsync(browser, "/examples/date-time-picker/value");
         var start = page.Tb().DateTimePicker("Guided hike starts");
         var hike = new DateTime(2027, 5, 14, 7, 45, 0);
