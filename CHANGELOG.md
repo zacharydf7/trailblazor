@@ -94,6 +94,10 @@ they run by version. The docs site's Upgrading page is built from both.
 
 ### Markup and behavior
 
+#### 2026-11-26
+
+- A `TbDataGrid` tree grid can load a row's children the first time it opens, with the new `LoadChildren` and `HasChildren` in place of a `ChildrenSelector`. A row is `aria-busy` while its children load.
+
 #### 2026-11-25
 
 - `TbThemeHead` has `Nonce`, which it puts on its script and on a seeded palette's `<style>`, so a Content Security Policy needn't allow inline `<style>` elements. The new Content Security Policy guide gives the strictest policy the library works under. A dock panel's own window now copies a `<style>` with the nonce the page first loaded with, so a style with a nonce applies there too, even after an enhanced navigation.

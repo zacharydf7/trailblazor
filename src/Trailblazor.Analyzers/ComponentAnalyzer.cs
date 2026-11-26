@@ -432,12 +432,15 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
 
         bool Set(string name) => IsGiven(usage, name);
         var virtualizes = IsOn(usage, "Virtualize");
+        var tree = Set("ChildrenSelector") ? "ChildrenSelector" : Set("LoadChildren") ? "LoadChildren" : null;
         var (parameter, problem) =
             Set("Items") && Set("DataProvider") ? ("DataProvider", "takes Items or a DataProvider, not both")
             : Set("DataProvider") && Set("Groups")
                 ? ("Groups", "groups only rows held in Items, not rows from a DataProvider")
-            : Set("ChildrenSelector") && (Set("DataProvider") || Set("Groups") || Set("OnMove") || Set("PageSize"))
-                ? ("ChildrenSelector", "with a ChildrenSelector takes its rows from Items, and can't group them, " +
+            : Set("ChildrenSelector") && Set("LoadChildren")
+                ? ("LoadChildren", "takes a ChildrenSelector or LoadChildren, not both")
+            : tree is not null && (Set("DataProvider") || Set("Groups") || Set("OnMove") || Set("PageSize"))
+                ? (tree, $"with a {tree} takes its rows from Items, and can't group them, " +
                     "move them or split them into pages; set Virtualize to show many rows")
             : virtualizes && Set("DetailTemplate")
                 ? ("DetailTemplate", "that virtualizes its rows can't have a DetailTemplate")

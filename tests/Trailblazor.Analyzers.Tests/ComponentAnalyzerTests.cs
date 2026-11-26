@@ -1506,6 +1506,11 @@ public class ComponentAnalyzerTests
             (System.Func<string, IEnumerable<string>?>)(trail => null));
         """;
 
+    private const string GridLoadChildren = """
+        __builder.AddComponentParameter(4, "LoadChildren",
+            (System.Func<string, System.Threading.CancellationToken, Task<IEnumerable<string>>>)((trail, _) => null!));
+        """;
+
     private const string GridVirtualize = """__builder.AddComponentParameter(5, "Virtualize", true);""";
 
     private const string GridHeight = """__builder.AddComponentParameter(6, "Height", "20rem");""";
@@ -1530,6 +1535,13 @@ public class ComponentAnalyzerTests
         "with a ChildrenSelector takes its rows from Items, and can't group them, move them or split them into " +
         "pages; set Virtualize to show many rows")]
     [InlineData(GridItems + GridChildren + """__builder.AddComponentParameter(7, "PageSize", (int?)null);""", "")]
+    [InlineData(GridItems + GridLoadChildren, "")]
+    [InlineData(GridProvider + GridLoadChildren, "with a LoadChildren takes its rows from Items, and can't group " +
+        "them, move them or split them into pages; set Virtualize to show many rows")]
+    [InlineData(GridItems + GridLoadChildren + """__builder.AddComponentParameter(7, "PageSize", 20);""",
+        "with a LoadChildren takes its rows from Items, and can't group them, move them or split them into pages; " +
+        "set Virtualize to show many rows")]
+    [InlineData(GridItems + GridChildren + GridLoadChildren, "takes a ChildrenSelector or LoadChildren, not both")]
     [InlineData(GridItems + GridVirtualize + GridHeight + """
         __builder.AddComponentParameter(7, "DetailTemplate", (RenderFragment<string>)(trail => __builder2 => { }));
         """, "that virtualizes its rows can't have a DetailTemplate")]

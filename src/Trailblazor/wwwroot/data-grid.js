@@ -1149,9 +1149,10 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
         }
 
         // A tree row's aria-expanded changes as soon as a key toggles it, but its new rows arrive only once the server
-        // redraws its button to match.
-        const toggling = () => row.hasAttribute('aria-expanded') && row.getAttribute('aria-expanded')
-            !== row.querySelector('[data-part=tree-toggle]')?.getAttribute('aria-expanded');
+        // redraws its button to match, or, for children it loads, once the row is no longer busy.
+        const toggling = () => row.hasAttribute('aria-expanded') && (row.getAttribute('aria-busy') === 'true'
+            || row.getAttribute('aria-expanded')
+                !== row.querySelector('[data-part=tree-toggle]')?.getAttribute('aria-expanded'));
         // Shift with an arrow extends the range to the row that takes focus, once a virtualized grid has drawn it.
         // A group's heading isn't a row to select, so the range holds at the row just left and picks up at the next row.
         const moveVertically = async to => {

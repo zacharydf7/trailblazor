@@ -75,7 +75,7 @@ public partial class TbDataGrid<TItem>
     // Shown rows come under their groups' headings, as the grid shows them, and every export ends with its totals.
     private IEnumerable<PdfLine> PdfLinesOf(List<TbColumn<TItem>> columns, IReadOnlyList<TItem> items, bool shown)
     {
-        List<TbColumn<TItem>> groups = shown && ChildrenSelector is null ? [.. AppliedGroups] : [];
+        List<TbColumn<TItem>> groups = shown && !IsTree ? [.. AppliedGroups] : [];
         IEnumerable<PdfLine> Lines(IEnumerable<TItem> rows, int level)
         {
             if (level == groups.Count)
@@ -138,7 +138,8 @@ public partial class TbDataGrid<TItem>
         var shown = rows == GridExportRows.Shown;
         List<TbColumn<TItem>> columns =
             [.. (shown ? _shownColumns : _arrangedColumns).Where(column => column.HasField)];
-        if (ChildrenSelector is not null)
+        // A tree grid exports the rows it has, including those LoadChildren has loaded.
+        if (IsTree)
         {
             return (columns, [.. Flattened(TreeOf(Matcher(shown), []))]);
         }

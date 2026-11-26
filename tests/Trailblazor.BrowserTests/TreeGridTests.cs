@@ -29,6 +29,50 @@ public class TreeGridTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Keys_ShouldGoIntoTheLoadedChildren_WhenDownIsPressedWhileTheyLoad(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-lazy-tree");
+        var grid = page.Tb().Grid("Folders");
+        await Expect(page.Locator("[data-part=grid]")).ToHaveAttributeAsync("data-ready", "");
+        await Toggle(page, "Folders", "Docs").FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        // Notes may have children of its own, so its first cell hands focus to its button.
+        await Expect(Toggle(page, "Folders", "Notes")).ToBeFocusedAsync();
+        await Expect(grid.Row("Docs")).Not.ToHaveAttributeAsync("aria-busy", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ExpandAsync_ShouldReturn_WhenALazyRowLoadsNoChildren(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-lazy-tree");
+        var grid = page.Tb().Grid("Folders");
+
+        await grid.ExpandAsync("Docs");
+        await grid.ExpandAsync("Notes");
+
+        Assert.Null(await grid.Row("Notes").GetAttributeAsync("aria-expanded"));
+        await Expect(grid.Row("Plans")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Keys_ShouldMoveOnAtOnce_WhenDownWaitsForChildrenThatFailToLoad(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-lazy-tree");
+        await Expect(page.Locator("[data-part=grid]")).ToHaveAttributeAsync("data-ready", "");
+        await Toggle(page, "Folders", "Photos").FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        // The load takes 400 ms; Down gives up waiting only after 5 seconds if the failure goes unseen.
+        await Expect(page.Tb().Grid("Folders").Row("Music").Locator("td").First)
+            .ToBeFocusedAsync(new() { Timeout = 2500 });
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Keys_ShouldOpenAndCloseRowsAndGoToTheirParent_WhenPressedOnTheFirstCell(string browser)
     {
         var page = await OpenReadyAsync(browser);

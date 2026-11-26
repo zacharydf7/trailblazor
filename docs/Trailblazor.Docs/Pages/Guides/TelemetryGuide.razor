@@ -227,10 +227,10 @@
                 <code>resize</code>, <code>reorder</code>, <code>hide</code>, <code>show</code>,
                 <code>save_changes</code>, <code>discard_changes</code> and <code>copy</code>; opening and
                 closing a tree grid's row counts as <code>expand</code> and <code>collapse</code> too.
-                A <code>DataProvider</code> that fails to load the rows counts in
-                <code>trailblazor.control.failed</code> as <code>load</code>. An export that fails, whether in its
-                provider or while the file is built, counts as <code>export</code>. Which rows or columns were involved,
-                or what value an edit saved, is never recorded.
+                A <code>DataProvider</code> that fails to load the rows, or a <code>LoadChildren</code> that fails to
+                load a row's children, counts in <code>trailblazor.control.failed</code> as <code>load</code>. An
+                export that fails, whether in its provider or while the file is built, counts as <code>export</code>.
+                Which rows or columns were involved, or what value an edit saved, is never recorded.
             </li>
             <li>
                 <strong>Tree views:</strong> shown as they render, and used with an action: <code>expand</code>,
@@ -323,8 +323,8 @@
         <DocsHeading Id="tracing" Text="Tracing" Class="docs-section" />
         <TbText>
             A control with a <code>TelemetryName</code> also traces its calls to your data: a data grid's
-            <code>DataProvider</code> for the rows it shows (an export's isn't traced), a tree view's
-            <code>LoadChildren</code>, an autocomplete's or a mention input's
+            <code>DataProvider</code> for the rows it shows (an export's isn't traced), a data grid's or a tree
+            view's <code>LoadChildren</code>, an autocomplete's or a mention input's
             <code>Search</code>, a rich text editor's <code>MentionSearch</code>, and an async content region's
             <code>Load</code>. Each call is a span named for the component and what it does, such as
             <code>TbDataGrid load</code>, so your own database or HTTP spans nest under it and a slow grid leads to its

@@ -94,7 +94,7 @@
          role="@(ScrollIsTabStop && !string.IsNullOrEmpty(AriaLabel) ? "region" : null)"
          aria-label="@(ScrollIsTabStop ? AriaLabel : null)"
          tabindex="@(ScrollIsTabStop ? 0 : null)">
-        <table @ref="_table" role="@(IsGrid ? ChildrenSelector is null ? "grid" : "treegrid" : null)" aria-label="@AriaLabel"
+        <table @ref="_table" role="@(IsGrid ? !IsTree ? "grid" : "treegrid" : null)" aria-label="@AriaLabel"
                data-count="@(CanReorder ? _total : null)"
                aria-multiselectable="@(IsGrid && (SelectionMode == SelectionMode.Multiple || CellSelection) ? "true" : null)"
                data-cell-selection="@(CellSelection ? "" : null)" data-cell-range="@(HasRange ? "" : null)"
@@ -408,6 +408,7 @@
              aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)" aria-selected="@AriaSelected(selected)"
              aria-level="@tree?.Level" aria-posinset="@tree?.Position" aria-setsize="@tree?.SetSize"
              aria-expanded="@(tree?.Open is { } open ? open ? "true" : "false" : null)"
+             aria-busy="@(tree?.Loading == true ? "true" : null)"
              data-parent-row="@(Virtualize && tree is { ParentIndex: >= 0 } place ? HeaderRowCount + place.ParentIndex + 1
                                  : null)"
              data-tb-focus-root="@(EditMode == GridEditMode.Row && RowEditOf(key) is not null ? "edit" : null)"
@@ -515,7 +516,14 @@
                         aria-label="@Format(Labels.RowsUnder, TbStrings.DataGridRowsUnder, label)"
                         class="tb-data-grid__tree-toggle"
                         @onclick="_toggleChildren.For(key)" @ondblclick:stopPropagation>
-                    <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-data-grid__tree-chevron" />
+                    @if (tree.Loading)
+                    {
+                        <span class="tb-data-grid__tree-spinner" aria-hidden="true"></span>
+                    }
+                    else
+                    {
+                        <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-data-grid__tree-chevron" />
+                    }
                 </button>
             }
         </span>;

@@ -1,0 +1,27 @@
+@page "/grid-lazy-tree"
+
+@* A tree grid whose rows load their children a moment after they open, as from a server. *@
+<TbDataGrid TItem="Folder" Items="Roots" AriaLabel="Folders" KeySelector="folder => folder.Name"
+            LoadChildren="LoadAsync" HasChildren="MayHaveChildren">
+    <TbColumn Field="folder => folder.Name" />
+    <TbColumn Field="folder => folder.Size" />
+</TbDataGrid>
+
+@code {
+    private static readonly Folder[] Roots = [new("Docs", 5), new("Photos", 20), new("Music", 4)];
+
+    private static bool MayHaveChildren(Folder folder) => folder.Name != "Music";
+
+    private static async Task<IEnumerable<Folder>> LoadAsync(Folder folder, CancellationToken cancel)
+    {
+        await Task.Delay(400, cancel);
+        return folder.Name switch
+        {
+            "Docs" => [new("Notes", 3), new("Plans", 9)],
+            "Photos" => throw new InvalidOperationException("The photo server is offline."),
+            _ => [],
+        };
+    }
+
+    private sealed record Folder(string Name, int Size);
+}

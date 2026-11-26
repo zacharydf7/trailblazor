@@ -13648,9 +13648,10 @@ public static class ExampleCatalog
                     + "read. Give the grid rows of a type made for showing, with nothing a user shouldn't see.")
                     { Pitfall = true },
                 new("Some setups throw as the grid renders: `Items` with a `DataProvider`; `Groups` with a "
-                    + "`DataProvider`; a `ChildrenSelector` with a `DataProvider`, `Groups`, `OnMove` or a "
-                    + "`PageSize`; and `Virtualize` with a `DetailTemplate`, with a `PageSize`, or with no `Height` or "
-                    + "`Fill`. Build warning [TB013](guides/analyzers#rules) reports them in markup.")
+                    + "`DataProvider`; a `ChildrenSelector` with a `LoadChildren`; either of them with a "
+                    + "`DataProvider`, `Groups`, `OnMove` or a `PageSize`; and `Virtualize` with a `DetailTemplate`, "
+                    + "with a `PageSize`, or with no `Height` or `Fill`. Build warning [TB013](guides/analyzers#rules) "
+                    + "reports them in markup.")
                     { Pitfall = true },
                 new("Rows that don't come back from JSON as they went in aren't kept under a `PrerenderKey`: "
                     + "the grid logs a warning as it prerenders and asks the provider again, as it does without "
@@ -13880,6 +13881,15 @@ public static class ExampleCatalog
                     + "Every row starts closed: set it to open rows, or to an empty list to close them all. "
                     + "`ScrollToAsync` opens the rows a row is nested under before it scrolls to it.",
                     typeof(TreeGridOpenExample)),
+                new("load-on-open", "Children that load when opened", "In place of a `ChildrenSelector`, "
+                    + "`LoadChildren` loads a row's children the first time it opens, and `HasChildren` says which "
+                    + "rows have a button before then. While they load, the row's button shows a spinner and Down "
+                    + "waits for them. If the load fails, the grid tells screen readers, the row closes so that "
+                    + "opening it tries again, and `OnLoadFailed` gets the exception, so the app can show the error, "
+                    + "as this one does. Rows `ExpandedParents` opens load too. Children stay loaded for as long as "
+                    + "the grid is on the page, even with new `Items`. Sorting, filters, totals and an export cover "
+                    + "the rows loaded so far, and `ScrollToAsync` reaches only rows whose parents have loaded.",
+                    typeof(TreeGridLoadExample)),
             ],
             Api = [typeof(TbDataGrid<>), typeof(TbColumn<>), typeof(DataGridClasses)],
             Keyboard =
@@ -13905,6 +13915,8 @@ public static class ExampleCatalog
             [
                 "Each row says its depth, its place among its siblings and, when it has children, whether it is open, "
                     + "through `aria-level`, `aria-posinset`, `aria-setsize` and `aria-expanded`.",
+                "With `LoadChildren`, a row is `aria-busy` while its children load, and a load that fails is "
+                    + "announced politely with `Labels.LoadFailed`, \"Couldn't load the rows.\" by default.",
             ],
             Accessibility =
             [
@@ -13919,6 +13931,8 @@ public static class ExampleCatalog
                 "The top rows render as a table, and rows that `ExpandedParents` opens show their children, but rows "
                     + "open and close only once the page is interactive. The fade at the scroll box's sides waits "
                     + "too.",
+                "With `LoadChildren`, a row that `ExpandedParents` opens loads its children while the page "
+                    + "prerenders, and again once it turns interactive.",
             ],
             Target = new("treegrid", "Trails by region"),
             Blocks = ["tb-data-grid"],
@@ -13935,6 +13949,11 @@ public static class ExampleCatalog
                     + "row with `ExpandAsync(\"North ridge\")` and closes it with `CollapseAsync`, each waiting until "
                     + "the app has run its `ExpandedParentsChanged`.",
                 "In bUnit, `cut.Tb().Grid(\"Trails by region\")` has the same `ExpandAsync` and `CollapseAsync`.",
+                "With `LoadChildren`, both `ExpandAsync` helpers wait until the row's children have loaded, and "
+                    + "return as well when the row turns out to have none and loses its button.",
+                "If the load fails the row closes, so the bUnit `ExpandAsync` returns with it closed and the "
+                    + "Playwright one fails. A test that opens the row without these helpers should wait for the "
+                    + "row's `aria-busy` to clear.",
                 "Rows carry `aria-level`, from 1 for a top row, so a test can read a row's depth, and the rest of "
                     + "the [data grid's](components/data-grid#testing) helpers work as they do there.",
             ],
@@ -13943,6 +13962,11 @@ public static class ExampleCatalog
                 "With a `TelemetryName`, it counts `trailblazor.control.used` with `trailblazor.action` `expand` or "
                     + "`collapse` each time the user opens or closes a row, besides the data grid's other actions. "
                     + "Rows `ScrollToAsync` opens aren't counted, and which row was opened or closed is never recorded.",
+                "A `LoadChildren` that fails is counted in `trailblazor.control.failed`, with the action `load`, "
+                    + "and logged as a warning whether or not the grid has a `TelemetryName`.",
+                "With a `TelemetryName`, each `LoadChildren` call runs in a `TbDataGrid load` span from the "
+                    + "`Trailblazor` source, with the number of children that came back (see "
+                    + "[tracing](guides/telemetry#tracing)).",
             ],
         },
         new("table", "Table", ExampleCategory.Content,

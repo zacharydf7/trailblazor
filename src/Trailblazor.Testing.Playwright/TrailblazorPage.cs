@@ -1998,7 +1998,8 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
     }
 
     /// <summary>Opens the tree grid row with a cell whose text is exactly this, with its button, and waits for its
-    /// child rows to show. A row already open stays open.</summary>
+    /// child rows to show, those <c>LoadChildren</c> loads included. A row already open stays open, and a row whose
+    /// children turn out to be none loses its button.</summary>
     public Task ExpandAsync(string row) => SetExpandedAsync(row, true);
 
     /// <summary>Closes the tree grid row with a cell whose text is exactly this, with its button, and waits for its
@@ -2014,7 +2015,9 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
             await AnsweredAsync(() => found.Locator("[data-part=tree-toggle]").ClickAsync());
         }
 
-        await Assertions.Expect(found).ToHaveAttributeAsync("aria-expanded", wanted);
+        // A row that loaded no children has no aria-expanded at all.
+        await (expanded ? Assertions.Expect(found).Not.ToHaveAttributeAsync("aria-expanded", "false")
+            : Assertions.Expect(found).ToHaveAttributeAsync("aria-expanded", wanted));
     }
 
     /// <summary>Moves the row with a cell whose text is exactly <paramref name="row"/> to <paramref name="index"/>

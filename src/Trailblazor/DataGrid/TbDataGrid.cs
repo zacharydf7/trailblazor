@@ -47,6 +47,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private int _treeVersion;
     // How many rows the filters leave; unlike _total, it doesn't count group headings.
     private int _matched;
+    // The children LoadChildren has given, by their parent's key, and the loads still running.
+    private readonly Dictionary<object, List<TItem>> _loadedChildren = [];
+    private readonly Dictionary<object, (CancellationTokenSource Cancel, TaskCompletionSource Done)> _childLoads = [];
+
     private int _total;
 
     // A provider that doesn't count its rows says only whether more follow each page, so the grid keeps the furthest
@@ -302,14 +306,27 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public Func<TItem, IEnumerable<TItem>?>? ChildrenSelector { get; set; }
 
+    /// <summary>Loads a row's child rows the first time it opens, for children that come from a server. Like
+    /// <see cref="ChildrenSelector"/>, it makes the grid a tree grid. The token is canceled if the row closes first. A
+    /// load that fails is announced and raised on <see cref="OnLoadFailed"/>, and the row closes, so opening it tries
+    /// again. Children stay loaded for as long as the grid is on the page, even with new <see cref="Items"/>. Filters
+    /// match the rows loaded so far. Set this or <see cref="ChildrenSelector"/>, not both.</summary>
+    [Parameter]
+    public Func<TItem, CancellationToken, Task<IEnumerable<TItem>>>? LoadChildren { get; set; }
+
+    /// <summary>Whether a row has child rows to load, so its button shows before they load. Defaults to true for every
+    /// row when <see cref="LoadChildren"/> is set.</summary>
+    [Parameter]
+    public Func<TItem, bool>? HasChildren { get; set; }
+
     /// <summary>The rows of a tree grid whose children show; every row starts closed. Bind it with
     /// <c>@bind-ExpandedParents</c> to open or close rows from code and hear when the user does.</summary>
     [Parameter]
     public IReadOnlyCollection<TItem>? ExpandedParents { get; set; }
 
-    /// <summary>Raised when the user opens or closes a tree grid's row, or <see cref="ScrollToAsync"/> opens rows to
-    /// show one. Rows opened or closed while filters apply stay that way only until the filters change, so they don't
-    /// raise it.</summary>
+    /// <summary>Raised when the user opens or closes a tree grid's row, <see cref="ScrollToAsync"/> opens rows to
+    /// show one, or a row closes because its <see cref="LoadChildren"/> failed. Rows opened or closed while filters
+    /// apply stay that way only until the filters change, so they don't raise it.</summary>
     [Parameter]
     public EventCallback<IReadOnlyCollection<TItem>> ExpandedParentsChanged { get; set; }
 
@@ -458,11 +475,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public RenderFragment? EmptyContent { get; set; }
 
-    /// <summary>Raised when the <see cref="DataProvider"/> fails, whether it's loading the rows or an export; after a
-    /// failed load, the grid offers to try again. An export that fails for another reason, such as a column's field
-    /// throwing while the file is built, doesn't raise this. Every failure is also logged as a warning, and counted
-    /// in <c>trailblazor.control.failed</c> when the grid has a <see cref="TelemetryName"/>: as <c>load</c>, or as
-    /// <c>export</c> for any failed export.</summary>
+    /// <summary>Raised when the <see cref="DataProvider"/> fails, whether it's loading the rows or an export, and
+    /// when <see cref="LoadChildren"/> fails. After a failed load of the rows, the grid offers to try again; after a
+    /// failed load of a row's children, the row closes. An export that fails for another reason, such as a column's
+    /// field throwing while the file is built, doesn't raise this. Every failure is also logged as a warning, and
+    /// counted in <c>trailblazor.control.failed</c> when the grid has a <see cref="TelemetryName"/>: as <c>load</c>,
+    /// or as <c>export</c> for any failed export.</summary>
     [Parameter]
     public EventCallback<Exception> OnLoadFailed { get; set; }
 
@@ -582,7 +600,17 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         PinStyle(columns[0].Pinned == ColumnPin.End ? columns[^1] : columns[0]);
 
     // Editing a cell or opening a tree's rows, as much as moving between cells, makes the table an ARIA grid.
-    private bool IsGrid => CellNavigation || CellSelection || ChildrenSelector is not null || _columns.Any(CanEdit);
+    private bool IsGrid => CellNavigation || CellSelection || IsTree || _columns.Any(CanEdit);
+
+    private bool IsTree => ChildrenSelector is not null || LoadChildren is not null;
+
+    // A row's children: those ChildrenSelector gives, or those LoadChildren has loaded.
+    private IEnumerable<TItem>? ChildrenOf(TItem item) => ChildrenSelector is { } children ? children(item)
+        : _loadedChildren.TryGetValue(KeyOf(item), out var loaded) ? loaded : null;
+
+    // Whether a row may have children LoadChildren hasn't loaded yet, so it shows its button.
+    private bool MayLoadChildren(TItem item) => LoadChildren is not null && !_loadedChildren.ContainsKey(KeyOf(item))
+        && (HasChildren?.Invoke(item) ?? true);
 
     private bool CanEdit(TbColumn<TItem> column) => column.Editor != ColumnEditor.None
         && (HasEditHandler || column.CanSet);
@@ -644,7 +672,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         where column.Key == key && column.CanGroup
         select column;
 
-    private bool HasGroupBy => Items is not null && ChildrenSelector is null && _columns.Any(column => column.CanGroup);
+    private bool HasGroupBy => Items is not null && !IsTree && _columns.Any(column => column.CanGroup);
 
     // A filter on a column that isn't there, or can't filter, is kept but hides no rows.
     private IEnumerable<(GridFilter Filter, TbColumn<TItem> Column)> AppliedFilters =>
@@ -678,12 +706,18 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         // A tree's rows follow their parents, which a provider's pages, groups or moved rows would break apart, and a
         // page could start with a row whose parent is on the page before.
-        if (ChildrenSelector is not null && (DataProvider is not null || Groups is { Count: > 0 } || OnMove.HasDelegate
+        if (IsTree && (DataProvider is not null || Groups is { Count: > 0 } || OnMove.HasDelegate
             || PageSize is not null))
         {
-            throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} with a {nameof(ChildrenSelector)} " +
-                $"takes its rows from {nameof(Items)}, and can't group them, move them or split them into pages; set " +
-                $"{nameof(Virtualize)} to show many rows.");
+            throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} with a {nameof(ChildrenSelector)} or " +
+                $"{nameof(LoadChildren)} takes its rows from {nameof(Items)}, and can't group them, move them or " +
+                $"split them into pages; set {nameof(Virtualize)} to show many rows.");
+        }
+
+        if (ChildrenSelector is not null && LoadChildren is not null)
+        {
+            throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} takes a {nameof(ChildrenSelector)} " +
+                $"or a {nameof(LoadChildren)}, not both.");
         }
 
         // A virtualized grid numbers its rows for screen readers, and a detail row has no number of its own.
@@ -752,8 +786,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         TakeSelectionFromParent();
         TakeExpandedFromParent();
-        TakeOpenParentsFromParent();
+        var toLoad = TakeOpenParentsFromParent();
         await ShowAsync(force: false);
+        await Task.WhenAll(toLoad.Select(LoadChildrenOfAsync));
     }
 
     /// <inheritdoc />
@@ -869,11 +904,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     /// <summary>Goes to the page that holds this item's row, found by its <see cref="KeySelector"/> key, and scrolls
     /// the row into view. With a <see cref="DataProvider"/>, only a row on the current page can be found or, when
-    /// <see cref="Virtualize"/> is set, only a loaded row.</summary>
+    /// <see cref="Virtualize"/> is set, only a loaded row. With <see cref="LoadChildren"/>, only a row whose parents
+    /// have loaded can be found.</summary>
     public async Task ScrollToAsync(TItem item)
     {
         var key = KeyOf(item);
-        var opened = Items is not null && (ChildrenSelector is null ? OpenGroupsOf(item) : await OpenParentsOfAsync(item));
+        var opened = Items is not null && (!IsTree ? OpenGroupsOf(item) : await OpenParentsOfAsync(item));
         if (Virtualize)
         {
             // Virtualize draws the opened groups' lines only once the grid renders, so the scroll waits for it.
@@ -2121,7 +2157,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         List<TItem> arranged;
         List<GridLine> lines;
-        if (ChildrenSelector is null)
+        if (!IsTree)
         {
             arranged = Arranged().ToList();
             lines = Lines(arranged);
@@ -2209,7 +2245,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                 foreach (var item in items.Where(item => read.Add(KeyOf(item))))
                 {
                     versions.Add(RowVersion(item));
-                    if (ChildrenSelector?.Invoke(item) is { } children)
+                    if (ChildrenOf(item) is { } children)
                     {
                         Add(children);
                     }
@@ -2240,10 +2276,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             {
                 var node = nodes[at];
                 var key = KeyOf(node.Item);
-                bool? open = node.Children.Count == 0 ? null
-                    : filtering ? !_closedWhileFiltered.Contains(key) : _openParents.ContainsKey(key);
+                var mayLoad = MayLoadChildren(node.Item);
+                bool? open = node.Children.Count == 0 && !mayLoad ? null
+                    : filtering && !mayLoad ? !_closedWhileFiltered.Contains(key) : _openParents.ContainsKey(key);
                 var index = lines.Count;
-                lines.Add(new(node.Item, index, Tree: new(level, at + 1, nodes.Count, open, Virtualize ? parent : -1)));
+                var place = new TreePlace(level, at + 1, nodes.Count, open, Virtualize ? parent : -1,
+                    _childLoads.ContainsKey(key));
+                lines.Add(new(node.Item, index, Tree: place));
                 if (open == true)
                 {
                     Add(node.Children, level + 1, index);
@@ -2273,7 +2312,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                 if (!_treeItems.TryAdd(key, item))
                 {
                     throw SameKey(key, _treeItems[key], item, $"If both are the same row, it's listed twice, under two "
-                        + $"parents or under itself; check the items and what {nameof(ChildrenSelector)} returns. "
+                        + $"parents or under itself; check the items and what {nameof(ChildrenSelector)} or "
+                        + $"{nameof(LoadChildren)} returns. "
                         + $"Otherwise, give the grid a {nameof(KeySelector)} that gives each item a different key.",
                         (Items ?? [], nameof(Items)));
                 }
@@ -2289,7 +2329,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                     matched.Add(item);
                 }
 
-                var children = Level(ChildrenSelector!(item) ?? [], top: false, item);
+                var children = Level(ChildrenOf(item) ?? [], top: false, item);
                 if (match || children.Count > 0)
                 {
                     nodes.Add(new(item, children));
@@ -2305,25 +2345,39 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private static IEnumerable<TItem> Flattened(List<TreeNode> nodes) =>
         nodes.SelectMany(node => Flattened(node.Children).Prepend(node.Item));
 
-    private void TakeOpenParentsFromParent()
+    // Returns the rows the app opened whose children LoadChildren has yet to load.
+    private List<TItem> TakeOpenParentsFromParent()
     {
-        if (!ReferenceEquals(ExpandedParents, _openParentsFromParent))
+        if (ReferenceEquals(ExpandedParents, _openParentsFromParent))
         {
-            _openParentsFromParent = ExpandedParents;
-            _openParents.Clear();
-            foreach (var item in ExpandedParents ?? [])
-            {
-                _openParents[KeyOf(item)] = item;
-            }
-
-            _treeVersion++;
+            return [];
         }
+
+        _openParentsFromParent = ExpandedParents;
+        _openParents.Clear();
+        foreach (var item in ExpandedParents ?? [])
+        {
+            _openParents[KeyOf(item)] = item;
+        }
+
+        // A row the app closes while its children load cancels them, as a click does.
+        foreach (var (key, loading) in _childLoads)
+        {
+            if (!_openParents.ContainsKey(key))
+            {
+                loading.Cancel.Cancel();
+            }
+        }
+
+        _treeVersion++;
+        return [.. _openParents.Values.Where(MayLoadChildren)];
     }
 
     private async Task ToggleChildrenAsync(TItem item)
     {
         var key = KeyOf(item);
-        var filtering = AppliedFilters.Any();
+        // A row whose children haven't loaded opens as it would with no filter, so that it loads them.
+        var filtering = AppliedFilters.Any() && !MayLoadChildren(item);
         bool open;
         if (filtering)
         {
@@ -2343,10 +2397,81 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         Telemetry.Used(TelemetryName, open ? "expand" : "collapse");
+        if (!open && _childLoads.TryGetValue(key, out var loading))
+        {
+            loading.Cancel.Cancel();
+        }
+
         Arrange(force: true);
         if (!filtering)
         {
             await ExpandedParentsChanged.InvokeAsync([.. _openParents.Values]);
+        }
+
+        if (open)
+        {
+            await LoadChildrenOfAsync(item);
+        }
+    }
+
+    // Loads an open row's children the first time it opens. A row closed while they load cancels them, and a failed
+    // load closes the row, so opening it tries again. A second call waits for the load already running, or starts a
+    // new one once a canceled load has ended.
+    private async Task LoadChildrenOfAsync(TItem item)
+    {
+        var key = KeyOf(item);
+        while (_childLoads.TryGetValue(key, out var running))
+        {
+            await running.Done.Task;
+            if (!running.Cancel.IsCancellationRequested)
+            {
+                return;
+            }
+        }
+
+        if (_disposed || LoadChildren is not { } load || !MayLoadChildren(item) || !_openParents.ContainsKey(key))
+        {
+            return;
+        }
+
+        using var cancel = new CancellationTokenSource();
+        var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _childLoads[key] = (cancel, done);
+        Arrange(force: true);
+        StateHasChanged();
+        var span = Telemetry.StartSpan(TelemetryName, "load");
+        try
+        {
+            List<TItem> children = [.. await load(item, cancel.Token)];
+            span.Finish(cancel.IsCancellationRequested ? "canceled" : "succeeded", children.Count);
+            if (!cancel.IsCancellationRequested)
+            {
+                _loadedChildren[key] = children;
+            }
+        }
+        catch (Exception) when (cancel.IsCancellationRequested)
+        {
+            span.Finish("canceled");
+        }
+        catch (Exception exception)
+        {
+            span.Finish("failed", failure: exception);
+            _openParents.Remove(key);
+            Announcer.Polite(LoadFailedLabel);
+            Telemetry.Failed(TelemetryName, AriaLabel, "load", exception);
+            await OnLoadFailed.InvokeAsync(exception);
+            await ExpandedParentsChanged.InvokeAsync([.. _openParents.Values]);
+        }
+        finally
+        {
+            _childLoads.Remove(key);
+            done.SetResult();
+        }
+
+        if (!_disposed)
+        {
+            Arrange(force: true);
+            StateHasChanged();
         }
     }
 
@@ -2691,7 +2816,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         TakeFilters(state.Filters);
         TakeGroups(state.Groups);
         _page = Virtualize ? 1 : Math.Max(1, state.Page);
-        _pageSize = !Virtualize && ChildrenSelector is null && state.PageSize is > 0 ? state.PageSize : null;
+        _pageSize = !Virtualize && !IsTree && state.PageSize is > 0 ? state.PageSize : null;
         if (!GridState.SameWidths(state.ColumnWidths, _widths))
         {
             _widths = new(state.ColumnWidths);
@@ -2945,7 +3070,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         // Without a data provider every item is known, including those on other pages, filtered out or under a closed
         // parent. Outside a tree their keys haven't been checked for clashes.
         var loaded = new Dictionary<object, TItem>();
-        foreach (var item in ChildrenSelector is not null ? _treeItems.Values : DataProvider is null ? Items ?? [] : [])
+        foreach (var item in IsTree ? _treeItems.Values : DataProvider is null ? Items ?? [] : [])
         {
             loaded.TryAdd(KeyOf(item), item);
         }
@@ -2998,6 +3123,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _keepsPrerendered?.Dispose();
         _load?.Cancel();
         _exporting.Cancel();
+        foreach (var loading in _childLoads.Values)
+        {
+            loading.Cancel.Cancel();
+        }
+
         _scrollAfterRender?.Done.TrySetResult();
         _nextRender?.TrySetResult();
         _edit = null;

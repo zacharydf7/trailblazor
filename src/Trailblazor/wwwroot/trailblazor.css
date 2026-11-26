@@ -2819,6 +2819,7 @@
 
     .tb-button__spinner,
     .tb-tree__spinner,
+    .tb-data-grid__tree-spinner,
     .tb-field__spinner {
         width: 1em;
         height: 1em;
@@ -2831,6 +2832,7 @@
     @media (prefers-reduced-motion: reduce) {
         .tb-button__spinner,
         .tb-tree__spinner,
+        .tb-data-grid__tree-spinner,
         .tb-field__spinner {
             animation: none;
         }

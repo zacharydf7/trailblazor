@@ -1,0 +1,40 @@
+<TbStack Gap="3">
+    <TbCheckbox Label="Make the next load fail" @bind-Value="_failNext" />
+    <TbDataGrid TItem="Folder" Items="Folders" AriaLabel="Shared folders" KeySelector="folder => folder.Id"
+                LoadChildren="LoadSubfoldersAsync" HasChildren="folder => folder.HasSubfolders"
+                OnLoadFailed="failure => _error = failure.Message">
+        <TbColumn Field="folder => folder.Name" />
+        <TbColumn Field="folder => folder.Files" />
+    </TbDataGrid>
+    @if (_error is not null)
+    {
+        <TbAlert Tone="Tone.Danger">Couldn't open the folder: @_error</TbAlert>
+    }
+</TbStack>
+
+@code {
+    private static readonly Folder[] Folders =
+        [new(1, "Field notes", 14, true), new(2, "Trail maps", 9, true), new(3, "Permits", 4, false)];
+
+    private bool _failNext;
+    private string? _error;
+
+    // Stands in for a server that's slow, and that fails when asked to.
+    private async Task<IEnumerable<Folder>> LoadSubfoldersAsync(Folder folder, CancellationToken cancel)
+    {
+        // The grid draws itself again when the load ends, but not this page, so the old error is cleared here.
+        _error = null;
+        StateHasChanged();
+        await Task.Delay(1000, cancel);
+        if (_failNext)
+        {
+            _failNext = false;
+            throw new InvalidOperationException("The folder list is offline.");
+        }
+
+        return [new(folder.Id * 10 + 1, $"{folder.Name} 2025", 6, false),
+            new(folder.Id * 10 + 2, $"{folder.Name} 2026", 3, false)];
+    }
+
+    private sealed record Folder(int Id, string Name, int Files, bool HasSubfolders);
+}

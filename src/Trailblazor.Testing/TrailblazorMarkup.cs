@@ -5330,7 +5330,8 @@ public sealed class TbGridDriver
     {
         var found = Row(row);
         var toggle = found.QuerySelector("[data-part=tree-toggle]") ?? throw new InvalidOperationException(
-            $"The row \"{row}\" has no child rows to show; a tree grid's row needs children from its ChildrenSelector.");
+            $"The row \"{row}\" has no child rows to show; a tree grid's row needs children from its "
+            + "ChildrenSelector or LoadChildren.");
         return found.GetAttribute("aria-expanded") == (expanded ? "true" : "false") ? Task.CompletedTask
             : toggle.ClickAsync(new MouseEventArgs { Detail = 1 });
     }

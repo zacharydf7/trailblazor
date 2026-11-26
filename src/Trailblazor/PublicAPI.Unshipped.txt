@@ -8161,3 +8161,7 @@ Trailblazor.DataGridLabels.RowsShownAtLeast.get -> string?
 Trailblazor.DataGridLabels.RowsShownAtLeast.init -> void
 const Trailblazor.TbStrings.DataGridRangeOfMany = "DataGrid.RangeOfMany" -> string!
 const Trailblazor.TbStrings.DataGridRowsShownAtLeast = "DataGrid.RowsShownAtLeast" -> string!
+Trailblazor.TbDataGrid<TItem>.LoadChildren.get -> System.Func<TItem, System.Threading.CancellationToken, System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<TItem>!>!>?
+Trailblazor.TbDataGrid<TItem>.LoadChildren.set -> void
+Trailblazor.TbDataGrid<TItem>.HasChildren.get -> System.Func<TItem, bool>?
+Trailblazor.TbDataGrid<TItem>.HasChildren.set -> void
