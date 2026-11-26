@@ -51,7 +51,16 @@
     <TbSlider TValue="int" Label="Slow pace" Value="_pace" ValueChanged="PaceAsync" OnValueCommitted="PacedAsync" />
     <TbRangeSlider TValue="int" Label="Slow climb" Value="_climb" ValueChanged="ClimbAsync" />
     <TbDateTimePicker TDateTime="DateTime" Label="Slow start" Value="_start" ValueChanged="StartAsync" />
-    <TbDateTimePicker TDateTime="DateTime" Label="Slow finish" Value="_finish" ValueChanged="FinishAsync" />
+    @* A 24-hour culture shows 09:30 for 09:30:15, the text a helper types for 09:30. *@
+    <TbDateTimePicker TDateTime="DateTime" Label="Slow finish" Value="_finish" ValueChanged="FinishAsync"
+                      Culture="System.Globalization.CultureInfo.InvariantCulture" />
+    <TbTimePicker TTime="TimeOnly" Label="Slow end" Value="_end" ValueChanged="EndAsync"
+                  Culture="System.Globalization.CultureInfo.InvariantCulture" />
+    @* These boxes show seconds, so a helper choosing the time they hold has nothing to change. *@
+    <TbDateTimePicker TDateTime="DateTime" Label="Slow lap" Value="_lap" ValueChanged="LapAsync"
+                      Step="TimeSpan.FromSeconds(15)" Culture="System.Globalization.CultureInfo.InvariantCulture" />
+    <TbTimePicker TTime="TimeOnly" Label="Slow split" Value="_split" ValueChanged="SplitAsync"
+                  Step="TimeSpan.FromSeconds(15)" Culture="System.Globalization.CultureInfo.InvariantCulture" />
     <TbDateRangePicker TDate="DateOnly" Label="Slow trip" Value="_trip" ValueChanged="TripAsync" />
     <TbTabs AriaLabel="Slow tabs" ActiveKey="@_tab" ActiveKeyChanged="TabAsync">
         <TbTab Key="maps" Text="Maps">Maps</TbTab>
@@ -111,6 +120,9 @@
     private SliderRange<int> _climb = new(0, 100);
     private DateTime? _start;
     private DateTime? _finish = new DateTime(2026, 5, 2, 9, 30, 15);
+    private TimeOnly? _end = new TimeOnly(9, 30, 15);
+    private DateTime? _lap = new DateTime(2026, 5, 2, 9, 30, 15);
+    private TimeOnly? _split = new TimeOnly(9, 30, 15);
     private DateRange<DateOnly> _trip;
     private string? _tab = "maps";
     private Signature? _signature;
@@ -158,6 +170,12 @@
 
     private Task FinishAsync(DateTime? finish) =>
         SlowlyAsync($"finish {finish:yyyy-MM-ddTHH:mm:ss}", () => _finish = finish);
+
+    private Task EndAsync(TimeOnly? end) => SlowlyAsync($"end {end:HH:mm:ss}", () => _end = end);
+
+    private Task LapAsync(DateTime? lap) => SlowlyAsync($"lap {lap:yyyy-MM-ddTHH:mm:ss}", () => _lap = lap);
+
+    private Task SplitAsync(TimeOnly? split) => SlowlyAsync($"split {split:HH:mm:ss}", () => _split = split);
 
     private Task TripAsync(DateRange<DateOnly> trip) =>
         SlowlyAsync($"trip {trip.Start:yyyy-MM-dd}/{trip.End:yyyy-MM-dd}", () => _trip = trip);

@@ -36,6 +36,30 @@ public class TimePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldDropTheSeconds_WhenTheBoxAlreadyShowsTheTimeWithoutThem(string browser)
+    {
+        var page = await OpenAsync(browser, "/helpers-slow");
+
+        // The box shows 09:30 for 09:30:15, the same text the helper types for 09:30.
+        await page.Tb().TimePicker("Slow end").ChooseAsync(new TimeOnly(9, 30));
+
+        Assert.Equal("end 09:30:00", await page.GetByTestId("slow").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helpers_ShouldReturnAtOnce_WhenTheBoxAlreadyShowsTheTimeWithItsSeconds(string browser)
+    {
+        var page = await OpenAsync(browser, "/helpers-slow");
+        var before = await page.GetByTestId("slow").TextContentAsync();
+
+        // With nothing to change, there's no answer to wait for, and a wait for one would time out.
+        await page.Tb().DateTimePicker("Slow lap").ChooseAsync(new DateTime(2026, 5, 2, 9, 30, 15));
+        await page.Tb().TimePicker("Slow split").ChooseAsync(new TimeOnly(9, 30, 15));
+
+        Assert.Equal(before, await page.GetByTestId("slow").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Picker_ShouldShowAMessage_WhenTheTimeIsOutsideTheLimits(string browser)
     {
         var page = await OpenAsync(browser, "/examples/time-picker");

@@ -61,10 +61,17 @@ public sealed class TbDateTimePickerLocator(ILocator scope, ILocator field) : Tb
         var time = chosen.ToString(TimeFormat(chosen), CultureInfo.InvariantCulture);
         await Commit.WaitAsync(TimeInput, async () =>
         {
-            var changes = await TimeInput.InputValueAsync() != time;
+            // Only text the box doesn't show raises a change, and the box may leave out seconds, showing 09:30 for
+            // 09:30:15, so a time it already shows is typed with them.
+            var shown = await TimeInput.InputValueAsync();
+            if (shown == time)
+            {
+                time = chosen.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+            }
+
             await TimeInput.FillAsync(time);
             await TimeInput.PressAsync("Tab");
-            return changes;
+            return shown != time;
         });
         await Assertions.Expect(Group).ToHaveAttributeAsync("data-value",
             new Regex($"^{chosen.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture)}"));

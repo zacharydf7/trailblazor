@@ -37,10 +37,17 @@ public sealed class TbTimePickerLocator(ILocator scope, ILocator input) : TbFiel
         await Assertions.Expect(input).ToHaveAttributeAsync("data-ready", "");
         await Commit.WaitAsync(input, async () =>
         {
-            var changes = await ValueAsync() != time;
+            // Only text the box doesn't show raises a change, and the box may leave out seconds, showing 09:30 for
+            // 09:30:15, so a time it already shows is typed with them.
+            var shown = await input.InputValueAsync();
+            if (time is { } typed && shown == text)
+            {
+                text = typed.ToString("HH:mm:ss.FFF", CultureInfo.InvariantCulture);
+            }
+
             await input.FillAsync(text);
             await input.BlurAsync();
-            return changes;
+            return shown != text;
         });
     }
 
