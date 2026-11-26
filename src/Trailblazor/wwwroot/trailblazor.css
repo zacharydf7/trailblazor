@@ -9917,13 +9917,22 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         border-inline-end: 1px solid var(--tb-border-subtle);
     }
 
-    .tb-data-grid__detail-toggle {
+    .tb-data-grid__detail-toggle,
+    .tb-data-grid__delete {
         width: 2.75rem;
         padding-block: 0;
         text-align: center;
     }
 
+    /* Why the app kept a row it was asked to delete, above the rows. */
+    .tb-data-grid__delete-error {
+        margin: 0 0 var(--tb-space-2);
+        color: var(--tb-color-danger-text);
+        font-size: var(--tb-font-size-sm);
+    }
+
     .tb-data-grid__detail-button,
+    .tb-data-grid__delete-button,
     .tb-data-grid__tree-toggle {
         display: inline-flex;
         align-items: center;
@@ -10075,12 +10084,14 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     .tb-data-grid__group-toggle:hover,
     .tb-data-grid__detail-button:hover,
+    .tb-data-grid__delete-button:hover,
     .tb-data-grid__tree-toggle:hover {
         background: var(--tb-color-hover);
     }
 
     .tb-data-grid__group-toggle:focus-visible,
     .tb-data-grid__detail-button:focus-visible,
+    .tb-data-grid__delete-button:focus-visible,
     .tb-data-grid__tree-toggle:focus-visible {
         outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
         outline-offset: var(--tb-focus-ring-offset);

@@ -1603,6 +1603,15 @@ public static class TbStrings
     /// </summary>
     public const string DataGridDetailsFor = "DataGrid.DetailsFor";
 
+    /// <summary>"Delete": names the column of a data grid that holds each row's Delete button.</summary>
+    public const string DataGridDelete = "DataGrid.Delete";
+
+    /// <summary>"Delete {0}": names a data grid row's Delete button; {0} is the row's label.</summary>
+    public const string DataGridDeleteRow = "DataGrid.DeleteRow";
+
+    /// <summary>"{0} deleted.": said once a data grid row is deleted; {0} is the row's label.</summary>
+    public const string DataGridRowDeleted = "DataGrid.RowDeleted";
+
     /// <summary>"Changed": tells screen readers a batch grid's cell holds a change not yet saved.</summary>
     public const string DataGridChanged = "DataGrid.Changed";
 
@@ -2464,6 +2473,9 @@ public static class TbStrings
         [DataGridSelectRow] = "Select {0}",
         [DataGridDetails] = "Details",
         [DataGridDetailsFor] = "Details for {0}",
+        [DataGridDelete] = "Delete",
+        [DataGridDeleteRow] = "Delete {0}",
+        [DataGridRowDeleted] = "{0} deleted.",
         [DataGridChanged] = "Changed",
         [DataGridUnsavedChanges] = "Unsaved changes: {0}",
         [DataGridSaveChanges] = "Save changes",

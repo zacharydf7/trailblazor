@@ -1914,6 +1914,23 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
         return Row(row).Locator($"td[data-column=\"{id}\"]");
     }
 
+    /// <summary>Presses the Delete button of the row with a cell whose text is exactly <paramref name="row"/>, as a
+    /// user does, and waits until the grid has run <c>OnRowDelete</c> and shown the rows again. Throws when the grid
+    /// offers no Delete button, which takes an <c>OnRowDelete</c> and an <c>EditMode</c> other than <c>Batch</c>.
+    /// </summary>
+    public async Task DeleteRowAsync(string row)
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var button = Row(row).Locator(":scope > td > [data-part=delete]");
+        if (await button.CountAsync() == 0)
+        {
+            throw new InvalidOperationException("The grid offers no Delete button; give it an OnRowDelete and an "
+                + "EditMode other than Batch.");
+        }
+
+        await AnsweredAsync(() => button.ClickAsync());
+    }
+
     /// <summary>Pastes this text at the cell under <paramref name="column"/> in the row with a cell whose text is
     /// exactly <paramref name="row"/>, as Ctrl+V does, and waits until the grid has handled it. Tabs separate the cells
     /// and line breaks the rows, as a spreadsheet copies them. With a range of cells selected, the paste starts at the

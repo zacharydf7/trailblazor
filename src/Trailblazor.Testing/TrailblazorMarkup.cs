@@ -5232,6 +5232,13 @@ public sealed class TbGridDriver
         Row(row).QuerySelector($"td[data-column=\"{Header(column).GetAttribute("data-column")}\"]")
         ?? throw new InvalidOperationException($"The row \"{row}\" has no cell under \"{column}\".");
 
+    /// <summary>Presses the Delete button of the row with a cell whose text is exactly <paramref name="row"/>, as a
+    /// user does, and returns once the grid has run <c>OnRowDelete</c>. Throws when the grid offers no Delete button,
+    /// which takes an <c>OnRowDelete</c> and an <c>EditMode</c> other than <c>Batch</c>.</summary>
+    public async Task DeleteRowAsync(string row) => await (Row(row).QuerySelector(":scope > td > [data-part=delete]")
+        ?? throw new InvalidOperationException("The grid offers no Delete button; give it an OnRowDelete and an "
+            + "EditMode other than Batch.")).ClickAsync(new MouseEventArgs { Detail = 1 });
+
     /// <summary>Pastes this text at the cell under <paramref name="column"/> in the row with a cell whose text is
     /// exactly <paramref name="row"/>, as Ctrl+V does. Tabs separate the cells and line breaks the rows, as a
     /// spreadsheet copies them. With a range of cells selected, the paste starts at the range's first cell, and one

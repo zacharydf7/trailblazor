@@ -514,6 +514,18 @@ export function createDataGrid(table, waitForReorder) {
     setReady(!waitForReorder);
     return {
         setReady,
+        // After a delete in a plain table, which has no cells to focus, focus goes to the Delete button of the row in
+        // the deleted one's place, or to the table's empty row when none is left.
+        focusDelete(id) {
+            const row = id === null ? null : [...table.tBodies[0].rows].find(line => line.dataset.key === id);
+            const target = row?.querySelector(':scope > td > [data-part=delete]')
+                ?? table.querySelector('[data-part=empty]');
+            if (target && !target.matches('button')) {
+                target.tabIndex = -1;
+            }
+
+            target?.focus();
+        },
         // A cell whose edit ended takes focus back once its field is gone, or its place does when the edit moved
         // its row away, such as by its sort.
         focusCell(id, column) {
@@ -1144,6 +1156,19 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
         const page = () => Math.max(1, Math.floor(Math.min(scroll.clientHeight, viewOf(scroll).innerHeight)
             / (rowHeight() || fallbackRowHeight)) - 1);
         const control = event.ctrlKey || event.metaKey;
+        // Delete on a row's cell presses the row's Delete button, as long as the cell isn't being edited.
+        const deleteButton = bodyCellOf(cell)?.parentElement.querySelector(':scope > td > [data-part=delete]');
+        if (event.key === 'Delete' && !control && !event.shiftKey && deleteButton
+            && !event.target.closest('[data-part=editor]')) {
+            event.preventDefault();
+            // A held Delete acts once: it would delete each row as focus reaches it.
+            if (!event.repeat) {
+                deleteButton.click();
+            }
+
+            return;
+        }
+
         if (control && !event.shiftKey && event.key.toLowerCase() === 'v' && table.hasAttribute('data-paste')
             && bodyCellOf(cell) && !event.target.closest('[data-part=editor]')) {
             pasteAt(cell);

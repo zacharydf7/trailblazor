@@ -1,0 +1,31 @@
+@page "/grid-delete"
+
+@* A grid whose rows the user deletes; the app turns down "Held". *@
+<TbDataGrid TItem="Hike" Items="_hikes" AriaLabel="Hikes" KeySelector="hike => hike.Id" CellNavigation
+            OnRowDelete="Delete">
+    <TbColumn Field="hike => hike.Name" />
+    <TbColumn Field="hike => hike.LengthKm" Title="Length (km)" />
+</TbDataGrid>
+@* A plain table, which has no cells to focus. *@
+<TbDataGrid TItem="Hike" Items="_trails" AriaLabel="Trails" KeySelector="trail => trail.Id"
+            OnRowDelete="(GridRowDelete<Hike> delete) => _trails.Remove(delete.Item)">
+    <TbColumn Field="trail => trail.Name" />
+</TbDataGrid>
+
+@code {
+    private readonly List<Hike> _hikes = [new(1, "Pine Hollow", 6), new(2, "Held", 9), new(3, "Eagle Ridge", 14)];
+    private readonly List<Hike> _trails = [new(1, "Fern Gully", 4), new(2, "Lake Shore", 7), new(3, "Moss Bend", 2)];
+
+    public sealed record Hike(int Id, string Name, int LengthKm);
+
+    private void Delete(GridRowDelete<Hike> delete)
+    {
+        if (delete.Item.Name == "Held")
+        {
+            delete.Error = "Held has trips booked.";
+            return;
+        }
+
+        _hikes.Remove(delete.Item);
+    }
+}

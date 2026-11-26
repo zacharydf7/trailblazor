@@ -732,3 +732,4 @@ Trailblazor.Testing.Playwright.TbKanbanLocator.LanesAsync() -> System.Threading.
 Trailblazor.Testing.Playwright.TbKanbanLocator.MoveToColumnAsync(string! card, string! column, string! lane) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.FilterAsync(string! column, string! condition, string! text, Trailblazor.FilterJoin join, string! secondCondition, string! secondText) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.PasteAsync(string! row, string! column, string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbGridLocator.DeleteRowAsync(string! row) -> System.Threading.Tasks.Task!

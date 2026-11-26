@@ -770,8 +770,10 @@
                             drops it on another with <code>DragRowBeforeAsync</code> and <code>DragRowAfterAsync</code>,
                             and
                             opens or closes a tree grid's row with <code>ExpandAsync</code> and
-                            <code>CollapseAsync</code>. In a grid that edits in batches,
-                            <code>SaveChangesAsync</code> and <code>DiscardChangesAsync</code> press its Save changes and
+                            <code>CollapseAsync</code>. With <code>OnRowDelete</code>,
+                            <code>DeleteRowAsync(row)</code> presses a row's Delete button. In a grid that edits in
+                            batches, <code>SaveChangesAsync</code> and <code>DiscardChangesAsync</code> press its Save
+                            changes and
                             Discard changes buttons. In a grid with <code>CellSelection</code>,
                             <code>SelectCellsAsync</code> selects a range, <code>SelectedCells</code> reads its text,
                             and in Playwright <code>CopyAsync</code> presses Ctrl+C and returns what was copied, with

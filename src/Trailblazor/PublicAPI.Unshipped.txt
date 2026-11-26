@@ -8200,3 +8200,28 @@ override Trailblazor.VirtualListPage<TItem>.GetHashCode() -> int
 override Trailblazor.VirtualListPage<TItem>.ToString() -> string!
 static Trailblazor.VirtualListPage<TItem>.operator !=(Trailblazor.VirtualListPage<TItem>? left, Trailblazor.VirtualListPage<TItem>? right) -> bool
 static Trailblazor.VirtualListPage<TItem>.operator ==(Trailblazor.VirtualListPage<TItem>? left, Trailblazor.VirtualListPage<TItem>? right) -> bool
+Trailblazor.DataGridLabels.Delete.get -> string?
+Trailblazor.DataGridLabels.Delete.init -> void
+Trailblazor.DataGridLabels.DeleteRow.get -> string?
+Trailblazor.DataGridLabels.DeleteRow.init -> void
+Trailblazor.DataGridLabels.RowDeleted.get -> string?
+Trailblazor.DataGridLabels.RowDeleted.init -> void
+Trailblazor.GridRowDelete<TItem>
+Trailblazor.GridRowDelete<TItem>.<Clone>$() -> Trailblazor.GridRowDelete<TItem>!
+Trailblazor.GridRowDelete<TItem>.Deconstruct(out TItem Item) -> void
+Trailblazor.GridRowDelete<TItem>.Equals(Trailblazor.GridRowDelete<TItem>? other) -> bool
+Trailblazor.GridRowDelete<TItem>.Error.get -> string?
+Trailblazor.GridRowDelete<TItem>.Error.set -> void
+Trailblazor.GridRowDelete<TItem>.GridRowDelete(TItem Item) -> void
+Trailblazor.GridRowDelete<TItem>.Item.get -> TItem
+Trailblazor.GridRowDelete<TItem>.Item.init -> void
+Trailblazor.TbDataGrid<TItem>.OnRowDelete.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.GridRowDelete<TItem>!>
+Trailblazor.TbDataGrid<TItem>.OnRowDelete.set -> void
+const Trailblazor.TbStrings.DataGridDelete = "DataGrid.Delete" -> string!
+const Trailblazor.TbStrings.DataGridDeleteRow = "DataGrid.DeleteRow" -> string!
+const Trailblazor.TbStrings.DataGridRowDeleted = "DataGrid.RowDeleted" -> string!
+override Trailblazor.GridRowDelete<TItem>.Equals(object? obj) -> bool
+override Trailblazor.GridRowDelete<TItem>.GetHashCode() -> int
+override Trailblazor.GridRowDelete<TItem>.ToString() -> string!
+static Trailblazor.GridRowDelete<TItem>.operator !=(Trailblazor.GridRowDelete<TItem>? left, Trailblazor.GridRowDelete<TItem>? right) -> bool
+static Trailblazor.GridRowDelete<TItem>.operator ==(Trailblazor.GridRowDelete<TItem>? left, Trailblazor.GridRowDelete<TItem>? right) -> bool

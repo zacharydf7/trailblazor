@@ -66,6 +66,12 @@
             }
         </div>
     }
+    @* Why the app kept a row it was asked to delete shows above the rows, where a cell can't clip it, and the row's
+       Delete button names it as its description. *@
+    @if (_deleteRefused is { } refusal)
+    {
+        <p id="@DeleteRefusedId" data-part="delete-error" class="tb-data-grid__delete-error">@refusal.Message</p>
+    }
     @if (EditMode == GridEditMode.Batch)
     {
         @* The bar stays while there is nothing to save, so focus on its buttons isn't lost once the changes are saved. *@
@@ -174,6 +180,13 @@
                         <th scope="col" data-pinned="@LeadPin" style="@LeadStyle(DetailSlot)"
                             class="tb-data-grid__detail-toggle">
                             <span class="tb-visually-hidden">@Text(Labels.Details, TbStrings.DataGridDetails)</span>
+                        </th>
+                    }
+                    @if (CanDelete)
+                    {
+                        <th scope="col" data-pinned="@LeadPin" style="@LeadStyle(DeleteSlot)"
+                            class="tb-data-grid__delete">
+                            <span class="tb-visually-hidden">@Text(Labels.Delete, TbStrings.DataGridDelete)</span>
                         </th>
                     }
                     @if (SelectionMode == SelectionMode.Multiple && CanSelectAll)
@@ -442,6 +455,18 @@
                     </button>
                 </td>
             }
+            @if (CanDelete)
+            {
+                <td data-pinned="@LeadPin" style="@LeadStyle(DeleteSlot)" class="tb-data-grid__delete">
+                    <button type="button" data-part="delete" class="tb-data-grid__delete-button"
+                            aria-label="@Format(Labels.DeleteRow, TbStrings.DataGridDeleteRow, label ?? LabelOf(item))"
+                            aria-describedby="@(_deleteRefused?.Key is { } refused && Equals(refused, key)
+                                ? DeleteRefusedId : null)"
+                            @onclick="_deleteRow.For(key)" @ondblclick:stopPropagation>
+                        <TbIcon Icon="BuiltInIcons.Delete" Size="Size.Small" />
+                    </button>
+                </td>
+            }
             @if (SelectionMode != SelectionMode.None)
             {
                 <td data-part="select" data-pinned="@LeadPin" style="@LeadStyle(LeadCount - 1)"
@@ -504,6 +529,7 @@
                     {
                         @RowActions(rowEdit, label ?? LabelOf(item))
                     }
+
                 </td>
             }
         </tr>;
@@ -767,6 +793,10 @@
             @if (HasDetails)
             {
                 <td data-pinned="@LeadPin" style="@LeadStyle(DetailSlot)" class="tb-data-grid__detail-toggle"></td>
+            }
+            @if (CanDelete)
+            {
+                <td data-pinned="@LeadPin" style="@LeadStyle(DeleteSlot)" class="tb-data-grid__delete"></td>
             }
             @if (SelectionMode != SelectionMode.None)
             {

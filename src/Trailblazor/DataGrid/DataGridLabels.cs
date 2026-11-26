@@ -90,6 +90,18 @@ public sealed record DataGridLabels
     /// {0}" in English. Leave it null for the app's text for <see cref="TbStrings.DataGridDetailsFor"/>.</summary>
     public string? DetailsFor { get; init; }
 
+    /// <summary>Names the column of a data grid that holds each row's Delete button: "Delete" in English. Leave it null
+    /// for the app's text for <see cref="TbStrings.DataGridDelete"/>.</summary>
+    public string? Delete { get; init; }
+
+    /// <summary>Names a row's Delete button; <c>{0}</c> is the row's label: "Delete {0}" in English. Leave it null for
+    /// the app's text for <see cref="TbStrings.DataGridDeleteRow"/>.</summary>
+    public string? DeleteRow { get; init; }
+
+    /// <summary>Said once a row is deleted; <c>{0}</c> is the row's label: "{0} deleted." in English. Leave it null for
+    /// the app's text for <see cref="TbStrings.DataGridRowDeleted"/>.</summary>
+    public string? RowDeleted { get; init; }
+
     /// <summary>Names the column of a data grid's selection buttons: "Select" in English. Leave it null for the app's
     /// text for <see cref="TbStrings.DataGridSelect"/>.</summary>
     public string? Select { get; init; }

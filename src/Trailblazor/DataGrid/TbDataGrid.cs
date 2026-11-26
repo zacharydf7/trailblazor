@@ -109,6 +109,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private readonly ItemHandlers<object, Func<RowExtendEventArgs, Task>> _rowExtend;
     private readonly ItemHandlers<object, Func<Task>> _choose;
     private readonly ItemHandlers<object, Func<Task>> _toggleDetail;
+    private readonly ItemHandlers<object, Func<Task>> _deleteRow;
+
+    // Why the app last turned a delete down, shown above the rows until the next delete or refresh, or until its row
+    // goes.
+    private (object Key, string Message)? _deleteRefused;
+    private readonly HashSet<object> _deleting = [];
     private readonly ItemHandlers<object, Func<Task>> _toggleChildren;
     private readonly Dictionary<object, TItem> _expanded = [];
     // A batch grid's changes by row key and column, in the order first made, then why the app last turned them down,
@@ -147,6 +153,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             byValue: true);
         _choose = new(key => () => AnsweredAsync(() => OnRowAsync(key, ChooseAsync)), byValue: true);
         _toggleDetail = new(key => () => AnsweredAsync(() => OnRowAsync(key, ToggleDetailAsync)), byValue: true);
+        _deleteRow = new(key => () => AnsweredAsync(() => OnRowAsync(key, DeleteRowAsync)), byValue: true);
         _toggleChildren = new(key => () => AnsweredAsync(() => OnRowAsync(key, ToggleChildrenAsync)), byValue: true);
         _startEdit = new(cell => () => OnRowAsync(cell.Item1, item => StartEditAsync(item, cell.Item2)));
         _toggleGroup = new(key => () => ToggleGroup(key), byValue: true);
@@ -458,6 +465,15 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// it, each value is set on the item when its column's field is a property or field the grid can set.</summary>
     [Parameter]
     public EventCallback<GridRowEdit<TItem>> OnRowEdit { get; set; }
+
+    /// <summary>Raised when the user deletes a row, with the Delete button in a column at the row's start or, with
+    /// cell navigation, the Delete key on one of its cells; remove the item, and the grid shows the rows again. A
+    /// handler that sets the delete's <see cref="GridRowDelete{TItem}.Error"/> keeps the row, and the grid shows why
+    /// above the rows and reads it out; one that keeps the row without an error, as after the user said no to a
+    /// confirmation, deleted nothing. Not offered in a grid whose <see cref="EditMode"/> is
+    /// <see cref="GridEditMode.Batch"/>.</summary>
+    [Parameter]
+    public EventCallback<GridRowDelete<TItem>> OnRowDelete { get; set; }
 
     /// <summary>Raised with every change when the user saves the changes of a grid whose <see cref="EditMode"/> is
     /// <see cref="GridEditMode.Batch"/>; apply them to the items, or save them, and the grid shows the rows again.
@@ -917,6 +933,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// after they changed in place.</summary>
     public async Task RefreshAsync()
     {
+        _deleteRefused = null;
         (_itemsSeen, _itemsCountSeen) = (Items, ItemsCount);
         _rowVersion++;
         _countedFor = null;
@@ -1650,13 +1667,17 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // The selection and order columns lead each row, so they stay with the columns pinned at the start.
     private bool PinsLead => _shownColumns is [{ Pinned: ColumnPin.Start }, ..];
 
-    private int LeadCount =>
-        (CanReorder ? 1 : 0) + (HasDetails ? 1 : 0) + (SelectionMode == SelectionMode.None ? 0 : 1);
+    private int LeadCount => (CanReorder ? 1 : 0) + (HasDetails ? 1 : 0) + (CanDelete ? 1 : 0)
+        + (SelectionMode == SelectionMode.None ? 0 : 1);
 
     private bool HasDetails => DetailTemplate is not null;
 
-    // The details button comes after a row's move handle and before its selection box.
+    // A row leads with its move handle, then its details button, its Delete button and its selection box.
     private int DetailSlot => CanReorder ? 1 : 0;
+
+    private int DeleteSlot => DetailSlot + (HasDetails ? 1 : 0);
+
+    private bool CanDelete => OnRowDelete.HasDelegate && EditMode != GridEditMode.Batch;
 
     private string? LeadPin => PinsLead ? "start" : null;
 
@@ -2693,6 +2714,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _rowExtend.KeepOnly(shown.Contains);
         _choose.KeepOnly(shown.Contains);
         _toggleDetail.KeepOnly(shown.Contains);
+        _deleteRow.KeepOnly(shown.Contains);
+        if (_deleteRefused is { } refusal && !shown.Contains(refusal.Key))
+        {
+            _deleteRefused = null;
+        }
         _toggleChildren.KeepOnly(shown.Contains);
         _startEdit.KeepOnly(cell => shown.Contains(cell.Item1) && _columns.Contains(cell.Item2));
         var groups = lines.Where(line => line.Group is not null).Select(line => line.Group!.Key).ToHashSet();
@@ -2990,6 +3016,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // A key's text can hold spaces, which an id can't, so it's escaped.
     private string DetailId(object key) => $"{_detailPrefix}-{Uri.EscapeDataString(_ids.IdOf(key))}";
 
+    private string DeleteRefusedId => $"{_detailPrefix}-delete-refused";
+
     private async Task ToggleDetailAsync(TItem item)
     {
         var key = KeyOf(item);
@@ -3059,6 +3087,73 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // A row's handlers find its item by key as they run, since the parent can pass a new instance with the same key.
     private Task OnRowAsync(object key, Func<TItem, Task> handle) =>
         _rows.FindIndex(row => Equals(KeyOf(row), key)) is var at and >= 0 ? handle(_rows[at]) : Task.CompletedTask;
+
+    // Focus goes to the row in the deleted one's place, or the one before it at the end: to its first cell in a grid,
+    // or to its Delete button in a plain table, which has no cells to focus.
+    private async Task DeleteRowAsync(TItem item)
+    {
+        var key = KeyOf(item);
+        // A press while the row's delete is on its way, such as the second click of a double-click, asks only once.
+        if (!_deleting.Add(key))
+        {
+            return;
+        }
+
+        try
+        {
+            var at = _rows.FindIndex(row => Equals(KeyOf(row), key));
+            var label = LabelOf(item);
+            var delete = new GridRowDelete<TItem>(item);
+            await OnRowDelete.InvokeAsync(delete);
+            if (delete.Error is { } refused)
+            {
+                _deleteRefused = (key, refused);
+                _rowVersion++;
+                Announcer.Assertive(refused);
+                return;
+            }
+
+            await RefreshAsync();
+            // A handler that kept the row without an error, such as when the user said no to its confirmation, deleted
+            // nothing.
+            if (_rows.Exists(row => Equals(KeyOf(row), key)))
+            {
+                return;
+            }
+
+            // An edit of the row would otherwise be saved later for an item that's gone.
+            if (_edit is { } open && Equals(open.Key, key))
+            {
+                _edit = null;
+                _editVersion++;
+            }
+
+            Telemetry.Used(TelemetryName, "delete");
+            Announcer.Polite(Format(Labels.RowDeleted, TbStrings.DataGridRowDeleted, label));
+            await NextRenderAsync();
+            if (_handle is null)
+            {
+                return;
+            }
+
+            if (_rows.Count == 0)
+            {
+                await _handle.InvokeVoidAsync("focusDelete", (string?)null);
+            }
+            else if (_rows[Math.Min(at, _rows.Count - 1)] is var next && IsGrid)
+            {
+                await _handle.InvokeVoidAsync("focusCell", IdOf(next), _shownColumns.FirstOrDefault()?.Key);
+            }
+            else
+            {
+                await _handle.InvokeVoidAsync("focusDelete", IdOf(next));
+            }
+        }
+        finally
+        {
+            _deleting.Remove(key);
+        }
+    }
 
     private async Task ChooseAsync(TItem item)
     {

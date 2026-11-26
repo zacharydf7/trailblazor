@@ -13412,6 +13412,12 @@ public static class ExampleCatalog
                     + "their rows and `OnBatchSave` gets the reloaded items. Without a `KeySelector`, unless the items "
                     + "compare by value, the reloaded rows don't show changes made before the reload, though Save "
                     + "changes still sends them.", typeof(DataGridBatchExample)),
+                new("delete-rows", "Delete rows", "With `OnRowDelete`, each row gets a Delete button, named for the "
+                    + "row, in a column at its start, and with cell navigation Delete on one of its cells presses it. "
+                    + "Remove the item in the handler and the grid shows the rows again, with focus on the row that "
+                    + "took the deleted one's place. A handler that sets the delete's `Error` keeps the row, and the "
+                    + "grid shows why above the rows until the next delete or refresh, and reads it out. A grid that "
+                    + "edits in batches offers no Delete button.", typeof(DataGridDeleteExample)),
                 new("paste", "Paste from a spreadsheet", "In a grid that edits in batches, Ctrl+V on a cell pastes "
                     + "tab-separated cells starting there, such as rows copied from a spreadsheet. Each is read as its "
                     + "column's editor reads text, with the column's `Format`, and kept as a change; a blank cell "
@@ -13488,7 +13494,7 @@ public static class ExampleCatalog
                 typeof(GridResult<>), typeof(GridSort), typeof(GridFilter), typeof(FilterOperator),
                 typeof(FilterJoin),
                 typeof(GridFilterMode), typeof(GridFilterContext), typeof(ColumnPin), typeof(GridCellEdit<>),
-                typeof(GridCellEditContext<>), typeof(GridEditMode), typeof(GridRowEdit<>),
+                typeof(GridCellEditContext<>), typeof(GridEditMode), typeof(GridRowEdit<>), typeof(GridRowDelete<>),
                 typeof(GridState), typeof(ColumnAggregate), typeof(GridAggregate), typeof(GridBatchEdit<>),
                 typeof(SortableMove<>), typeof(MoveCheck),
             ],
@@ -13555,6 +13561,8 @@ public static class ExampleCatalog
                 new(["Ctrl+C", "Cmd+C"], "Copies the range, or the cell in focus without one, as text and as a "
                     + "table.") { When = "With `CellSelection`" },
                 new(["Escape"], "Clears the range.") { When = "With `CellSelection` and a range" },
+                new(["Delete"], "Deletes the row, as its Delete button does.")
+                    { When = "On a cell, with cell navigation and `OnRowDelete`, unless the grid edits in batches" },
                 new(["Ctrl+V", "Cmd+V"], "Pastes cells as changes, starting at the cell in focus or at a selected "
                     + "range's first cell; one value fills the range.") { When = "In a grid that edits in batches" },
                 new(["Enter"], "In a value field, applies the filter.") { When = "In a filter menu" },
@@ -13569,6 +13577,9 @@ public static class ExampleCatalog
             [
                 "It is a native `table` named by `AriaLabel`, with a header cell for each column, so screen readers "
                     + "read each cell with its column.",
+                "With `OnRowDelete`, each row's Delete button is named \"Delete\" and the row's label, such as "
+                    + "\"Delete Pine Hollow\", under a column whose hidden header is \"Delete\" (`Labels.DeleteRow` "
+                    + "and `Labels.Delete`).",
                 "When the rows overflow their box and there is no cell navigation, the box is a tab stop, so keys can "
                     + "scroll it. With an `AriaLabel`, it's also a `region` with that name.",
                 "A row's checkbox is named \"Select\" followed by the row's label, which is its `RowLabel` or else the "
@@ -13591,6 +13602,8 @@ public static class ExampleCatalog
             Announcements =
             [
                 "Every change of sort is read out, such as \"Sorted by Name, ascending.\"",
+                "A deleted row is read out, such as \"Pine Hollow deleted.\", or why the app kept it, such as "
+                    + "\"Eagle Ridge has bookings.\"",
                 "A paste is read out, such as \"Cells pasted: 4\", or why nothing was pasted, such as \"Nothing was "
                     + "pasted: Length (km) can't hold that value.\"",
                 "After a filter changes, the count of rows shown is read out, such as \"Rows shown: 2.\", or "
@@ -13625,6 +13638,10 @@ public static class ExampleCatalog
                 "While rows load the table is `aria-busy`.",
                 "With `CellNavigation`, or an `Editable` column, the table takes the ARIA grid role, and rows say "
                     + "whether they are selected with `aria-selected`.",
+                "After a delete, focus moves to the row that took the deleted one's place, or the new last row: to "
+                    + "its first cell with cell navigation, or else to its Delete button; with no row left, it moves "
+                    + "to the empty row. While the app's reason for keeping a row shows, that row's Delete button "
+                    + "names it as its description.",
                 "With cell navigation, when the row holding focus is removed, focus moves to the row that takes its "
                     + "place, or to the new last row if it was the last. With `Virtualize`, removing the last row leaves "
                     + "focus on the page, and so does scrolling the focused row out of view.",
@@ -13645,8 +13662,10 @@ public static class ExampleCatalog
             [
                 "Without cell navigation, only a pointer clicks a row, so whatever `OnRowClick` does needs a button in "
                     + "a cell too, as [Clicking a row](components/data-grid#row-click) shows.",
-                "Set `RowLabel` when a row's first column doesn't say which row it is, so its checkbox and move handle "
-                    + "can.",
+                "Set `RowLabel` when a row's first column doesn't say which row it is, so its checkbox, move handle "
+                    + "and Delete button can.",
+                "Ask before a delete that can't be undone, or offer Undo after it, as "
+                    + "[Confirm and delete](recipes/confirm-and-delete) shows; Delete on a cell deletes at once.",
             ],
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
@@ -13657,7 +13676,7 @@ public static class ExampleCatalog
                     + "in its rows for keys to scroll it. The fade at the scroll box's sides waits for the page to be "
                     + "interactive too.",
                 "With `Items` and no `Virtualize`, it renders its first page of rows as a plain table, so they can be "
-                    + "read at once. Sorting, filtering, paging and selecting start working once the page is "
+                    + "read at once. Sorting, filtering, paging, selecting and deleting start working once the page is "
                     + "interactive. With a `StateHref`, sorting and paging work before that, as links; the page size "
                     + "picker still waits.",
                 "With a `DataProvider` and no `Virtualize`, it asks for its first page while prerendering and shows "
@@ -13731,6 +13750,8 @@ public static class ExampleCatalog
                 new("bands", "A row of group headings above the column headers."),
                 new("band", "A group's heading, across its columns."),
                 new("detail-toggle", "A row's button that opens and closes its details."),
+                new("delete", "A row's Delete button, with `OnRowDelete`."),
+                new("delete-error", "Why the app kept a row it was asked to delete, above the rows."),
                 new("detail", "The row of details under a row whose details are open."),
                 new("detail-cell", "The one cell of a detail row, which holds the `DetailTemplate`."),
                 new("tree-cell", "A tree grid row's first cell, which holds its button and is set in by its depth."),
@@ -13785,6 +13806,8 @@ public static class ExampleCatalog
                 "In Playwright, sorting, filtering and paging also wait for a `DataProvider`'s rows.",
                 "In bUnit, `cut.Tb().Grid(\"Trails\")` from `Trailblazor.Testing` has the same `Row`, `SelectAsync`, "
                     + "`SortAsync` and `FilterAsync`, and `Cell(row, column)` finds a cell.",
+                "With `OnRowDelete`, `DeleteRowAsync(row)` presses a row's Delete button and waits for the app, in "
+                    + "bUnit and in Playwright. A refusal's text is in `[data-part=delete-error]`.",
                 "In a grid that edits in batches, `PasteAsync(row, column, text)` pastes tab-separated text at a "
                     + "cell as Ctrl+V does, in bUnit and in Playwright, where it doesn't use the system clipboard.",
                 "With a `StateHref`, the sort headers and the pager are links.",
@@ -13861,7 +13884,7 @@ public static class ExampleCatalog
                     + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `filter`, `page`, "
                     + "`page_size`, `select`, `move`, `group`, `expand`, `collapse`, `edit`, `resize`, `reorder`, "
                     + "`hide`, `show`, `open_detail`, `close_detail`, `save_changes`, `discard_changes`, `copy`, "
-                    + "`paste`, `export_csv`, `export_excel` or `export_pdf` for each of "
+                    + "`paste`, `delete`, `export_csv`, `export_excel` or `export_pdf` for each of "
                     + "those the user does; a `move` also "
                     + "says whether a `pointer` or the "
                     + "`keyboard` made it.",

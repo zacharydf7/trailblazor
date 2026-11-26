@@ -1,0 +1,28 @@
+<TbDataGrid TItem="Trail" Items="_trails" AriaLabel="Trails to keep" KeySelector="trail => trail.Id"
+            CellNavigation OnRowDelete="Delete">
+    <TbColumn Field="trail => trail.Name" />
+    <TbColumn Field="trail => trail.Bookings" />
+</TbDataGrid>
+
+@code {
+    private readonly List<Trail> _trails =
+    [
+        new(1, "Pine Hollow", 0),
+        new(2, "Eagle Ridge", 3),
+        new(3, "Cedar Flats", 0),
+    ];
+
+    public sealed record Trail(int Id, string Name, int Bookings);
+
+    // Stands in for a server that won't delete a trail with bookings.
+    private void Delete(GridRowDelete<Trail> delete)
+    {
+        if (delete.Item.Bookings > 0)
+        {
+            delete.Error = $"{delete.Item.Name} has bookings.";
+            return;
+        }
+
+        _trails.Remove(delete.Item);
+    }
+}
