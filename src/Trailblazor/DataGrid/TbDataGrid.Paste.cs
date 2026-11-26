@@ -55,13 +55,14 @@ public partial class TbDataGrid<TItem>
 
     // Each pasted value with the cell it lands in. One value pasted over a range fills it; otherwise the values run from
     // the range's first cell, or the cell in focus, and stop at the last row and column shown. A cell that can't be
-    // edited, or that edits with a template, keeps its value.
+    // edited, that edits with a template, or whose row is marked deleted keeps its value.
     private List<(TItem Row, TbColumn<TItem> Column, string Text)> PasteTargets(List<List<string>> values,
         (object Row, string Column) focused)
     {
         if (HasRange && values is [[var only]])
         {
-            return [.. _rows.Where(row => _rangeRows.Contains(KeyOf(row))).SelectMany(row => _shownColumns
+            return [.. _rows.Where(row => _rangeRows.Contains(KeyOf(row)) && !IsDeleted(KeyOf(row)))
+                .SelectMany(row => _shownColumns
                 .Where(column => _rangeColumns.Contains(column.Key) && CanPasteInto(column))
                 .Select(column => (row, column, only)))];
         }
@@ -76,7 +77,8 @@ public partial class TbDataGrid<TItem>
             for (var across = 0; left >= 0 && across < values[down].Count && left + across < _shownColumns.Count;
                 across++)
             {
-                if (_shownColumns[left + across] is var column && CanPasteInto(column))
+                if (_shownColumns[left + across] is var column && CanPasteInto(column)
+                    && !IsDeleted(KeyOf(_rows[top + down])))
                 {
                     targets.Add((_rows[top + down], column, values[down][across]));
                 }

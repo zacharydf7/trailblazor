@@ -1,6 +1,6 @@
 <TbStack Gap="3">
     <TbDataGrid TItem="Trail" Items="_trails" AriaLabel="Trail closures" KeySelector="trail => trail.Id"
-                EditMode="GridEditMode.Batch" OnBatchSave="Save">
+                EditMode="GridEditMode.Batch" Deletable OnBatchSave="Save">
         <TbColumn Field="trail => trail.Name" Editable />
         <TbColumn Field="trail => trail.Region" Editable />
         <TbColumn Field="trail => trail.Reopens" Format="d" Editable />
@@ -32,9 +32,10 @@
         public DateOnly? Reopens { get; set; } = reopens;
     }
 
-    // Every change arrives at once, as a server would take them in one request.
+    // Every change and delete arrives at once, as a server would take them in one request.
     private void Save(GridBatchEdit<Trail> batch)
     {
+        _trails.RemoveAll(trail => batch.Deleted.Contains(trail));
         foreach (var change in batch.Changes)
         {
             switch (change.Column)
@@ -54,6 +55,7 @@
             }
         }
 
-        _status = $"Saved {batch.Changes.Count} {(batch.Changes.Count == 1 ? "change" : "changes")}.";
+        var saved = batch.Changes.Count + batch.Deleted.Count;
+        _status = $"Saved {saved} {(saved == 1 ? "change" : "changes")}.";
     }
 }

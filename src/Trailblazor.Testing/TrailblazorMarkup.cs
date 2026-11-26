@@ -5235,11 +5235,13 @@ public sealed class TbGridDriver
         ?? throw new InvalidOperationException($"The row \"{row}\" has no cell under \"{column}\".");
 
     /// <summary>Presses the Delete button of the row with a cell whose text is exactly <paramref name="row"/>, as a
-    /// user does, and returns once the grid has run <c>OnRowDelete</c>. Throws when the grid offers no Delete button,
-    /// which takes an <c>OnRowDelete</c> and an <c>EditMode</c> other than <c>Batch</c>.</summary>
+    /// user does, and returns once the grid has run <c>OnRowDelete</c> or, in a grid that edits in batches, once it
+    /// has marked the row deleted, or restored a row already marked. Throws when the grid offers no Delete button,
+    /// which takes an <c>OnRowDelete</c> or, in a grid that edits in batches, <c>Deletable</c> and an
+    /// <c>OnBatchSave</c>.</summary>
     public async Task DeleteRowAsync(string row) => await (Row(row).QuerySelector(":scope > td > [data-part=delete]")
-        ?? throw new InvalidOperationException("The grid offers no Delete button; give it an OnRowDelete and an "
-            + "EditMode other than Batch.")).ClickAsync(new MouseEventArgs { Detail = 1 });
+        ?? throw new InvalidOperationException("The grid offers no Delete button; give it an OnRowDelete or, in a "
+            + "batch grid, Deletable and an OnBatchSave.")).ClickAsync(new MouseEventArgs { Detail = 1 });
 
     /// <summary>Presses the Add row button of a grid whose <c>EditMode</c> is <c>Row</c> and that has a
     /// <c>NewItem</c> and an <c>OnRowAdd</c>, and returns once the new row is open, in <see cref="NewRow"/>. Throws

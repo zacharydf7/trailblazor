@@ -9924,6 +9924,17 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         text-align: center;
     }
 
+    /* A batch grid's deleted row stays until the changes are saved, struck through. */
+    .tb-data-grid__row--deleted > td[data-column] {
+        color: var(--tb-color-text-muted);
+        text-decoration: line-through;
+    }
+
+    .tb-data-grid__delete-button[aria-pressed="true"] {
+        background: var(--tb-color-warning-subtle);
+        color: var(--tb-color-warning-text);
+    }
+
     /* Why the app kept a row it was asked to delete, above the rows. */
     .tb-data-grid__delete-error {
         margin: 0 0 var(--tb-space-2);
@@ -10225,6 +10236,10 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         .tb-data-grid__cell--changed {
             outline: 2px dashed Highlight;
             outline-offset: -2px;
+        }
+
+        .tb-data-grid__delete-button[aria-pressed="true"] {
+            outline: 2px solid Highlight;
         }
     }
 

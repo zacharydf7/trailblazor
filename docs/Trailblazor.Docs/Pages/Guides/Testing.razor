@@ -771,7 +771,8 @@
                             and
                             opens or closes a tree grid's row with <code>ExpandAsync</code> and
                             <code>CollapseAsync</code>. With <code>OnRowDelete</code>,
-                            <code>DeleteRowAsync(row)</code> presses a row's Delete button. With <code>NewItem</code>
+                            <code>DeleteRowAsync(row)</code> presses a row's Delete button, as it does in a grid
+                            that edits in batches with <code>Deletable</code>. With <code>NewItem</code>
                             and <code>OnRowAdd</code>, <code>AddRowAsync</code> presses Add row, and
                             <code>NewRow</code> is the new row. In a grid that edits in batches,
                             <code>SaveChangesAsync</code> and <code>DiscardChangesAsync</code> press its Save

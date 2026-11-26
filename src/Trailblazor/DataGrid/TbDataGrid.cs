@@ -124,10 +124,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // A batch grid's changes by row key and column, in the order first made, then why the app last turned them down,
     // and the save in flight with the cells it sent.
     private readonly OrderedDictionary<(object Key, string Column), GridCellEdit<TItem>> _changes = [];
+    // The rows a batch grid holds as deleted until the changes are saved, by key, in the order they were deleted.
+    private readonly OrderedDictionary<object, TItem> _deleted = [];
     private string? _batchError;
     private Task? _batchSave;
     private HashSet<(object Key, string Column)> _sending = [];
     private readonly string _changedId = $"tb-grid-changed-{Guid.NewGuid():N}";
+    private readonly string _deletedId = $"tb-grid-deleted-{Guid.NewGuid():N}";
     private readonly string _detailPrefix = $"tb-grid-detail-{Guid.NewGuid():N}";
     private IReadOnlyCollection<TItem>? _expandedFromParent;
     private readonly ItemHandlers<(object, TbColumn<TItem>), Func<Task>> _startEdit;
@@ -157,7 +160,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             byValue: true);
         _choose = new(key => () => AnsweredAsync(() => OnRowAsync(key, ChooseAsync)), byValue: true);
         _toggleDetail = new(key => () => AnsweredAsync(() => OnRowAsync(key, ToggleDetailAsync)), byValue: true);
-        _deleteRow = new(key => () => AnsweredAsync(() => OnRowAsync(key, DeleteRowAsync)), byValue: true);
+        _deleteRow = new(key => () => AnsweredAsync(() => OnRowAsync(key,
+            item => EditMode == GridEditMode.Batch ? ToggleDeletedAsync(item) : DeleteRowAsync(item))), byValue: true);
         _toggleChildren = new(key => () => AnsweredAsync(() => OnRowAsync(key, ToggleChildrenAsync)), byValue: true);
         _startEdit = new(cell => () => OnRowAsync(cell.Item1, item => StartEditAsync(item, cell.Item2)));
         _toggleGroup = new(key => () => ToggleGroup(key), byValue: true);
@@ -474,10 +478,18 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// cell navigation, the Delete key on one of its cells; remove the item, and the grid shows the rows again. A
     /// handler that sets the delete's <see cref="GridRowDelete{TItem}.Error"/> keeps the row, and the grid shows why
     /// above the rows and reads it out; one that keeps the row without an error, as after the user said no to a
-    /// confirmation, deleted nothing. Not offered in a grid whose <see cref="EditMode"/> is
-    /// <see cref="GridEditMode.Batch"/>.</summary>
+    /// confirmation, deleted nothing. A grid whose <see cref="EditMode"/> is <see cref="GridEditMode.Batch"/> deletes
+    /// rows with <see cref="Deletable"/> instead.</summary>
     [Parameter]
     public EventCallback<GridRowDelete<TItem>> OnRowDelete { get; set; }
+
+    /// <summary>Gives each row of a grid whose <see cref="EditMode"/> is <see cref="GridEditMode.Batch"/> a Delete
+    /// button; with cell navigation, the Delete key on one of its cells presses it too. It marks the row deleted until
+    /// the user saves or discards the changes, and pressing it again restores the row. While marked, the row's cells
+    /// can't be edited. <see cref="OnBatchSave"/> gets the deleted items in <see cref="GridBatchEdit{TItem}.Deleted"/>,
+    /// so the grid needs one. Other grids delete rows at once with <see cref="OnRowDelete"/>.</summary>
+    [Parameter]
+    public bool Deletable { get; set; }
 
     /// <summary>Makes the item for a row the user adds, such as one with its defaults set. With
     /// <see cref="OnRowAdd"/>, a grid whose <see cref="EditMode"/> is <see cref="GridEditMode.Row"/> offers an Add row
@@ -496,8 +508,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public EventCallback<GridRowEdit<TItem>> OnRowAdd { get; set; }
 
-    /// <summary>Raised with every change when the user saves the changes of a grid whose <see cref="EditMode"/> is
-    /// <see cref="GridEditMode.Batch"/>; apply them to the items, or save them, and the grid shows the rows again.
+    /// <summary>Raised with every change, and with <see cref="Deletable"/> every row marked deleted, when the user
+    /// saves the changes of a grid whose <see cref="EditMode"/> is <see cref="GridEditMode.Batch"/>; apply them to the
+    /// items, or save them, and the grid shows the rows again.
     /// Without it, each value is set on its item when its column's field is a property or field the grid can set.
     /// A change holds the item it was made on, so if the rows can reload before a save, set <see cref="KeySelector"/>
     /// and look the item up by its key.</summary>
@@ -506,7 +519,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     /// <summary>Whether a <see cref="GridEditMode.Batch"/> grid holds changes not yet saved, such as to ask before the
     /// user leaves the page.</summary>
-    public bool HasChanges => _changes.Count > 0;
+    public bool HasChanges => _changes.Count > 0 || _deleted.Count > 0;
+
+    // A deleted row's own changes aren't saved, so they don't count.
+    private int ChangeCount => _changes.Keys.Count(key => !_deleted.ContainsKey(key.Key)) + _deleted.Count;
 
     /// <summary>Shows the rows as loading, such as while the page fetches <see cref="Items"/>: a message while there
     /// are no rows yet, and a bar under the header while rows already shown reload. A grid with a
@@ -1228,6 +1244,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private async Task StartEditAsync(TItem item, TbColumn<TItem> column)
     {
         var key = KeyOf(item);
+        if (IsDeleted(key))
+        {
+            return;
+        }
+
         if (_edit is { } open && (Equals(open.Key, key) && (EditMode == GridEditMode.Row || open.Start == column)
                 || !await SaveEditAsync(refocus: false)))
         {
@@ -1464,13 +1485,17 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private async Task SaveBatchCoreAsync()
     {
-        if (!await SaveEditAsync(refocus: false) || _changes.Count == 0)
+        if (!await SaveEditAsync(refocus: false) || !HasChanges)
         {
             return;
         }
 
-        var sent = _changes.ToList();
-        var batch = new GridBatchEdit<TItem>([.. sent.Select(pair => pair.Value)]);
+        var sent = _changes.Where(pair => !IsDeleted(pair.Key.Key)).ToList();
+        var deleted = _deleted.ToList();
+        var batch = new GridBatchEdit<TItem>([.. sent.Select(pair => pair.Value)])
+        {
+            Deleted = [.. deleted.Select(pair => pair.Value)],
+        };
         _batchError = null;
         _sending = [.. sent.Select(pair => pair.Key)];
         try
@@ -1510,17 +1535,28 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             }
         }
 
+        foreach (var (key, _) in deleted)
+        {
+            _deleted.Remove(key);
+            foreach (var change in _changes.Keys.Where(change => Equals(change.Key, key)).ToList())
+            {
+                _changes.Remove(change);
+            }
+        }
+
         Announcer.Polite(Text(Labels.ChangesSaved, TbStrings.DataGridChangesSaved));
         await RefreshAsync();
     }
 
     /// <summary>Drops the changes of a grid whose <see cref="EditMode"/> is <see cref="GridEditMode.Batch"/>, and any
-    /// edit still open, as its Discard changes button does, so every cell shows its item's value again.</summary>
+    /// edit still open, as its Discard changes button does, so every cell shows its item's value again and every row
+    /// marked deleted is restored.</summary>
     public Task DiscardChangesAsync()
     {
         _edit = null;
         _editVersion++;
         _changes.Clear();
+        _deleted.Clear();
         _batchError = null;
         RenderRows();
         return Task.CompletedTask;
@@ -1759,7 +1795,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private int DeleteSlot => DetailSlot + (HasDetails ? 1 : 0);
 
-    private bool CanDelete => OnRowDelete.HasDelegate && EditMode != GridEditMode.Batch;
+    private bool CanDelete => EditMode == GridEditMode.Batch ? Deletable && OnBatchSave.HasDelegate
+        : OnRowDelete.HasDelegate;
+
+    private bool IsDeleted(object key) => _deleted.ContainsKey(key);
 
     private bool CanAdd => NewItem is not null && OnRowAdd.HasDelegate && EditMode == GridEditMode.Row && !Virtualize
         && _shownColumns.Any(column => column.Editor != ColumnEditor.None);
@@ -3177,6 +3216,34 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private Task OnRowAsync(object key, Func<TItem, Task> handle) =>
         _rows.FindIndex(row => Equals(KeyOf(row), key)) is var at and >= 0 ? handle(_rows[at]) : Task.CompletedTask;
 
+    // A batch grid keeps a delete as a change until the changes are saved or discarded, and a second press restores
+    // the row. An edit of the row is dropped, since its cells can't be edited while it's deleted.
+    private Task ToggleDeletedAsync(TItem item)
+    {
+        var key = KeyOf(item);
+        var label = LabelOf(item);
+        if (_deleted.Remove(key))
+        {
+            Telemetry.Used(TelemetryName, "undo_delete");
+            Announcer.Polite(Format(Labels.RowRestored, TbStrings.DataGridRowRestored, label));
+        }
+        else
+        {
+            if (_edit is { } open && Equals(open.Key, key))
+            {
+                _edit = null;
+                _editVersion++;
+            }
+
+            _deleted[key] = item;
+            Telemetry.Used(TelemetryName, "delete");
+            Announcer.Polite(Format(Labels.RowMarkedDeleted, TbStrings.DataGridRowMarkedDeleted, label));
+        }
+
+        _rowVersion++;
+        return Task.CompletedTask;
+    }
+
     // Focus goes to the row in the deleted one's place, or the one before it at the end: to its first cell in a grid,
     // or to its Delete button in a plain table, which has no cells to focus.
     private async Task DeleteRowAsync(TItem item)
@@ -3331,6 +3398,14 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                 && !_sending.Contains(key))
             {
                 _changes[key] = change with { Item = row };
+            }
+        }
+
+        foreach (var key in _deleted.Keys.ToList())
+        {
+            if (loaded.TryGetValue(key, out var row))
+            {
+                _deleted[key] = row;
             }
         }
     }

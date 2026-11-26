@@ -85,8 +85,9 @@
         @* The bar stays while there is nothing to save, so focus on its buttons isn't lost once the changes are saved. *@
         <div data-part="batch-bar" class="tb-data-grid__batch-bar">
             <span id="@_changedId" hidden>@Text(Labels.Changed, TbStrings.DataGridChanged)</span>
+            <span id="@_deletedId" hidden>@Text(Labels.MarkedDeleted, TbStrings.DataGridMarkedDeleted)</span>
             <span data-part="change-count" class="tb-data-grid__change-count">
-                @Format(Labels.UnsavedChanges, TbStrings.DataGridUnsavedChanges, _changes.Count)
+                @Format(Labels.UnsavedChanges, TbStrings.DataGridUnsavedChanges, ChangeCount)
             </span>
             @if (_batchError is not null)
             {
@@ -433,6 +434,7 @@
         bool expanded, TreePlace? tree) =>
         @<tr @ref="_rowRefs[key]" data-part="row" data-key="@_ids.IdOf(key)" data-selected="@(selected ? "" : null)"
              data-new="@(IsNew(key) ? "" : null)" data-index="@(CanReorder && !IsNew(key) ? at : null)"
+             data-deleted="@(IsDeleted(key) ? "" : null)"
              aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)" aria-selected="@AriaSelected(selected)"
              aria-level="@tree?.Level" aria-posinset="@tree?.Position" aria-setsize="@tree?.SetSize"
              aria-expanded="@(tree?.Open is { } open ? open ? "true" : "false" : null)"
@@ -446,7 +448,8 @@
              @ontbrowclick="_rowClick.For(key)"
              @ontbrowextend="_rowExtend.For(key)"
              class="@ClassNames.Join("tb-data-grid__row", selected ? "tb-data-grid__row--selected" : null,
-                        Virtualize && at % 2 == 1 ? "tb-data-grid__row--stripe" : null, Classes?.Row, rowClass)">
+                        Virtualize && at % 2 == 1 ? "tb-data-grid__row--stripe" : null,
+                        IsDeleted(key) ? "tb-data-grid__row--deleted" : null, Classes?.Row, rowClass)">
             @if (IsNew(key))
             {
                 @BlankLeadCells
@@ -463,7 +466,7 @@
                     continue;
                 }
 
-                var editable = CanEdit(column);
+                var editable = CanEdit(column) && !IsDeleted(key);
                 var treeCell = tree is not null && column == _shownColumns[0];
                 var change = ChangeOf(key, column);
                 var inRange = InRange(key, column);
@@ -472,7 +475,8 @@
                 <td @key="column.Key" data-column="@column.Key" data-part="@(treeCell ? "tree-cell" : null)"
                     data-pinned="@PinSide(column)" aria-colindex="@ColumnIndexOf(column)"
                     style="@PinStyle(column)" data-editable="@(editable ? "" : null)"
-                    data-changed="@(change is null ? null : "")" aria-describedby="@(change is null ? null : _changedId)"
+                    data-changed="@(change is null ? null : "")"
+                    aria-describedby="@(IsDeleted(key) ? _deletedId : change is null ? null : _changedId)"
                     aria-selected="@(CellSelection ? inRange ? "true" : "false" : null)"
                     data-in-range="@(inRange ? "" : null)"
                     data-copy="@(CellSelection && column.CellTemplate is not null ? CopyTextOf(key, column, item) : null)"
@@ -541,6 +545,7 @@
                             aria-label="@Format(Labels.DeleteRow, TbStrings.DataGridDeleteRow, label ?? LabelOf(item))"
                             aria-describedby="@(_deleteRefused?.Key is { } refused && Equals(refused, key)
                                 ? DeleteRefusedId : null)"
+                            aria-pressed="@(EditMode == GridEditMode.Batch ? IsDeleted(key) ? "true" : "false" : null)"
                             @onclick="_deleteRow.For(key)" @ondblclick:stopPropagation>
                         <TbIcon Icon="BuiltInIcons.Delete" Size="Size.Small" />
                     </button>

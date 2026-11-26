@@ -13411,13 +13411,18 @@ public static class ExampleCatalog
                     + "row by its `KeySelector` key, so after `Items` changes or the rows load again they stay on "
                     + "their rows and `OnBatchSave` gets the reloaded items. Without a `KeySelector`, unless the items "
                     + "compare by value, the reloaded rows don't show changes made before the reload, though Save "
-                    + "changes still sends them.", typeof(DataGridBatchExample)),
+                    + "changes still sends them. With `Deletable`, each row gets a Delete button that marks the row "
+                    + "deleted, struck through and counted as a change, until the changes are saved or discarded; "
+                    + "pressing it again restores the row. Marking a row drops an edit open on it, and its cells "
+                    + "can't be edited or pasted into until it's restored. `OnBatchSave` gets the deleted items in "
+                    + "`Deleted`, without their rows' changes.", typeof(DataGridBatchExample)),
                 new("delete-rows", "Delete rows", "With `OnRowDelete`, each row gets a Delete button, named for the "
                     + "row, in a column at its start, and with cell navigation Delete on one of its cells presses it. "
                     + "Remove the item in the handler and the grid shows the rows again, with focus on the row that "
                     + "took the deleted one's place. A handler that sets the delete's `Error` keeps the row, and the "
                     + "grid shows why above the rows until the next delete or refresh, and reads it out. A grid that "
-                    + "edits in batches offers no Delete button.", typeof(DataGridDeleteExample)),
+                    + "edits in batches deletes with `Deletable` instead, as "
+                    + "[Edit in batches](components/data-grid#batch-editing) shows.", typeof(DataGridDeleteExample)),
                 new("add-rows", "Add rows", "In a grid that edits by row, `NewItem` and `OnRowAdd` give the grid an "
                     + "Add row button above the rows. It opens a new row at the top, made by `NewItem`, with a field "
                     + "for each editable cell, and the row saves and cancels as a row's edit does; focus leaving it "
@@ -13573,6 +13578,9 @@ public static class ExampleCatalog
                 new(["Escape"], "Clears the range.") { When = "With `CellSelection` and a range" },
                 new(["Delete"], "Deletes the row, as its Delete button does.")
                     { When = "On a cell, with cell navigation and `OnRowDelete`, unless the grid edits in batches" },
+                new(["Delete"], "Marks the row deleted, or restores a row already marked, as its Delete button "
+                    + "does.")
+                    { When = "On a cell, with cell navigation, in a grid that edits in batches with `Deletable`" },
                 new(["Ctrl+V", "Cmd+V"], "Pastes cells as changes, starting at the cell in focus or at a selected "
                     + "range's first cell; one value fills the range.") { When = "In a grid that edits in batches" },
                 new(["Enter"], "In a value field, applies the filter.") { When = "In a filter menu" },
@@ -13587,9 +13595,15 @@ public static class ExampleCatalog
             [
                 "It is a native `table` named by `AriaLabel`, with a header cell for each column, so screen readers "
                     + "read each cell with its column.",
-                "With `OnRowDelete`, each row's Delete button is named \"Delete\" and the row's label, such as "
+                "With `OnRowDelete`, or `Deletable` in a grid that edits in batches, each row's Delete button is "
+                    + "named \"Delete\" and the row's label, such as "
                     + "\"Delete Pine Hollow\", under a column whose hidden header is \"Delete\" (`Labels.DeleteRow` "
                     + "and `Labels.Delete`).",
+                "In a grid that edits in batches, a row's Delete button is a toggle: `aria-pressed` says whether the "
+                    + "row is marked deleted. A cell with an unsaved change is described as \"Changed\" "
+                    + "(`Labels.Changed`), and each cell of a marked row as \"Marked for deletion\" "
+                    + "(`Labels.MarkedDeleted`) instead, since its changes aren't saved; they come back if the row is "
+                    + "restored.",
                 "With `NewItem` and `OnRowAdd`, the Add row button reads \"Add row\" (`Labels.AddRow`), and the new "
                     + "row's Save and Cancel buttons are named for it as \"new row\" (`Labels.NewRow`), such as "
                     + "\"Save new row\".",
@@ -13617,6 +13631,9 @@ public static class ExampleCatalog
                 "Every change of sort is read out, such as \"Sorted by Name, ascending.\"",
                 "A deleted row is read out, such as \"Pine Hollow deleted.\", or why the app kept it, such as "
                     + "\"Eagle Ridge has bookings.\"",
+                "In a grid that edits in batches, marking a row deleted is read out, such as \"Eagle Ridge marked "
+                    + "for deletion.\", and so is restoring it, such as \"Eagle Ridge restored.\" "
+                    + "(`Labels.RowMarkedDeleted` and `Labels.RowRestored`).",
                 "A saved new row is read out as \"Row added.\" (`Labels.RowAdded`), or why the app turned it down, "
                     + "such as \"There is already a trail called Pine Hollow.\"",
                 "A paste is read out, such as \"Cells pasted: 4\", or why nothing was pasted, such as \"Nothing was "
@@ -13653,6 +13670,7 @@ public static class ExampleCatalog
                 "While rows load the table is `aria-busy`.",
                 "With `CellNavigation`, or an `Editable` column, the table takes the ARIA grid role, and rows say "
                     + "whether they are selected with `aria-selected`.",
+                "In a grid that edits in batches, marking or restoring a row leaves focus where it is.",
                 "After a delete, focus moves to the row that took the deleted one's place, or the new last row: to "
                     + "its first cell with cell navigation, or else to its Delete button; with no row left, it moves "
                     + "to the empty row. While the app's reason for keeping a row shows, that row's Delete button "
@@ -13774,7 +13792,8 @@ public static class ExampleCatalog
                 new("bands", "A row of group headings above the column headers."),
                 new("band", "A group's heading, across its columns."),
                 new("detail-toggle", "A row's button that opens and closes its details."),
-                new("delete", "A row's Delete button, with `OnRowDelete`."),
+                new("delete", "A row's Delete button, with `OnRowDelete`, or `Deletable` in a grid that edits in "
+                    + "batches, where `aria-pressed` says whether the row is marked deleted."),
                 new("delete-error", "Why the app kept a row it was asked to delete, above the rows."),
                 new("detail", "The row of details under a row whose details are open."),
                 new("detail-cell", "The one cell of a detail row, which holds the `DetailTemplate`."),
@@ -13783,7 +13802,8 @@ public static class ExampleCatalog
                 new("total-label", "The name of a total, such as \"Sum\", before its value."),
                 new("totals-name",
                     "A totals row's name for screen readers, hidden at the start of the first column's cell."),
-                new("row", "One row; the row being added carries `data-new`."),
+                new("row", "One row; the row being added carries `data-new`, and a row marked deleted in a grid "
+                    + "that edits in batches carries `data-deleted`."),
                 new("placeholder", "A row a large grid hasn't loaded yet."),
                 new("editor", "The field that edits a cell."),
                 new("row-actions", "The Save and Cancel buttons of a row that's being edited."),
@@ -13831,7 +13851,8 @@ public static class ExampleCatalog
                 "In bUnit, `cut.Tb().Grid(\"Trails\")` from `Trailblazor.Testing` has the same `Row`, `SelectAsync`, "
                     + "`SortAsync` and `FilterAsync`, and `Cell(row, column)` finds a cell.",
                 "With `OnRowDelete`, `DeleteRowAsync(row)` presses a row's Delete button and waits for the app, in "
-                    + "bUnit and in Playwright. A refusal's text is in `[data-part=delete-error]`.",
+                    + "bUnit and in Playwright. A refusal's text is in `[data-part=delete-error]`. In a grid that "
+                    + "edits in batches with `Deletable`, it marks the row deleted, or restores a row already marked.",
                 "With `NewItem` and `OnRowAdd`, `AddRowAsync()` presses Add row, in bUnit and in Playwright, and "
                     + "`NewRow` is the new row, `tr[data-new]`. `Rows` and `RowCount` leave it out until it's saved.",
                 "Fill in the new row with `cut.Tb().Within(() => grid.NewRow)` in bUnit, or `grid.NewRow` in "
@@ -13895,8 +13916,8 @@ public static class ExampleCatalog
                 "`ExportCsvAsync` returns the text itself.",
                 "The download's `SuggestedFilename` is the export's name (`ExportFileName`, or else the grid's "
                     + "label) with its extension, but in WebKit on Linux it has an underscore for each space.",
-                "Rows carry `data-key` and `data-selected`, the row being added carries `data-new`, and a filtered "
-                    + "column's header carries `data-filtered`.",
+                "Rows carry `data-key` and `data-selected`, the row being added carries `data-new`, a row marked "
+                    + "deleted carries `data-deleted`, and a filtered column's header carries `data-filtered`.",
                 "Cells carry `data-column`, the field's path such as `Shipping.City` unless the column has an `Id`.",
                 "A pinned column's header and cells also carry `data-pinned`, `start` or `end`.",
                 "A filter cell's `data-value` holds its applied values as invariant text, with a range's two dates "
@@ -13914,10 +13935,10 @@ public static class ExampleCatalog
                     + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `filter`, `page`, "
                     + "`page_size`, `select`, `move`, `group`, `expand`, `collapse`, `edit`, `resize`, `reorder`, "
                     + "`hide`, `show`, `open_detail`, `close_detail`, `save_changes`, `discard_changes`, `copy`, "
-                    + "`paste`, `delete`, `add`, `export_csv`, `export_excel` or `export_pdf` for each of "
-                    + "those the user does; a `move` also "
-                    + "says whether a `pointer` or the "
-                    + "`keyboard` made it.",
+                    + "`paste`, `delete`, `undo_delete`, `add`, `export_csv`, `export_excel` or `export_pdf` for "
+                    + "each of those the user does; a `move` also says whether a `pointer` or the `keyboard` made it. "
+                    + "In a grid that edits in batches, `delete` and `undo_delete` count marking and restoring a row, "
+                    + "which is deleted only once the changes are saved.",
                 "A page `ScrollToAsync` moves to, or a group it opens, isn't counted, and which column, filter "
                     + "value, page, group, rows or width were used, what value an edit saved, or what text was "
                     + "pasted, is never recorded.",

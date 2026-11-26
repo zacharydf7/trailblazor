@@ -8238,3 +8238,16 @@ Trailblazor.TbDataGrid<TItem>.OnRowAdd.set -> void
 const Trailblazor.TbStrings.DataGridAddRow = "DataGrid.AddRow" -> string!
 const Trailblazor.TbStrings.DataGridNewRow = "DataGrid.NewRow" -> string!
 const Trailblazor.TbStrings.DataGridRowAdded = "DataGrid.RowAdded" -> string!
+Trailblazor.DataGridLabels.RowMarkedDeleted.get -> string?
+Trailblazor.DataGridLabels.RowMarkedDeleted.init -> void
+Trailblazor.DataGridLabels.RowRestored.get -> string?
+Trailblazor.DataGridLabels.RowRestored.init -> void
+Trailblazor.GridBatchEdit<TItem>.Deleted.get -> System.Collections.Generic.IReadOnlyList<TItem>!
+Trailblazor.GridBatchEdit<TItem>.Deleted.init -> void
+Trailblazor.TbDataGrid<TItem>.Deletable.get -> bool
+Trailblazor.TbDataGrid<TItem>.Deletable.set -> void
+const Trailblazor.TbStrings.DataGridRowMarkedDeleted = "DataGrid.RowMarkedDeleted" -> string!
+const Trailblazor.TbStrings.DataGridRowRestored = "DataGrid.RowRestored" -> string!
+Trailblazor.DataGridLabels.MarkedDeleted.get -> string?
+Trailblazor.DataGridLabels.MarkedDeleted.init -> void
+const Trailblazor.TbStrings.DataGridMarkedDeleted = "DataGrid.MarkedDeleted" -> string!

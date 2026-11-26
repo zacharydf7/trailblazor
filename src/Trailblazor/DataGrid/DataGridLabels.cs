@@ -102,6 +102,21 @@ public sealed record DataGridLabels
     /// the app's text for <see cref="TbStrings.DataGridRowDeleted"/>.</summary>
     public string? RowDeleted { get; init; }
 
+    /// <summary>Said once a row of a grid that edits in batches is marked deleted; <c>{0}</c> is the row's label: "{0}
+    /// marked for deletion." in English. Leave it null for the app's text for
+    /// <see cref="TbStrings.DataGridRowMarkedDeleted"/>.</summary>
+    public string? RowMarkedDeleted { get; init; }
+
+    /// <summary>Said once a row marked deleted is restored, with its Delete button pressed again; <c>{0}</c> is the
+    /// row's label: "{0} restored." in English. Leave it null for the app's text for
+    /// <see cref="TbStrings.DataGridRowRestored"/>.</summary>
+    public string? RowRestored { get; init; }
+
+    /// <summary>Tells screen readers a cell's row is marked deleted in a grid that edits in batches: "Marked for
+    /// deletion" in English. Leave it null for the app's text for <see cref="TbStrings.DataGridMarkedDeleted"/>.
+    /// </summary>
+    public string? MarkedDeleted { get; init; }
+
     /// <summary>The text of a data grid's button that adds a row: "Add row" in English. Leave it null for the app's
     /// text for <see cref="TbStrings.DataGridAddRow"/>.</summary>
     public string? AddRow { get; init; }

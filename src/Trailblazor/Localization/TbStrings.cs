@@ -1612,6 +1612,18 @@ public static class TbStrings
     /// <summary>"{0} deleted.": said once a data grid row is deleted; {0} is the row's label.</summary>
     public const string DataGridRowDeleted = "DataGrid.RowDeleted";
 
+    /// <summary>"{0} marked for deletion.": said once a row of a data grid that edits in batches is marked deleted; {0}
+    /// is the row's label.</summary>
+    public const string DataGridRowMarkedDeleted = "DataGrid.RowMarkedDeleted";
+
+    /// <summary>"{0} restored.": said once a data grid row marked deleted is restored; {0} is the row's label.
+    /// </summary>
+    public const string DataGridRowRestored = "DataGrid.RowRestored";
+
+    /// <summary>"Marked for deletion": tells screen readers a cell's row is marked deleted in a data grid that edits
+    /// in batches.</summary>
+    public const string DataGridMarkedDeleted = "DataGrid.MarkedDeleted";
+
     /// <summary>"Add row": the text of a data grid's button that adds a row.</summary>
     public const string DataGridAddRow = "DataGrid.AddRow";
 
@@ -2486,6 +2498,9 @@ public static class TbStrings
         [DataGridDelete] = "Delete",
         [DataGridDeleteRow] = "Delete {0}",
         [DataGridRowDeleted] = "{0} deleted.",
+        [DataGridRowMarkedDeleted] = "{0} marked for deletion.",
+        [DataGridRowRestored] = "{0} restored.",
+        [DataGridMarkedDeleted] = "Marked for deletion",
         [DataGridAddRow] = "Add row",
         [DataGridNewRow] = "new row",
         [DataGridRowAdded] = "Row added.",

@@ -1917,17 +1917,18 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
     }
 
     /// <summary>Presses the Delete button of the row with a cell whose text is exactly <paramref name="row"/>, as a
-    /// user does, and waits until the grid has run <c>OnRowDelete</c> and shown the rows again. Throws when the grid
-    /// offers no Delete button, which takes an <c>OnRowDelete</c> and an <c>EditMode</c> other than <c>Batch</c>.
-    /// </summary>
+    /// user does, and waits until the grid has run <c>OnRowDelete</c> and shown the rows again or, in a grid that
+    /// edits in batches, until it has marked the row deleted, or restored a row already marked. Throws when the grid
+    /// offers no Delete button, which takes an <c>OnRowDelete</c> or, in a grid that edits in batches,
+    /// <c>Deletable</c> and an <c>OnBatchSave</c>.</summary>
     public async Task DeleteRowAsync(string row)
     {
         await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
         var button = Row(row).Locator(":scope > td > [data-part=delete]");
         if (await button.CountAsync() == 0)
         {
-            throw new InvalidOperationException("The grid offers no Delete button; give it an OnRowDelete and an "
-                + "EditMode other than Batch.");
+            throw new InvalidOperationException("The grid offers no Delete button; give it an OnRowDelete or, in a "
+                + "batch grid, Deletable and an OnBatchSave.");
         }
 
         await AnsweredAsync(() => button.ClickAsync());

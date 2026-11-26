@@ -1,0 +1,20 @@
+@page "/grid-batch-delete"
+
+@* A grid that edits in batches, whose deletes wait for Save changes. *@
+<TbDataGrid TItem="Hike" Items="_hikes" AriaLabel="Hikes" KeySelector="hike => hike.Id" CellNavigation
+            EditMode="GridEditMode.Batch" Deletable OnBatchSave="Save">
+    <TbColumn Field="hike => hike.Name" Editable />
+</TbDataGrid>
+
+@code {
+    private readonly List<Hike> _hikes = [new(1, "Pine Hollow"), new(2, "Eagle Ridge")];
+
+    public sealed class Hike(int id, string name)
+    {
+        public int Id { get; } = id;
+
+        public string Name { get; set; } = name;
+    }
+
+    private void Save(GridBatchEdit<Hike> batch) => _hikes.RemoveAll(hike => batch.Deleted.Contains(hike));
+}
