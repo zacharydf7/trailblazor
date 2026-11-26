@@ -129,6 +129,10 @@ public sealed record DataGridLabels
     /// <see cref="TbStrings.DataGridRowAdded"/>.</summary>
     public string? RowAdded { get; init; }
 
+    /// <summary>Said once a row added to a grid that edits in batches is deleted before it's saved: "New row removed."
+    /// in English. Leave it null for the app's text for <see cref="TbStrings.DataGridNewRowRemoved"/>.</summary>
+    public string? NewRowRemoved { get; init; }
+
     /// <summary>Names the column of a data grid's selection buttons: "Select" in English. Leave it null for the app's
     /// text for <see cref="TbStrings.DataGridSelect"/>.</summary>
     public string? Select { get; init; }

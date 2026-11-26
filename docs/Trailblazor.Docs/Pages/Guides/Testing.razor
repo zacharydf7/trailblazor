@@ -773,8 +773,9 @@
                             <code>CollapseAsync</code>. With <code>OnRowDelete</code>,
                             <code>DeleteRowAsync(row)</code> presses a row's Delete button, as it does in a grid
                             that edits in batches with <code>Deletable</code>. With <code>NewItem</code>
-                            and <code>OnRowAdd</code>, <code>AddRowAsync</code> presses Add row, and
-                            <code>NewRow</code> is the new row. In a grid that edits in batches,
+                            and <code>OnRowAdd</code>, or <code>NewItem</code> and <code>OnBatchSave</code> in a grid
+                            that edits in batches, <code>AddRowAsync</code> presses Add row, and <code>NewRow</code> is
+                            the new row, in a batch grid the newest one added. In a grid that edits in batches,
                             <code>SaveChangesAsync</code> and <code>DiscardChangesAsync</code> press its Save
                             changes and
                             Discard changes buttons. In a grid with <code>CellSelection</code>,

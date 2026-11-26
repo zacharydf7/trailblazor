@@ -8251,3 +8251,8 @@ const Trailblazor.TbStrings.DataGridRowRestored = "DataGrid.RowRestored" -> stri
 Trailblazor.DataGridLabels.MarkedDeleted.get -> string?
 Trailblazor.DataGridLabels.MarkedDeleted.init -> void
 const Trailblazor.TbStrings.DataGridMarkedDeleted = "DataGrid.MarkedDeleted" -> string!
+Trailblazor.DataGridLabels.NewRowRemoved.get -> string?
+Trailblazor.DataGridLabels.NewRowRemoved.init -> void
+Trailblazor.GridBatchEdit<TItem>.Added.get -> System.Collections.Generic.IReadOnlyList<TItem>!
+Trailblazor.GridBatchEdit<TItem>.Added.init -> void
+const Trailblazor.TbStrings.DataGridNewRowRemoved = "DataGrid.NewRowRemoved" -> string!

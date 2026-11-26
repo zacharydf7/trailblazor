@@ -126,9 +126,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private readonly OrderedDictionary<(object Key, string Column), GridCellEdit<TItem>> _changes = [];
     // The rows a batch grid holds as deleted until the changes are saved, by key, in the order they were deleted.
     private readonly OrderedDictionary<object, TItem> _deleted = [];
+    // The rows the user added to a batch grid, each under a key of its own, in the order they were added.
+    private readonly OrderedDictionary<object, TItem> _added = [];
     private string? _batchError;
     private Task? _batchSave;
     private HashSet<(object Key, string Column)> _sending = [];
+    private HashSet<object> _sendingAdded = [];
     private readonly string _changedId = $"tb-grid-changed-{Guid.NewGuid():N}";
     private readonly string _deletedId = $"tb-grid-deleted-{Guid.NewGuid():N}";
     private readonly string _detailPrefix = $"tb-grid-detail-{Guid.NewGuid():N}";
@@ -160,10 +163,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             byValue: true);
         _choose = new(key => () => AnsweredAsync(() => OnRowAsync(key, ChooseAsync)), byValue: true);
         _toggleDetail = new(key => () => AnsweredAsync(() => OnRowAsync(key, ToggleDetailAsync)), byValue: true);
-        _deleteRow = new(key => () => AnsweredAsync(() => OnRowAsync(key,
+        _deleteRow = new(key => () => AnsweredAsync(() => IsAdded(key) ? RemoveAddedAsync(key) : OnRowAsync(key,
             item => EditMode == GridEditMode.Batch ? ToggleDeletedAsync(item) : DeleteRowAsync(item))), byValue: true);
         _toggleChildren = new(key => () => AnsweredAsync(() => OnRowAsync(key, ToggleChildrenAsync)), byValue: true);
-        _startEdit = new(cell => () => OnRowAsync(cell.Item1, item => StartEditAsync(item, cell.Item2)));
+        _startEdit = new(cell => () => StartEditAsync(cell.Item1, cell.Item2));
         _toggleGroup = new(key => () => ToggleGroup(key), byValue: true);
         _applyOnEnter = new(column => args => ApplyOnEnterAsync(column, args));
     }
@@ -493,7 +496,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     /// <summary>Makes the item for a row the user adds, such as one with its defaults set. With
     /// <see cref="OnRowAdd"/>, a grid whose <see cref="EditMode"/> is <see cref="GridEditMode.Row"/> offers an Add row
-    /// button.</summary>
+    /// button, and so does one whose <see cref="EditMode"/> is <see cref="GridEditMode.Batch"/> with an
+    /// <see cref="OnBatchSave"/>. There, each press adds a row at the top with its first editable cell open, and the
+    /// row is kept as a change until the changes are saved or discarded; its Delete button, with
+    /// <see cref="Deletable"/>, removes it. Saving checks the cells of an added row the user never opened, too.
+    /// <see cref="OnBatchSave"/> gets the new items in <see cref="GridBatchEdit{TItem}.Added"/>.</summary>
     [Parameter]
     public Func<TItem>? NewItem { get; set; }
 
@@ -508,9 +515,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public EventCallback<GridRowEdit<TItem>> OnRowAdd { get; set; }
 
-    /// <summary>Raised with every change, and with <see cref="Deletable"/> every row marked deleted, when the user
-    /// saves the changes of a grid whose <see cref="EditMode"/> is <see cref="GridEditMode.Batch"/>; apply them to the
-    /// items, or save them, and the grid shows the rows again.
+    /// <summary>Raised with every change, every row marked deleted with <see cref="Deletable"/>, and every row added
+    /// with <see cref="NewItem"/>, when the user saves the changes of a grid whose <see cref="EditMode"/> is
+    /// <see cref="GridEditMode.Batch"/>; apply them to the items, or save them, and the grid shows the rows again.
     /// Without it, each value is set on its item when its column's field is a property or field the grid can set.
     /// A change holds the item it was made on, so if the rows can reload before a save, set <see cref="KeySelector"/>
     /// and look the item up by its key.</summary>
@@ -519,10 +526,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     /// <summary>Whether a <see cref="GridEditMode.Batch"/> grid holds changes not yet saved, such as to ask before the
     /// user leaves the page.</summary>
-    public bool HasChanges => _changes.Count > 0 || _deleted.Count > 0;
+    public bool HasChanges => _changes.Count > 0 || _deleted.Count > 0 || _added.Count > 0;
 
-    // A deleted row's own changes aren't saved, so they don't count.
-    private int ChangeCount => _changes.Keys.Count(key => !_deleted.ContainsKey(key.Key)) + _deleted.Count;
+    // A deleted row's own changes aren't saved, and an added row counts once, however many of its cells changed.
+    private int ChangeCount => _changes.Keys.Count(key => !_deleted.ContainsKey(key.Key) && !IsAdded(key.Key))
+        + _deleted.Count + _added.Count;
 
     /// <summary>Shows the rows as loading, such as while the page fetches <see cref="Items"/>: a message while there
     /// are no rows yet, and a bar under the header while rows already shown reload. A grid with a
@@ -1029,6 +1037,28 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         await done.Task;
     }
 
+    // Rows added to a batch grid show at the top, the newest first, each keyed by its own key.
+    private void AddedRows(RenderTreeBuilder builder)
+    {
+        foreach (var (key, item) in _added.Reverse())
+        {
+            builder.OpenComponent<GridRow<TItem>>(0);
+            builder.SetKey(key);
+            builder.AddComponentParameter(1, nameof(GridRow<TItem>.Item), item);
+            builder.AddComponentParameter(2, nameof(GridRow<TItem>.Version), _rowVersion);
+            builder.AddComponentParameter(3, nameof(GridRow<TItem>.Editing),
+                _edit is { } edit && Equals(edit.Key, key) ? (edit, _editVersion) : null);
+            builder.AddComponentParameter(4, nameof(GridRow<TItem>.ChildContent),
+                Row(item, key, false, -1, null, AddedLabelOf(key), false, null));
+            builder.CloseComponent();
+        }
+    }
+
+    // An added row is named by the first text typed into it, so several can be told apart, or else as a new row.
+    private string AddedLabelOf(object key) => _shownColumns
+        .Select(column => ChangeOf(key, column) is { } change ? column.TextOf(change.Value) : null)
+        .FirstOrDefault(text => !string.IsNullOrEmpty(text)) ?? Text(Labels.NewRow, TbStrings.DataGridNewRow);
+
     // Each row is a component of its own, so one row can draw again without the rest; it's added here because markup
     // can't name an internal component.
     private void Rows(RenderTreeBuilder builder)
@@ -1235,15 +1265,14 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         var column = columnId is null ? editable[0] : editable.FirstOrDefault(shown => shown.Key == columnId)
             ?? throw new ArgumentException($"No shown, editable column has the id \"{columnId}\".", nameof(columnId));
-        await StartEditAsync(item, column);
+        await StartEditAsync(KeyOf(item), column);
         StateHasChanged();
     }
 
     // An edit already open is saved before another starts, and stays open when it can't be. In row mode an edit covers
     // every editable cell of the row, starting in the one asked for.
-    private async Task StartEditAsync(TItem item, TbColumn<TItem> column)
+    private async Task StartEditAsync(object key, TbColumn<TItem> column)
     {
-        var key = KeyOf(item);
         if (IsDeleted(key))
         {
             return;
@@ -1257,12 +1286,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         // The save just made may have replaced the row's item, or filtered or sorted the row out of view.
         var at = _rows.FindIndex(row => Equals(KeyOf(row), key));
-        if (at < 0)
+        if (at < 0 && !_added.ContainsKey(key))
         {
             return;
         }
 
-        item = _rows[at];
+        var item = at >= 0 ? _rows[at] : _added[key];
         var columns = EditMode == GridEditMode.Row ? _shownColumns.Where(CanEdit) : [column];
         _edit = new(item, key, column, [.. columns.Select(editable => new CellEdit(editable,
             ChangeOf(key, editable) is { } change ? change.Value : editable.ValueOf(item)))]);
@@ -1279,6 +1308,17 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         var item = NewItem!();
         var columns = _shownColumns.Where(column => column.Editor != ColumnEditor.None).ToList();
+        // A batch grid keeps the new row as a change, and its first cell opens for editing.
+        if (EditMode == GridEditMode.Batch)
+        {
+            var key = new object();
+            _added[key] = item;
+            _rowVersion++;
+            Telemetry.Used(TelemetryName, "add");
+            await StartEditAsync(key, columns[0]);
+            return;
+        }
+
         _edit = new(item, NewRowKey, columns[0], [.. columns.Select(column => new CellEdit(column,
             column.ValueOf(item)))]);
         _editVersion++;
@@ -1490,14 +1530,40 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             return;
         }
 
+        // An added row's cells the user never opened are checked too, as a row edit checks its new row.
+        foreach (var (key, item) in _added)
+        {
+            foreach (var column in _shownColumns.Where(column => CanEdit(column) && ChangeOf(key, column) is null))
+            {
+                if (CheckEdit(item, new CellEdit(column, column.ValueOf(item)), out _) is { } invalid)
+                {
+                    _batchError = invalid;
+                    Announcer.Assertive(invalid);
+                    return;
+                }
+            }
+        }
+
         var sent = _changes.Where(pair => !IsDeleted(pair.Key.Key)).ToList();
         var deleted = _deleted.ToList();
+        var added = _added.ToList();
+        // As with a row edit's new row, each value typed into an added row is set on its item where the grid can.
+        foreach (var (key, change) in sent.Where(pair => IsAdded(pair.Key.Key)))
+        {
+            if (_columns.FirstOrDefault(column => column.Key == key.Column) is { CanSet: true } column)
+            {
+                column.SetValue(change.Item, change.Value);
+            }
+        }
+
         var batch = new GridBatchEdit<TItem>([.. sent.Select(pair => pair.Value)])
         {
             Deleted = [.. deleted.Select(pair => pair.Value)],
+            Added = [.. added.Select(pair => pair.Value)],
         };
         _batchError = null;
         _sending = [.. sent.Select(pair => pair.Key)];
+        _sendingAdded = [.. added.Select(pair => pair.Key)];
         try
         {
             if (OnBatchSave.HasDelegate)
@@ -1515,6 +1581,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         finally
         {
             _sending = [];
+            _sendingAdded = [];
         }
 
         if (batch.Error is { } error)
@@ -1544,6 +1611,17 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             }
         }
 
+        // An added row's changes made while its save was on its way move onto the saved row, for the next save.
+        foreach (var (key, item) in added)
+        {
+            _added.Remove(key);
+            foreach (var (change, edit) in _changes.Where(pair => Equals(pair.Key.Key, key)).ToList())
+            {
+                _changes.Remove(change);
+                _changes[(KeyOf(item), change.Column)] = edit;
+            }
+        }
+
         Announcer.Polite(Text(Labels.ChangesSaved, TbStrings.DataGridChangesSaved));
         await RefreshAsync();
     }
@@ -1557,6 +1635,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _editVersion++;
         _changes.Clear();
         _deleted.Clear();
+        _added.Clear();
         _batchError = null;
         RenderRows();
         return Task.CompletedTask;
@@ -1640,7 +1719,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         await NextRenderAsync();
         if (_handle is not null && _edit is null)
         {
-            await _handle.InvokeVoidAsync("focusCell", IdOf(edit.Item), edit.Start.Key);
+            // A new row from a row edit is found by its item's key once saved; any other row keeps its own key.
+            await _handle.InvokeVoidAsync("focusCell", IsNew(edit.Key) ? IdOf(edit.Item) : _ids.IdOf(edit.Key),
+                edit.Start.Key);
         }
     }
 
@@ -1800,8 +1881,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private bool IsDeleted(object key) => _deleted.ContainsKey(key);
 
-    private bool CanAdd => NewItem is not null && OnRowAdd.HasDelegate && EditMode == GridEditMode.Row && !Virtualize
-        && _shownColumns.Any(column => column.Editor != ColumnEditor.None);
+    private bool CanAdd => NewItem is not null && !Virtualize
+        && _shownColumns.Any(column => column.Editor != ColumnEditor.None)
+        && (EditMode == GridEditMode.Row ? OnRowAdd.HasDelegate
+            : EditMode == GridEditMode.Batch && OnBatchSave.HasDelegate);
+
+    private bool IsAdded(object key) => _added.ContainsKey(key);
 
     private GridEdit? Adding => _edit is { } edit && IsNew(edit.Key) ? edit : null;
 
@@ -2835,6 +2920,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                 Items is null ? (rows, "the rows the provider returned") : (Items, nameof(Items)));
         }
 
+        // Rows added to a batch grid keep their handlers and ids too, though they aren't among the items.
+        shown.UnionWith(_added.Keys);
+
         _rows = rows;
         _lines = lines;
         TakeReloadedItems(rows);
@@ -3215,6 +3303,50 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // A row's handlers find its item by key as they run, since the parent can pass a new instance with the same key.
     private Task OnRowAsync(object key, Func<TItem, Task> handle) =>
         _rows.FindIndex(row => Equals(KeyOf(row), key)) is var at and >= 0 ? handle(_rows[at]) : Task.CompletedTask;
+
+    // An added row that is deleted goes at once, with what was typed into it, since nothing has been saved. Focus goes
+    // to the row in its place: the next added row, or the one before at the end, then the first row, then Add row.
+    private async Task RemoveAddedAsync(object key)
+    {
+        // A row already on its way to the app is saved with the batch, so it stays.
+        if (_sendingAdded.Contains(key))
+        {
+            return;
+        }
+
+        List<object> shown = [.. _added.Keys.Reverse()];
+        var at = shown.IndexOf(key);
+        shown.RemoveAt(at);
+        _added.Remove(key);
+        foreach (var change in _changes.Keys.Where(change => Equals(change.Key, key)).ToList())
+        {
+            _changes.Remove(change);
+        }
+
+        if (_edit is { } open && Equals(open.Key, key))
+        {
+            _edit = null;
+            _editVersion++;
+        }
+
+        _rowVersion++;
+        Telemetry.Used(TelemetryName, "delete");
+        Announcer.Polite(Text(Labels.NewRowRemoved, TbStrings.DataGridNewRowRemoved));
+        await NextRenderAsync();
+        var column = _shownColumns.FirstOrDefault()?.Key;
+        if (_handle is not null && shown.Count > 0)
+        {
+            await _handle.InvokeVoidAsync("focusCell", _ids.IdOf(shown[Math.Min(at, shown.Count - 1)]), column);
+        }
+        else if (_handle is not null && _rows.Count > 0)
+        {
+            await _handle.InvokeVoidAsync("focusCell", IdOf(_rows[0]), column);
+        }
+        else if (_addButton is not null)
+        {
+            await _addButton.FocusAsync();
+        }
+    }
 
     // A batch grid keeps a delete as a change until the changes are saved or discarded, and a second press restores
     // the row. An edit of the row is dropped, since its cells can't be edited while it's deleted.

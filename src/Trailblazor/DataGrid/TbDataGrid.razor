@@ -282,6 +282,7 @@
                 }
             </thead>
             <tbody @ref="_body" data-sortable="@(CanReorder ? "" : null)">
+                @AddedRows
                 @if (Adding is { } adding)
                 {
                     @Row(adding.Item, NewRowKey, false, -1, null, Text(Labels.NewRow, TbStrings.DataGridNewRow), false,
@@ -306,7 +307,7 @@
                         <td colspan="@DrawnCount">@(Labels.Loading ?? Localizer[TbStrings.DataGridLoading])</td>
                     </tr>
                 }
-                else if (HasNoRows && Adding is null)
+                else if (HasNoRows && Adding is null && _added.Count == 0)
                 {
                     <tr data-part="empty" aria-rowindex="@(Virtualize ? HeaderRowCount + 1 : null)"
                         class="tb-data-grid__status">
@@ -433,7 +434,8 @@
     private RenderFragment Row(TItem item, object key, bool selected, int at, string? rowClass, string? label,
         bool expanded, TreePlace? tree) =>
         @<tr @ref="_rowRefs[key]" data-part="row" data-key="@_ids.IdOf(key)" data-selected="@(selected ? "" : null)"
-             data-new="@(IsNew(key) ? "" : null)" data-index="@(CanReorder && !IsNew(key) ? at : null)"
+             data-new="@(IsNew(key) || IsAdded(key) ? "" : null)"
+             data-index="@(CanReorder && !IsNew(key) && !IsAdded(key) ? at : null)"
              data-deleted="@(IsDeleted(key) ? "" : null)"
              aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)" aria-selected="@AriaSelected(selected)"
              aria-level="@tree?.Level" aria-posinset="@tree?.Position" aria-setsize="@tree?.SetSize"
@@ -453,6 +455,10 @@
             @if (IsNew(key))
             {
                 @BlankLeadCells
+            }
+            else if (IsAdded(key))
+            {
+                @AddedLeadCells(key, label!)
             }
             else
             {
@@ -514,6 +520,41 @@
             }
         </tr>;
 
+    // A batch grid's Delete button marks a row deleted, so it says whether it's pressed; an added row's removes it.
+    private RenderFragment DeleteCell(object key, string label) =>
+        @<td data-pinned="@LeadPin" style="@LeadStyle(DeleteSlot)" class="tb-data-grid__delete">
+            <button type="button" data-part="delete" class="tb-data-grid__delete-button"
+                    aria-label="@Format(Labels.DeleteRow, TbStrings.DataGridDeleteRow, label)"
+                    aria-describedby="@(_deleteRefused?.Key is { } refused && Equals(refused, key)
+                        ? DeleteRefusedId : null)"
+                    aria-pressed="@(EditMode == GridEditMode.Batch && !IsAdded(key) ? IsDeleted(key) ? "true" : "false"
+                                     : null)"
+                    @onclick="_deleteRow.For(key)" @ondblclick:stopPropagation>
+                <TbIcon Icon="BuiltInIcons.Delete" Size="Size.Small" />
+            </button>
+        </td>;
+
+    // A row added to a batch grid can only be deleted, so its other lead cells are blank.
+    private RenderFragment AddedLeadCells(object key, string label) =>
+        @<text>
+            @if (CanReorder)
+            {
+                <td data-pinned="@LeadPin" style="@LeadStyle(0)" class="tb-data-grid__handle"></td>
+            }
+            @if (HasDetails)
+            {
+                <td data-pinned="@LeadPin" style="@LeadStyle(DetailSlot)" class="tb-data-grid__detail-toggle"></td>
+            }
+            @if (CanDelete)
+            {
+                @DeleteCell(key, label)
+            }
+            @if (SelectionMode != SelectionMode.None)
+            {
+                <td data-pinned="@LeadPin" style="@LeadStyle(LeadCount - 1)" class="tb-data-grid__select"></td>
+            }
+        </text>;
+
     // An item's row leads with its move handle, details button, Delete button and selection box.
     private RenderFragment RowLeadCells(TItem item, object key, bool selected, int at, string? label, bool expanded) =>
         @<text>
@@ -540,16 +581,7 @@
             }
             @if (CanDelete)
             {
-                <td data-pinned="@LeadPin" style="@LeadStyle(DeleteSlot)" class="tb-data-grid__delete">
-                    <button type="button" data-part="delete" class="tb-data-grid__delete-button"
-                            aria-label="@Format(Labels.DeleteRow, TbStrings.DataGridDeleteRow, label ?? LabelOf(item))"
-                            aria-describedby="@(_deleteRefused?.Key is { } refused && Equals(refused, key)
-                                ? DeleteRefusedId : null)"
-                            aria-pressed="@(EditMode == GridEditMode.Batch ? IsDeleted(key) ? "true" : "false" : null)"
-                            @onclick="_deleteRow.For(key)" @ondblclick:stopPropagation>
-                        <TbIcon Icon="BuiltInIcons.Delete" Size="Size.Small" />
-                    </button>
-                </td>
+                @DeleteCell(key, label ?? LabelOf(item))
             }
             @if (SelectionMode != SelectionMode.None)
             {

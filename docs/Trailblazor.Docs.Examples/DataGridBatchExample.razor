@@ -1,6 +1,6 @@
 <TbStack Gap="3">
     <TbDataGrid TItem="Trail" Items="_trails" AriaLabel="Trail closures" KeySelector="trail => trail.Id"
-                EditMode="GridEditMode.Batch" Deletable OnBatchSave="Save">
+                EditMode="GridEditMode.Batch" Deletable NewItem="NewTrail" OnBatchSave="Save">
         <TbColumn Field="trail => trail.Name" Editable />
         <TbColumn Field="trail => trail.Region" Editable />
         <TbColumn Field="trail => trail.Reopens" Format="d" Editable />
@@ -32,10 +32,17 @@
         public DateOnly? Reopens { get; set; } = reopens;
     }
 
-    // Every change and delete arrives at once, as a server would take them in one request.
+    // Rows added before a save each need an id of their own, so the next one is kept apart from the list.
+    private int _nextId = 4;
+
+    private Trail NewTrail() => new(_nextId++, "", "", true, null);
+
+    // Every change, delete and new row arrives at once, as a server would take them in one request. A new row's
+    // values are already set on its item, so setting them again from its changes does no harm.
     private void Save(GridBatchEdit<Trail> batch)
     {
         _trails.RemoveAll(trail => batch.Deleted.Contains(trail));
+        _trails.AddRange(batch.Added);
         foreach (var change in batch.Changes)
         {
             switch (change.Column)
@@ -55,7 +62,8 @@
             }
         }
 
-        var saved = batch.Changes.Count + batch.Deleted.Count;
-        _status = $"Saved {saved} {(saved == 1 ? "change" : "changes")}.";
+        var edits = batch.Changes.Count(change => !batch.Added.Contains(change.Item));
+        _status = $"Saved {edits} {(edits == 1 ? "edit" : "edits")}, {batch.Added.Count} added and "
+            + $"{batch.Deleted.Count} deleted.";
     }
 }

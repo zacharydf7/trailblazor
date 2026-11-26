@@ -1,0 +1,20 @@
+@page "/grid-batch-add"
+
+@* A grid that edits in batches, whose added rows wait for Save changes. *@
+<TbDataGrid TItem="Hike" Items="_hikes" AriaLabel="Hikes" KeySelector="hike => hike.Id" CellNavigation
+            EditMode="GridEditMode.Batch" Deletable NewItem="() => new Hike { Id = _nextId++ }"
+            OnBatchSave="(GridBatchEdit<Hike> batch) => _hikes.AddRange(batch.Added)">
+    <TbColumn Field="hike => hike.Name" Editable />
+</TbDataGrid>
+
+@code {
+    private readonly List<Hike> _hikes = [new() { Id = 1, Name = "Pine Hollow" }];
+    private int _nextId = 2;
+
+    public sealed class Hike
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = "";
+    }
+}

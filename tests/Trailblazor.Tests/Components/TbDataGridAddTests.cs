@@ -187,12 +187,10 @@ public class TbDataGridAddTests : BunitContext
         Assert.Single(cut.FindAll("tbody > tr"));
     }
 
-    [Theory]
-    [InlineData(GridEditMode.Cell)]
-    [InlineData(GridEditMode.Batch)]
-    public async Task AddRowAsync_ShouldThrow_WhenGivenAGridThatDoesntEditByRow(GridEditMode mode)
+    [Fact]
+    public async Task AddRowAsync_ShouldThrow_WhenGivenAGridThatEditsByCell()
     {
-        var cut = RenderHikes(mode: mode);
+        var cut = RenderHikes(mode: GridEditMode.Cell);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Grid("Hikes").AddRowAsync());
         Assert.Empty(cut.FindAll("[data-part=add-row]"));

@@ -1634,6 +1634,10 @@ public static class TbStrings
     /// <summary>"Row added.": said once a row the user added to a data grid is saved.</summary>
     public const string DataGridRowAdded = "DataGrid.RowAdded";
 
+    /// <summary>"New row removed.": said once a row added to a data grid that edits in batches is deleted before it's
+    /// saved.</summary>
+    public const string DataGridNewRowRemoved = "DataGrid.NewRowRemoved";
+
     /// <summary>"Changed": tells screen readers a batch grid's cell holds a change not yet saved.</summary>
     public const string DataGridChanged = "DataGrid.Changed";
 
@@ -2504,6 +2508,7 @@ public static class TbStrings
         [DataGridAddRow] = "Add row",
         [DataGridNewRow] = "new row",
         [DataGridRowAdded] = "Row added.",
+        [DataGridNewRowRemoved] = "New row removed.",
         [DataGridChanged] = "Changed",
         [DataGridUnsavedChanges] = "Unsaved changes: {0}",
         [DataGridSaveChanges] = "Save changes",

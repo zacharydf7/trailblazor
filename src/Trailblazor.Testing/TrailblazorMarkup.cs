@@ -5235,25 +5235,27 @@ public sealed class TbGridDriver
         ?? throw new InvalidOperationException($"The row \"{row}\" has no cell under \"{column}\".");
 
     /// <summary>Presses the Delete button of the row with a cell whose text is exactly <paramref name="row"/>, as a
-    /// user does, and returns once the grid has run <c>OnRowDelete</c> or, in a grid that edits in batches, once it
-    /// has marked the row deleted, or restored a row already marked. Throws when the grid offers no Delete button,
-    /// which takes an <c>OnRowDelete</c> or, in a grid that edits in batches, <c>Deletable</c> and an
-    /// <c>OnBatchSave</c>.</summary>
+    /// user does, and returns once the grid has run <c>OnRowDelete</c> or, in a grid that edits in batches, once it has
+    /// marked the row deleted, restored a row already marked, or removed a row added and not yet saved. Throws when
+    /// the grid offers no Delete button, which takes an <c>OnRowDelete</c> or, in a grid that edits in batches,
+    /// <c>Deletable</c> and an <c>OnBatchSave</c>.</summary>
     public async Task DeleteRowAsync(string row) => await (Row(row).QuerySelector(":scope > td > [data-part=delete]")
         ?? throw new InvalidOperationException("The grid offers no Delete button; give it an OnRowDelete or, in a "
             + "batch grid, Deletable and an OnBatchSave.")).ClickAsync(new MouseEventArgs { Detail = 1 });
 
-    /// <summary>Presses the Add row button of a grid whose <c>EditMode</c> is <c>Row</c> and that has a
-    /// <c>NewItem</c> and an <c>OnRowAdd</c>, and returns once the new row is open, in <see cref="NewRow"/>. Throws
-    /// when the grid offers no Add row button.</summary>
+    /// <summary>Presses the Add row button of a grid with a <c>NewItem</c>, whose <c>EditMode</c> is <c>Row</c> and
+    /// that has an <c>OnRowAdd</c>, or is <c>Batch</c> and has an <c>OnBatchSave</c>, and returns once the new row is
+    /// open, in <see cref="NewRow"/>. Throws when the grid offers no Add row button.</summary>
     public async Task AddRowAsync() => await (_find().Closest("[data-part=grid]")
         ?.QuerySelector(":scope > [data-part=toolbar] [data-part=add-row]")
-        ?? throw new InvalidOperationException("The grid offers no Add row button; give it a NewItem, an OnRowAdd, "
-            + "an EditMode of Row and an editable column, without Virtualize."))
+        ?? throw new InvalidOperationException("The grid offers no Add row button; give it a NewItem, an editable "
+            + "column, and either an EditMode of Row with an OnRowAdd or an EditMode of Batch with an OnBatchSave, "
+            + "without Virtualize."))
         .ClickAsync(new MouseEventArgs { Detail = 1 });
 
     /// <summary>The row the user is adding, at the top of the rows, with a field for each editable cell and the row's
-    /// Save and Cancel buttons. Throws when no row is being added.</summary>
+    /// Save and Cancel buttons; in a grid that edits in batches, the newest row added. Throws when no row is being
+    /// added.</summary>
     public IElement NewRow => _find().QuerySelector(":scope > tbody > tr[data-new]")
         ?? throw new InvalidOperationException("The grid isn't adding a row; call AddRowAsync first.");
 

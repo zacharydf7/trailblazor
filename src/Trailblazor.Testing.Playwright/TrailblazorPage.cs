@@ -1917,10 +1917,10 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
     }
 
     /// <summary>Presses the Delete button of the row with a cell whose text is exactly <paramref name="row"/>, as a
-    /// user does, and waits until the grid has run <c>OnRowDelete</c> and shown the rows again or, in a grid that
-    /// edits in batches, until it has marked the row deleted, or restored a row already marked. Throws when the grid
-    /// offers no Delete button, which takes an <c>OnRowDelete</c> or, in a grid that edits in batches,
-    /// <c>Deletable</c> and an <c>OnBatchSave</c>.</summary>
+    /// user does, and waits until the grid has run <c>OnRowDelete</c> and shown the rows again or, in a grid that edits
+    /// in batches, until it has marked the row deleted, restored a row already marked, or removed a row added and
+    /// not yet saved. Throws when the grid offers no Delete button, which takes an <c>OnRowDelete</c> or, in a grid
+    /// that edits in batches, <c>Deletable</c> and an <c>OnBatchSave</c>.</summary>
     public async Task DeleteRowAsync(string row)
     {
         await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
@@ -1934,25 +1934,26 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
         await AnsweredAsync(() => button.ClickAsync());
     }
 
-    /// <summary>Presses the Add row button of a grid whose <c>EditMode</c> is <c>Row</c> and that has a
-    /// <c>NewItem</c> and an <c>OnRowAdd</c>, and waits until the grid has opened the new row, in <see cref="NewRow"/>.
-    /// Throws when the grid offers no Add row button.</summary>
+    /// <summary>Presses the Add row button of a grid with a <c>NewItem</c>, whose <c>EditMode</c> is <c>Row</c> and
+    /// that has an <c>OnRowAdd</c>, or is <c>Batch</c> and has an <c>OnBatchSave</c>, and waits until the grid has
+    /// opened the new row, in <see cref="NewRow"/>. Throws when the grid offers no Add row button.</summary>
     public async Task AddRowAsync()
     {
         await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
         var button = Root.Locator(":scope > [data-part=toolbar] [data-part=add-row]");
         if (await button.CountAsync() == 0)
         {
-            throw new InvalidOperationException("The grid offers no Add row button; give it a NewItem, an OnRowAdd, "
-                + "an EditMode of Row and an editable column, without Virtualize.");
+            throw new InvalidOperationException("The grid offers no Add row button; give it a NewItem, an editable "
+                + "column, and either an EditMode of Row with an OnRowAdd or an EditMode of Batch with an OnBatchSave, "
+                + "without Virtualize.");
         }
 
         await AnsweredAsync(() => button.ClickAsync());
     }
 
     /// <summary>The row the user is adding, at the top of the rows, with a field for each editable cell and the row's
-    /// Save and Cancel buttons.</summary>
-    public ILocator NewRow => Table.Locator(":scope > tbody > tr[data-new]");
+    /// Save and Cancel buttons; in a grid that edits in batches, the newest row added.</summary>
+    public ILocator NewRow => Table.Locator(":scope > tbody > tr[data-new]").First;
 
     /// <summary>Pastes this text at the cell under <paramref name="column"/> in the row with a cell whose text is
     /// exactly <paramref name="row"/>, as Ctrl+V does, and waits until the grid has handled it. Tabs separate the cells
