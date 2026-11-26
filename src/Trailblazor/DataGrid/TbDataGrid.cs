@@ -137,7 +137,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private readonly string _detailPrefix = $"tb-grid-detail-{Guid.NewGuid():N}";
     private IReadOnlyCollection<TItem>? _expandedFromParent;
     private readonly ItemHandlers<(object, TbColumn<TItem>), Func<Task>> _startEdit;
-    private readonly ItemHandlers<GroupKey, Action> _toggleGroup;
+    private readonly ItemHandlers<GroupKey, Func<Task>> _toggleGroup;
     private readonly ItemHandlers<TbColumn<TItem>, Func<KeyboardEventArgs, Task>> _applyOnEnter;
     private bool _columnsChanged;
     private ControlTelemetry? _telemetry;
@@ -167,7 +167,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             item => EditMode == GridEditMode.Batch ? ToggleDeletedAsync(item) : DeleteRowAsync(item))), byValue: true);
         _toggleChildren = new(key => () => AnsweredAsync(() => OnRowAsync(key, ToggleChildrenAsync)), byValue: true);
         _startEdit = new(cell => () => StartEditAsync(cell.Item1, cell.Item2));
-        _toggleGroup = new(key => () => ToggleGroup(key), byValue: true);
+        _toggleGroup = new(key => () => AnsweredAsync(() => ToggleGroupAsync(key)), byValue: true);
         _applyOnEnter = new(column => args => ApplyOnEnterAsync(column, args));
     }
 
@@ -283,8 +283,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// The user picks them, in order, from the "Group by" list of <see cref="TbColumn{TItem}.Groupable"/> columns; bind
     /// it with <c>@bind-Groups</c> to group from code or to save it. Groups sort by their values, in the column's own
     /// direction when it is sorted, and each starts with a heading that shows its row count and opens or closes the
-    /// group. Only rows held in <see cref="Items"/> can be grouped, and with a <see cref="PageSize"/> the
-    /// headings count among a page's rows.</summary>
+    /// group. With a <see cref="DataProvider"/>, the provider groups the rows, as <see cref="GridRequest.Groups"/>
+    /// says, and its groups start closed and load as they open; a grid that virtualizes its rows groups only rows held
+    /// in <see cref="Items"/>. With a <see cref="PageSize"/> the headings count among a page's rows.</summary>
     [Parameter]
     public IReadOnlyList<string>? Groups { get; set; }
 
@@ -294,9 +295,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     /// <summary>Adds a row under each open group with that group's totals, on the columns with an
     /// <see cref="TbColumn{TItem}.Aggregate"/>, <see cref="TbColumn{TItem}.AggregateBy"/> or
-    /// <see cref="TbColumn{TItem}.FooterTemplate"/>, as the totals row under the grid does for every row. Like
-    /// grouping, it works only on rows held in <see cref="Items"/>, and with a <see cref="PageSize"/> these rows count
-    /// among a page's rows, as the headings do.</summary>
+    /// <see cref="TbColumn{TItem}.FooterTemplate"/>, as the totals row under the grid does for every row. With a
+    /// <see cref="DataProvider"/>, each group's totals are its <see cref="GridGroup.Totals"/>. With a
+    /// <see cref="PageSize"/> these rows count among a page's rows, as the headings do.</summary>
     [Parameter]
     public bool GroupTotals { get; set; }
 
@@ -704,7 +705,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         : _lines.Count == 0;
 
     // A grouped grid's lines count headings too, so the rows the filters leave are counted apart.
-    private int RowCount => DataProvider is null ? _matched : _total;
+    private int RowCount => DataProvider is null || ProvidesGroups ? _matched : _total;
 
     private int ColumnCount => _shownColumns.Count + LeadCount;
 
@@ -746,7 +747,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         where column.Key == key && column.CanGroup
         select column;
 
-    private bool HasGroupBy => Items is not null && !IsTree && _columns.Any(column => column.CanGroup);
+    private bool HasGroupBy => (Items is not null || DataProvider is not null && !Virtualize) && !IsTree
+        && _columns.Any(column => column.CanGroup);
 
     // A filter on a column that isn't there, or can't filter, is kept but hides no rows.
     private IEnumerable<(GridFilter Filter, TbColumn<TItem> Column)> AppliedFilters =>
@@ -772,10 +774,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                 $"{nameof(TbDataGrid<TItem>)} takes {nameof(Items)} or a {nameof(DataProvider)}, not both.");
         }
 
-        if (DataProvider is not null && Groups is { Count: > 0 })
+        if (DataProvider is not null && Virtualize && Groups is { Count: > 0 })
         {
-            throw new InvalidOperationException($"{nameof(TbDataGrid<TItem>)} groups only rows held in " +
-                $"{nameof(Items)}, not rows from a {nameof(DataProvider)}.");
+            throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} that virtualizes its rows groups only "
+                + $"rows held in {nameof(Items)}, not rows from a {nameof(DataProvider)}.");
         }
 
         if (ChildrenSelector is not null && LoadChildren is not null)
@@ -1822,7 +1824,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private sealed record GroupTotalsLine(GroupHeading Group, Dictionary<string, object?> Values);
 
-    private sealed record GroupHeading(GroupKey Key, int Level, string Column, string? Value, int Count, bool Open);
+    private sealed record GroupHeading(GroupKey Key, int Level, string Column, string? Value, int Count, bool Open,
+        bool Loading = false);
 
     // A group's column and value within its outer group. As its own type, it also keys the heading apart from every
     // row.
@@ -2303,6 +2306,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             _showForColumns = true;
             var shown = RendererInfo.IsInteractive && TryShowPrerenderedRows();
             _loading = !shown;
+            return;
+        }
+
+        if (ProvidesGroups)
+        {
+            await LoadGroupsAsync(force);
             return;
         }
 
@@ -2878,6 +2887,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         Telemetry.Used(TelemetryName, "group");
         _groups = [.. keys];
         _closedGroups.Clear();
+        _openGroups.Clear();
+        ForgetGroupContents();
         var pageMoved = _page != 1;
         _page = 1;
         var show = ShowAsync(force: false);
@@ -3186,6 +3197,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             _groups = [.. groups];
             _closedGroups.Clear();
+            _openGroups.Clear();
+            ForgetGroupContents();
         }
     }
 
@@ -3595,6 +3608,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             loading.Cancel.Cancel();
         }
+
+        ForgetGroupContents();
 
         _scrollAfterRender?.Done.TrySetResult();
         _nextRender?.TrySetResult();

@@ -5381,6 +5381,42 @@ public sealed class TbGridDriver
     /// hide. A row already closed stays closed.</summary>
     public async Task CollapseAsync(string row) => await SetExpandedAsync(row, false);
 
+    /// <summary>Opens the group headed by the last of these names, such as <c>"Region: North ridge"</c>, with its
+    /// button, so its rows show, and returns once a <c>DataProvider</c> that groups the rows has given them. Name the
+    /// groups it sits in first, outermost first, when its heading shows under more than one. A group already open
+    /// stays open.</summary>
+    public async Task ExpandGroupAsync(params string[] path) => await SetGroupOpenAsync(path, true);
+
+    /// <summary>Closes the group headed by the last of these names, such as <c>"Region: North ridge"</c>, with its
+    /// button, so its rows hide. Name the groups it sits in first, outermost first, when its heading shows under more
+    /// than one. A group already closed stays closed.</summary>
+    public async Task CollapseGroupAsync(params string[] path) => await SetGroupOpenAsync(path, false);
+
+    // A heading is found by its name and those of the headings above it, level by level.
+    private Task SetGroupOpenAsync(string[] path, bool open)
+    {
+        List<IElement> toggles = [];
+        List<string> above = [];
+        foreach (var row in _find().QuerySelectorAll(":scope > tbody > tr[data-part=group]"))
+        {
+            var level = int.Parse(row.GetAttribute("data-level")!, CultureInfo.InvariantCulture);
+            above.RemoveRange(Math.Min(level - 1, above.Count), above.Count - Math.Min(level - 1, above.Count));
+            var toggle = row.QuerySelector("[data-part=group-toggle]")!;
+            above.Add(toggle.QuerySelector(":scope > span:not([aria-hidden])")?.TextContent.Trim() ?? "");
+            if (above.Count >= path.Length && above.Skip(above.Count - path.Length).SequenceEqual(path))
+            {
+                toggles.Add(toggle);
+            }
+        }
+
+        var named = string.Join(" > ", path);
+        var found = toggles.Count == 1 ? toggles[0] : throw new InvalidOperationException(toggles.Count == 0
+            ? $"No group is headed \"{named}\"."
+            : $"{toggles.Count} groups are headed \"{named}\"; name the groups it sits in first.");
+        return found.GetAttribute("aria-expanded") == (open ? "true" : "false") ? Task.CompletedTask
+            : found.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
     private Task SetExpandedAsync(string row, bool expanded)
     {
         var found = Row(row);

@@ -770,7 +770,9 @@
                             drops it on another with <code>DragRowBeforeAsync</code> and <code>DragRowAfterAsync</code>,
                             and
                             opens or closes a tree grid's row with <code>ExpandAsync</code> and
-                            <code>CollapseAsync</code>. With <code>OnRowDelete</code>,
+                            <code>CollapseAsync</code>. <code>ExpandGroupAsync(group)</code> and
+                            <code>CollapseGroupAsync(group)</code> open and close a group by its heading, waiting for
+                            a <code>DataProvider</code>'s rows. With <code>OnRowDelete</code>,
                             <code>DeleteRowAsync(row)</code> presses a row's Delete button, as it does in a grid
                             that edits in batches with <code>Deletable</code>. With <code>NewItem</code>
                             and <code>OnRowAdd</code>, or <code>NewItem</code> and <code>OnBatchSave</code> in a grid

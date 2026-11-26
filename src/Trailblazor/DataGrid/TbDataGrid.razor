@@ -763,12 +763,20 @@
     // A group's heading spans the row, and its button stays in view while the rows scroll sideways.
     private RenderFragment GroupRow(GroupHeading group, int at) =>
         @<tr data-part="group" data-level="@group.Level" aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)"
+             aria-busy="@(group.Loading ? "true" : null)"
              class="@ClassNames.Join("tb-data-grid__group", Classes?.Group)">
             <td colspan="@DrawnCount" style="--_tb-data-grid-group-level: @(group.Level - 1)"
                 class="tb-data-grid__group-cell">
                 <button type="button" data-part="group-toggle" aria-expanded="@(group.Open ? "true" : "false")"
                         class="tb-data-grid__group-toggle" @onclick="_toggleGroup.For(group.Key)">
-                    <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-data-grid__group-chevron" />
+                    @if (group.Loading)
+                    {
+                        <span class="tb-data-grid__tree-spinner" aria-hidden="true"></span>
+                    }
+                    else
+                    {
+                        <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-data-grid__group-chevron" />
+                    }
                     <span>@GroupName(group)</span>
                     <span class="tb-data-grid__group-count">
                         @Format(Labels.GroupCount, TbStrings.DataGridGroupCount, group.Count)

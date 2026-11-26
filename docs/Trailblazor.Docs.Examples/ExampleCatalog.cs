@@ -13308,7 +13308,8 @@ public static class ExampleCatalog
                 new("group-rows", "Group rows", "The rows can be grouped by any `Groupable` column, picked from the "
                     + "\"Group by\" list or set from code through `Groups`. Groups nest in the order they are picked, "
                     + "and each starts with a heading that shows its row count and opens or closes the group. "
-                    + "`GroupTotals` adds a row under each open group with that group's totals.",
+                    + "`GroupTotals` adds a row under each open group with that group's totals. With a "
+                    + "`DataProvider`, see [Groups from a server](components/data-grid#server-groups).",
                     typeof(DataGridGroupExample)),
                 new("totals", "Totals", "A column's `Aggregate` shows its `Sum`, `Average`, `Count`, `Min` or `Max` "
                     + "in a totals row under the rows. Each total covers every row the filters leave, not only the "
@@ -13493,6 +13494,17 @@ public static class ExampleCatalog
                     + "filter as a `Where` must join those with or, or refuse them. The [data grid from a "
                     + "database](recipes/grid-from-database) recipe does this with an EF Core query.",
                     typeof(DataGridServerExample)),
+                new("server-groups", "Groups from a server", "A `DataProvider` can group the rows itself, so the "
+                    + "rows group without all of them loading. With `Groups` set, the grid asks for the top-level "
+                    + "groups, each a `GridGroup` with its value and row count, and they start closed. Opening one "
+                    + "asks for its inner groups or, in the innermost groups, its rows, with `Group` holding the "
+                    + "values of the groups it sits in followed by its own; each comes all at once, without paging, "
+                    + "and the grid pages the headings and rows it shows. A group whose rows fail to load closes "
+                    + "again and raises `OnLoadFailed`, and opening it tries again. A new sort or filter loads the "
+                    + "groups again, and the open ones with them. With `GroupTotals`, each group's totals row shows "
+                    + "its `GridGroup.Totals`, worked out for the request's `Aggregates`, and the top-level request's "
+                    + "`Totals` fill the totals row. A virtualized grid groups only rows held in `Items`.",
+                    typeof(DataGridProviderGroupExample)),
                 new("uncounted-rows", "Rows without a count", "When counting the rows would be slow, a provider can "
                     + "leave `TotalCount` null and set `HasMore` while more rows follow the page, such as by taking "
                     + "one row more than asked. The pager then offers the pages up to the furthest reached and the "
@@ -13527,7 +13539,7 @@ public static class ExampleCatalog
                 typeof(SortableLabels), typeof(ComparisonLabels),
                 typeof(DataGridClasses),
                 typeof(GridRequest),
-                typeof(GridResult<>), typeof(GridSort), typeof(GridFilter), typeof(FilterOperator),
+                typeof(GridResult<>), typeof(GridGroup), typeof(GridSort), typeof(GridFilter), typeof(FilterOperator),
                 typeof(FilterJoin),
                 typeof(GridFilterMode), typeof(GridFilterContext), typeof(ColumnPin), typeof(GridCellEdit<>),
                 typeof(GridCellEditContext<>), typeof(GridEditMode), typeof(GridRowEdit<>), typeof(GridRowDelete<>),
@@ -13701,7 +13713,10 @@ public static class ExampleCatalog
                 "With `Virtualize`, the table's `aria-rowcount` holds the number of rows, headers included, and "
                     + "each drawn row's `aria-rowindex` its place, so screen readers can say where a row is among "
                     + "rows that aren't drawn.",
-                "While rows load the table is `aria-busy`.",
+                "While rows load the table is `aria-busy`, and while a group from a `DataProvider` loads its rows, "
+                    + "its heading row is.",
+                "When a group from a `DataProvider` fails to load its rows, the grid reads out that the rows "
+                    + "failed to load.",
                 "With `CellNavigation`, or an `Editable` column, the table takes the ARIA grid role, and rows say "
                     + "whether they are selected with `aria-selected`.",
                 "A grid's form takes focus in the field of the cell it was opened from, or a new row's first field. "
@@ -13759,6 +13774,9 @@ public static class ExampleCatalog
                     + "once the page is "
                     + "interactive. With a `StateHref`, sorting and paging work before that, as links; the page size "
                     + "picker still waits.",
+                "While prerendering, or on a static page, a grid whose `DataProvider` groups the rows doesn't know "
+                    + "its columns yet, so it asks for its rows without `Groups` and shows them ungrouped; the "
+                    + "provider has to answer that request too. Its groups show once the page is interactive.",
                 "With a `DataProvider` and no `Virtualize`, it asks for its first page while prerendering and shows "
                     + "those rows, without totals. It asks again once the page is interactive, and shows the loading "
                     + "row meanwhile, unless a `PrerenderKey` [keeps the prerendered rows]"
@@ -13772,7 +13790,8 @@ public static class ExampleCatalog
                     + "read. Give the grid rows of a type made for showing, with nothing a user shouldn't see.")
                     { Pitfall = true },
                 new("Some setups throw as the grid renders: `Items` with a `DataProvider`; `Groups` with a "
-                    + "`DataProvider`; a `ChildrenSelector` with a `LoadChildren` or a `DataProvider`; a "
+                    + "`DataProvider` and `Virtualize`; a `ChildrenSelector` with a `LoadChildren` or a "
+                    + "`DataProvider`; a "
                     + "`ChildrenSelector` or `LoadChildren` with `Groups` or `OnMove`, or with `Items` and a "
                     + "`PageSize`; a `DataProvider` and "
                     + "`LoadChildren` with `Virtualize`; and `Virtualize` with a `DetailTemplate`, with a "
@@ -13899,6 +13918,9 @@ public static class ExampleCatalog
                     + "bUnit and in Playwright. A refusal's text is in `[data-part=delete-error]`.",
                 "In a grid that edits in batches with `Deletable`, `DeleteRowAsync(row)` marks the row deleted, "
                     + "restores a row already marked, or removes a row added and not yet saved.",
+                "`ExpandGroupAsync(\"Region: North ridge\")` opens a group by its heading and `CollapseGroupAsync` "
+                    + "closes it, in bUnit and in Playwright; both wait for a `DataProvider`'s rows. Name the outer "
+                    + "groups first for an inner group whose heading shows under more than one.",
                 "With `NewItem` and `OnRowAdd`, or `NewItem` and `OnBatchSave` in a grid that edits in batches, "
                     + "`AddRowAsync()` presses Add row, in bUnit and in Playwright.",
                 "`NewRow` is the new row, `tr[data-new]`, or in a grid that edits in batches the newest one added; "
@@ -14005,8 +14027,8 @@ public static class ExampleCatalog
                     + "action `load`, and an export that fails, in its provider or while the file is built, with the "
                     + "action `export`. Each is logged as a warning whether or not the grid has a `TelemetryName`.",
                 "With a `TelemetryName`, each `DataProvider` call for the rows shown runs in a `TbDataGrid load` "
-                    + "span from the `Trailblazor` source, with the number of rows that came back (see "
-                    + "[tracing](guides/telemetry#tracing)).",
+                    + "span from the `Trailblazor` source, with the number of rows that came back, or for a "
+                    + "provider's groups, the number of groups and rows (see [tracing](guides/telemetry#tracing)).",
             ],
         },
         new("tree-grid", "Tree grid", ExampleCategory.Content,

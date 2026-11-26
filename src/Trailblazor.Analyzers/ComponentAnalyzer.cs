@@ -435,8 +435,9 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         var tree = Set("ChildrenSelector") ? "ChildrenSelector" : Set("LoadChildren") ? "LoadChildren" : null;
         var (parameter, problem) =
             Set("Items") && Set("DataProvider") ? ("DataProvider", "takes Items or a DataProvider, not both")
-            : Set("DataProvider") && Set("Groups")
-                ? ("Groups", "groups only rows held in Items, not rows from a DataProvider")
+            : Set("DataProvider") && Set("Groups") && virtualizes
+                ? ("Groups", "that virtualizes its rows groups only rows held in Items, not rows from a " +
+                    "DataProvider")
             : Set("ChildrenSelector") && Set("LoadChildren")
                 ? ("LoadChildren", "takes a ChildrenSelector or LoadChildren, not both")
             : tree is not null && (Set("Groups") || Set("OnMove"))

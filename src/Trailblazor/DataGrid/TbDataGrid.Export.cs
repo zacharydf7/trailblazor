@@ -153,7 +153,9 @@ public partial class TbDataGrid<TItem>
         TypeFilters();
         var request = new GridRequest(0, null, [.. _sorts]) { Filters = shown ? [.. _filters] : [] };
         IReadOnlyList<TItem> exported = (await DataProvider(request, _exporting.Token)).Items;
-        return (columns, IsTree ? [.. Flattened(TreeOf(_ => true, [], [.. exported]))] : exported);
+        // The rows a provider groups come grouped as the grid shows them.
+        return (columns, IsTree ? [.. Flattened(TreeOf(_ => true, [], [.. exported]))]
+            : shown && ProvidesGroups ? [.. GroupedOrder(exported, AppliedGroups.ToList(), 0)] : exported);
     }
 
     // The grid reports a failed export itself and keeps the rows shown; only a provider failure raises OnLoadFailed.

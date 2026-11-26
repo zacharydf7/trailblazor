@@ -735,3 +735,5 @@ Trailblazor.Testing.Playwright.TbGridLocator.PasteAsync(string! row, string! col
 Trailblazor.Testing.Playwright.TbGridLocator.DeleteRowAsync(string! row) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.AddRowAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.NewRow.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbGridLocator.CollapseGroupAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbGridLocator.ExpandGroupAsync(params string![]! path) -> System.Threading.Tasks.Task!

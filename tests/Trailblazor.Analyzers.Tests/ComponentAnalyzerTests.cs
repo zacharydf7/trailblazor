@@ -1519,7 +1519,9 @@ public class ComponentAnalyzerTests
     [InlineData(GridItems, "")]
     [InlineData(GridProvider, "")]
     [InlineData(GridItems + GridProvider, "takes Items or a DataProvider, not both")]
-    [InlineData(GridProvider + GridGroups, "groups only rows held in Items, not rows from a DataProvider")]
+    [InlineData(GridProvider + GridGroups, "")]
+    [InlineData(GridProvider + GridGroups + GridVirtualize + GridHeight,
+        "that virtualizes its rows groups only rows held in Items, not rows from a DataProvider")]
     [InlineData(GridItems + GridGroups, "")]
     [InlineData(GridItems + GridChildren, "")]
     [InlineData(GridProvider + GridChildren, "with a ChildrenSelector takes its rows from Items; with a " +

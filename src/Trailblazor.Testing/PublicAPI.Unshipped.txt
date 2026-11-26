@@ -672,3 +672,5 @@ Trailblazor.Testing.TbGridDriver.PasteAsync(string! row, string! column, string!
 Trailblazor.Testing.TbGridDriver.DeleteRowAsync(string! row) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbGridDriver.AddRowAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbGridDriver.NewRow.get -> AngleSharp.Dom.IElement!
+Trailblazor.Testing.TbGridDriver.CollapseGroupAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbGridDriver.ExpandGroupAsync(params string![]! path) -> System.Threading.Tasks.Task!

@@ -2083,6 +2083,53 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
     /// child rows to hide. A row already closed stays closed.</summary>
     public Task CollapseAsync(string row) => SetExpandedAsync(row, false);
 
+    /// <summary>Opens the group headed by the last of these names, such as <c>"Region: North ridge"</c>, with its
+    /// button, and waits for its rows to show, including those a <c>DataProvider</c> that groups the rows loads for
+    /// it. Name the groups it sits in first, outermost first, when its heading shows under more than one. A group
+    /// already open stays open.</summary>
+    public Task ExpandGroupAsync(params string[] path) => SetGroupOpenAsync(path, true);
+
+    /// <summary>Closes the group headed by the last of these names, such as <c>"Region: North ridge"</c>, with its
+    /// button, and waits for its rows to hide. Name the groups it sits in first, outermost first, when its heading
+    /// shows under more than one. A group already closed stays closed.</summary>
+    public Task CollapseGroupAsync(params string[] path) => SetGroupOpenAsync(path, false);
+
+    // A heading is found by its name and those of the headings above it, level by level.
+    private const string GroupsNamed = """
+        (rows, path) => {
+            const above = [];
+            const found = [];
+            rows.forEach((row, at) => {
+                above.length = Math.min(above.length, Number(row.dataset.level) - 1);
+                const name = row.querySelector('[data-part=group-toggle] > span:not([aria-hidden])');
+                above.push(name?.textContent.trim() ?? '');
+                const tail = above.slice(-path.length);
+                if (tail.length === path.length && tail.every((part, index) => part === path[index])) {
+                    found.push(at);
+                }
+            });
+            return found;
+        }
+        """;
+
+    private async Task SetGroupOpenAsync(string[] path, bool open)
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var rows = Table.Locator(":scope > tbody > tr[data-part=group]");
+        var found = await rows.EvaluateAllAsync<int[]>(GroupsNamed, path);
+        var named = string.Join(" > ", path);
+        var toggle = found.Length == 1 ? rows.Nth(found[0]).Locator("[data-part=group-toggle]")
+            : throw new InvalidOperationException(found.Length == 0 ? $"No group is headed \"{named}\"."
+                : $"{found.Length} groups are headed \"{named}\"; name the groups it sits in first.");
+        var wanted = open ? "true" : "false";
+        if (await toggle.GetAttributeAsync("aria-expanded") != wanted)
+        {
+            await AnsweredAsync(() => toggle.ClickAsync());
+        }
+
+        await Assertions.Expect(toggle).ToHaveAttributeAsync("aria-expanded", wanted);
+    }
+
     private async Task SetExpandedAsync(string row, bool expanded)
     {
         var found = Row(row);

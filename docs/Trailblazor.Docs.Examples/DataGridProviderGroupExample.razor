@@ -1,0 +1,49 @@
+<TbDataGrid TItem="Trail" DataProvider="LoadAsync" AriaLabel="Trails by region"
+            KeySelector="trail => trail.Id" @bind-Groups="_groups">
+    <TbColumn Field="trail => trail.Name" Sortable />
+    <TbColumn Field="trail => trail.Region" Groupable />
+    <TbColumn Field="trail => trail.Difficulty" Groupable />
+</TbDataGrid>
+
+@code {
+    private IReadOnlyList<string> _groups = ["Region"];
+
+    public sealed record Trail(int Id, string Name, string Region, string Difficulty);
+
+    // Stands in for a server's table.
+    private static readonly List<Trail> Trails =
+    [
+        new(1, "Pine Hollow", "North ridge", "Easy"),
+        new(2, "Eagle Ridge", "North ridge", "Hard"),
+        new(3, "Cedar Flats", "River valley", "Easy"),
+        new(4, "Ridge Loop", "River valley", "Moderate"),
+        new(5, "Fern Gully", "Coast", "Easy"),
+    ];
+
+    // Asked for a level of groups, it gives each group's value and count; asked for a group's rows, it gives them.
+    private static async Task<GridResult<Trail>> LoadAsync(GridRequest request, CancellationToken cancellation)
+    {
+        await Task.Delay(300, cancellation);
+        IEnumerable<Trail> rows = Trails;
+        for (var level = 0; level < request.Group.Count; level++)
+        {
+            var (column, value) = (request.Groups[level], request.Group[level]);
+            rows = rows.Where(trail => Equals(ValueOf(trail, column), value));
+        }
+
+        if (request.Group.Count < request.Groups.Count)
+        {
+            var column = request.Groups[request.Group.Count];
+            var groups = rows.GroupBy(trail => ValueOf(trail, column)).OrderBy(group => group.Key)
+                .Select(group => new GridGroup(group.Key, group.Count()));
+            return new([], null) { Groups = [.. groups] };
+        }
+
+        var descending = request.Sorts is [{ Direction: SortDirection.Descending }, ..];
+        return new([.. descending ? rows.OrderByDescending(trail => trail.Name) : rows.OrderBy(trail => trail.Name)],
+            null);
+    }
+
+    private static string ValueOf(Trail trail, string column) =>
+        column == nameof(Trail.Region) ? trail.Region : trail.Difficulty;
+}

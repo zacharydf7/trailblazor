@@ -15,4 +15,9 @@ public sealed record GridResult<TItem>(IReadOnlyList<TItem> Items, int? TotalCou
     /// that meets the filters. A column the provider leaves out shows no total. Give them in every result, including
     /// each window of rows a virtualized grid loads.</summary>
     public IReadOnlyDictionary<string, object?> Totals { get; init; } = new Dictionary<string, object?>();
+
+    /// <summary>The groups a request with <see cref="GridRequest.Groups"/> asked for, in the order they show, when its
+    /// <see cref="GridRequest.Group"/> holds fewer values than its groups; leave <see cref="Items"/> empty then.
+    /// </summary>
+    public IReadOnlyList<GridGroup> Groups { get; init; } = [];
 }

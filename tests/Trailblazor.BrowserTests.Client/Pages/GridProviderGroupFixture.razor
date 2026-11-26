@@ -1,0 +1,36 @@
+@page "/grid-provider-groups"
+
+@* A grid whose provider groups the rows itself, answering after a pause as a server would. *@
+<TbDataGrid TItem="Hike" DataProvider="ProvideAsync" AriaLabel="Hikes" KeySelector="hike => hike.Id"
+            Groups="@(["Region"])">
+    <TbColumn Field="hike => hike.Name" />
+    <TbColumn Field="hike => hike.Region" Groupable />
+</TbDataGrid>
+
+@code {
+    private static readonly List<Hike> Hikes =
+    [
+        new(1, "Pine Hollow", "North ridge"),
+        new(2, "Eagle Ridge", "North ridge"),
+        new(3, "Cedar Flats", "River valley"),
+    ];
+
+    public sealed record Hike(int Id, string Name, string Region);
+
+    private static async Task<GridResult<Hike>> ProvideAsync(GridRequest request, CancellationToken token)
+    {
+        await Task.Delay(200, token);
+        if (request.Group.Count == 0)
+        {
+            return new([], null)
+            {
+                Groups =
+                [
+                    .. Hikes.GroupBy(hike => hike.Region).Select(group => new GridGroup(group.Key, group.Count())),
+                ],
+            };
+        }
+
+        return new([.. Hikes.Where(hike => hike.Region == (string?)request.Group[0]).OrderBy(hike => hike.Name)], null);
+    }
+}

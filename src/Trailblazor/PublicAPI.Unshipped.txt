@@ -8260,3 +8260,25 @@ Trailblazor.DataGridLabels.EditRow.get -> string?
 Trailblazor.DataGridLabels.EditRow.init -> void
 Trailblazor.GridEditMode.Form = 3 -> Trailblazor.GridEditMode
 const Trailblazor.TbStrings.DataGridEditRow = "DataGrid.EditRow" -> string!
+Trailblazor.GridGroup
+Trailblazor.GridGroup.<Clone>$() -> Trailblazor.GridGroup!
+Trailblazor.GridGroup.Count.get -> int
+Trailblazor.GridGroup.Count.init -> void
+Trailblazor.GridGroup.Deconstruct(out object? Value, out int Count) -> void
+Trailblazor.GridGroup.Equals(Trailblazor.GridGroup? other) -> bool
+Trailblazor.GridGroup.GridGroup(object? Value, int Count) -> void
+Trailblazor.GridGroup.Totals.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Trailblazor.GridGroup.Totals.init -> void
+Trailblazor.GridGroup.Value.get -> object?
+Trailblazor.GridGroup.Value.init -> void
+Trailblazor.GridRequest.Group.get -> System.Collections.Generic.IReadOnlyList<object?>!
+Trailblazor.GridRequest.Group.init -> void
+Trailblazor.GridRequest.Groups.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.GridRequest.Groups.init -> void
+Trailblazor.GridResult<TItem>.Groups.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.GridGroup!>!
+Trailblazor.GridResult<TItem>.Groups.init -> void
+override Trailblazor.GridGroup.Equals(object? obj) -> bool
+override Trailblazor.GridGroup.GetHashCode() -> int
+override Trailblazor.GridGroup.ToString() -> string!
+static Trailblazor.GridGroup.operator !=(Trailblazor.GridGroup? left, Trailblazor.GridGroup? right) -> bool
+static Trailblazor.GridGroup.operator ==(Trailblazor.GridGroup? left, Trailblazor.GridGroup? right) -> bool

@@ -131,10 +131,11 @@ public class TbDataGridGroupTests : BunitContext
     }
 
     [Fact]
-    public void Groups_ShouldThrow_WhenRowsComeFromAProvider()
+    public void Groups_ShouldThrow_WhenAVirtualizedGridsRowsComeFromAProvider()
     {
         var error = Assert.Throws<InvalidOperationException>(() => Render<TbDataGrid<Hike>>(parameters => parameters
             .Add(grid => grid.DataProvider, (_, _) => Task.FromResult(new GridResult<Hike>(Hikes, Hikes.Count)))
+            .Add(grid => grid.Virtualize, true).Add(grid => grid.Height, "20rem")
             .Add(grid => grid.AriaLabel, "Hikes").Add(grid => grid.Groups, ["Difficulty"])
             .Add(grid => grid.ChildContent, Columns)));
 
