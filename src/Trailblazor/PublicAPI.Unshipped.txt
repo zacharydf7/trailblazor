@@ -1047,6 +1047,10 @@ Trailblazor.ColorPickerLabels.Saturation.get -> string?
 Trailblazor.ColorPickerLabels.Saturation.init -> void
 Trailblazor.ColorPickerLabels.Swatches.get -> string?
 Trailblazor.ColorPickerLabels.Swatches.init -> void
+Trailblazor.ChartCurve
+Trailblazor.ChartCurve.Smooth = 1 -> Trailblazor.ChartCurve
+Trailblazor.ChartCurve.Stepped = 2 -> Trailblazor.ChartCurve
+Trailblazor.ChartCurve.Straight = 0 -> Trailblazor.ChartCurve
 Trailblazor.ColumnAlign
 Trailblazor.ColumnAlign.Center = 1 -> Trailblazor.ColumnAlign
 Trailblazor.ColumnAlign.End = 2 -> Trailblazor.ColumnAlign
