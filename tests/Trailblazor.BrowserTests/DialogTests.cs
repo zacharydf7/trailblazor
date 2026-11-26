@@ -383,6 +383,7 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldLetThePageTakeInputAndKeepItsFocus_WhenAModalFadesOut(string browser)
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenAsync(browser, "/dialogs");
         // A long fade, so the test acts while the dialog is still leaving.
         await page.AddStyleTagAsync(new() { Content = ":root { --tb-motion-duration-normal: 3s; }" });

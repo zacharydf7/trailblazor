@@ -60,6 +60,33 @@ public class TbThemeHeadTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldPutTheNonceOnItsScriptAndStyle_WhenGivenOne()
+    {
+        this.AddTrailblazor(options => options.Theme.Palette = new Palette("brand")
+        {
+            Seeds = new() { Primary = "#1F5FAD" },
+        });
+
+        var cut = Render<TbThemeHead>(parameters => parameters.Add(head => head.Nonce, "r4nd0m"));
+
+        Assert.Equal(("r4nd0m", "r4nd0m"),
+            (cut.Find("script").GetAttribute("nonce"), cut.Find("style").GetAttribute("nonce")));
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveOutTheNonce_WhenNoneIsGiven()
+    {
+        this.AddTrailblazor(options => options.Theme.Palette = new Palette("brand")
+        {
+            Seeds = new() { Primary = "#1F5FAD" },
+        });
+
+        var cut = Render<TbThemeHead>();
+
+        Assert.False(cut.Find("script").HasAttribute("nonce") || cut.Find("style").HasAttribute("nonce"));
+    }
+
+    [Fact]
     public void Render_ShouldWarnOnceAboutEachHardToReadPair_WhenRenderedAgain()
     {
         var logs = new FakeLogCollector();

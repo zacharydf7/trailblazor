@@ -307,6 +307,8 @@
             neutral tone, keeping the built-in grays' lightness in both modes. <code>PrimaryDark</code>,
             <code>Secondary</code> and <code>SecondaryDark</code> are optional; when a dark color is left out,
             Trailblazor uses a lighter form of the light one. Each seed is a hex color or an <code>oklch()</code> color.
+            Under a Content Security Policy, the palette's <code>&lt;style&gt;</code> takes <code>TbThemeHead</code>'s
+            <code>Nonce</code>, as the <a href="guides/security">Content Security Policy</a> guide shows.
         </TbText>
         <CodeBlock Label="Program.cs" Code="@SeededPalette" />
         <TbText>

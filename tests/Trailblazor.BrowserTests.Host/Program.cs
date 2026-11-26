@@ -1,7 +1,9 @@
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Localization;
 using Trailblazor.BrowserTests.Host;
+using Trailblazor.Docs.Examples;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +30,19 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     SupportedUICultures = [culture, new CultureInfo("de-DE")],
     RequestCultureProviders = [new QueryStringRequestCultureProvider()],
 });
+// TRAILBLAZOR_CSP=strict sends the strictest Content Security Policy the library supports, with a new nonce for each
+// response.
+if (Environment.GetEnvironmentVariable("TRAILBLAZOR_CSP") == "strict")
+{
+    app.Use((context, next) =>
+    {
+        var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
+        context.Items[StrictPolicy.NonceKey] = nonce;
+        context.Response.Headers.ContentSecurityPolicy = ContentSecurityPolicy.For(nonce);
+        return next();
+    });
+}
+
 app.UseAntiforgery();
 app.MapStaticAssets();
 // A style sheet that takes `wait` milliseconds to arrive and holds the rules in `css`, if any. With `gate`, it ignores

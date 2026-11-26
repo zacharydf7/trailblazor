@@ -126,6 +126,7 @@ public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ThemedPage_ShouldTakeTheThemesTypeUnlessTheAppSetsItsOwn_WhenTbThemeHeadMarksIt(string browser)
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenAsync(browser, "/theme");
         const string Type = "() => { const html = getComputedStyle(document.documentElement); "
             + "return [html.fontFamily, html.lineHeight, html.fontSize, getComputedStyle(document.body).fontSize]; }";
@@ -146,6 +147,7 @@ public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task HeadingFont_ShouldSetEveryHeadingPartButNotBodyText_WhenTheTokenIsSet(string browser)
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenAsync(browser, "/heading-font");
         await Expect(page.Locator(".tb-dialog__title")).ToBeVisibleAsync();
         const string Fonts = """
@@ -167,6 +169,7 @@ public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task HeadingFont_ShouldFollowTheMainFont_WhenOnlyTheMainFontIsSet(string browser)
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenAsync(browser, "/heading-font");
         const string Fonts = "() => ['.tb-card__title', '[data-testid=region]', '[data-testid=region-button]', "
             + "'[data-testid=own-font]'].map(part => getComputedStyle(document.querySelector(part)).fontFamily)";

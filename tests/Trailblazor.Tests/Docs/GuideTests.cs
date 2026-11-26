@@ -11,6 +11,19 @@ public class GuideTests : DocsTest
 {
     public static TheoryData<string> Guides => new(GuideCatalog.All.Select(guide => guide.Path));
 
+    [Fact]
+    public void SecurityGuide_ShouldShowTheSamePolicyInItsMiddleware_WhenOpened()
+    {
+        var cut = PageAt("guides/security");
+
+        var middleware = cut.FindAll("pre code").Select(code => code.TextContent)
+            .Single(code => code.Contains("static string Policy"));
+        var directives = Regex.Matches(middleware,
+            @"\$?""((?:default|script|style|img|connect|object|base|form)-[^""]*)""")
+            .Select(match => match.Groups[1].Value);
+        Assert.Equal(ContentSecurityPolicy.Directives("{nonce}"), directives);
+    }
+
     [Theory, MemberData(nameof(Guides))]
     public void Guide_ShouldListEachSectionOnThePageAndKeepItsNotesQuiet_WhenOpened(string path)
     {

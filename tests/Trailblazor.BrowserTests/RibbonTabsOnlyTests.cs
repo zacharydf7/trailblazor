@@ -198,6 +198,7 @@ public class RibbonTabsOnlyTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task CollapsedRibbon_ShouldKeepItsCommandsShowing_WhenAControlInThemUsesEscapeItself(string browser)
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenCollapsedAsync(browser);
         await Tab(page, "Home").ClickAsync();
         var code = page.GetByLabel("Code");

@@ -298,8 +298,45 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldApplyThePagesNoncedStyle_WhenTheStrictPolicyIsSent(string browser)
+    {
+        Assert.SkipUnless(StrictPolicy, ChecksTheStrictProbe);
+        var page = await OpenDockAsync(browser);
+        var count = page.GetByTestId("count");
+        await count.EvaluateAsync("element => element.dataset.strictProbe = ''");
+        await Expect(count).ToHaveCSSAsync("letter-spacing", "3px");
+
+        var window = await PopOutAsync(page, "Notes");
+
+        await Expect(window.GetByTestId("count")).ToHaveCSSAsync("letter-spacing", "3px");
+        // Nothing on this page adds inline content, so even the ImportMap's and TbThemeHead's nonces raise no issue.
+        Assert.Empty(PolicyIssues());
+    }
+
+    // Blazor's enhanced navigation fetches each page, with a new nonce, and writes it onto the head's elements.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldApplyThePagesNoncedStyle_WhenAnEnhancedNavigationHasRewrittenItsNonce(
+        string browser)
+    {
+        Assert.SkipUnless(StrictPolicy, ChecksTheStrictProbe);
+        var page = await OpenDockAsync(browser);
+        var count = page.GetByTestId("count");
+        await count.EvaluateAsync("element => element.dataset.strictProbe = ''");
+        await page.EvaluateAsync("() => document.querySelectorAll('head style').forEach(style => "
+            + "style.setAttribute('nonce', 'from-a-later-response'))");
+
+        var window = await PopOutAsync(page, "Notes");
+
+        await Expect(window.GetByTestId("count")).ToHaveCSSAsync("letter-spacing", "3px");
+    }
+
+    private const string ChecksTheStrictProbe =
+        "It checks the style with a nonce that only the strict run's host writes.";
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Window_ShouldLookLikeThePage_WhenThePageSetsAThemeAndADensity(string browser)
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenDockAsync(browser);
         await SetThemeAsync(page, "dark");
         await page.EvaluateAsync("document.documentElement.dataset.probe = 'on'");

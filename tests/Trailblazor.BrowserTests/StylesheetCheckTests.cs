@@ -9,6 +9,7 @@ public class StylesheetCheckTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Root_ShouldWarnInTheConsole_WhenAStylesheetOutsideALayerStylesButtons(string browser)
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenStaticAsync(browser, "about:blank");
 
         await page.RunAndWaitForConsoleMessageAsync(
@@ -36,6 +37,7 @@ public class StylesheetCheckTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task CheckStylesheets_ShouldWarnOnlyAboutRulesThatOverrideTrailblazor_WhenGivenAStylesheet(
         string css, int warnings)
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenAsync("chromium", "/tokens");
 
         // Only this call's warnings count, so the page's own check, which may run at any time, can't add one.

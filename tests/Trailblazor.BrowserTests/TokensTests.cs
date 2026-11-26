@@ -699,6 +699,7 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ConsumerCss_ShouldOverrideToken_WhenUnlayeredRuleHasLowerSpecificity(string browser)
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenAsync(browser, "/tokens");
 
         await page.AddStyleTagAsync(new() { Content = "html { --tb-color-primary: rgb(0, 128, 128); }" });

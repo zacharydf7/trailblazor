@@ -2,6 +2,9 @@
 // flashes in after it. Its own data attributes carry the app's defaults.
 (() => {
     const { mode, palette, density, remember } = document.currentScript.dataset;
+    // The nonce the page loaded with, which its Content Security Policy keeps; a dock panel's window copies the page's
+    // styles with it, since an enhanced navigation writes each new response's nonce onto the head's elements.
+    globalThis.trailblazorNonce = document.currentScript.nonce;
     const remembered = name => {
         try {
             return remember === 'true' ? localStorage.getItem(`trailblazor.${name}`) : null;

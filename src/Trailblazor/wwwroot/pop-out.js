@@ -149,8 +149,11 @@ const mirror = other => {
         const head = other.document.head;
         let last = null;
         for (const sheet of sheets) {
+            // A copy takes the page's first nonce before it's inserted, since the window inherits the page's Content
+            // Security Policy, which an enhanced navigation's new nonces don't change.
             if (!copies.has(sheet)) {
-                copies.set(sheet, other.document.createElement(sheet.localName));
+                copies.set(sheet, Object.assign(other.document.createElement(sheet.localName),
+                    { nonce: globalThis.trailblazorNonce || sheet.nonce }));
             }
 
             // The copies keep the page's order, which decides whose rule wins. Only a copy that is out of place moves,

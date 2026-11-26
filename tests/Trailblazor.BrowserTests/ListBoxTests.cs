@@ -22,6 +22,7 @@ public class ListBoxTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ListBox_ShouldBeAsTallAsRowsWholeOptions_WhenShownWithOrWithoutABoxSizingReset(string browser)
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenAsync(browser, "/examples/listbox");
         // Trail has six options in four rows; each size's list has three options in three rows.
         var lists = new[] { ("Trail", 4), ("Small start time", 3), ("Medium start time", 3), ("Large start time", 3) };

@@ -1,9 +1,11 @@
+using System.Text.RegularExpressions;
+using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
-public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
+public abstract partial class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
 {
     private readonly List<IBrowserContext> _contexts = [];
     private IBrowser? _alone;
@@ -23,6 +25,19 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
     // its own, which is where a script that assumes one window gives itself away. A test that can't run there says
     // why with Assert.SkipWhen(Popped, ...).
     protected static bool Popped { get; } = Environment.GetEnvironmentVariable("TRAILBLAZOR_POPPED") == "1";
+
+    // TRAILBLAZOR_CSP=strict has the host send a strict Content Security Policy, and in Chromium a test fails when the
+    // library's scripts cause a violation in any of its pages or the windows they open. Fixtures, examples and tests
+    // may use inline handlers and styles of their own, and a contract test checks that the components' markup has none.
+    protected static bool StrictPolicy { get; } = Environment.GetEnvironmentVariable("TRAILBLAZOR_CSP") == "strict";
+
+    // Why a test skips itself under the strict policy.
+    protected const string UsesInlineContent =
+        "It adds an inline style or handler of its own, which the strict Content Security Policy refuses.";
+
+    private readonly List<string> _violations = [];
+    private readonly List<string> _issues = [];
+    private readonly List<Task> _watches = [];
 
     // Why a test skips itself there.
     protected const string LeavesThePage = "It follows a link or reloads, which takes the panel's window away.";
@@ -205,6 +220,17 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
     {
         var context = await NewContextAsync(browser, options);
         _contexts.Add(context);
+        if (StrictPolicy && browser == "chromium")
+        {
+            context.Page += (_, opened) =>
+            {
+                lock (_watches)
+                {
+                    _watches.Add(WatchForViolationsAsync(context, opened));
+                }
+            };
+        }
+
         var page = await context.NewPageAsync();
         await PreparePageAsync(page);
         await page.GotoAsync(address.ToString());
@@ -346,6 +372,13 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        Task[] watches;
+        lock (_watches)
+        {
+            watches = [.. _watches];
+        }
+
+        await Task.WhenAll(watches);
         foreach (var context in _contexts)
         {
             await context.CloseAsync();
@@ -355,5 +388,70 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
         {
             Fixture.HandBack(_alone);
         }
+
+        lock (_violations)
+        {
+            Assert.True(_violations.Count == 0, string.Join(Environment.NewLine, _violations.Distinct()));
+        }
     }
+
+    // Every policy issue the test's pages and windows reported so far in Chromium, whatever caused it.
+    protected string[] PolicyIssues()
+    {
+        lock (_violations)
+        {
+            return [.. _issues];
+        }
+    }
+
+    // Chromium keeps a page's policy issues, including those from before the session attached, and sends them all on
+    // Audits.enable; they outlast a reload and the document.open() that clears a dock panel's window. A popup that
+    // closes before its session attaches has nothing to report.
+    private async Task WatchForViolationsAsync(IBrowserContext context, IPage page)
+    {
+        try
+        {
+            var session = await context.NewCDPSessionAsync(page);
+            session.Event("Audits.issueAdded").OnEvent += (_, issue) =>
+            {
+                if (issue is not { } added || added.GetProperty("issue").GetProperty("code").GetString()
+                    != "ContentSecurityPolicyIssue")
+                {
+                    return;
+                }
+
+                lock (_violations)
+                {
+                    _issues.Add(added.GetRawText());
+                    if (LibraryViolation(added) is { } violation)
+                    {
+                        _violations.Add(violation);
+                    }
+                }
+            };
+            await session.SendAsync("Audits.enable");
+        }
+        catch (PlaywrightException) when (page.IsClosed)
+        {
+        }
+    }
+
+    // A policy issue the library's scripts caused, leaving out the rich text editor's: it parses pasted HTML in an
+    // inert document, whose handlers and styles Chromium still reports, so its writes into the page go unchecked
+    // here.
+    private static string? LibraryViolation(JsonElement added)
+    {
+        var details = added.GetProperty("issue").GetProperty("details")
+            .GetProperty("contentSecurityPolicyIssueDetails");
+        var directive = details.GetProperty("violatedDirective").GetString();
+        var source = details.TryGetProperty("sourceCodeLocation", out var at) ? at.GetProperty("url").GetString() : null;
+        var pasted = source?.Contains("/rich-text-editor.") == true && directive is "script-src-attr" or "style-src-elem";
+        return source is not null && LibraryScript().IsMatch(source) && !pasted
+            ? $"{directive} blocked {(details.TryGetProperty("blockedURL", out var url) ? url.GetString() : "inline")}"
+                + $" at {source}:{at.GetProperty("lineNumber").GetInt32() + 1}"
+            : null;
+    }
+
+    [GeneratedRegex(@"/_content/Trailblazor(\.Primitives)?/")]
+    private static partial Regex LibraryScript();
 }

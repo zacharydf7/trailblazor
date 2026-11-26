@@ -167,6 +167,37 @@ public class ComponentContractTests : BunitContext
         Assert.Contains(cut.Nodes.OfType<IElement>().First().ClassList, name => name.EndsWith("--invalid"));
     }
 
+    public static TheoryData<Type, bool> ComponentsStaticAndInteractive =>
+        new(from row in Components from interactive in new[] { false, true } select (row.Data, interactive));
+
+    // A strict Content Security Policy refuses <style> elements, inline scripts and inline handlers without a nonce, so
+    // no component renders any; TbThemeHead's style takes a nonce, and the default palette has no style to write.
+    [Theory, MemberData(nameof(ComponentsStaticAndInteractive))]
+    public void Render_ShouldNeedNoInlineStyleElementOrHandler_WhenRendered(Type component, bool interactive)
+    {
+        if (interactive)
+        {
+            SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+        }
+
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent(0, component);
+            if (Setup.TryGetValue(component, out var setup))
+            {
+                builder.AddAttribute(1, setup.Name, setup.Value);
+            }
+
+            AddRequiredParameters(builder, component, sequence: 2);
+            builder.CloseComponent();
+        });
+
+        Assert.Empty(cut.FindAll("style, script:not([src])"));
+        Assert.Empty(cut.FindAll("*").SelectMany(element => element.Attributes)
+            .Where(attribute => attribute.Name.StartsWith("on", StringComparison.Ordinal))
+            .Select(attribute => attribute.Name));
+    }
+
     public static TheoryData<Type, bool> FieldsStaticAndInteractive =>
         new(from row in Fields from interactive in new[] { false, true } select (row.Data, interactive));
 

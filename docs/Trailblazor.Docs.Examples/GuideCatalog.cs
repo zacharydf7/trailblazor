@@ -71,6 +71,11 @@ public static class GuideCatalog
         new("guides/upgrading", "Upgrading",
             "Every public name that was renamed or removed and what to use in its place, plus every change to markup or "
                 + "behavior that tests, styles or scripts can depend on."),
+        new("guides/security", "Content Security Policy",
+            "Run under a strict Content Security Policy: the minimum policy, the nonce, and what each part allows.")
+        {
+            Api = [typeof(TbThemeHead)],
+        },
         new("guides/analyzers", "Analyzers",
             "As your app builds, catch an unnamed control or field, an untitled dialog, or a value that snaps back "
                 + "after the user changes it."),

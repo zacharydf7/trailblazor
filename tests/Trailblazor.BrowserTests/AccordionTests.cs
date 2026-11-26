@@ -160,6 +160,7 @@ public class AccordionTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task AccordionItem_ShouldMarkItselfOpenOnlyOnceItsLastMoveStops_WhenItIsReversedPartway(string browser)
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenAsync(browser, "/accordion");
         // Slow enough that each click lands before the move it reverses has stopped.
         await page.AddStyleTagAsync(new() { Content = ":root { --tb-motion-duration-normal: 2s; }" });

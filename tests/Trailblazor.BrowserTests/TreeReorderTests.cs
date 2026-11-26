@@ -224,6 +224,7 @@ public class TreeReorderTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Tree_ShouldDropOnTheRowUnderAnInsertSlot_WhenTheSlotsTakeThePointerAsOnATouchScreen(
         string browser)
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenAsync(browser, "/examples/tree-view");
         // A touch screen keeps the slots taking the pointer; a rule in the library's own layer stands in for it here.
         await page.AddStyleTagAsync(new()

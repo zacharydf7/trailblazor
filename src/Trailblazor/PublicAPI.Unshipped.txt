@@ -8114,3 +8114,5 @@ override Trailblazor.KanbanLane<TItem>.GetHashCode() -> int
 override Trailblazor.KanbanLane<TItem>.ToString() -> string!
 static Trailblazor.KanbanLane<TItem>.operator !=(Trailblazor.KanbanLane<TItem>? left, Trailblazor.KanbanLane<TItem>? right) -> bool
 static Trailblazor.KanbanLane<TItem>.operator ==(Trailblazor.KanbanLane<TItem>? left, Trailblazor.KanbanLane<TItem>? right) -> bool
+Trailblazor.TbThemeHead.Nonce.get -> string?
+Trailblazor.TbThemeHead.Nonce.set -> void

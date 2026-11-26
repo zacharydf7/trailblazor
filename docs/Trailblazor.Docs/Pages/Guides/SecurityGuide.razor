@@ -1,0 +1,160 @@
+@page "/guides/security"
+
+<PageTitle>Content Security Policy · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="the-policy" Text="The policy" />
+        <TbTableOfContentsItem TargetId="the-nonce" Text="The nonce" />
+        <TbTableOfContentsItem TargetId="what-each-part-allows" Text="What each part allows" />
+        <TbTableOfContentsItem TargetId="standalone-webassembly" Text="Standalone WebAssembly" />
+        <TbTableOfContentsItem TargetId="dock-panel-windows" Text="Dock panel windows" />
+        <TbTableOfContentsItem TargetId="pasted-html" Text="Pasted HTML" />
+        <TbTableOfContentsItem TargetId="how-it-is-checked" Text="How it is checked" />
+        <TbTableOfContentsItem TargetId="tbthemehead" Text="TbThemeHead" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Content Security Policy</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Trailblazor works under a strict Content Security Policy. It runs no inline scripts and needs no
+            <code>'unsafe-eval'</code>, and
+            the one <code>&lt;style&gt;</code> element it adds takes a nonce. Only style attributes have to be allowed
+            inline.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="the-policy" Text="The policy" Class="docs-section" />
+        <TbText>
+            This is the strictest policy the library works under. Send it as a <code>Content-Security-Policy</code>
+            header on one line, with a new nonce for each response in place of <code>{nonce}</code>, and add your own
+            sources, such as a CDN for images, to the parts that need them.
+        </TbText>
+        <CodeBlock Label="The minimum policy" Code="@Policy" />
+
+        <DocsHeading Id="the-nonce" Text="The nonce" Class="docs-section" />
+        <TbText>
+            <code>TbThemeHead</code> adds a <code>&lt;style&gt;</code> for a seeded palette, and Blazor's
+            <code>ImportMap</code> is an inline script, so both take the response's nonce. <code>TbThemeHead</code>
+            also puts it on its script. The policy here allows that script through <code>'self'</code>, but a policy
+            that uses <code>'strict-dynamic'</code> ignores <code>'self'</code> and needs the nonce. Make the nonce in
+            a middleware and pass it to both in <code>App.razor</code>.
+        </TbText>
+        <CodeBlock Label="Program.cs" Code="@Middleware" />
+        <CodeBlock Label="App.razor" Code="@AppHead" />
+
+        <DocsHeading Id="what-each-part-allows" Text="What each part allows" Class="docs-section" />
+        <ul>
+            <li>
+                <strong><code>style-src-attr 'unsafe-inline'</code></strong>: components set layout values, such as a
+                panel's size or a popup's position, in style attributes as they render. The stylesheets themselves
+                stay under <code>style-src</code>, so no inline <code>&lt;style&gt;</code> applies without the nonce.
+            </li>
+            <li>
+                <strong><code>'wasm-unsafe-eval'</code></strong>: only for WebAssembly, which compiles the app's code.
+                A Blazor Server app can leave it out.
+            </li>
+            <li>
+                <strong><code>connect-src 'self'</code></strong>: Blazor Server's circuit is a WebSocket to the app's
+                own host, which <code>'self'</code> covers.
+            </li>
+            <li>
+                <strong><code>img-src data: blob:</code></strong>: images the library builds in or makes in the
+                browser: <code>data:</code> URLs for a watermark's tile and the time field's clock icon, and a
+                <code>blob:</code> URL for a signature pad's image.
+            </li>
+        </ul>
+
+        <DocsHeading Id="standalone-webassembly" Text="Standalone WebAssembly" Class="docs-section" />
+        <TbText>
+            A standalone WebAssembly app is served as static files, which can't take a new nonce for each response.
+            Put a palette's CSS in a stylesheet of your own instead, as the
+            <a href="guides/theming#custom-palette">Theming</a> guide shows, and allow the inline scripts of your
+            <code>index.html</code> by their hashes in <code>script-src</code>. The import map's hash changes whenever
+            the build fingerprints the assets again, so update it with each release.
+        </TbText>
+
+        <DocsHeading Id="dock-panel-windows" Text="Dock panel windows" Class="docs-section" />
+        <TbText>
+            A <a href="components/dock-manager">dock manager</a> panel opened in a window of its own is an
+            <code>about:blank</code> window, which inherits the page's policy. The panel's styles are copies of the
+            page's, each <code>&lt;style&gt;</code> with the nonce the page first loaded with, even after an enhanced
+            navigation has brought a new one, so the same policy covers the window.
+        </TbText>
+
+        <DocsHeading Id="pasted-html" Text="Pasted HTML" Class="docs-section" />
+        <TbText>
+            The <a href="components/rich-text-editor">rich text editor</a> reads pasted HTML in an inert document, so
+            nothing in it runs or loads. Chromium still reports the inline handlers and styles it finds there, such as
+            those in a page copied from Word, as violations from <code>rich-text-editor.js</code>. If your policy
+            sends reports, expect these, and leave them out of any alert.
+        </TbText>
+
+        <DocsHeading Id="how-it-is-checked" Text="How it is checked" Class="docs-section" />
+        <TbText>
+            Every week, the library's browser tests run in Chromium under this policy, and a test fails if the
+            library's scripts cause any violation in its page or a window it opens, apart from what the rich text
+            editor reports while it reads HTML. Tests that add inline styles or handlers of their own skip that run.
+            Another test checks that a style with the nonce applies on the page and in a dock panel's window, and that
+            the page reports nothing at all. A unit test also renders each component on its own, statically and
+            interactively, and checks that none writes a <code>&lt;style&gt;</code> element, an inline script or an
+            inline handler.
+        </TbText>
+
+        <DocsHeading Id="tbthemehead" Text="TbThemeHead" Class="docs-section" />
+        <ApiTable Type="typeof(TbThemeHead)" />
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li><a href="guides/getting-started">Getting started</a>: where <code>TbThemeHead</code> goes.</li>
+            <li><a href="guides/theming">Theming</a>: seeded palettes, which add the <code>&lt;style&gt;</code>.</li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+
+@code {
+    private static readonly string Policy =
+        string.Join(";" + Environment.NewLine, ContentSecurityPolicy.Directives("{nonce}"));
+
+    private const string Middleware = """
+        using System.Security.Cryptography;
+
+        app.Use((context, next) =>
+        {
+            var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
+            context.Items["csp-nonce"] = nonce;
+            context.Response.Headers.ContentSecurityPolicy = Policy(nonce);
+            return next();
+        });
+
+        // The policy above, on one line with the nonce in it.
+        static string Policy(string nonce) => string.Join("; ",
+            "default-src 'self'",
+            $"script-src 'self' 'nonce-{nonce}' 'wasm-unsafe-eval'",
+            $"style-src 'self' 'nonce-{nonce}'",
+            "style-src-attr 'unsafe-inline'",
+            "img-src 'self' data: blob:",
+            "connect-src 'self'",
+            "object-src 'none'",
+            "base-uri 'self'",
+            "form-action 'self'");
+        """;
+
+    private const string AppHead = """
+        <head>
+            ...
+            <TbStyles />
+            <TbThemeHead Nonce="@Nonce" />
+            <ImportMap nonce="@Nonce" />
+            <HeadOutlet />
+        </head>
+
+        @code {
+            [CascadingParameter]
+            private HttpContext HttpContext { get; set; } = default!;
+
+            private string? Nonce => HttpContext.Items["csp-nonce"] as string;
+        }
+        """;
+}

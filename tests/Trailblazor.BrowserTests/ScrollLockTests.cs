@@ -201,6 +201,7 @@ public class ScrollLockTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Fact]
     public async Task Modal_ShouldHoldThePageStill_WhenThePageAlreadyKeepsAGutter()
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenPageAsync();
         await page.AddStyleTagAsync(new() { Content = "html { scrollbar-gutter: stable; }" });
         await GrowAsync(page);
@@ -274,6 +275,7 @@ public class ScrollLockTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Fact]
     public async Task Modal_ShouldAddNoRoom_WhenThePageClipsItselfAfterHavingAScrollbar()
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await GrowAsync(await OpenPageAsync());
         await page.AddStyleTagAsync(new() { Content = "html { overflow: hidden; }" });
         await WaitForScrollbarAsync(page, false);
@@ -286,6 +288,7 @@ public class ScrollLockTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Fact]
     public async Task Modal_ShouldAddNoRoom_WhenAWidePageOnAPhoneReportsAWiderWindow()
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenAsync("chromium", "/scroll-lock",
             new() { IsMobile = true, HasTouch = true, ViewportSize = new() { Width = 400, Height = 700 } });
         await page.AddStyleTagAsync(new() { Content = "body { min-inline-size: 900px; }" });
@@ -349,6 +352,7 @@ public class ScrollLockTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Fact]
     public async Task Modal_ShouldHoldThePageStill_WhenAShortPageForcesItsScrollbar()
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenPageAsync();
         await page.AddStyleTagAsync(new() { Content = "html { overflow-y: scroll; }" });
         await WaitForScrollbarAsync(page, true);
@@ -363,6 +367,7 @@ public class ScrollLockTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Fact]
     public async Task Modal_ShouldHoldThePageStill_WhenAResetSetsTheRootsPaddingAndSizing()
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenPageAsync();
         await page.AddStyleTagAsync(new() { Content = "html { padding: 0; box-sizing: content-box; inline-size: 100%; }" });
         await GrowAsync(page);
@@ -377,6 +382,7 @@ public class ScrollLockTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Fact]
     public async Task Modal_ShouldAddNoRoom_WhenThePageClipsItsOwnOverflow()
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenPageAsync();
         await page.AddStyleTagAsync(new() { Content = "html { overflow: hidden; }" });
         await Button(page, "Grow").ClickAsync();
@@ -391,6 +397,7 @@ public class ScrollLockTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Fact]
     public async Task Modal_ShouldHoldThePageStill_WhenContentOverflowsABodySizedToTheWindow()
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenPageAsync();
         await page.AddStyleTagAsync(new() { Content = "html, body { block-size: 100%; }" });
         await GrowAsync(page);

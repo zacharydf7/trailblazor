@@ -96,6 +96,7 @@ public class DismissableLayerTests(BrowserFixture fixture) : BrowserTest(fixture
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task EscapeKey_ShouldLeaveNativeDialogOpen_WhenLayerInsideDialogIsDismissed(string browser)
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenAsync(browser, "/dismissable-layer-in-dialog");
         var dialog = page.GetByTestId("dialog");
         await page.GetByTestId("open-dialog").ClickAsync();

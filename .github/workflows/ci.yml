@@ -63,6 +63,16 @@ jobs:
           -class "*.DrawerTests" -class "*.PopconfirmTests" -class "*.HotkeysTests"
         env:
           TRAILBLAZOR_POPPED: 1
+      # Once a week, and on a run started by hand, the browser tests run again in Chromium under the strict policy
+      # from the docs' Content Security Policy guide, and a test fails on any violation the library's scripts cause.
+      - if: >-
+          ${{ !cancelled() && steps.tests.conclusion != 'skipped'
+          && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+        timeout-minutes: 60
+        run: dotnet tests/Trailblazor.BrowserTests/bin/Release/net10.0/Trailblazor.BrowserTests.dll
+        env:
+          TRAILBLAZOR_BROWSERS: chromium
+          TRAILBLAZOR_CSP: strict
 
   # The testing packages promise the lowest versions in Directory.Packages.props, so the bUnit tests run against them.
   minimums:

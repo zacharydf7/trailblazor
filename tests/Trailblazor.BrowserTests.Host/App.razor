@@ -7,9 +7,15 @@
     <base href="/" />
     <title>Trailblazor browser tests</title>
     <TbStyles />
-    <TbThemeHead />
+    <TbThemeHead Nonce="@Nonce" />
     <link rel="stylesheet" href="@Assets["host.css"]" />
-    <ImportMap />
+    <ImportMap nonce="@Nonce" />
+    @if (Nonce is not null)
+    {
+        @* A style with the response's nonce, as TbThemeHead writes for a seeded palette, which a strict-only test
+           checks applies on the page and in a dock panel's window. *@
+        <style nonce="@Nonce">[data-strict-probe] { letter-spacing: 3px; }</style>
+    }
     <HeadOutlet @rendermode="PageRenderMode" />
 </head>
 
@@ -23,6 +29,9 @@
 @code {
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
+
+    // Set when the host sends a strict Content Security Policy.
+    private string? Nonce => HttpContext.Items[StrictPolicy.NonceKey] as string;
 
     // A test opens a page right to left with ?dir=rtl, so scripts read the direction from the start.
     private string? Direction => HttpContext.Request.Query["dir"] == "rtl" ? "rtl" : null;

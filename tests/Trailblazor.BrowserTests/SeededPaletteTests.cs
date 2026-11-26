@@ -8,6 +8,7 @@ public class SeededPaletteTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, MemberData(nameof(BrowsersAndModes))]
     public async Task Palette_ShouldDrawComponentsInTheSeededColors_WhenInEachMode(string browser, string mode)
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenAsync(browser, "/seeded-palette");
         await page.EvaluateAsync("() => document.documentElement.dataset.tbPalette = 'brand'");
         await SetThemeAsync(page, mode);
