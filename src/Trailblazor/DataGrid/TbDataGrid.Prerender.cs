@@ -105,7 +105,8 @@ public partial class TbDataGrid<TItem>
         ShowRows(kept.Items);
         _total = kept.TotalCount;
         // An uncounted grid goes on from the rows the prerender reached, and the count it learned if any.
-        (_uncounted, _reached, _ended) = (kept.Uncounted, kept.TotalCount, kept.Uncounted && !kept.HasMore);
+        _uncounted = kept.Uncounted;
+        _reach.Set(kept.TotalCount, kept.Uncounted && !kept.HasMore);
         _countedFor = kept.Uncounted ? CountKey : null;
         _loaded = kept.Asked;
         return true;

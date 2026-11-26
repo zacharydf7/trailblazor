@@ -11,7 +11,7 @@ public sealed class TbVirtualListLocator(ILocator scope, string? name)
         .And(scope.Locator(".tb-virtual-list"));
 
     /// <summary>How many items the list has, drawn or not, once it has drawn its first items or its empty content.
-    /// </summary>
+    /// With a <c>PageProvider</c> that hasn't said where its items end, it's the items loaded so far.</summary>
     public async Task<int> CountAsync()
     {
         await Feed.WaitForAsync();
@@ -27,11 +27,15 @@ public sealed class TbVirtualListLocator(ILocator scope, string? name)
     }
 
     /// <summary>The item at this index, from 0. The list draws only the items near its view, so this scrolls the
-    /// list to the item, as a user does, and waits until it is drawn.</summary>
+    /// list to the item, as a user does, and waits until it is drawn. With a <c>PageProvider</c> that hasn't said where
+    /// its items end, it reaches as far as a page past the items loaded.</summary>
     public async Task<ILocator> ItemAsync(int index)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index);
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, await CountAsync());
+        var count = await CountAsync();
+        var room = await Feed.GetAttributeAsync("data-room") is { } more
+            ? int.Parse(more, CultureInfo.InvariantCulture) : count;
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, room);
         var item = Feed.Locator($":scope > [data-part=item][data-index='{index}']");
         // A static page draws every item.
         if (await Feed.GetAttributeAsync("data-static") is null)

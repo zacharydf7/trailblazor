@@ -17,6 +17,10 @@ public partial class TbVirtualList<TItem>
     // data-ready says so.
     private IJSObjectReference? _handle;
     private int _total;
+    private readonly UncountedReach _reach = new();
+
+    // The count Virtualize was last given, which with a page provider leaves room for a page past the items reached.
+    private int _room;
     private int _loads;
     private bool _drawn;
     private bool _disposed;
@@ -25,22 +29,31 @@ public partial class TbVirtualList<TItem>
     [Parameter, EditorRequired]
     public string AriaLabel { get; set; } = "";
 
-    /// <summary>The items, all in memory. Set this or <see cref="ItemsProvider"/>. Before the page is interactive,
-    /// including while it prerenders, every item is drawn, so for a very long list use <see cref="ItemsProvider"/> or
-    /// turn prerendering off.</summary>
+    /// <summary>The items, all in memory. Set only one of this, <see cref="ItemsProvider"/> and
+    /// <see cref="PageProvider"/>. Before the page is interactive, including while it prerenders, every item is drawn,
+    /// so for a very long list use a provider or turn prerendering off.</summary>
     [Parameter]
     public IReadOnlyList<TItem>? Items { get; set; }
 
-    /// <summary>Loads the items in view as the list scrolls, such as from a database, and gives their total. Set this or
-    /// <see cref="Items"/>.</summary>
+    /// <summary>Loads the items in view as the list scrolls, such as from a database, and gives their total. Set only
+    /// one of this, <see cref="Items"/> and <see cref="PageProvider"/>.</summary>
     [Parameter]
     public ItemsProviderDelegate<TItem>? ItemsProvider { get; set; }
+
+    /// <summary>Loads the items in view as the list scrolls without counting them all, for when counting would be
+    /// slow. It gives the items asked for and whether more follow them. While more follow, the list leaves room to
+    /// scroll one page past the items loaded and loads that page as it comes into view. Until a page says no more
+    /// follow, each item's <c>aria-setsize</c> is -1, which tells screen readers the count isn't known. Set only one of
+    /// this, <see cref="Items"/> and <see cref="ItemsProvider"/>.</summary>
+    [Parameter]
+    public Func<ItemsProviderRequest, ValueTask<VirtualListPage<TItem>>>? PageProvider { get; set; }
 
     /// <summary>Draws one item.</summary>
     [Parameter]
     public RenderFragment<TItem>? ChildContent { get; set; }
 
-    /// <summary>Drawn in place of an item while <see cref="ItemsProvider"/> loads it.</summary>
+    /// <summary>Drawn in place of an item while <see cref="ItemsProvider"/> or <see cref="PageProvider"/> loads it.
+    /// </summary>
     [Parameter]
     public RenderFragment<PlaceholderContext>? Placeholder { get; set; }
 
@@ -93,11 +106,18 @@ public partial class TbVirtualList<TItem>
     // In-memory items are counted before Virtualize asks for them, so a static page has the total too.
     private int Total => Items?.Count ?? _total;
 
+    // An item's aria-setsize, which is -1 while a page provider hasn't said where the items end.
+    private int SetSize => PageProvider is not null && !_reach.Ended ? -1 : Total;
+
+    // How far the list can scroll: its items, or while a page provider's end isn't known, a page past those reached.
+    private int Room => SetSize < 0 ? _room : Total;
+
     private string ItemSizeText => ItemSize.ToString(CultureInfo.InvariantCulture);
 
     /// <summary>Scrolls the item at this position, from 0, into view, drawing it first if needed. It does nothing
     /// before the page is interactive and the list's script has attached, which the list marks with
-    /// <c>data-ready</c>, or before <see cref="ItemsProvider"/> has given the total.</summary>
+    /// <c>data-ready</c>, or before <see cref="ItemsProvider"/> has given the total. With a <see cref="PageProvider"/>
+    /// that hasn't said where the items end, it can scroll as far as a page past the items loaded so far.</summary>
     /// <param name="index">The item's position.</param>
     /// <param name="focus">Whether to move focus to it too.</param>
     /// <exception cref="ArgumentOutOfRangeException">The position is negative, or past the last item.</exception>
@@ -106,7 +126,7 @@ public partial class TbVirtualList<TItem>
         ArgumentOutOfRangeException.ThrowIfNegative(index);
         if (Items is not null || _total > 0)
         {
-            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, Total);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, Room);
         }
 
         if (_handle is not null)
@@ -115,8 +135,13 @@ public partial class TbVirtualList<TItem>
         }
     }
 
-    /// <summary>Loads the items again, such as after the data behind <see cref="ItemsProvider"/> changed.</summary>
-    public Task RefreshDataAsync() => _virtualize?.RefreshDataAsync() ?? Task.CompletedTask;
+    /// <summary>Loads the items again, such as after the data behind <see cref="ItemsProvider"/> or
+    /// <see cref="PageProvider"/> changed.</summary>
+    public Task RefreshDataAsync()
+    {
+        _reach.Reset();
+        return _virtualize?.RefreshDataAsync() ?? Task.CompletedTask;
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -126,10 +151,10 @@ public partial class TbVirtualList<TItem>
             throw new InvalidOperationException($"{nameof(TbVirtualList<TItem>)} needs an {nameof(AriaLabel)}.");
         }
 
-        if ((Items is null) == (ItemsProvider is null))
+        if ((Items is null ? 0 : 1) + (ItemsProvider is null ? 0 : 1) + (PageProvider is null ? 0 : 1) != 1)
         {
-            throw new InvalidOperationException(
-                $"{nameof(TbVirtualList<TItem>)} needs {nameof(Items)} or an {nameof(ItemsProvider)}, not both.");
+            throw new InvalidOperationException($"{nameof(TbVirtualList<TItem>)} needs {nameof(Items)}, an "
+                + $"{nameof(ItemsProvider)} or a {nameof(PageProvider)}, and only one of them.");
         }
     }
 
@@ -192,12 +217,26 @@ public partial class TbVirtualList<TItem>
         var drawsNothing = true;
         try
         {
-            var result = await ItemsProvider!(request);
-            SetTotal(result.TotalItemCount);
-            var loaded = result.Items.Select((item, at) => new VirtualItem<TItem>(request.StartIndex + at, item))
-                .ToList();
+            IEnumerable<TItem> found;
+            int total;
+            if (PageProvider is { } pages)
+            {
+                var page = await pages(request);
+                found = page.Items;
+                _reach.Take(request.StartIndex, page.Items.Count, page.HasMore);
+                SetTotal(_reach.Reached);
+                total = _room = _reach.Room(request.Count);
+            }
+            else
+            {
+                var result = await ItemsProvider!(request);
+                SetTotal(result.TotalItemCount);
+                (found, total) = (result.Items, result.TotalItemCount);
+            }
+
+            var loaded = found.Select((item, at) => new VirtualItem<TItem>(request.StartIndex + at, item)).ToList();
             drawsNothing = loaded.Count == 0;
-            return new(loaded, result.TotalItemCount);
+            return new(loaded, total);
         }
         finally
         {

@@ -414,7 +414,8 @@
                         <th scope="row"><code>VirtualList(name).Item(index)</code></th>
                         <td>
                             Returns the item at an index, from 0, and <code>Count</code> reads how many items the list
-                            has. bUnit runs no script, so the list draws only its first items, and a far one throws;
+                            has, or with a <code>PageProvider</code> that hasn't said where they end, how many have
+                            loaded. bUnit runs no script, so the list draws only its first items, and a far one throws;
                             test it with the Playwright driver, which scrolls to it.
                         </td>
                     </tr>
@@ -1894,7 +1895,8 @@
             + "page it follows a link with an address and throws for one without."),
         new("Virtual list", "Its name, or none for the only one", "`VirtualList(name).ItemAsync(index)` scrolls "
             + "the list to the item at an index, as a user does, and returns it once drawn; `CountAsync()` reads how "
-            + "many items there are, once an `ItemsProvider` has answered."),
+            + "many items there are, once a provider has answered, or those loaded so far while a `PageProvider` "
+            + "hasn't said where they end."),
         new("Nav menu", "Its navigation landmark's name, or none for the only one shown",
             "`NavMenu(name).FollowAsync(path)` opens the closed groups named before a link once the page is "
             + "interactive, waiting for each group's `ExpandedChanged`, then follows the link; `CurrentAsync()` reads "

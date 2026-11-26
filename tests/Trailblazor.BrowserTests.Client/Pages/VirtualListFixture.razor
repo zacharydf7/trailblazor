@@ -1,4 +1,5 @@
 @page "/virtual-list"
+@using Microsoft.AspNetCore.Components.Web.Virtualization
 
 <TbVirtualList TItem="Post" AriaLabel="Posts" Items="_posts" Height="20rem" ItemLabel="@(post => post.Title)">
     <TbStack Gap="2" class="tb-p-3">
@@ -12,7 +13,21 @@
     </TbStack>
 </TbVirtualList>
 
+@* A provider that doesn't count its 60 entries, saying only whether more follow each page. *@
+<TbVirtualList TItem="string" AriaLabel="Trail log" PageProvider="LoadPageAsync" Height="20rem"
+               ItemLabel="@(post => post)">
+    <TbText class="tb-p-3">@context</TbText>
+</TbVirtualList>
+
 @code {
+    private static async ValueTask<VirtualListPage<string>> LoadPageAsync(ItemsProviderRequest request)
+    {
+        await Task.Delay(50, request.CancellationToken);
+        var posts = Enumerable.Range(1, 60).Skip(request.StartIndex).Take(request.Count)
+            .Select(number => $"Entry {number}").ToList();
+        return new(posts, request.StartIndex + posts.Count < 60);
+    }
+
     private readonly Post[] _posts = [.. Enumerable.Range(1, 200).Select(number => new Post($"Post {number}"))];
 
     private sealed class Post(string title)

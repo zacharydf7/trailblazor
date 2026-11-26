@@ -27,7 +27,8 @@ export function createVirtualList(feed) {
 
         return element?.matches('[data-part="item"]') ? element : null;
     };
-    const count = () => Number(feed.dataset.count ?? 0);
+    // A page provider that hasn't said where its items end leaves room for a page past those reached.
+    const room = () => Number(feed.dataset.room ?? feed.dataset.count ?? 0);
     const estimate = () => {
         const drawn = items();
         const height = drawn.reduce((sum, one) => sum + one.getBoundingClientRect().height, 0);
@@ -68,7 +69,7 @@ export function createVirtualList(feed) {
     // Virtualize draws only the items near the view, so the list scrolls from the nearest drawn place toward a far item
     // by its estimated distance, until Virtualize draws it.
     async function scrollToIndex(index, focus) {
-        if (index >= count()) {
+        if (index >= room()) {
             return;
         }
 
@@ -114,7 +115,7 @@ export function createVirtualList(feed) {
             event.preventDefault();
             // When keys come faster than items are drawn, each one moves on from where the last was heading.
             const next = current + (event.key === 'PageDown' ? 1 : -1);
-            if (next >= 0 && next < count()) {
+            if (next >= 0 && next < room()) {
                 scrollToIndex(next, true);
             }
         }

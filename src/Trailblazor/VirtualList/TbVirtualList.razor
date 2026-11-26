@@ -7,6 +7,7 @@
 @* tabindex -1 lets the feed hold focus when the focused item scrolls out and is no longer drawn. *@
 <div @ref="_feed" @attributes="AdditionalAttributes" role="@Role" aria-label="@AriaLabel" tabindex="-1"
      aria-busy="@(Loading ? "true" : "false")" data-part="feed" data-count="@Total" data-item-size="@ItemSizeText"
+     data-room="@(SetSize < 0 ? _room : null)"
      data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
      style="@Styles.Join(Height is null ? null : $"block-size: {Height}", Style)"
      class="@ClassNames.Join("tb-virtual-list", Height is null ? null : "tb-virtual-list--scrolls", Class)">
@@ -43,7 +44,7 @@
     {
         MarkDrawn();
         return @<article @key="entry.Index" data-part="item" data-index="@entry.Index" tabindex="-1"
-                         aria-posinset="@(entry.Index + 1)" aria-setsize="@Total"
+                         aria-posinset="@(entry.Index + 1)" aria-setsize="@SetSize"
                          aria-label="@ItemLabel?.Invoke(entry.Item)" class="tb-virtual-list__item">
             @ChildContent?.Invoke(entry.Item)
         </article>;

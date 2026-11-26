@@ -2059,7 +2059,9 @@ public sealed class TbVirtualListDriver
 
     internal TbVirtualListDriver(Func<IElement> find) => _find = find;
 
-    /// <summary>How many items the list has, drawn or not; 0 while its <c>ItemsProvider</c> first loads.</summary>
+    /// <summary>How many items the list has, drawn or not; 0 while its <c>ItemsProvider</c> or <c>PageProvider</c>
+    /// first loads, and with a <c>PageProvider</c> that hasn't said where its items end, the items loaded so far.
+    /// </summary>
     public int Count => int.Parse(_find().GetAttribute("data-count")!, CultureInfo.InvariantCulture);
 
     /// <summary>The item at this index, from 0. bUnit runs no script, so the list draws only the items its first

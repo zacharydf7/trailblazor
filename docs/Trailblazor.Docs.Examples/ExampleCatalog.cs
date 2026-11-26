@@ -1092,10 +1092,16 @@ public static class ExampleCatalog
                     + "a database, and gives their total. `Placeholder` stands in while they load, and `ItemSize` is "
                     + "the height to expect until items are measured. `ScrollToAsync` scrolls an item into view, and "
                     + "can focus it.", typeof(VirtualListProviderExample)),
+                new("pages", "Loading without a count", "When counting the items would be slow, `PageProvider` "
+                    + "gives the items asked for and whether more follow them, such as by reading one item past the "
+                    + "page. The list leaves room to scroll one page past the items loaded and loads that page as it "
+                    + "comes into view. Until a page says no more follow, each item's `aria-setsize` is -1, which "
+                    + "tells screen readers the count isn't known, and `ScrollToAsync` and Page Down reach as far "
+                    + "as that page.", typeof(VirtualListPagesExample)),
                 new("empty", "No items", "`EmptyContent` shows when there are no items.",
                     typeof(VirtualListEmptyExample)),
             ],
-            Api = [typeof(TbVirtualList<>)],
+            Api = [typeof(TbVirtualList<>), typeof(VirtualListPage<>)],
             Keyboard =
             [
                 new(["Tab"], "Moves into the list, to the item that last had focus, and on through that item's "
@@ -1112,12 +1118,14 @@ public static class ExampleCatalog
                 "The list is a `feed` named by `AriaLabel`. Each item is an `article` named by `ItemLabel`, with its "
                     + "place and the total, such as 12 of 5000. Without `ItemLabel`, an item has no name, though screen "
                     + "readers still read its content.",
+                "With a `PageProvider`, an item's total is -1, which means not known, until a page says no more "
+                    + "follow.",
                 "A list with no items is a `group` with the same name, holding `EmptyContent`, since a feed holds only "
                     + "articles.",
             ],
             Announcements =
             [
-                "The feed is `aria-busy` while `ItemsProvider` loads and until the items are drawn, so screen readers "
+                "The feed is `aria-busy` while a provider loads and until the items are drawn, so screen readers "
                     + "wait for them.",
             ],
             Accessibility =
@@ -1129,8 +1137,8 @@ public static class ExampleCatalog
             BeforeInteractive =
             [
                 "A static or prerendered page lists every item in `Items`, so for a very long list use "
-                    + "`ItemsProvider` or turn prerendering off. With `ItemsProvider`, nothing shows until the page is "
-                    + "interactive. Either way, the keys work only once the page is interactive.",
+                    + "`ItemsProvider` or `PageProvider`, or turn prerendering off. With a provider, nothing shows "
+                    + "until the page is interactive. Either way, the keys work only once the page is interactive.",
             ],
             Ready = new("[data-part=feed]", "the feed"),
             Target = new("feed", "Trail reports"),
@@ -1149,7 +1157,9 @@ public static class ExampleCatalog
                 "`await page.Tb().VirtualList(\"Trail reports\").ItemAsync(500)` from "
                     + "`Trailblazor.Testing.Playwright` scrolls the list to an item, as a user does, and returns it "
                     + "once drawn.",
-                "`CountAsync()` reads how many items there are, once an `ItemsProvider` has answered.",
+                "`CountAsync()` reads how many items there are, once a provider has answered; with a `PageProvider` "
+                    + "that hasn't said where they end, it reads those loaded so far, and `ItemAsync` reaches a page "
+                    + "past them.",
                 "In bUnit, `cut.Tb().VirtualList(\"Trail reports\")` reads `Count`, and `Item(index)` returns a "
                     + "drawn item.",
                 "bUnit runs no script, so only the first items are drawn and a far one throws; test far items in "

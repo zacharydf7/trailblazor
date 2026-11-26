@@ -1,0 +1,22 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<TbVirtualList TItem="string" AriaLabel="Trail log" PageProvider="LoadPageAsync" Height="16rem" ItemSize="40"
+               ItemLabel="@(entry => entry)">
+    <ChildContent>
+        <div class="tb-p-2">@context</div>
+    </ChildContent>
+    <Placeholder>
+        <div class="tb-p-2">Loading…</div>
+    </Placeholder>
+</TbVirtualList>
+
+@code {
+    // Stands in for a query that reads one item past the page, so it knows whether more follow without counting them.
+    private static async ValueTask<VirtualListPage<string>> LoadPageAsync(ItemsProviderRequest request)
+    {
+        await Task.Delay(300, request.CancellationToken);
+        var asked = Math.Max(0, Math.Min(request.Count + 1, 300 - request.StartIndex));
+        var entries = Enumerable.Range(request.StartIndex, asked).Select(index => $"Log entry {index + 1}").ToList();
+        return new([.. entries.Take(request.Count)], entries.Count > request.Count);
+    }
+}

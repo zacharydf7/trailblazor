@@ -60,8 +60,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // row it has reached and, once a page says none follow, the count. Both start again when the sorts or filters
     // change, or on a refresh.
     private bool _uncounted;
-    private int _reached;
-    private bool _ended;
+    private readonly UncountedReach _reach = new();
     private string? _countedFor;
     private int _page = 1;
     private int? _pageSize;
@@ -544,11 +543,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
-    private bool CountUnknown => _uncounted && !_ended;
+    private bool CountUnknown => _uncounted && !_reach.Ended;
 
     // Without a count, the pager offers the pages up to the furthest reached, and the next.
     private int PageCount => _pageSize is not { } size ? 1
-        : CountUnknown ? (_reached + size - 1) / size + 1 : Math.Max(1, (_total + size - 1) / size);
+        : CountUnknown ? (_reach.Reached + size - 1) / size + 1 : Math.Max(1, (_total + size - 1) / size);
 
     // A provider's rows aren't all loaded, so a box can't select them all.
     private bool CanSelectAll => !(Virtualize && DataProvider is not null);
@@ -1142,7 +1141,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         StateHasChanged();
         // Virtualize sizes its scroll by the count, so while more rows follow, the count runs a page past those loaded.
         return new(rows.Select((row, index) => new GridLine(row, request.StartIndex + index)),
-            CountUnknown ? _reached + Math.Max(request.Count, 1) : _total);
+            CountUnknown ? _reach.Room(request.Count) : _total);
     }
 
     // The render is captured before it is asked for, since it can finish while StateHasChanged runs.
@@ -2131,30 +2130,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     {
         if (!_uncounted || _countedFor != CountKey)
         {
-            (_uncounted, _reached, _ended, _countedFor) = (true, 0, false, CountKey);
+            (_uncounted, _countedFor) = (true, CountKey);
+            _reach.Reset();
         }
 
-        if (count == 0 && start > 0)
-        {
-            if (start <= _reached)
-            {
-                (_reached, _ended) = (start, true);
-            }
-        }
-        else if (hasMore)
-        {
-            // A page that reaches past the rows known, as after rows were added, takes back a count learned before.
-            if (start + count > _reached)
-            {
-                (_reached, _ended) = (start + count, false);
-            }
-        }
-        else
-        {
-            (_reached, _ended) = (start + count, true);
-        }
-
-        _total = _reached;
+        _reach.Take(start, count, hasMore);
+        _total = _reach.Reached;
     }
 
     private async Task ShowLoadFailedAsync(Exception exception)

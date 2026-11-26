@@ -24,13 +24,14 @@ Familiar apps: a social feed or news reader that scrolls on and on, a chat histo
 ## Focus
 
 - [x] Screen readers hear a feed named by its label, and each item as an article with its place and the total, named by `ItemLabel`. `TbVirtualListTests.Render_ShouldBeANamedFeedOfArticlesWithTheirPlaces_WhenGivenItems`
-- [x] The feed is busy while `ItemsProvider` loads, and the total comes from the provider. `TbVirtualListTests.Render_ShouldBeBusyWhileItLoadsAndThenShowTheTotal_WhenGivenAProvider`
+- [x] A `PageProvider` that doesn't count its items loads a page more as the list scrolls near the end, with each item's `aria-setsize` -1 until a page says no more follow and the items are counted, and `ScrollToAsync`, Page Down and the Playwright helper's `ItemAsync` reach as far as a page past the items loaded; `RefreshDataAsync` starts the count again. It takes the place of `Items` and `ItemsProvider`, and only one of the three may be set. `VirtualListTests.PageProvider_ShouldLoadMoreItemsAsTheyScrollIntoView_WhenItDoesntCountThem`, `TbVirtualListTests.PageProvider_ShouldCountTheItems_WhenThePageItAskedForSaysNoMoreFollow`, `TbVirtualListTests.Render_ShouldThrow_WhenGivenItemsAndAPageProvider`, `TbVirtualListTests.RefreshDataAsync_ShouldLeaveTheCountUnknownAgain_WhenThePagesNowSayMoreFollow`, `VirtualListTests.ItemAsync_ShouldReachAnItemPastThoseLoaded_WhenThePageProviderHasntSaidWhereTheyEnd`, `UncountedReachTests.Take_ShouldEndTheItemsWhereAnEmptyPageStarts_WhenThePageBeforeFilledUpToIt`
+- [x] The feed is busy while a provider loads, and the total comes from the provider. `TbVirtualListTests.Render_ShouldBeBusyWhileItLoadsAndThenShowTheTotal_WhenGivenAProvider`
 - [x] Once the page is interactive, the feed stays busy until its first items are drawn, so it's never empty without being busy. `VirtualListTests.Feed_ShouldBeBusyUntilItsFirstItemsAreDrawn_WhenThePageTurnsInteractive`
-- [x] After each `ItemsProvider` load, such as a jump to a far item, the feed stays busy until the loaded items replace the placeholders. A load that gives no items ends the wait itself. `VirtualListTests.Feed_ShouldBeBusyUntilTheItemsItJumpedToAreDrawn_WhenAProviderLoadsThem`, `TbVirtualListTests.Render_ShouldStopBeingBusy_WhenAProviderLoadGivesNoItems`
+- [x] After each provider load, such as a jump to a far item, the feed stays busy until the loaded items replace the placeholders. A load that gives no items ends the wait itself. `VirtualListTests.Feed_ShouldBeBusyUntilTheItemsItJumpedToAreDrawn_WhenAProviderLoadsThem`, `TbVirtualListTests.Render_ShouldStopBeingBusy_WhenAProviderLoadGivesNoItems`
 - [x] Items changed in place show again on the next render. `TbVirtualListTests.Render_ShouldShowTheItemsAgain_WhenTheListChangesInPlace`
 - [x] With no items, the empty content shows, in a group named like the list, since a feed holds only articles. `TbVirtualListTests.Render_ShouldShowTheEmptyContent_WhenThereAreNoItems`
 - [x] Before the page is interactive, every item in `Items` shows. `VirtualListTests.VirtualList_ShouldShowEveryItem_WhenThePageIsStatic`
-- [x] `ScrollToAsync` refuses a place past the last item. `TbVirtualListTests.ScrollToAsync_ShouldThrow_WhenThePlaceIsPastTheLastItem`
+- [x] `ScrollToAsync` refuses a place past the last item, or with a `PageProvider` whose end isn't known, past a page beyond the items loaded. `TbVirtualListTests.ScrollToAsync_ShouldThrow_WhenThePlaceIsPastTheLastItem`, `TbVirtualListTests.ScrollToAsync_ShouldReachAPagePastTheItemsLoaded_WhenThePageProviderHasntSaidWhereTheyEnd`
 
 ## Not applicable
 

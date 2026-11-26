@@ -8184,3 +8184,19 @@ Trailblazor.Internal.Events.CellsPasteEventArgs.Text.get -> string?
 Trailblazor.Internal.Events.CellsPasteEventArgs.Text.set -> void
 const Trailblazor.TbStrings.DataGridPasteRejected = "DataGrid.PasteRejected" -> string!
 const Trailblazor.TbStrings.DataGridPasted = "DataGrid.Pasted" -> string!
+Trailblazor.TbVirtualList<TItem>.PageProvider.get -> System.Func<Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderRequest, System.Threading.Tasks.ValueTask<Trailblazor.VirtualListPage<TItem>!>>?
+Trailblazor.TbVirtualList<TItem>.PageProvider.set -> void
+Trailblazor.VirtualListPage<TItem>
+Trailblazor.VirtualListPage<TItem>.<Clone>$() -> Trailblazor.VirtualListPage<TItem>!
+Trailblazor.VirtualListPage<TItem>.Deconstruct(out System.Collections.Generic.IReadOnlyList<TItem>! Items, out bool HasMore) -> void
+Trailblazor.VirtualListPage<TItem>.Equals(Trailblazor.VirtualListPage<TItem>? other) -> bool
+Trailblazor.VirtualListPage<TItem>.HasMore.get -> bool
+Trailblazor.VirtualListPage<TItem>.HasMore.init -> void
+Trailblazor.VirtualListPage<TItem>.Items.get -> System.Collections.Generic.IReadOnlyList<TItem>!
+Trailblazor.VirtualListPage<TItem>.Items.init -> void
+Trailblazor.VirtualListPage<TItem>.VirtualListPage(System.Collections.Generic.IReadOnlyList<TItem>! Items, bool HasMore) -> void
+override Trailblazor.VirtualListPage<TItem>.Equals(object? obj) -> bool
+override Trailblazor.VirtualListPage<TItem>.GetHashCode() -> int
+override Trailblazor.VirtualListPage<TItem>.ToString() -> string!
+static Trailblazor.VirtualListPage<TItem>.operator !=(Trailblazor.VirtualListPage<TItem>? left, Trailblazor.VirtualListPage<TItem>? right) -> bool
+static Trailblazor.VirtualListPage<TItem>.operator ==(Trailblazor.VirtualListPage<TItem>? left, Trailblazor.VirtualListPage<TItem>? right) -> bool

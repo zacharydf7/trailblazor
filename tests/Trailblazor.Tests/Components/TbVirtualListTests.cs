@@ -1,3 +1,4 @@
+using System.Globalization;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
@@ -24,6 +25,57 @@ public class TbVirtualListTests : BunitContext
                 .Add(list => list.ChildContent, trail => builder => builder.AddContent(0, trail));
             configure(parameters);
         });
+
+    [Fact]
+    public void PageProvider_ShouldCountTheItems_WhenThePageItAskedForSaysNoMoreFollow()
+    {
+        var cut = RenderList(parameters => parameters.Add(list => list.PageProvider,
+            request => ValueTask.FromResult(new VirtualListPage<string>(
+                [.. Trails.Skip(request.StartIndex).Take(request.Count)], request.StartIndex + request.Count < 3))));
+
+        cut.WaitForAssertion(() => Assert.Equal(["3", "3", "3"],
+            cut.FindAll("[data-part=item]").Select(item => item.GetAttribute("aria-setsize"))));
+    }
+
+    [Fact]
+    public async Task RefreshDataAsync_ShouldLeaveTheCountUnknownAgain_WhenThePagesNowSayMoreFollow()
+    {
+        var more = false;
+        var cut = RenderList(parameters => parameters.Add(list => list.PageProvider,
+            request => ValueTask.FromResult(new VirtualListPage<string>(
+                [.. Trails.Skip(request.StartIndex).Take(request.Count)], more))));
+        cut.WaitForAssertion(() => Assert.Equal("3", cut.Find("[data-part=item]").GetAttribute("aria-setsize")));
+        more = true;
+
+        await cut.InvokeAsync(cut.Instance.RefreshDataAsync);
+
+        cut.WaitForAssertion(() => Assert.Equal("-1", cut.Find("[data-part=item]").GetAttribute("aria-setsize")));
+    }
+
+    [Fact]
+    public async Task ScrollToAsync_ShouldReachAPagePastTheItemsLoaded_WhenThePageProviderHasntSaidWhereTheyEnd()
+    {
+        var cut = RenderList(parameters => parameters.Add(list => list.PageProvider,
+            request => ValueTask.FromResult(new VirtualListPage<string>(
+                [.. Trails.Skip(request.StartIndex).Take(request.Count)], true))));
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Find("[data-part=feed]").GetAttribute("data-room")));
+        var room = int.Parse(cut.Find("[data-part=feed]").GetAttribute("data-room")!, CultureInfo.InvariantCulture);
+
+        await cut.InvokeAsync(() => cut.Instance.ScrollToAsync(Trails.Length));
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            cut.InvokeAsync(() => cut.Instance.ScrollToAsync(room)));
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenGivenItemsAndAPageProvider()
+    {
+        var failure = Assert.Throws<InvalidOperationException>(() => RenderList(parameters => parameters
+            .Add(list => list.Items, Trails)
+            .Add(list => list.PageProvider, _ => ValueTask.FromResult(new VirtualListPage<string>([], false)))));
+
+        Assert.Contains("only one of them", failure.Message);
+    }
 
     [Fact]
     public void Render_ShouldBeANamedFeedOfArticlesWithTheirPlaces_WhenGivenItems()

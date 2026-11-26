@@ -136,6 +136,40 @@ public class VirtualListTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Report(page, 3)).ToBeFocusedAsync();
     }
 
+    // Each scroll to the end brings a page more, until a page says no more follow and the entries are counted.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task PageProvider_ShouldLoadMoreItemsAsTheyScrollIntoView_WhenItDoesntCountThem(string browser)
+    {
+        var page = await OpenAsync(browser, "/virtual-list");
+        var log = page.GetByRole(AriaRole.Feed, new() { Name = "Trail log" });
+        await Expect(log.Locator("[data-part=item]").First).ToHaveAttributeAsync("aria-setsize", "-1");
+
+        await log.EvaluateAsync("""
+            async feed => {
+                for (let tries = 0; tries < 40 && !feed.querySelector("[aria-label='Entry 60']"); tries++) {
+                    feed.scrollTop = feed.scrollHeight;
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+            """);
+
+        await Expect(log.GetByRole(AriaRole.Article, new() { Name = "Entry 60" }))
+            .ToHaveAttributeAsync("aria-setsize", "60");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ItemAsync_ShouldReachAnItemPastThoseLoaded_WhenThePageProviderHasntSaidWhereTheyEnd(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/virtual-list");
+        var log = page.Tb().VirtualList("Trail log");
+        var loaded = await log.CountAsync();
+
+        var item = await log.ItemAsync(loaded);
+
+        await Expect(item).ToHaveAccessibleNameAsync($"Entry {loaded + 1}");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task VirtualList_ShouldLeaveTheKeysAndTabStopsOfItsItemsControls_WhenTheyHaveFocus(string browser)
     {
