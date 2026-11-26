@@ -157,12 +157,14 @@ public class TbDataGridUncountedTests : BunitContext
     }
 
     [Fact]
-    public void Virtualize_ShouldSayItNeedsTheCount_WhenTheProviderGivesNone()
+    public void Virtualize_ShouldCountTheRows_WhenThePageItAskedForSaysNoMoreFollow()
     {
-        var failure = Assert.ThrowsAny<Exception>(() => RenderTrails(pageSize: null,
-            configure: parameters => parameters.Add(grid => grid.Virtualize, true).Add(grid => grid.Height, "10rem")));
+        var cut = RenderTrails(pageSize: null,
+            configure: parameters => parameters.Add(grid => grid.Virtualize, true).Add(grid => grid.Height, "10rem"));
 
-        Assert.Contains("needs the TotalCount", failure.ToString());
+        // The header row and the five trails.
+        cut.WaitForAssertion(() => Assert.Equal("6", cut.Find("table").GetAttribute("aria-rowcount")));
+        Assert.Equal(5, cut.FindAll("tbody tr[data-part=row]").Count);
     }
 
     // Each page is two trails that contain the filter's text, and more follow it unless it holds the last one, or,

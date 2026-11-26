@@ -7,6 +7,10 @@
     <TbColumn Field="row => row" Title="Number" Sortable Filterable />
 </TbDataGrid>
 <p data-testid="asked">@_asked</p>
+@* A provider that doesn't count its 60 rows, saying only whether more follow each page. *@
+<TbDataGrid TItem="int" DataProvider="LoadUncountedAsync" AriaLabel="Uncounted" Virtualize Height="15rem">
+    <TbColumn Field="row => row" Title="Number" Filterable />
+</TbDataGrid>
 <TbDataGrid TItem="string" Items="_stops" AriaLabel="Stops" Virtualize Height="15rem"
             OnMove="(SortableMove<string> move) => move.ApplyTo(_stops)">
     <TbColumn Field="stop => stop" Title="Stop" Id="stop" />
@@ -16,6 +20,15 @@
     private string _asked = "";
 
     private readonly List<string> _stops = [.. Enumerable.Range(1, 200).Select(stop => $"Stop {stop}")];
+
+    private static async Task<GridResult<int>> LoadUncountedAsync(GridRequest request, CancellationToken cancel)
+    {
+        await Task.Delay(50, cancel);
+        var matched = Enumerable.Range(1, 60)
+            .Where(row => request.Filters is not [{ Value: decimal number }] || row % 10 == number).ToList();
+        var rows = matched.Skip(request.StartIndex).Take(request.Count ?? 60).ToList();
+        return new(rows, null) { HasMore = request.StartIndex + rows.Count < matched.Count };
+    }
 
     private async Task<GridResult<int>> LoadAsync(GridRequest request, CancellationToken cancel)
     {

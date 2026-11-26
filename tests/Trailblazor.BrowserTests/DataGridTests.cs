@@ -625,6 +625,30 @@ public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
         Assert.InRange(await table.Locator("tbody tr[data-part=row]").CountAsync(), 1, 60);
     }
 
+    // Each scroll to the end brings a page more, until a page says no more follow and the rows are counted.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Virtualize_ShouldLoadMoreRowsAsTheyScrollIntoView_WhenTheProviderDoesntCountThem(string browser)
+    {
+        var page = await OpenAsync(browser, "/virtual-grid");
+        var table = Table(page, "Uncounted");
+        await Expect(table.Locator("tbody tr[data-part=row]").First).ToContainTextAsync("1");
+        await Expect(table).ToHaveAttributeAsync("aria-rowcount", "-1");
+
+        await table.Locator("xpath=..").EvaluateAsync("""
+            async box => {
+                const reached = () => [...box.querySelectorAll("tbody tr[data-part=row]")]
+                    .some(row => row.textContent.trim() === "60");
+                for (let tries = 0; tries < 40 && !reached(); tries++) {
+                    box.scrollTop = box.scrollHeight;
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+            """);
+
+        await Expect(table.Locator("tbody tr[data-part=row]").Last).ToHaveTextAsync("60");
+        await Expect(table).Not.ToHaveAttributeAsync("aria-rowcount", "-1");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task VirtualRows_ShouldLoadOnlyTheRowsInViewAndAgainWhenSorted_WhenAProviderGivesThem(string browser)
     {
@@ -657,6 +681,43 @@ public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
         await Expect(table.Locator("tbody tr[data-part=row]")).ToHaveTextAsync(["5"]);
         await Expect(table.Locator("[data-part=empty]")).ToHaveCountAsync(0);
         await Expect(table).ToHaveAttributeAsync("aria-rowcount", "3");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task VirtualRows_ShouldShowTheRowsAFilterLeaves_WhenAnUncountedGridIsFilteredWhileScrolledDown(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/virtual-grid");
+        var table = Table(page, "Uncounted");
+        await Expect(table.Locator("tbody tr[data-part=row]").First).ToContainTextAsync("1");
+        await table.Locator("xpath=..").EvaluateAsync("""
+            async box => {
+                const reached = () => [...box.querySelectorAll("tbody tr[data-part=row]")]
+                    .some(row => row.textContent.trim() === "60");
+                for (let tries = 0; tries < 40 && !reached(); tries++) {
+                    box.scrollTop = box.scrollHeight;
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+            """);
+
+        // Every polite announcement is kept, since an empty window past the rows reached could say there are none.
+        await page.EvaluateAsync("""
+            () => {
+                window.said = [];
+                new MutationObserver(() => document.querySelectorAll('[role=status]')
+                    .forEach(region => window.said.push(region.textContent))).observe(document.body,
+                        { subtree: true, childList: true, characterData: true });
+            }
+            """);
+
+        // The rows ending in 5: 5, 15, 25, 35, 45 and 55.
+        await page.Tb().Grid("Uncounted").FilterAsync("Number", "5");
+
+        await Expect(table.Locator("tbody tr[data-part=row]")).ToHaveTextAsync(["5", "15", "25", "35", "45", "55"]);
+        await Expect(table.Locator("[data-part=empty]")).ToHaveCountAsync(0);
+        Assert.DoesNotContain(await page.EvaluateAsync<string[]>("() => window.said"),
+            said => said.Contains("Nothing to show."));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

@@ -13445,8 +13445,10 @@ public static class ExampleCatalog
                     + "leave `TotalCount` null and set `HasMore` while more rows follow the page, such as by taking "
                     + "one row more than asked. The pager then offers the pages up to the furthest reached and the "
                     + "next, with no first or last page buttons, and reads \"of many\", until the page that says no "
-                    + "more follow gives the count. A virtualized grid needs the count, and throws when a page comes "
-                    + "back without one.", typeof(DataGridUncountedExample)),
+                    + "more follow gives the count. A virtualized grid instead leaves room to scroll one page past "
+                    + "the rows loaded, and loads that page as it comes into view. Until a page says no more follow, "
+                    + "its `aria-rowcount` is -1, which tells screen readers the count isn't known.",
+                    typeof(DataGridUncountedExample)),
                 new("prerendered-rows", "Rows from a prerendered page", "On a prerendered page, a grid with a "
                     + "`DataProvider` and no `Virtualize` asks it twice: once while the page prerenders and again "
                     + "when it turns interactive, and the prerendered rows give way to the loading row in between. "

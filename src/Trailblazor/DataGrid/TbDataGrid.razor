@@ -114,8 +114,8 @@
                @ontbcolumnorder="OnColumnOrderAsync" @ontbcolumnorder:stopPropagation
                data-reorder-columns="@(ReorderableColumns ? "" : null)"
                aria-busy="@(IsLoading ? "true" : null)"
-               aria-rowcount="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) + (HasTotals ? 1 : 0)
-                                  : null)"
+               aria-rowcount="@(!Virtualize ? null : CountUnknown ? -1
+                                  : HeaderRowCount + _total + (ShowsStatus ? 1 : 0) + (HasTotals ? 1 : 0))"
                class="@ClassNames.Join("tb-data-grid__table",
                           HasFixedWidths || VirtualizeColumns ? "tb-data-grid__table--fixed" : null)">
             @if (BandDepth > 0 || VirtualizeColumns)

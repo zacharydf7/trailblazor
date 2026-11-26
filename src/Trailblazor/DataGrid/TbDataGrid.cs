@@ -633,8 +633,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // the keyboard can reach it.
     private bool ShowsStatus => _failed || HasNoRows;
 
-    // A virtualized grid's provider loads a few rows at a time, so only its count says whether there are any.
-    private bool HasNoRows => Virtualize && DataProvider is not null ? _total == 0 : _lines.Count == 0;
+    // A virtualized grid's provider loads a few rows at a time, so only its count says whether there are any, and a
+    // window it found empty past the rows reached, as after a filter while scrolled down, doesn't.
+    private bool HasNoRows => Virtualize && DataProvider is not null ? _total == 0 && !CountUnknown
+        : _lines.Count == 0;
 
     // A grouped grid's lines count headings too, so the rows the filters leave are counted apart.
     private int RowCount => DataProvider is null ? _matched : _total;
@@ -1117,28 +1119,30 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             throw new OperationCanceledException(request.CancellationToken);
         }
 
-        // Virtualize sizes its scroll by the count, so it can't take a page that only says more follow.
-        if (result.TotalCount is not { } total)
-        {
-            throw new InvalidOperationException($"A virtualized {nameof(TbDataGrid<TItem>)} needs the "
-                + $"{nameof(GridResult<TItem>.TotalCount)} of each {nameof(GridResult<TItem>)}; give it, or page the "
-                + "grid instead.");
-        }
-
         _loading = false;
         List<TItem> rows = [.. result.Items];
         ShowRows(rows);
         _totals = new(result.Totals);
         _rowsStart = request.StartIndex;
-        _total = total;
-        _uncounted = false;
-        if (_total == 0)
+        if (result.TotalCount is { } total)
+        {
+            _total = total;
+            _uncounted = false;
+        }
+        else
+        {
+            TakeUncounted(request.StartIndex, rows.Count, result.HasMore);
+        }
+
+        if (_total == 0 && !CountUnknown)
         {
             Announcer.Polite(EmptyLabel);
         }
 
         StateHasChanged();
-        return new(rows.Select((row, index) => new GridLine(row, request.StartIndex + index)), total);
+        // Virtualize sizes its scroll by the count, so while more rows follow, the count runs a page past those loaded.
+        return new(rows.Select((row, index) => new GridLine(row, request.StartIndex + index)),
+            CountUnknown ? _reached + Math.Max(request.Count, 1) : _total);
     }
 
     // The render is captured before it is asked for, since it can finish while StateHasChanged runs.
