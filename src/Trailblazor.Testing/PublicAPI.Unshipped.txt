@@ -670,3 +670,5 @@ Trailblazor.Testing.TbKanbanDriver.MoveToColumnAsync(string! card, string! colum
 Trailblazor.Testing.TbGridDriver.FilterAsync(string! column, string! condition, string! text, Trailblazor.FilterJoin join, string! secondCondition, string! secondText) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbGridDriver.PasteAsync(string! row, string! column, string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbGridDriver.DeleteRowAsync(string! row) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbGridDriver.AddRowAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbGridDriver.NewRow.get -> AngleSharp.Dom.IElement!

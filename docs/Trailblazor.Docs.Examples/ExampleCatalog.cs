@@ -13418,6 +13418,15 @@ public static class ExampleCatalog
                     + "took the deleted one's place. A handler that sets the delete's `Error` keeps the row, and the "
                     + "grid shows why above the rows until the next delete or refresh, and reads it out. A grid that "
                     + "edits in batches offers no Delete button.", typeof(DataGridDeleteExample)),
+                new("add-rows", "Add rows", "In a grid that edits by row, `NewItem` and `OnRowAdd` give the grid an "
+                    + "Add row button above the rows. It opens a new row at the top, made by `NewItem`, with a field "
+                    + "for each editable cell, and the row saves and cancels as a row's edit does; focus leaving it "
+                    + "before anything is typed drops it. Once every cell passes its checks, `OnRowAdd` gets the new "
+                    + "item, with each value set on it that its column can set, and the edit's `Values`, which hold "
+                    + "them all; add it and the grid shows the rows again. A handler that sets the edit's `Error` "
+                    + "keeps the new row open and shows why: add a second Pine Hollow to see it. A grid that "
+                    + "virtualizes its rows, or shows no editable column, offers no Add row button.",
+                    typeof(DataGridAddExample)),
                 new("paste", "Paste from a spreadsheet", "In a grid that edits in batches, Ctrl+V on a cell pastes "
                     + "tab-separated cells starting there, such as rows copied from a spreadsheet. Each is read as its "
                     + "column's editor reads text, with the column's `Format`, and kept as a change; a blank cell "
@@ -13549,9 +13558,10 @@ public static class ExampleCatalog
                     + "Enter picks a day and Escape closes it, and the edit stays open.")
                     { When = "Editing a date or date-and-time cell" },
                 new(["Tab"], "Moves between the row's fields and its Save and Cancel buttons.")
-                    { When = "Editing a row" },
-                new(["Enter"], "Saves the row.") { When = "Editing a row" },
-                new(["Escape"], "Cancels the row's edit.") { When = "Editing a row" },
+                    { When = "Editing or adding a row" },
+                new(["Enter"], "Saves the row.") { When = "Editing or adding a row" },
+                new(["Escape"], "Cancels the row's edit, or drops the new row and puts focus on Add row.")
+                    { When = "Editing or adding a row" },
                 new(["Enter", "Space"], "Saves or discards every change, and focus stays on the button.")
                     { When = "On the batch bar's buttons" },
                 new(["Shift+Up", "Shift+Down", "Shift+Left", "Shift+Right"], "Grows or shrinks the range of cells "
@@ -13580,6 +13590,9 @@ public static class ExampleCatalog
                 "With `OnRowDelete`, each row's Delete button is named \"Delete\" and the row's label, such as "
                     + "\"Delete Pine Hollow\", under a column whose hidden header is \"Delete\" (`Labels.DeleteRow` "
                     + "and `Labels.Delete`).",
+                "With `NewItem` and `OnRowAdd`, the Add row button reads \"Add row\" (`Labels.AddRow`), and the new "
+                    + "row's Save and Cancel buttons are named for it as \"new row\" (`Labels.NewRow`), such as "
+                    + "\"Save new row\".",
                 "When the rows overflow their box and there is no cell navigation, the box is a tab stop, so keys can "
                     + "scroll it. With an `AriaLabel`, it's also a `region` with that name.",
                 "A row's checkbox is named \"Select\" followed by the row's label, which is its `RowLabel` or else the "
@@ -13604,6 +13617,8 @@ public static class ExampleCatalog
                 "Every change of sort is read out, such as \"Sorted by Name, ascending.\"",
                 "A deleted row is read out, such as \"Pine Hollow deleted.\", or why the app kept it, such as "
                     + "\"Eagle Ridge has bookings.\"",
+                "A saved new row is read out as \"Row added.\" (`Labels.RowAdded`), or why the app turned it down, "
+                    + "such as \"There is already a trail called Pine Hollow.\"",
                 "A paste is read out, such as \"Cells pasted: 4\", or why nothing was pasted, such as \"Nothing was "
                     + "pasted: Length (km) can't hold that value.\"",
                 "After a filter changes, the count of rows shown is read out, such as \"Rows shown: 2.\", or "
@@ -13642,6 +13657,10 @@ public static class ExampleCatalog
                     + "its first cell with cell navigation, or else to its Delete button; with no row left, it moves "
                     + "to the empty row. While the app's reason for keeping a row shows, that row's Delete button "
                     + "names it as its description.",
+                "Add row puts focus in the new row's first field. Once the row is saved, focus moves to its first "
+                    + "editable cell, found by the new item's `KeySelector` key. When the saved row isn't on the page "
+                    + "shown, such as when sorting puts it on another page, focus moves to the first row. Canceling "
+                    + "the new row puts focus back on the Add row button.",
                 "With cell navigation, when the row holding focus is removed, focus moves to the row that takes its "
                     + "place, or to the new last row if it was the last. With `Virtualize`, removing the last row leaves "
                     + "focus on the page, and so does scrolling the focused row out of view.",
@@ -13666,6 +13685,8 @@ public static class ExampleCatalog
                     + "and Delete button can.",
                 "Ask before a delete that can't be undone, or offer Undo after it, as "
                     + "[Confirm and delete](recipes/confirm-and-delete) shows; Delete on a cell deletes at once.",
+                "Give a new row's item its `KeySelector` key in `NewItem` or `OnRowAdd`, so focus can follow the row "
+                    + "once it's saved.",
             ],
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
@@ -13676,7 +13697,8 @@ public static class ExampleCatalog
                     + "in its rows for keys to scroll it. The fade at the scroll box's sides waits for the page to be "
                     + "interactive too.",
                 "With `Items` and no `Virtualize`, it renders its first page of rows as a plain table, so they can be "
-                    + "read at once. Sorting, filtering, paging, selecting and deleting start working once the page is "
+                    + "read at once. Sorting, filtering, paging, selecting, editing, deleting and adding start working "
+                    + "once the page is "
                     + "interactive. With a `StateHref`, sorting and paging work before that, as links; the page size "
                     + "picker still waits.",
                 "With a `DataProvider` and no `Virtualize`, it asks for its first page while prerendering and shows "
@@ -13738,7 +13760,9 @@ public static class ExampleCatalog
                 new("filter-add-condition", "The filter menu's button that adds a second condition."),
                 new("filter-join", "The filter menu's choice of And or Or for its second condition."),
                 new("filter-remove-condition", "The filter menu's button that removes its second condition."),
-                new("toolbar", "The bar above the rows that holds the group-by list and the Columns menu."),
+                new("toolbar", "The bar above the rows that holds the Add row button, the group-by list and the "
+                    + "Columns and Export menus."),
+                new("add-row", "The Add row button, with `NewItem` and `OnRowAdd`."),
                 new("group-by", "The list that chooses the columns to group by."),
                 new("column-chooser", "The Columns menu, which hides and shows columns."),
                 new("export", "The Export menu, which downloads the rows as a file."),
@@ -13759,7 +13783,7 @@ public static class ExampleCatalog
                 new("total-label", "The name of a total, such as \"Sum\", before its value."),
                 new("totals-name",
                     "A totals row's name for screen readers, hidden at the start of the first column's cell."),
-                new("row", "One row."),
+                new("row", "One row; the row being added carries `data-new`."),
                 new("placeholder", "A row a large grid hasn't loaded yet."),
                 new("editor", "The field that edits a cell."),
                 new("row-actions", "The Save and Cancel buttons of a row that's being edited."),
@@ -13808,6 +13832,11 @@ public static class ExampleCatalog
                     + "`SortAsync` and `FilterAsync`, and `Cell(row, column)` finds a cell.",
                 "With `OnRowDelete`, `DeleteRowAsync(row)` presses a row's Delete button and waits for the app, in "
                     + "bUnit and in Playwright. A refusal's text is in `[data-part=delete-error]`.",
+                "With `NewItem` and `OnRowAdd`, `AddRowAsync()` presses Add row, in bUnit and in Playwright, and "
+                    + "`NewRow` is the new row, `tr[data-new]`. `Rows` and `RowCount` leave it out until it's saved.",
+                "Fill in the new row with `cut.Tb().Within(() => grid.NewRow)` in bUnit, or `grid.NewRow` in "
+                    + "Playwright: its fields are named for their columns, and its buttons \"Save new row\" and "
+                    + "\"Cancel editing new row\".",
                 "In a grid that edits in batches, `PasteAsync(row, column, text)` pastes tab-separated text at a "
                     + "cell as Ctrl+V does, in bUnit and in Playwright, where it doesn't use the system clipboard.",
                 "With a `StateHref`, the sort headers and the pager are links.",
@@ -13866,7 +13895,8 @@ public static class ExampleCatalog
                 "`ExportCsvAsync` returns the text itself.",
                 "The download's `SuggestedFilename` is the export's name (`ExportFileName`, or else the grid's "
                     + "label) with its extension, but in WebKit on Linux it has an underscore for each space.",
-                "Rows carry `data-key` and `data-selected`, and a filtered column's header carries `data-filtered`.",
+                "Rows carry `data-key` and `data-selected`, the row being added carries `data-new`, and a filtered "
+                    + "column's header carries `data-filtered`.",
                 "Cells carry `data-column`, the field's path such as `Shipping.City` unless the column has an `Id`.",
                 "A pinned column's header and cells also carry `data-pinned`, `start` or `end`.",
                 "A filter cell's `data-value` holds its applied values as invariant text, with a range's two dates "
@@ -13884,7 +13914,7 @@ public static class ExampleCatalog
                     + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `filter`, `page`, "
                     + "`page_size`, `select`, `move`, `group`, `expand`, `collapse`, `edit`, `resize`, `reorder`, "
                     + "`hide`, `show`, `open_detail`, `close_detail`, `save_changes`, `discard_changes`, `copy`, "
-                    + "`paste`, `delete`, `export_csv`, `export_excel` or `export_pdf` for each of "
+                    + "`paste`, `delete`, `add`, `export_csv`, `export_excel` or `export_pdf` for each of "
                     + "those the user does; a `move` also "
                     + "says whether a `pointer` or the "
                     + "`keyboard` made it.",

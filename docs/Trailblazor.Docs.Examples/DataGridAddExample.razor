@@ -1,0 +1,39 @@
+<TbDataGrid TItem="Trail" Items="_trails" AriaLabel="Trails to add to" KeySelector="trail => trail.Id"
+            CellNavigation EditMode="GridEditMode.Row" NewItem="NewTrail" OnRowAdd="Add">
+    <TbColumn Field="trail => trail.Name" Editable Validate="(_, name) => RequireName(name)" />
+    <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Editable />
+</TbDataGrid>
+
+@code {
+    private readonly List<Trail> _trails =
+    [
+        new() { Id = 1, Name = "Pine Hollow", LengthKm = 6 },
+        new() { Id = 2, Name = "Eagle Ridge", LengthKm = 14 },
+    ];
+
+    public sealed class Trail
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = "";
+
+        public int LengthKm { get; set; }
+    }
+
+    private Trail NewTrail() => new() { Id = _trails.Max(trail => trail.Id) + 1, LengthKm = 5 };
+
+    private static string? RequireName(object? name) =>
+        string.IsNullOrWhiteSpace(name as string) ? "Give the trail a name." : null;
+
+    // Stands in for a server that won't take two trails with one name.
+    private void Add(GridRowEdit<Trail> add)
+    {
+        if (_trails.Any(trail => trail.Name == add.Item.Name))
+        {
+            add.Error = $"There is already a trail called {add.Item.Name}.";
+            return;
+        }
+
+        _trails.Add(add.Item);
+    }
+}

@@ -1876,18 +1876,20 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
 
     private ILocator Root => Table.Locator("xpath=ancestor::*[@data-part='grid'][1]");
 
-    // A grid nested in a detail row has rows of its own, which aren't this grid's.
-    private const string OwnRows = ":scope > tbody > tr[data-part=row]";
+    // A grid nested in a detail row has rows of its own, which aren't this grid's, and the row being added isn't one
+    // of its items yet.
+    private const string OwnRows = ":scope > tbody > tr[data-part=row]:not([data-new])";
 
     private const string Texts = "rows => rows.map(row => [...row.querySelectorAll(':scope > td[data-column]')]"
         + ".map(cell => cell.textContent.trim()))";
 
     /// <summary>The rows the grid shows on its current page, each as its data cells' texts, in the order of
-    /// <see cref="ColumnsAsync"/>.</summary>
+    /// <see cref="ColumnsAsync"/>. Leaves out a row being added until it's saved; that row is in <see cref="NewRow"/>.
+    /// </summary>
     public async Task<IReadOnlyList<IReadOnlyList<string>>> RowsAsync() =>
         await Table.Locator(OwnRows).EvaluateAllAsync<string[][]>(Texts);
 
-    /// <summary>How many rows the grid shows on its current page.</summary>
+    /// <summary>How many rows the grid shows on its current page, leaving out a row being added.</summary>
     public Task<int> RowCountAsync() => Table.Locator(OwnRows).CountAsync();
 
     /// <summary>The selected rows the grid shows on its current page, each as its data cells' texts, in the order of
@@ -1930,6 +1932,26 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
 
         await AnsweredAsync(() => button.ClickAsync());
     }
+
+    /// <summary>Presses the Add row button of a grid whose <c>EditMode</c> is <c>Row</c> and that has a
+    /// <c>NewItem</c> and an <c>OnRowAdd</c>, and waits until the grid has opened the new row, in <see cref="NewRow"/>.
+    /// Throws when the grid offers no Add row button.</summary>
+    public async Task AddRowAsync()
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var button = Root.Locator(":scope > [data-part=toolbar] [data-part=add-row]");
+        if (await button.CountAsync() == 0)
+        {
+            throw new InvalidOperationException("The grid offers no Add row button; give it a NewItem, an OnRowAdd, "
+                + "an EditMode of Row and an editable column, without Virtualize.");
+        }
+
+        await AnsweredAsync(() => button.ClickAsync());
+    }
+
+    /// <summary>The row the user is adding, at the top of the rows, with a field for each editable cell and the row's
+    /// Save and Cancel buttons.</summary>
+    public ILocator NewRow => Table.Locator(":scope > tbody > tr[data-new]");
 
     /// <summary>Pastes this text at the cell under <paramref name="column"/> in the row with a cell whose text is
     /// exactly <paramref name="row"/>, as Ctrl+V does, and waits until the grid has handled it. Tabs separate the cells

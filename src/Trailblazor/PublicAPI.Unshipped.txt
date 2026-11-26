@@ -8225,3 +8225,16 @@ override Trailblazor.GridRowDelete<TItem>.GetHashCode() -> int
 override Trailblazor.GridRowDelete<TItem>.ToString() -> string!
 static Trailblazor.GridRowDelete<TItem>.operator !=(Trailblazor.GridRowDelete<TItem>? left, Trailblazor.GridRowDelete<TItem>? right) -> bool
 static Trailblazor.GridRowDelete<TItem>.operator ==(Trailblazor.GridRowDelete<TItem>? left, Trailblazor.GridRowDelete<TItem>? right) -> bool
+Trailblazor.DataGridLabels.AddRow.get -> string?
+Trailblazor.DataGridLabels.AddRow.init -> void
+Trailblazor.DataGridLabels.NewRow.get -> string?
+Trailblazor.DataGridLabels.NewRow.init -> void
+Trailblazor.DataGridLabels.RowAdded.get -> string?
+Trailblazor.DataGridLabels.RowAdded.init -> void
+Trailblazor.TbDataGrid<TItem>.NewItem.get -> System.Func<TItem>?
+Trailblazor.TbDataGrid<TItem>.NewItem.set -> void
+Trailblazor.TbDataGrid<TItem>.OnRowAdd.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.GridRowEdit<TItem>!>
+Trailblazor.TbDataGrid<TItem>.OnRowAdd.set -> void
+const Trailblazor.TbStrings.DataGridAddRow = "DataGrid.AddRow" -> string!
+const Trailblazor.TbStrings.DataGridNewRow = "DataGrid.NewRow" -> string!
+const Trailblazor.TbStrings.DataGridRowAdded = "DataGrid.RowAdded" -> string!

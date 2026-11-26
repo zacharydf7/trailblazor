@@ -1612,6 +1612,16 @@ public static class TbStrings
     /// <summary>"{0} deleted.": said once a data grid row is deleted; {0} is the row's label.</summary>
     public const string DataGridRowDeleted = "DataGrid.RowDeleted";
 
+    /// <summary>"Add row": the text of a data grid's button that adds a row.</summary>
+    public const string DataGridAddRow = "DataGrid.AddRow";
+
+    /// <summary>"new row": names the row the user is adding within a data grid's other names, as in "Save new row".
+    /// </summary>
+    public const string DataGridNewRow = "DataGrid.NewRow";
+
+    /// <summary>"Row added.": said once a row the user added to a data grid is saved.</summary>
+    public const string DataGridRowAdded = "DataGrid.RowAdded";
+
     /// <summary>"Changed": tells screen readers a batch grid's cell holds a change not yet saved.</summary>
     public const string DataGridChanged = "DataGrid.Changed";
 
@@ -2476,6 +2486,9 @@ public static class TbStrings
         [DataGridDelete] = "Delete",
         [DataGridDeleteRow] = "Delete {0}",
         [DataGridRowDeleted] = "{0} deleted.",
+        [DataGridAddRow] = "Add row",
+        [DataGridNewRow] = "new row",
+        [DataGridRowAdded] = "Row added.",
         [DataGridChanged] = "Changed",
         [DataGridUnsavedChanges] = "Unsaved changes: {0}",
         [DataGridSaveChanges] = "Save changes",

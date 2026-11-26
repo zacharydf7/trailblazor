@@ -1,0 +1,22 @@
+@page "/grid-add"
+
+@* A grid that edits by row, whose rows the user adds. *@
+<TbDataGrid TItem="Hike" Items="_hikes" AriaLabel="Hikes" KeySelector="hike => hike.Id" CellNavigation
+            EditMode="GridEditMode.Row" NewItem="() => new Hike { Id = _hikes.Count + 1 }"
+            OnRowAdd="(GridRowEdit<Hike> add) => _hikes.Add(add.Item)">
+    <TbColumn Field="hike => hike.Name" Editable />
+    <TbColumn Field="hike => hike.LengthKm" Title="Length (km)" Editable />
+</TbDataGrid>
+
+@code {
+    private readonly List<Hike> _hikes = [new() { Id = 1, Name = "Pine Hollow", LengthKm = 6 }];
+
+    public sealed class Hike
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = "";
+
+        public int LengthKm { get; set; }
+    }
+}

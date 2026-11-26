@@ -771,8 +771,10 @@
                             and
                             opens or closes a tree grid's row with <code>ExpandAsync</code> and
                             <code>CollapseAsync</code>. With <code>OnRowDelete</code>,
-                            <code>DeleteRowAsync(row)</code> presses a row's Delete button. In a grid that edits in
-                            batches, <code>SaveChangesAsync</code> and <code>DiscardChangesAsync</code> press its Save
+                            <code>DeleteRowAsync(row)</code> presses a row's Delete button. With <code>NewItem</code>
+                            and <code>OnRowAdd</code>, <code>AddRowAsync</code> presses Add row, and
+                            <code>NewRow</code> is the new row. In a grid that edits in batches,
+                            <code>SaveChangesAsync</code> and <code>DiscardChangesAsync</code> press its Save
                             changes and
                             Discard changes buttons. In a grid with <code>CellSelection</code>,
                             <code>SelectCellsAsync</code> selects a range, <code>SelectedCells</code> reads its text,
@@ -780,7 +782,8 @@
                             no clipboard permission needed. In a grid that edits in batches,
                             <code>PasteAsync(row, column, text)</code> pastes tab-separated text at a cell as Ctrl+V
                             does, without the clipboard. <code>Rows</code> and <code>Selected</code> read the rows
-                            shown and the selected ones, <code>RowCount</code> counts the rows shown,
+                            shown and the selected ones, <code>RowCount</code> counts the rows shown, leaving out a
+                            row being added,
                             <code>IsBusy</code> reads whether rows are loading, and <code>WaitForRowsAsync</code> waits
                             until they've loaded.
                             Finds a cell with <code>Cell</code>, and reads the column headers with <code>Columns</code>,

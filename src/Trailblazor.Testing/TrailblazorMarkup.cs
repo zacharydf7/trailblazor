@@ -5184,10 +5184,11 @@ public sealed class TbGridDriver
         (_findAll, _find, _scripts) = (findAll, find, scripts);
 
     /// <summary>The rows the grid shows on its current page, each as its data cells' texts, in the order of
-    /// <see cref="Columns"/>.</summary>
+    /// <see cref="Columns"/>. Leaves out a row being added until it's saved; that row is in <see cref="NewRow"/>.
+    /// </summary>
     public IReadOnlyList<IReadOnlyList<string>> Rows => Texts(OwnRows);
 
-    /// <summary>How many rows the grid shows on its current page.</summary>
+    /// <summary>How many rows the grid shows on its current page, leaving out a row being added.</summary>
     public int RowCount => _find().QuerySelectorAll(OwnRows).Length;
 
     /// <summary>The selected rows the grid shows on its current page, each as its data cells' texts, in the order of
@@ -5208,8 +5209,9 @@ public sealed class TbGridDriver
         }
     }
 
-    // A grid nested in a detail row has rows of its own, which aren't this grid's.
-    private const string OwnRows = ":scope > tbody > tr[data-part=row]";
+    // A grid nested in a detail row has rows of its own, which aren't this grid's, and the row being added isn't one
+    // of its items yet.
+    private const string OwnRows = ":scope > tbody > tr[data-part=row]:not([data-new])";
 
     private IReadOnlyList<IReadOnlyList<string>> Texts(string rows) => [.. _find().QuerySelectorAll(rows)
         .Select(row => (IReadOnlyList<string>)[.. row.Children.Where(cell => cell.HasAttribute("data-column"))
@@ -5238,6 +5240,20 @@ public sealed class TbGridDriver
     public async Task DeleteRowAsync(string row) => await (Row(row).QuerySelector(":scope > td > [data-part=delete]")
         ?? throw new InvalidOperationException("The grid offers no Delete button; give it an OnRowDelete and an "
             + "EditMode other than Batch.")).ClickAsync(new MouseEventArgs { Detail = 1 });
+
+    /// <summary>Presses the Add row button of a grid whose <c>EditMode</c> is <c>Row</c> and that has a
+    /// <c>NewItem</c> and an <c>OnRowAdd</c>, and returns once the new row is open, in <see cref="NewRow"/>. Throws
+    /// when the grid offers no Add row button.</summary>
+    public async Task AddRowAsync() => await (_find().Closest("[data-part=grid]")
+        ?.QuerySelector(":scope > [data-part=toolbar] [data-part=add-row]")
+        ?? throw new InvalidOperationException("The grid offers no Add row button; give it a NewItem, an OnRowAdd, "
+            + "an EditMode of Row and an editable column, without Virtualize."))
+        .ClickAsync(new MouseEventArgs { Detail = 1 });
+
+    /// <summary>The row the user is adding, at the top of the rows, with a field for each editable cell and the row's
+    /// Save and Cancel buttons. Throws when no row is being added.</summary>
+    public IElement NewRow => _find().QuerySelector(":scope > tbody > tr[data-new]")
+        ?? throw new InvalidOperationException("The grid isn't adding a row; call AddRowAsync first.");
 
     /// <summary>Pastes this text at the cell under <paramref name="column"/> in the row with a cell whose text is
     /// exactly <paramref name="row"/>, as Ctrl+V does. Tabs separate the cells and line breaks the rows, as a

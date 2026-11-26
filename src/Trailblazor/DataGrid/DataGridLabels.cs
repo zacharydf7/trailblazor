@@ -102,6 +102,18 @@ public sealed record DataGridLabels
     /// the app's text for <see cref="TbStrings.DataGridRowDeleted"/>.</summary>
     public string? RowDeleted { get; init; }
 
+    /// <summary>The text of a data grid's button that adds a row: "Add row" in English. Leave it null for the app's
+    /// text for <see cref="TbStrings.DataGridAddRow"/>.</summary>
+    public string? AddRow { get; init; }
+
+    /// <summary>Names the row the user is adding within its Save and Cancel buttons' names: "new row" in English, as in
+    /// "Save new row". Leave it null for the app's text for <see cref="TbStrings.DataGridNewRow"/>.</summary>
+    public string? NewRow { get; init; }
+
+    /// <summary>Said once a row the user added is saved: "Row added." in English. Leave it null for the app's text for
+    /// <see cref="TbStrings.DataGridRowAdded"/>.</summary>
+    public string? RowAdded { get; init; }
+
     /// <summary>Names the column of a data grid's selection buttons: "Select" in English. Leave it null for the app's
     /// text for <see cref="TbStrings.DataGridSelect"/>.</summary>
     public string? Select { get; init; }
