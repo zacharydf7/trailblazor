@@ -51,6 +51,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private readonly Dictionary<object, List<TItem>> _loadedChildren = [];
     private readonly Dictionary<object, (CancellationTokenSource Cancel, TaskCompletionSource Done)> _childLoads = [];
 
+    // The top rows the provider returned for the page shown.
+    private List<TItem> _providerRows = [];
+
     private int _total;
 
     // A provider that doesn't count its rows says only whether more follow each page, so the grid keeps the furthest
@@ -302,15 +305,18 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// <summary>Gives a row's child rows, which makes the grid a tree grid: <see cref="Items"/> are the top rows, and a
     /// row with children starts its first column with a button that shows or hides them. Rows sort among their
     /// siblings, and filters show the rows that match along with the rows they're nested under, opened to show them.
-    /// A tree grid takes its rows from <see cref="Items"/>, and can't group, move or page them.</summary>
+    /// A tree grid with a ChildrenSelector takes its rows from <see cref="Items"/>, and can't group, move or page
+    /// them; for top rows from a <see cref="DataProvider"/>, use <see cref="LoadChildren"/>.</summary>
     [Parameter]
     public Func<TItem, IEnumerable<TItem>?>? ChildrenSelector { get; set; }
 
     /// <summary>Loads a row's child rows the first time it opens, for children that come from a server. Like
     /// <see cref="ChildrenSelector"/>, it makes the grid a tree grid. The token is canceled if the row closes first. A
     /// load that fails is announced and raised on <see cref="OnLoadFailed"/>, and the row closes, so opening it tries
-    /// again. Children stay loaded for as long as the grid is on the page, even with new <see cref="Items"/>. Filters
-    /// match the rows loaded so far. Set this or <see cref="ChildrenSelector"/>, not both.</summary>
+    /// again. Children stay loaded for as long as the grid is on the page, even with new <see cref="Items"/>. Without
+    /// a <see cref="DataProvider"/>, filters match the rows loaded so far. With one, the provider sorts and filters the
+    /// top rows and gives them a page at a time; filters leave the children as they loaded, and the children sort
+    /// among their siblings. Set this or <see cref="ChildrenSelector"/>, not both.</summary>
     [Parameter]
     public Func<TItem, CancellationToken, Task<IEnumerable<TItem>>>? LoadChildren { get; set; }
 
@@ -704,21 +710,40 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                 $"{nameof(Items)}, not rows from a {nameof(DataProvider)}.");
         }
 
-        // A tree's rows follow their parents, which a provider's pages, groups or moved rows would break apart, and a
-        // page could start with a row whose parent is on the page before.
-        if (IsTree && (DataProvider is not null || Groups is { Count: > 0 } || OnMove.HasDelegate
-            || PageSize is not null))
-        {
-            throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} with a {nameof(ChildrenSelector)} or " +
-                $"{nameof(LoadChildren)} takes its rows from {nameof(Items)}, and can't group them, move them or " +
-                $"split them into pages; set {nameof(Virtualize)} to show many rows.");
-        }
-
         if (ChildrenSelector is not null && LoadChildren is not null)
         {
             throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} takes a {nameof(ChildrenSelector)} " +
                 $"or a {nameof(LoadChildren)}, not both.");
         }
+
+        // A tree's rows follow their parents, which groups or moved rows would break apart. A page of Items could start
+        // with a row whose parent is on the page before, so only a provider's top rows split into pages.
+        if (IsTree && (Groups is { Count: > 0 } || OnMove.HasDelegate))
+        {
+            throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} with a {nameof(ChildrenSelector)} or " +
+                $"{nameof(LoadChildren)} can't group its rows or move them.");
+        }
+
+        if (ChildrenSelector is not null && DataProvider is not null)
+        {
+            throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} with a {nameof(ChildrenSelector)} " +
+                $"takes its rows from {nameof(Items)}; with a {nameof(DataProvider)}, load each row's children with " +
+                $"{nameof(LoadChildren)}.");
+        }
+
+        if (IsTree && DataProvider is null && PageSize is not null)
+        {
+            throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} with a {nameof(ChildrenSelector)} or " +
+                $"{nameof(LoadChildren)} can't split {nameof(Items)} into pages; set {nameof(Virtualize)} to show " +
+                $"many rows, or take the top rows from a {nameof(DataProvider)}.");
+        }
+
+        if (IsTree && DataProvider is not null && Virtualize)
+        {
+            throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} with a {nameof(DataProvider)} and " +
+                $"{nameof(LoadChildren)} can't virtualize its rows; set a {nameof(PageSize)} to show many rows.");
+        }
+
 
         // A virtualized grid numbers its rows for screen readers, and a detail row has no number of its own.
         if (Virtualize && DetailTemplate is not null)
@@ -786,8 +811,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         TakeSelectionFromParent();
         TakeExpandedFromParent();
-        var toLoad = TakeOpenParentsFromParent();
+        var toLoad = TakeOpenParentsFromParent(out var reopened);
         await ShowAsync(force: false);
+        if (reopened && IsTree && DataProvider is not null)
+        {
+            ShowProviderTree();
+        }
+
         await Task.WhenAll(toLoad.Select(LoadChildrenOfAsync));
     }
 
@@ -2259,9 +2289,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     // A tree grid's lines, where each open row's children follow it. The rows that match the filters are counted and
     // totaled at every level.
-    private (List<TItem> Matched, List<GridLine> Lines) TreeLines()
+    private (List<TItem> Matched, List<GridLine> Lines) TreeLines(List<TItem>? providerRows = null)
     {
-        var filtering = AppliedFilters.Any();
+        // A provider filtered its rows itself, and the children under them show as they loaded.
+        var filtering = providerRows is null && AppliedFilters.Any();
         if (!ReferenceEquals(_closedWhileFilteredFor, _filters))
         {
             _closedWhileFilteredFor = _filters;
@@ -2290,7 +2321,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             }
         }
 
-        Add(TreeOf(Matcher(filtered: true), matched), 1, -1);
+        Add(TreeOf(providerRows is null ? Matcher(filtered: true) : _ => true, matched, providerRows), 1, -1);
         return (matched, lines);
     }
 
@@ -2299,14 +2330,15 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private sealed record TreeNode(TItem Item, List<TreeNode> Children);
 
     // Walks the whole tree, so every row's parent is known and a key seen twice, as in a row under itself, is caught.
-    private List<TreeNode> TreeOf(Func<TItem, bool> matches, List<TItem> matched)
+    // A provider's rows stay in the order it gave them; their children sort as Items do.
+    private List<TreeNode> TreeOf(Func<TItem, bool> matches, List<TItem> matched, List<TItem>? providerRows = null)
     {
         _parentOf.Clear();
         _treeItems.Clear();
         List<TreeNode> Level(IEnumerable<TItem> items, bool top, TItem parent)
         {
             List<TreeNode> nodes = [];
-            foreach (var item in Sorted(items))
+            foreach (var item in top && providerRows is not null ? items : Sorted(items))
             {
                 var key = KeyOf(item);
                 if (!_treeItems.TryAdd(key, item))
@@ -2315,7 +2347,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                         + $"parents or under itself; check the items and what {nameof(ChildrenSelector)} or "
                         + $"{nameof(LoadChildren)} returns. "
                         + $"Otherwise, give the grid a {nameof(KeySelector)} that gives each item a different key.",
-                        (Items ?? [], nameof(Items)));
+                        providerRows is null ? (Items ?? [], nameof(Items))
+                            : (providerRows, "the rows the provider returned"));
                 }
 
                 if (!top)
@@ -2339,16 +2372,17 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             return nodes;
         }
 
-        return Level(Items ?? [], top: true, default!);
+        return Level(providerRows ?? Items ?? [], top: true, default!);
     }
 
     private static IEnumerable<TItem> Flattened(List<TreeNode> nodes) =>
         nodes.SelectMany(node => Flattened(node.Children).Prepend(node.Item));
 
     // Returns the rows the app opened whose children LoadChildren has yet to load.
-    private List<TItem> TakeOpenParentsFromParent()
+    private List<TItem> TakeOpenParentsFromParent(out bool changed)
     {
-        if (ReferenceEquals(ExpandedParents, _openParentsFromParent))
+        changed = !ReferenceEquals(ExpandedParents, _openParentsFromParent);
+        if (!changed)
         {
             return [];
         }
@@ -2377,7 +2411,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     {
         var key = KeyOf(item);
         // A row whose children haven't loaded opens as it would with no filter, so that it loads them.
-        var filtering = AppliedFilters.Any() && !MayLoadChildren(item);
+        var filtering = DataProvider is null && AppliedFilters.Any() && !MayLoadChildren(item);
         bool open;
         if (filtering)
         {
@@ -2402,7 +2436,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             loading.Cancel.Cancel();
         }
 
-        Arrange(force: true);
+        ArrangeTree();
         if (!filtering)
         {
             await ExpandedParentsChanged.InvokeAsync([.. _openParents.Values]);
@@ -2437,7 +2471,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         using var cancel = new CancellationTokenSource();
         var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         _childLoads[key] = (cancel, done);
-        Arrange(force: true);
+        ArrangeTree();
         StateHasChanged();
         var span = Telemetry.StartSpan(TelemetryName, "load");
         try
@@ -2470,7 +2504,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         if (!_disposed)
         {
-            Arrange(force: true);
+            ArrangeTree();
             StateHasChanged();
         }
     }
@@ -2620,7 +2654,34 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     // Selection follows a row by its key, so no two rows may share one. A row that isn't shown has no element, so its
     // reference is dropped before anything can scroll to it.
-    private void ShowRows(List<TItem> rows) => ShowLines([.. rows.Select((row, at) => new GridLine(row, Offset + at))]);
+    private void ShowRows(List<TItem> rows)
+    {
+        if (IsTree && DataProvider is not null)
+        {
+            _providerRows = rows;
+            ShowProviderTree();
+            return;
+        }
+
+        ShowLines([.. rows.Select((row, at) => new GridLine(row, Offset + at))]);
+    }
+
+    // A provider's rows are the top of the tree, as it sorted, filtered and paged them, with the children loaded so far
+    // under the open ones.
+    private void ShowProviderTree() =>
+        ShowLines([.. TreeLines(_providerRows).Lines.Select(line => line with { Index = Offset + line.Index })]);
+
+    private void ArrangeTree()
+    {
+        if (DataProvider is null)
+        {
+            Arrange(force: true);
+        }
+        else
+        {
+            ShowProviderTree();
+        }
+    }
 
     private void ShowLines(List<GridLine> lines)
     {
@@ -2808,7 +2869,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private Task StateChangedAsync() => StateChanged.InvokeAsync(CurrentState);
 
-    // A virtualized grid has no pages, so a state's page and page size don't apply to it. A tree grid can't page
+    // A virtualized grid has no pages, so a state's page and page size don't apply to it. A tree of Items can't page
     // either, so it ignores the page size, which would turn paging on.
     private void TakeState(GridState state)
     {
@@ -2816,7 +2877,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         TakeFilters(state.Filters);
         TakeGroups(state.Groups);
         _page = Virtualize ? 1 : Math.Max(1, state.Page);
-        _pageSize = !Virtualize && !IsTree && state.PageSize is > 0 ? state.PageSize : null;
+        _pageSize = !Virtualize && !(IsTree && DataProvider is null) && state.PageSize is > 0 ? state.PageSize : null;
         if (!GridState.SameWidths(state.ColumnWidths, _widths))
         {
             _widths = new(state.ColumnWidths);

@@ -139,7 +139,7 @@ public partial class TbDataGrid<TItem>
         List<TbColumn<TItem>> columns =
             [.. (shown ? _shownColumns : _arrangedColumns).Where(column => column.HasField)];
         // A tree grid exports the rows it has, including those LoadChildren has loaded.
-        if (IsTree)
+        if (IsTree && DataProvider is null)
         {
             return (columns, [.. Flattened(TreeOf(Matcher(shown), []))]);
         }
@@ -152,7 +152,8 @@ public partial class TbDataGrid<TItem>
 
         TypeFilters();
         var request = new GridRequest(0, null, [.. _sorts]) { Filters = shown ? [.. _filters] : [] };
-        return (columns, (await DataProvider(request, _exporting.Token)).Items);
+        IReadOnlyList<TItem> exported = (await DataProvider(request, _exporting.Token)).Items;
+        return (columns, IsTree ? [.. Flattened(TreeOf(_ => true, [], [.. exported]))] : exported);
     }
 
     // The grid reports a failed export itself and keeps the rows shown; only a provider failure raises OnLoadFailed.

@@ -173,14 +173,17 @@
                         <td>
                             A <code>TbDataGrid</code> is given <code>Items</code> and a <code>DataProvider</code>;
                             <code>Groups</code> with a <code>DataProvider</code>; a <code>ChildrenSelector</code> with
-                            a <code>LoadChildren</code>; either of them with a <code>DataProvider</code>,
-                            <code>Groups</code>, <code>OnMove</code> or a <code>PageSize</code>; or
+                            a <code>LoadChildren</code> or a <code>DataProvider</code>; a
+                            <code>ChildrenSelector</code> or <code>LoadChildren</code> with <code>Groups</code> or
+                            <code>OnMove</code>, or with <code>Items</code> and a <code>PageSize</code>; a
+                            <code>DataProvider</code> and <code>LoadChildren</code> with <code>Virtualize</code>; or
                             <code>Virtualize</code> with a <code>DetailTemplate</code>, with a <code>PageSize</code>, or
                             with no <code>Height</code> or <code>Fill</code>. Each of these throws as it renders.
                         </td>
                         <td>
                             Keep one of the setups the warning names and remove the other, or give a virtualized grid a
-                            <code>Height</code> or <code>Fill</code>.
+                            <code>Height</code> or <code>Fill</code>. For a tree grid's top rows from a
+                            <code>DataProvider</code>, use <code>LoadChildren</code> and a <code>PageSize</code>.
                         </td>
                     </tr>
                     <tr>

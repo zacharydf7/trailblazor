@@ -13650,9 +13650,11 @@ public static class ExampleCatalog
                     + "read. Give the grid rows of a type made for showing, with nothing a user shouldn't see.")
                     { Pitfall = true },
                 new("Some setups throw as the grid renders: `Items` with a `DataProvider`; `Groups` with a "
-                    + "`DataProvider`; a `ChildrenSelector` with a `LoadChildren`; either of them with a "
-                    + "`DataProvider`, `Groups`, `OnMove` or a `PageSize`; and `Virtualize` with a `DetailTemplate`, "
-                    + "with a `PageSize`, or with no `Height` or `Fill`. Build warning [TB013](guides/analyzers#rules) "
+                    + "`DataProvider`; a `ChildrenSelector` with a `LoadChildren` or a `DataProvider`; a "
+                    + "`ChildrenSelector` or `LoadChildren` with `Groups` or `OnMove`, or with `Items` and a "
+                    + "`PageSize`; a `DataProvider` and "
+                    + "`LoadChildren` with `Virtualize`; and `Virtualize` with a `DetailTemplate`, with a "
+                    + "`PageSize`, or with no `Height` or `Fill`. Build warning [TB013](guides/analyzers#rules) "
                     + "reports them in markup.")
                     { Pitfall = true },
                 new("Rows that don't come back from JSON as they went in aren't kept under a `PrerenderKey`: "
@@ -13877,7 +13879,8 @@ public static class ExampleCatalog
                     + "rows closed while a filter applies open again when the filters change. Totals and the count of "
                     + "rows shown cover every row that matches, at every level, and an export lists them all in tree "
                     + "order. Everything else a data grid does works too, except grouping rows, moving them, paging "
-                    + "them and loading them from a `DataProvider`; `Virtualize` shows a long tree.",
+                    + "them and loading them from a `DataProvider`, which takes `LoadChildren` (see Top rows from a "
+                    + "provider); `Virtualize` shows a long tree.",
                     typeof(TreeGridExample)),
                 new("open-rows", "Open rows from code", "`@bind-ExpandedParents` holds the rows whose children show. "
                     + "Every row starts closed: set it to open rows, or to an empty list to close them all. "
@@ -13889,9 +13892,18 @@ public static class ExampleCatalog
                     + "waits for them. If the load fails, the grid tells screen readers, the row closes so that "
                     + "opening it tries again, and `OnLoadFailed` gets the exception, so the app can show the error, "
                     + "as this one does. Rows `ExpandedParents` opens load too. Children stay loaded for as long as "
-                    + "the grid is on the page, even with new `Items`. Sorting, filters, totals and an export cover "
-                    + "the rows loaded so far, and `ScrollToAsync` reaches only rows whose parents have loaded.",
+                    + "the grid is on the page, even with new `Items`. With `Items`, sorting, filters, totals and an "
+                    + "export cover the rows loaded so far, and `ScrollToAsync` reaches only rows whose parents have "
+                    + "loaded.",
                     typeof(TreeGridLoadExample)),
+                new("provider-rows", "Top rows from a provider", "With a `DataProvider` and `LoadChildren`, the "
+                    + "provider sorts and filters the top rows and gives them a page at a time with a `PageSize`, and "
+                    + "each row's children load as it opens, under it on its page. Filters go to the provider, so they "
+                    + "pick the top rows and leave the children as they loaded; the grid sorts the children among "
+                    + "their siblings. Totals and the row count are the provider's, for its top rows, and "
+                    + "`ScrollToAsync` reaches only rows on the page whose parents are open. An export lists every top "
+                    + "row with the children loaded under it, and the rows can't be virtualized.",
+                    typeof(TreeGridProviderExample)),
             ],
             Api = [typeof(TbDataGrid<>), typeof(TbColumn<>), typeof(DataGridClasses)],
             Keyboard =

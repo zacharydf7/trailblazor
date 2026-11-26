@@ -439,9 +439,17 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
                 ? ("Groups", "groups only rows held in Items, not rows from a DataProvider")
             : Set("ChildrenSelector") && Set("LoadChildren")
                 ? ("LoadChildren", "takes a ChildrenSelector or LoadChildren, not both")
-            : tree is not null && (Set("DataProvider") || Set("Groups") || Set("OnMove") || Set("PageSize"))
-                ? (tree, $"with a {tree} takes its rows from Items, and can't group them, " +
-                    "move them or split them into pages; set Virtualize to show many rows")
+            : tree is not null && (Set("Groups") || Set("OnMove"))
+                ? (tree, $"with a {tree} can't group its rows or move them")
+            : Set("ChildrenSelector") && Set("DataProvider")
+                ? ("ChildrenSelector", "with a ChildrenSelector takes its rows from Items; with a DataProvider, load " +
+                    "each row's children with LoadChildren")
+            : tree is not null && !Set("DataProvider") && Set("PageSize")
+                ? (tree, $"with a {tree} can't split Items into pages; set Virtualize to show many rows, or take the " +
+                    "top rows from a DataProvider")
+            : tree is not null && Set("DataProvider") && virtualizes
+                ? (tree, "with a DataProvider and LoadChildren can't virtualize its rows; set a PageSize to " +
+                    "show many rows")
             : virtualizes && Set("DetailTemplate")
                 ? ("DetailTemplate", "that virtualizes its rows can't have a DetailTemplate")
             : virtualizes && (Set("PageSize") || !usage.Has("Height") && !IsOn(usage, "Fill")

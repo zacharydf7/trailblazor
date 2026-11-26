@@ -103,6 +103,7 @@ they run by version. The docs site's Upgrading page is built from both.
 - `--tb-app-shell-height` works on the root or any element around the shell, not only on the shell itself, and the new `--tb-app-shell-navigation-width` and `--tb-app-shell-rail-width` set the navigation's width and its rail's.
 - Style values the components write in markup now use `--_tb-` names, such as a dock window's `--_tb-dock-x`, `--_tb-dock-y`, `--_tb-dock-w` and `--_tb-dock-h`, a description list's `--_tb-description-list-columns` and the pop-out window's `--_tb-sheet-applies` probe; `--tb-dock-z` stays public.
 - A `TbDataGrid` tree grid can load a row's children the first time it opens, with the new `LoadChildren` and `HasChildren` in place of a `ChildrenSelector`. A row is `aria-busy` while its children load.
+- With `LoadChildren`, a tree grid can take its top rows from a `DataProvider`, a page at a time with a `PageSize`.
 
 #### 2026-11-25
 

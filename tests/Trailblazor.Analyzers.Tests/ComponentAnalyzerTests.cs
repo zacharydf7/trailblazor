@@ -1522,25 +1522,26 @@ public class ComponentAnalyzerTests
     [InlineData(GridProvider + GridGroups, "groups only rows held in Items, not rows from a DataProvider")]
     [InlineData(GridItems + GridGroups, "")]
     [InlineData(GridItems + GridChildren, "")]
-    [InlineData(GridProvider + GridChildren, "with a ChildrenSelector takes its rows from Items, and can't group them, " +
-        "move them or split them into pages; set Virtualize to show many rows")]
-    [InlineData(GridItems + GridChildren + GridGroups, "with a ChildrenSelector takes its rows from Items, and can't " +
-        "group them, move them or split them into pages; set Virtualize to show many rows")]
+    [InlineData(GridProvider + GridChildren, "with a ChildrenSelector takes its rows from Items; with a " +
+        "DataProvider, load each row's children with LoadChildren")]
+    [InlineData(GridItems + GridChildren + GridGroups, "with a ChildrenSelector can't group its rows or move them")]
     [InlineData(GridItems + GridChildren + """
         __builder.AddComponentParameter(7, "OnMove",
             EventCallback.Factory.Create<SortableMove<string>>(this, _ => { }));
-        """, "with a ChildrenSelector takes its rows from Items, and can't group them, move them or split them into " +
-        "pages; set Virtualize to show many rows")]
+        """, "with a ChildrenSelector can't group its rows or move them")]
     [InlineData(GridItems + GridChildren + """__builder.AddComponentParameter(7, "PageSize", 20);""",
-        "with a ChildrenSelector takes its rows from Items, and can't group them, move them or split them into " +
-        "pages; set Virtualize to show many rows")]
+        "with a ChildrenSelector can't split Items into pages; set Virtualize to show many rows, or take the top " +
+        "rows from a DataProvider")]
     [InlineData(GridItems + GridChildren + """__builder.AddComponentParameter(7, "PageSize", (int?)null);""", "")]
     [InlineData(GridItems + GridLoadChildren, "")]
-    [InlineData(GridProvider + GridLoadChildren, "with a LoadChildren takes its rows from Items, and can't group " +
-        "them, move them or split them into pages; set Virtualize to show many rows")]
+    [InlineData(GridProvider + GridLoadChildren, "")]
+    [InlineData(GridProvider + GridLoadChildren + """__builder.AddComponentParameter(7, "PageSize", 20);""", "")]
+    [InlineData(GridProvider + GridLoadChildren + GridVirtualize + GridHeight, "with a DataProvider and " +
+        "LoadChildren can't virtualize its rows; set a PageSize to show many rows")]
     [InlineData(GridItems + GridLoadChildren + """__builder.AddComponentParameter(7, "PageSize", 20);""",
-        "with a LoadChildren takes its rows from Items, and can't group them, move them or split them into pages; " +
-        "set Virtualize to show many rows")]
+        "with a LoadChildren can't split Items into pages; set Virtualize to show many rows, or take the top rows " +
+        "from a DataProvider")]
+    [InlineData(GridProvider + GridChildren + GridLoadChildren, "takes a ChildrenSelector or LoadChildren, not both")]
     [InlineData(GridItems + GridChildren + GridLoadChildren, "takes a ChildrenSelector or LoadChildren, not both")]
     [InlineData(GridItems + GridVirtualize + GridHeight + """
         __builder.AddComponentParameter(7, "DetailTemplate", (RenderFragment<string>)(trail => __builder2 => { }));
