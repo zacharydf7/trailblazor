@@ -13401,6 +13401,15 @@ public static class ExampleCatalog
                     + "the row: Tab moves between its fields and its Save and Cancel buttons, Enter saves the row, "
                     + "Escape cancels it, focus leaving the row saves it, and `OnRowEdit` gets all of its values at "
                     + "once.", typeof(DataGridRowEditExample)),
+                new("edit-forms", "Edit in a form", "With `EditMode` set to `Form`, an edit opens the row in a dialog "
+                    + "titled for it, such as \"Edit Pine Hollow\", with a field for each editable column, labeled "
+                    + "with its heading and checked as the column's cells are. Enter or Save saves the row, and "
+                    + "Escape, Cancel or any other way of closing the dialog cancels it. `OnRowEdit` gets all of its "
+                    + "values at once, as in row mode, and a handler that sets the edit's `Error` keeps the form open "
+                    + "and shows why: rename Eagle Ridge to Pine Hollow to see it. With `NewItem` and `OnRowAdd`, Add "
+                    + "row opens the same form, titled \"Add row\". A column with an `EditTemplate` shows its "
+                    + "template in a group named for the column; give the template's field a label of its own.",
+                    typeof(DataGridFormEditExample)),
                 new("batch-editing", "Edit in batches", "With `EditMode` set to `Batch`, cells are edited as usual, "
                     + "but each checked edit is kept as a change, marked on its cell with a bar and a tint, while the "
                     + "rows keep their places. A bar above the rows counts the changes; its Save changes button gives "
@@ -13424,8 +13433,10 @@ public static class ExampleCatalog
                     + "grid shows why above the rows until the next delete or refresh, and reads it out. A grid that "
                     + "edits in batches deletes with `Deletable` instead, as "
                     + "[Edit in batches](components/data-grid#batch-editing) shows.", typeof(DataGridDeleteExample)),
-                new("add-rows", "Add rows", "In a grid that edits by row, `NewItem` and `OnRowAdd` give the grid an "
-                    + "Add row button above the rows. It opens a new row at the top, made by `NewItem`, with a field "
+                new("add-rows", "Add rows", "In a grid that edits by row or in a form, `NewItem` and `OnRowAdd` give "
+                    + "the grid an Add row button above the rows. In a form, it opens the new row in the form, as "
+                    + "[Edit in a form](components/data-grid#edit-forms) shows. By row, it opens a new row at the top, "
+                    + "made by `NewItem`, with a field "
                     + "for each editable cell, and the row saves and cancels as a row's edit does; focus leaving it "
                     + "before anything is typed drops it. Once every cell passes its checks, `OnRowAdd` gets the new "
                     + "item, with each value set on it that its column can set, and the edit's `Values`, which hold "
@@ -13578,6 +13589,10 @@ public static class ExampleCatalog
                 new(["Enter"], "Saves the row.") { When = "Editing or adding a row, in a grid that edits by row" },
                 new(["Escape"], "Cancels the row's edit, or drops the new row and puts focus on Add row.")
                     { When = "Editing or adding a row, in a grid that edits by row" },
+                new(["Enter"], "Saves the row and closes the form.") { When = "In a grid's form" },
+                new(["Escape"], "Cancels the edit and closes the form.") { When = "In a grid's form" },
+                new(["Tab"], "Moves between the form's fields, its Save and Cancel buttons and the dialog's close "
+                    + "button, and stays in the dialog.") { When = "In a grid's form" },
                 new(["Enter", "Space"], "Saves or discards every change, and focus stays on the button.")
                     { When = "On the batch bar's buttons" },
                 new(["Shift+Up", "Shift+Down", "Shift+Left", "Shift+Right"], "Grows or shrinks the range of cells "
@@ -13621,6 +13636,9 @@ public static class ExampleCatalog
                     + "\"Save new row\". In a grid that edits in batches with `NewItem` and `OnBatchSave`, the Add row "
                     + "button reads the same, and an added row's Delete button is named for the first text typed "
                     + "into it, such as \"Delete Fern Gully\", or else \"Delete new row\".",
+                "With `EditMode` set to `Form`, the form's dialog is named for the row, such as \"Edit Pine Hollow\" "
+                    + "(`Labels.EditRow`), or \"Add row\" for a new row (`Labels.AddRow`), and each field is labeled "
+                    + "with its column's heading.",
                 "When the rows overflow their box and there is no cell navigation, the box is a tab stop, so keys can "
                     + "scroll it. With an `AriaLabel`, it's also a `region` with that name.",
                 "A row's checkbox is named \"Select\" followed by the row's label, which is its `RowLabel` or else the "
@@ -13651,6 +13669,7 @@ public static class ExampleCatalog
                     + "is read out as \"New row removed.\" (`Labels.NewRowRemoved`).",
                 "A saved new row is read out as \"Row added.\" (`Labels.RowAdded`), or why the app turned it down, "
                     + "such as \"There is already a trail called Pine Hollow.\"",
+                "Why the app turned down a row's edit, in a row or in a form, is read out too.",
                 "A paste is read out, such as \"Cells pasted: 4\", or why nothing was pasted, such as \"Nothing was "
                     + "pasted: Length (km) can't hold that value.\"",
                 "After a filter changes, the count of rows shown is read out, such as \"Rows shown: 2.\", or "
@@ -13685,6 +13704,9 @@ public static class ExampleCatalog
                 "While rows load the table is `aria-busy`.",
                 "With `CellNavigation`, or an `Editable` column, the table takes the ARIA grid role, and rows say "
                     + "whether they are selected with `aria-selected`.",
+                "A grid's form takes focus in the field of the cell it was opened from, or a new row's first field. "
+                    + "When it closes, focus goes back to that cell; after a new row is saved, to the saved row's "
+                    + "first editable cell, and after a new row is canceled, to the Add row button.",
                 "In a grid that edits in batches, marking or restoring a row leaves focus where it is. Add row puts "
                     + "focus in the new row's first editable cell, and when that cell's edit ends, focus stays on it, "
                     + "as it does for any cell. Deleting an added row moves focus to the row in its place: the next "
@@ -13828,6 +13850,9 @@ public static class ExampleCatalog
                 new("editor", "The field that edits a cell."),
                 new("row-actions", "The Save and Cancel buttons of a row that's being edited."),
                 new("row-error", "The message that says why a row could not be saved."),
+                new("form", "The fields of a grid's form, in its dialog, with `EditMode` set to `Form`."),
+                new("form-save", "The form's Save button."),
+                new("form-cancel", "The form's Cancel button."),
                 new("batch-bar", "The bar above the rows of a grid that edits in batches."),
                 new("change-count", "The batch bar's count of changes not yet saved."),
                 new("batch-error", "The message that says why the changes could not be saved."),
@@ -13877,10 +13902,16 @@ public static class ExampleCatalog
                 "With `NewItem` and `OnRowAdd`, or `NewItem` and `OnBatchSave` in a grid that edits in batches, "
                     + "`AddRowAsync()` presses Add row, in bUnit and in Playwright.",
                 "`NewRow` is the new row, `tr[data-new]`, or in a grid that edits in batches the newest one added; "
-                    + "`Rows` and `RowCount` leave new rows out until they're saved.",
+                    + "`Rows` and `RowCount` leave new rows out until they're saved. A grid that edits in a form opens "
+                    + "its new row in the form, so `NewRow` stays empty.",
                 "In a grid that edits in batches, an added row's first editable cell is open after "
                     + "`AddRowAsync()`; type into it and press Enter, then double-click, or press F2 on, each other "
                     + "cell of `NewRow` to edit it, as any batch cell is edited.",
+                "In a grid that edits in a form, find the form by its dialog's name, such as \"Edit Pine Hollow\", "
+                    + "its fields by their columns' headings, such as `Tb().TextField(\"Name\")` in bUnit and "
+                    + "Playwright, and its buttons by their names, Save and Cancel.",
+                "In bUnit, render a `DialogHost` for a grid's form to open. A refusal's text is in "
+                    + "`[data-part=form] [data-part=row-error]`.",
                 "Fill in the new row with `cut.Tb().Within(() => grid.NewRow)` in bUnit, or `grid.NewRow` in "
                     + "Playwright: its fields are named for their columns, and its buttons \"Save new row\" and "
                     + "\"Cancel editing new row\".",

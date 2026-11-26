@@ -1934,9 +1934,10 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
         await AnsweredAsync(() => button.ClickAsync());
     }
 
-    /// <summary>Presses the Add row button of a grid with a <c>NewItem</c>, whose <c>EditMode</c> is <c>Row</c> and
-    /// that has an <c>OnRowAdd</c>, or is <c>Batch</c> and has an <c>OnBatchSave</c>, and waits until the grid has
-    /// opened the new row, in <see cref="NewRow"/>. Throws when the grid offers no Add row button.</summary>
+    /// <summary>Presses the Add row button of a grid with a <c>NewItem</c>, whose <c>EditMode</c> is <c>Row</c> or
+    /// <c>Form</c> and that has an <c>OnRowAdd</c>, or is <c>Batch</c> and has an <c>OnBatchSave</c>, and waits until
+    /// the grid has opened the new row, in <see cref="NewRow"/>, or in a grid whose <c>EditMode</c> is <c>Form</c>, in
+    /// the form's dialog. Throws when the grid offers no Add row button.</summary>
     public async Task AddRowAsync()
     {
         await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
@@ -1944,7 +1945,8 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
         if (await button.CountAsync() == 0)
         {
             throw new InvalidOperationException("The grid offers no Add row button; give it a NewItem, an editable "
-                + "column, and either an EditMode of Row with an OnRowAdd or an EditMode of Batch with an OnBatchSave, "
+                + "column, and either an EditMode of Row or Form with an OnRowAdd, or an EditMode of Batch with an "
+                + "OnBatchSave, "
                 + "without Virtualize.");
         }
 
@@ -1952,7 +1954,8 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
     }
 
     /// <summary>The row the user is adding, at the top of the rows, with a field for each editable cell and the row's
-    /// Save and Cancel buttons; in a grid that edits in batches, the newest row added.</summary>
+    /// Save and Cancel buttons; in a grid that edits in batches, the newest row added. A grid whose <c>EditMode</c> is
+    /// <c>Form</c> opens its new row in the form's dialog instead.</summary>
     public ILocator NewRow => Table.Locator(":scope > tbody > tr[data-new]").First;
 
     /// <summary>Pastes this text at the cell under <paramref name="column"/> in the row with a cell whose text is

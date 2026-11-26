@@ -12,4 +12,9 @@ public enum GridEditMode
     /// <summary>One cell at a time, as <see cref="Cell"/> does, but each checked edit is kept as a change, marked on its
     /// cell, until the user saves or discards all the changes at once.</summary>
     Batch,
+
+    /// <summary>Every <see cref="TbColumn{TItem}.Editable"/> cell of a row, as <see cref="Row"/> does, but in a dialog
+    /// with a labeled field for each, saved with its Save button or Enter and canceled with its Cancel button or
+    /// Escape.</summary>
+    Form,
 }

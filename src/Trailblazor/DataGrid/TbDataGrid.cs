@@ -467,13 +467,16 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// between its fields and Save and Cancel buttons, and leaving the row saves it. In
     /// <see cref="GridEditMode.Batch"/>, cells are edited as in the default, and each edit is kept as a change until
     /// the user saves or discards them all; Ctrl+V on a cell pastes cells there too, such as rows copied from a
-    /// spreadsheet, each kept as a change.</summary>
+    /// spreadsheet, each kept as a change. In <see cref="GridEditMode.Form"/>, a row's edit covers every editable cell
+    /// as in <see cref="GridEditMode.Row"/>, but opens in a dialog with a field for each, labeled with its column's
+    /// heading.</summary>
     [Parameter]
     public GridEditMode EditMode { get; set; }
 
-    /// <summary>Raised with each row the user saves when <see cref="EditMode"/> is <see cref="GridEditMode.Row"/>,
-    /// once every cell's checks pass; apply it to the item, or save it, and the grid shows the rows again. Without
-    /// it, each value is set on the item when its column's field is a property or field the grid can set.</summary>
+    /// <summary>Raised with each row the user saves when <see cref="EditMode"/> is <see cref="GridEditMode.Row"/> or
+    /// <see cref="GridEditMode.Form"/>, once every cell's checks pass; apply it to the item, or save it, and the grid
+    /// shows the rows again. Without it, each value is set on the item when its column's field is a property or field
+    /// the grid can set.</summary>
     [Parameter]
     public EventCallback<GridRowEdit<TItem>> OnRowEdit { get; set; }
 
@@ -494,20 +497,22 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public bool Deletable { get; set; }
 
-    /// <summary>Makes the item for a row the user adds, such as one with its defaults set. With
-    /// <see cref="OnRowAdd"/>, a grid whose <see cref="EditMode"/> is <see cref="GridEditMode.Row"/> offers an Add row
-    /// button, and so does one whose <see cref="EditMode"/> is <see cref="GridEditMode.Batch"/> with an
-    /// <see cref="OnBatchSave"/>. There, each press adds a row at the top with its first editable cell open, and the
-    /// row is kept as a change until the changes are saved or discarded; its Delete button, with
-    /// <see cref="Deletable"/>, removes it. Saving checks the cells of an added row the user never opened, too.
-    /// <see cref="OnBatchSave"/> gets the new items in <see cref="GridBatchEdit{TItem}.Added"/>.</summary>
+    /// <summary>Makes the item for a row the user adds, such as one with its defaults set. With <see cref="OnRowAdd"/>,
+    /// a grid whose <see cref="EditMode"/> is <see cref="GridEditMode.Row"/> or <see cref="GridEditMode.Form"/> offers
+    /// an Add row button, and so does one whose <see cref="EditMode"/> is <see cref="GridEditMode.Batch"/> with an <see
+    /// cref="OnBatchSave"/>. There, each press adds a row at the top with its first editable cell open, and the row is
+    /// kept as a change until the changes are saved or discarded; its Delete button, with <see cref="Deletable"/>,
+    /// removes it. Saving checks the cells of an added row the user never opened, too. <see cref="OnBatchSave"/> gets
+    /// the new items in <see cref="GridBatchEdit{TItem}.Added"/>.</summary>
     [Parameter]
     public Func<TItem>? NewItem { get; set; }
 
     /// <summary>Raised with the row the user adds, once every cell's checks pass, in a grid whose
-    /// <see cref="EditMode"/> is <see cref="GridEditMode.Row"/> and that has a <see cref="NewItem"/>. The Add row
-    /// button above the rows opens a new row at the top that edits every <see cref="TbColumn{TItem}.Editable"/> cell
-    /// and saves and cancels as a row's edit does, except that focus leaving it before anything is typed drops it.
+    /// <see cref="EditMode"/> is <see cref="GridEditMode.Row"/> or <see cref="GridEditMode.Form"/> and that has a
+    /// <see cref="NewItem"/>. The Add row button above the rows opens a new row that edits every
+    /// <see cref="TbColumn{TItem}.Editable"/> cell, at the top of the rows or, in <see cref="GridEditMode.Form"/>, in
+    /// the form, and saves and cancels as a row's edit does, except that a new row at the top is dropped when focus
+    /// leaves it before anything is typed.
     /// The edit's item is the new item, with each value set on it whose column's field the grid can set; add it, or
     /// save it, and the grid shows the rows again. A handler that sets the edit's
     /// <see cref="GridRowEdit{TItem}.Error"/> keeps the new row open and shows why. A grid that virtualizes its rows,
@@ -684,7 +689,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private bool HasEditHandler => EditMode switch
     {
-        GridEditMode.Row => OnRowEdit.HasDelegate,
+        GridEditMode.Row or GridEditMode.Form => OnRowEdit.HasDelegate,
         GridEditMode.Batch => OnBatchSave.HasDelegate,
         _ => OnCellEdit.HasDelegate,
     };
@@ -1278,7 +1283,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             return;
         }
 
-        if (_edit is { } open && (Equals(open.Key, key) && (EditMode == GridEditMode.Row || open.Start == column)
+        if (_edit is { } open && (Equals(open.Key, key) && (EditsRows || open.Start == column)
                 || !await SaveEditAsync(refocus: false)))
         {
             return;
@@ -1292,7 +1297,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         var item = at >= 0 ? _rows[at] : _added[key];
-        var columns = EditMode == GridEditMode.Row ? _shownColumns.Where(CanEdit) : [column];
+        var columns = EditsRows ? _shownColumns.Where(CanEdit) : [column];
         _edit = new(item, key, column, [.. columns.Select(editable => new CellEdit(editable,
             ChangeOf(key, editable) is { } change ? change.Value : editable.ValueOf(item)))]);
         _editVersion++;
@@ -1328,7 +1333,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private Task ChooseAsync(CellEdit cell, string? choice)
     {
         cell.Value = choice;
-        return EditMode != GridEditMode.Row ? SaveEditAsync(refocus: true) : Task.CompletedTask;
+        return !EditsRows ? SaveEditAsync(refocus: true) : Task.CompletedTask;
     }
 
     // A key the field used, such as Enter opening a select's list or Escape closing it, leaves the edit open.
@@ -1428,7 +1433,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         if (await RejectionOfAsync(edit, values) is { } rejected)
         {
-            if (EditMode == GridEditMode.Row)
+            if (EditsRows)
             {
                 edit.Error = rejected;
                 Announcer.Assertive(rejected);
@@ -1675,7 +1680,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             return null;
         }
 
-        if (EditMode == GridEditMode.Row)
+        if (EditsRows)
         {
             var row = new GridRowEdit<TItem>(edit.Item,
                 values.ToDictionary(pair => pair.Key.Column.Key, pair => pair.Value));
@@ -1883,12 +1888,32 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private bool CanAdd => NewItem is not null && !Virtualize
         && _shownColumns.Any(column => column.Editor != ColumnEditor.None)
-        && (EditMode == GridEditMode.Row ? OnRowAdd.HasDelegate
+        && (EditsRows ? OnRowAdd.HasDelegate
             : EditMode == GridEditMode.Batch && OnBatchSave.HasDelegate);
 
     private bool IsAdded(object key) => _added.ContainsKey(key);
 
     private GridEdit? Adding => _edit is { } edit && IsNew(edit.Key) ? edit : null;
+
+    private GridEdit? AddingInRow => EditMode == GridEditMode.Row ? Adding : null;
+
+    private bool EditsRows => EditMode is GridEditMode.Row or GridEditMode.Form;
+
+    private string? FieldLabel(CellEdit cell) => EditMode == GridEditMode.Form ? cell.Column.Heading : null;
+
+    private string? CellLabel(CellEdit cell) => EditMode == GridEditMode.Form ? null : cell.Column.Heading;
+
+    private string FormTitle => _formEdit is not { } edit ? ""
+        : IsNew(edit.Key) ? Text(Labels.AddRow, TbStrings.DataGridAddRow)
+        : Format(Labels.EditRow, TbStrings.DataGridEditRow, LabelOf(edit.Item));
+
+    // The form's last edit, which it shows until it has faded out.
+    private GridEdit? _formEdit;
+
+    private string FormLabelId(CellEdit cell) => $"{_changedId}-form-{cell.Column.Key}";
+
+    // Closing the form, as with Escape or its close button, cancels the edit.
+    private Task FormOpenChangedAsync(bool open) => open ? Task.CompletedTask : CancelEditAsync();
 
     private static bool IsNew(object key) => ReferenceEquals(key, NewRowKey);
 

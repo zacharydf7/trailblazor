@@ -13,7 +13,7 @@
                 Virtualize ? "tb-data-grid--virtual" : null, Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
     @{ CheckColumnKeys(); ArrangeColumns(); ArrangeDrawnColumns(); ArrangeForColumns(); UpdateRange(); DrawRowsForReorder(); }
-    @{ TakeRenderWait(); }
+    @{ TakeRenderWait(); _formEdit = EditMode == GridEditMode.Form ? _edit ?? _formEdit : null; }
     @if (CanAdd || HasGroupBy || HideableColumns || Exportable)
     {
         <div data-part="toolbar" class="@ClassNames.Join("tb-data-grid__toolbar", Classes?.Toolbar)">
@@ -283,7 +283,7 @@
             </thead>
             <tbody @ref="_body" data-sortable="@(CanReorder ? "" : null)">
                 @AddedRows
-                @if (Adding is { } adding)
+                @if (AddingInRow is { } adding)
                 {
                     @Row(adding.Item, NewRowKey, false, -1, null, Text(Labels.NewRow, TbStrings.DataGridNewRow), false,
                         null)
@@ -307,7 +307,7 @@
                         <td colspan="@DrawnCount">@(Labels.Loading ?? Localizer[TbStrings.DataGridLoading])</td>
                     </tr>
                 }
-                else if (HasNoRows && Adding is null && _added.Count == 0)
+                else if (HasNoRows && AddingInRow is null && _added.Count == 0)
                 {
                     <tr data-part="empty" aria-rowindex="@(Virtualize ? HeaderRowCount + 1 : null)"
                         class="tb-data-grid__status">
@@ -400,6 +400,36 @@
                                   : Format(Labels.Pages, TbStrings.DataGridPages, AriaLabel))" />
             }
         </div>
+    }
+    @* A form's keys reach the edit as a cell's do, so Enter saves and Escape cancels. It shows its last edit while it
+       fades out. *@
+    @if (EditMode == GridEditMode.Form)
+    {
+        <TbDialog Open="_edit is not null" OpenChanged="FormOpenChangedAsync" Title="@FormTitle">
+            @if (_formEdit is { } formEdit)
+            {
+                <div data-part="form" class="tb-data-grid__form">
+                    @foreach (var cell in formEdit.Cells)
+                    {
+                        <div @key="cell.Column.Key" data-column="@cell.Column.Key" class="tb-data-grid__form-field">
+                            @Editor(formEdit, cell)
+                        </div>
+                    }
+                    @if (formEdit.Error is not null)
+                    {
+                        <p data-part="row-error" class="tb-data-grid__form-error">@formEdit.Error</p>
+                    }
+                </div>
+                <TbDialogActions>
+                    <TbButton Variant="Variant.Text" data-part="form-cancel" OnClick="CancelEditAsync">
+                        @Text(Labels.Cancel, TbStrings.DataGridCancel)
+                    </TbButton>
+                    <TbButton data-part="form-save" OnClick="() => SaveEditAsync(refocus: true)">
+                        @Text(Labels.Save, TbStrings.DataGridSave)
+                    </TbButton>
+                </TbDialogActions>
+            }
+        </TbDialog>
     }
 </div>
 
@@ -494,7 +524,7 @@
                     {
                         @TreeToggle(tree!.Value, key, label ?? LabelOf(item))
                     }
-                    @if (RowEditOf(key) is { } edit && edit.CellOf(column) is { } cell)
+                    @if (EditMode != GridEditMode.Form && RowEditOf(key) is { } edit && edit.CellOf(column) is { } cell)
                     {
                         @Editor(edit, cell)
                     }
@@ -644,25 +674,37 @@
     // A cell being edited holds its field, saved when focus leaves it, or in row mode when focus leaves the row; like
     // the filters, a page's form doesn't own it, and its keys go no further than the edit.
     private RenderFragment Editor(GridEdit edit, CellEdit cell) =>
-        @<div data-part="editor" data-tb-focus-root="@(EditMode != GridEditMode.Row ? "edit" : null)"
+        @<div data-part="editor" data-tb-focus-root="@(!EditsRows ? "edit" : null)"
               class="tb-data-grid__editor" @ontbeditkey="OnEditKeyAsync" @onkeydown:stopPropagation
               @ontbfocusleave="@(Handler<FieldFocusEventArgs>(
-                                  EditMode != GridEditMode.Row ? LeftHandler(edit) : null))">
+                                  !EditsRows ? LeftHandler(edit) : null))">
             <CascadingValue TValue="EditContext" Value="null">
                 <CascadingValue TValue="TbForm" Value="null">
                     @switch (cell.Column.Editor)
                     {
+                        case ColumnEditor.Custom when EditMode == GridEditMode.Form:
+                            @* A template's field brings its own name, so in a form it sits in a group named for its
+                               column. *@
+                            <div role="group" aria-labelledby="@FormLabelId(cell)" class="tb-data-grid__form-group">
+                                <span id="@FormLabelId(cell)" class="tb-data-grid__form-label">
+                                    @cell.Column.Heading
+                                </span>
+                                @cell.Column.EditTemplate!(ContextOf(edit, cell))
+                            </div>
+                            break;
                         case ColumnEditor.Custom:
                             @cell.Column.EditTemplate!(ContextOf(edit, cell))
                             break;
                         case ColumnEditor.Number:
-                            <TbNumberField TValue="decimal?" AriaLabel="@cell.Column.Heading" Size="Size.Small"
+                            <TbNumberField TValue="decimal?"
+                                           Label="@FieldLabel(cell)" AriaLabel="@CellLabel(cell)" Size="Size.Small"
                                            HideStepButtons AutoFocus="cell.Column == edit.Start"
                                            Value="NumberOf(cell.Value)" ValueChanged="number => cell.Value = number"
                                            Error="@cell.Error" />
                             break;
                         case ColumnEditor.Choice:
-                            <TbSelect TValue="string" AriaLabel="@cell.Column.Heading" Size="Size.Small"
+                            <TbSelect TValue="string"
+                                      Label="@FieldLabel(cell)" AriaLabel="@CellLabel(cell)" Size="Size.Small"
                                       AutoFocus="cell.Column == edit.Start" Value="@cell.Value?.ToString()"
                                       ValueChanged="choice => ChooseAsync(cell, choice)" Error="@cell.Error">
                                 @foreach (var (value, label) in cell.Column.Choices)
@@ -673,38 +715,42 @@
                             break;
                         case ColumnEditor.Date:
                             @* A standard format, such as "d", leaves the box in the culture's short date. *@
-                            <TbDatePicker @ref="cell.Field" TDate="DateOnly" AriaLabel="@cell.Column.Heading"
+                            <TbDatePicker @ref="cell.Field" TDate="DateOnly"
+                                          Label="@FieldLabel(cell)" AriaLabel="@CellLabel(cell)"
                                           Size="Size.Small" Format="@(cell.Column.Format is { Length: > 1 } format
                                                                         ? format : null)"
                                           AutoFocus="cell.Column == edit.Start" Value="cell.Value as DateOnly?"
                                           ValueChanged="date => cell.Value = date" Error="@cell.Error" />
                             break;
                         case ColumnEditor.Time:
-                            <TbTimePicker @ref="cell.Field" TTime="TimeOnly" AriaLabel="@cell.Column.Heading"
+                            <TbTimePicker @ref="cell.Field" TTime="TimeOnly"
+                                          Label="@FieldLabel(cell)" AriaLabel="@CellLabel(cell)"
                                           Size="Size.Small"
                                           AutoFocus="cell.Column == edit.Start" Value="cell.Value as TimeOnly?"
                                           ValueChanged="time => cell.Value = time" Error="@cell.Error" />
                             break;
                         case ColumnEditor.DateAndTime:
-                            <TbDateTimePicker @ref="cell.Field" TDateTime="DateTime" AriaLabel="@cell.Column.Heading"
+                            <TbDateTimePicker @ref="cell.Field" TDateTime="DateTime"
+                                              Label="@FieldLabel(cell)" AriaLabel="@CellLabel(cell)"
                                               Size="Size.Small" AutoFocus="cell.Column == edit.Start"
                                               Value="cell.Value as DateTime?" ValueChanged="when => cell.Value = when"
                                               Error="@cell.Error" />
                             break;
                         case ColumnEditor.DateAndTimeWithOffset:
                             <TbDateTimePicker @ref="cell.Field" TDateTime="DateTimeOffset"
-                                              AriaLabel="@cell.Column.Heading"
+                                              Label="@FieldLabel(cell)" AriaLabel="@CellLabel(cell)"
                                               Size="Size.Small" AutoFocus="cell.Column == edit.Start"
                                               Value="cell.Value as DateTimeOffset?"
                                               ValueChanged="moment => cell.Value = moment" Error="@cell.Error" />
                             break;
                         case ColumnEditor.YesNo:
-                            <TbCheckbox TValue="bool" AriaLabel="@cell.Column.Heading"
+                            <TbCheckbox TValue="bool" Label="@FieldLabel(cell)" AriaLabel="@CellLabel(cell)"
                                         AutoFocus="cell.Column == edit.Start" Value="cell.Value is true"
                                         ValueChanged="yes => cell.Value = yes" Error="@cell.Error" />
                             break;
                         default:
-                            <TbTextField TValue="string" AriaLabel="@cell.Column.Heading" Size="Size.Small"
+                            <TbTextField TValue="string"
+                                         Label="@FieldLabel(cell)" AriaLabel="@CellLabel(cell)" Size="Size.Small"
                                          AutoFocus="cell.Column == edit.Start" UpdateOnInput
                                          Value="@(cell.Value as string)" ValueChanged="text => cell.Value = text"
                                          Error="@cell.Error" />

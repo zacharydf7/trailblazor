@@ -5243,21 +5243,24 @@ public sealed class TbGridDriver
         ?? throw new InvalidOperationException("The grid offers no Delete button; give it an OnRowDelete or, in a "
             + "batch grid, Deletable and an OnBatchSave.")).ClickAsync(new MouseEventArgs { Detail = 1 });
 
-    /// <summary>Presses the Add row button of a grid with a <c>NewItem</c>, whose <c>EditMode</c> is <c>Row</c> and
-    /// that has an <c>OnRowAdd</c>, or is <c>Batch</c> and has an <c>OnBatchSave</c>, and returns once the new row is
-    /// open, in <see cref="NewRow"/>. Throws when the grid offers no Add row button.</summary>
+    /// <summary>Presses the Add row button of a grid with a <c>NewItem</c>, whose <c>EditMode</c> is <c>Row</c> or
+    /// <c>Form</c> and that has an <c>OnRowAdd</c>, or is <c>Batch</c> and has an <c>OnBatchSave</c>, and returns once
+    /// the new row is open, in <see cref="NewRow"/>, or in a grid whose <c>EditMode</c> is <c>Form</c>, in the form's
+    /// dialog. Throws when the grid offers no Add row button.</summary>
     public async Task AddRowAsync() => await (_find().Closest("[data-part=grid]")
         ?.QuerySelector(":scope > [data-part=toolbar] [data-part=add-row]")
         ?? throw new InvalidOperationException("The grid offers no Add row button; give it a NewItem, an editable "
-            + "column, and either an EditMode of Row with an OnRowAdd or an EditMode of Batch with an OnBatchSave, "
+            + "column, and either an EditMode of Row or Form with an OnRowAdd, or an EditMode of Batch with an "
+            + "OnBatchSave, "
             + "without Virtualize."))
         .ClickAsync(new MouseEventArgs { Detail = 1 });
 
     /// <summary>The row the user is adding, at the top of the rows, with a field for each editable cell and the row's
-    /// Save and Cancel buttons; in a grid that edits in batches, the newest row added. Throws when no row is being
-    /// added.</summary>
+    /// Save and Cancel buttons; in a grid that edits in batches, the newest row added. A grid whose <c>EditMode</c> is
+    /// <c>Form</c> opens its new row in the form's dialog instead. Throws when no row is being added.</summary>
     public IElement NewRow => _find().QuerySelector(":scope > tbody > tr[data-new]")
-        ?? throw new InvalidOperationException("The grid isn't adding a row; call AddRowAsync first.");
+        ?? throw new InvalidOperationException("The grid isn't adding a row in its rows; call AddRowAsync first. "
+            + "A grid that edits in a form opens its new row in the form's dialog.");
 
     /// <summary>Pastes this text at the cell under <paramref name="column"/> in the row with a cell whose text is
     /// exactly <paramref name="row"/>, as Ctrl+V does. Tabs separate the cells and line breaks the rows, as a

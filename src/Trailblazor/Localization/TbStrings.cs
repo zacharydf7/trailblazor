@@ -1627,6 +1627,10 @@ public static class TbStrings
     /// <summary>"Add row": the text of a data grid's button that adds a row.</summary>
     public const string DataGridAddRow = "DataGrid.AddRow";
 
+    /// <summary>"Edit {0}": titles the dialog that edits a data grid row in form mode; {0} is the row's label.
+    /// </summary>
+    public const string DataGridEditRow = "DataGrid.EditRow";
+
     /// <summary>"new row": names the row the user is adding within a data grid's other names, as in "Save new row".
     /// </summary>
     public const string DataGridNewRow = "DataGrid.NewRow";
@@ -2506,6 +2510,7 @@ public static class TbStrings
         [DataGridRowRestored] = "{0} restored.",
         [DataGridMarkedDeleted] = "Marked for deletion",
         [DataGridAddRow] = "Add row",
+        [DataGridEditRow] = "Edit {0}",
         [DataGridNewRow] = "new row",
         [DataGridRowAdded] = "Row added.",
         [DataGridNewRowRemoved] = "New row removed.",

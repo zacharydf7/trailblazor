@@ -1,0 +1,42 @@
+@page "/grid-form-edit"
+
+@* A grid that edits each row in a dialog. *@
+<TbDataGrid TItem="Hike" Items="_hikes" AriaLabel="Hikes" KeySelector="hike => hike.Id" CellNavigation
+            EditMode="GridEditMode.Form" OnRowEdit="Save" NewItem="() => new Hike { Id = _nextId++ }"
+            OnRowAdd="(GridRowEdit<Hike> add) => _hikes.Add(add.Item)">
+    <TbColumn Field="hike => hike.Name" Editable />
+    <TbColumn Field="hike => hike.LengthKm" Title="Length (km)" Editable />
+</TbDataGrid>
+@* The same in a page's form, which Enter in the grid's form mustn't submit. *@
+<form @onsubmit="() => _submits++">
+    <TbDataGrid TItem="Hike" Items="_trails" AriaLabel="Trails" KeySelector="trail => trail.Id" CellNavigation
+                EditMode="GridEditMode.Form" OnRowEdit="Save">
+        <TbColumn Field="trail => trail.Name" Editable />
+    </TbDataGrid>
+</form>
+<p id="submits">Submitted @_submits times</p>
+
+@code {
+    private readonly List<Hike> _hikes = [new() { Id = 1, Name = "Pine Hollow", LengthKm = 6 }];
+    private readonly List<Hike> _trails = [new() { Id = 1, Name = "Fern Gully" }];
+    private int _nextId = 2;
+    private int _submits;
+
+    public sealed class Hike
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = "";
+
+        public int LengthKm { get; set; }
+    }
+
+    private static void Save(GridRowEdit<Hike> edit)
+    {
+        edit.Item.Name = (string)edit.Values["Name"]!;
+        if (edit.Values.TryGetValue("LengthKm", out var length))
+        {
+            edit.Item.LengthKm = (int)length!;
+        }
+    }
+}

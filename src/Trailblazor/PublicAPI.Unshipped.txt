@@ -8256,3 +8256,7 @@ Trailblazor.DataGridLabels.NewRowRemoved.init -> void
 Trailblazor.GridBatchEdit<TItem>.Added.get -> System.Collections.Generic.IReadOnlyList<TItem>!
 Trailblazor.GridBatchEdit<TItem>.Added.init -> void
 const Trailblazor.TbStrings.DataGridNewRowRemoved = "DataGrid.NewRowRemoved" -> string!
+Trailblazor.DataGridLabels.EditRow.get -> string?
+Trailblazor.DataGridLabels.EditRow.init -> void
+Trailblazor.GridEditMode.Form = 3 -> Trailblazor.GridEditMode
+const Trailblazor.TbStrings.DataGridEditRow = "DataGrid.EditRow" -> string!

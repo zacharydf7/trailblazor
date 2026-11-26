@@ -117,9 +117,15 @@ public sealed record DataGridLabels
     /// </summary>
     public string? MarkedDeleted { get; init; }
 
-    /// <summary>The text of a data grid's button that adds a row: "Add row" in English. Leave it null for the app's
-    /// text for <see cref="TbStrings.DataGridAddRow"/>.</summary>
+    /// <summary>The text of a data grid's button that adds a row, and the title of a new row's form: "Add row" in
+    /// English. Leave it null for the app's text for <see cref="TbStrings.DataGridAddRow"/>.</summary>
     public string? AddRow { get; init; }
+
+    /// <summary>Titles the dialog that edits a row of a grid whose <see cref="TbDataGrid{TItem}.EditMode"/> is
+    /// <see cref="GridEditMode.Form"/>; <c>{0}</c> is the row's label: "Edit {0}" in English. A new row's dialog is
+    /// titled with <see cref="AddRow"/>. Leave it null for the app's text for <see cref="TbStrings.DataGridEditRow"/>.
+    /// </summary>
+    public string? EditRow { get; init; }
 
     /// <summary>Names the row the user is adding within its Save and Cancel buttons' names: "new row" in English, as in
     /// "Save new row". Leave it null for the app's text for <see cref="TbStrings.DataGridNewRow"/>.</summary>

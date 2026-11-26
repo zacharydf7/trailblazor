@@ -1,7 +1,8 @@
 namespace Trailblazor;
 
 /// <summary>A row the user saved, or a new row the user added, in a <see cref="TbDataGrid{TItem}"/> whose
-/// <see cref="TbDataGrid{TItem}.EditMode"/> is <see cref="GridEditMode.Row"/>, once every cell's checks passed.
+/// <see cref="TbDataGrid{TItem}.EditMode"/> is <see cref="GridEditMode.Row"/> or <see cref="GridEditMode.Form"/>,
+/// once every cell's checks passed.
 /// </summary>
 /// <param name="Item">The row's item, as it was before the edit; for a new row, the item
 /// <see cref="TbDataGrid{TItem}.NewItem"/> made, with each value set on it whose column's field the grid can set.

@@ -1,0 +1,55 @@
+<TbDataGrid TItem="Trail" Items="_trails" AriaLabel="Trails to edit in a form" KeySelector="trail => trail.Id"
+            CellNavigation EditMode="GridEditMode.Form" NewItem="NewTrail" OnRowEdit="Save" OnRowAdd="Add">
+    <TbColumn Field="trail => trail.Name" Editable Validate="(_, name) => RequireName(name)" />
+    <TbColumn Field="trail => trail.Region" Editable />
+    <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Editable />
+    <TbColumn Field="trail => trail.Open" Editable />
+</TbDataGrid>
+
+@code {
+    private readonly List<Trail> _trails =
+    [
+        new() { Id = 1, Name = "Pine Hollow", Region = "North ridge", LengthKm = 6, Open = true },
+        new() { Id = 2, Name = "Eagle Ridge", Region = "North ridge", LengthKm = 14 },
+    ];
+
+    private int _nextId = 3;
+
+    public sealed class Trail
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = "";
+
+        public string Region { get; set; } = "";
+
+        public int LengthKm { get; set; }
+
+        public bool Open { get; set; }
+    }
+
+    private Trail NewTrail() => new() { Id = _nextId++, LengthKm = 5, Open = true };
+
+    private static string? RequireName(object? name) =>
+        string.IsNullOrWhiteSpace(name as string) ? "Give the trail a name." : null;
+
+    // Stands in for a server that won't take two trails with one name. The form's values arrive together, by column,
+    // as a row edit's do.
+    private void Save(GridRowEdit<Trail> edit)
+    {
+        var name = (string)edit.Values["Name"]!;
+        if (_trails.Any(trail => trail != edit.Item && trail.Name == name))
+        {
+            edit.Error = $"There is already a trail called {name}.";
+            return;
+        }
+
+        edit.Item.Name = name;
+        edit.Item.Region = (string)edit.Values["Region"]!;
+        edit.Item.LengthKm = (int)edit.Values["LengthKm"]!;
+        edit.Item.Open = (bool)edit.Values["Open"]!;
+    }
+
+    // A new row's item already holds its values.
+    private void Add(GridRowEdit<Trail> add) => _trails.Add(add.Item);
+}

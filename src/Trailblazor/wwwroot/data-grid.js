@@ -442,7 +442,9 @@ export function createDataGrid(table, waitForReorder) {
 
         cancelAndCommit(event, input);
     };
-    table.addEventListener('keydown', keepPageFormUnsubmitted);
+    // A form's fields sit in a dialog beside the table, inside the grid, so the guards listen on the grid.
+    const gridRoot = table.closest('[data-part=grid]') ?? table;
+    gridRoot.addEventListener('keydown', keepPageFormUnsubmitted);
 
     // Escape that ends a cell's edit is marked used, so a dialog around the grid stays open; one a field has already
     // used, such as a select closing its list, is already marked.
@@ -453,17 +455,20 @@ export function createDataGrid(table, waitForReorder) {
             event.tbGridGuarded = true;
         }
     };
-    table.addEventListener('keydown', keepEscapeInEdit);
+    gridRoot.addEventListener('keydown', keepEscapeInEdit);
 
     // A key in a field's popup, such as a picker's calendar, or Enter on a field's own button belongs to the field.
     const ownKey = event => Boolean(event.target.closest?.('.tb-data-grid__editor [popover]')
         || (event.key === 'Enter' && event.target.closest?.('.tb-data-grid__editor button')));
 
     // Only Enter and Escape reach a cell's edit, saying whether its field used the key; the grid's own guards don't
-    // count. Blazor listens on the document, so the window hears the key after a field's handlers have run.
+    // count. Blazor listens on the document, so the window hears the key after a field's handlers have run. A form's
+    // fields sit in a dialog beside the table, inside the grid.
+    const ownsEdit = edit => edit?.closest('table') === table || (edit?.closest('[data-part=form]')
+        && edit.closest('[data-part=grid]') === table.closest('[data-part=grid]'));
     const sendEditKey = event => {
         const edit = event.target.closest?.('.tb-data-grid__editor, .tb-data-grid__row-actions');
-        if ((event.key === 'Enter' || event.key === 'Escape') && edit?.closest('table') === table && !ownKey(event)) {
+        if ((event.key === 'Enter' || event.key === 'Escape') && ownsEdit(edit) && !ownKey(event)) {
             edit.dispatchEvent(new CustomEvent('tb-edit-key', {
                 bubbles: true,
                 detail: {
@@ -590,8 +595,8 @@ export function createDataGrid(table, waitForReorder) {
             windowWidths.disconnect();
             windowResizes.disconnect();
             navigation.dispose();
-            table.removeEventListener('keydown', keepPageFormUnsubmitted);
-            table.removeEventListener('keydown', keepEscapeInEdit);
+            gridRoot.removeEventListener('keydown', keepPageFormUnsubmitted);
+            gridRoot.removeEventListener('keydown', keepEscapeInEdit);
             window.removeEventListener('keydown', sendEditKey);
             table.removeEventListener('pointerdown', keepEditFocused);
             table.removeEventListener('mousedown', notePress);
