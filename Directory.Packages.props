@@ -5,13 +5,14 @@
   </PropertyGroup>
 
   <!-- The lowest versions the testing packages support, packed as their dependencies' lower bounds, and named in the
-       docs site's Testing guide. bUnit before 2.8.6 brings in a vulnerable AngleSharp, and AngleSharpMinimum must
-       match the AngleSharp bUnit 2.8.6 was built against. CI's minimums job runs the bUnit tests against these with
-       -p:TestingMinimums=true. Playwright stays at its latest there, since the browser tests use newer APIs; the
-       helpers still build against its minimum, and tests/Trailblazor.PlaywrightFloorTests runs them on it. -->
+       docs site's Testing guide. Before 2.12.5, bUnit's waits can miss a render that ends a file upload (#716), and
+       AngleSharpMinimum must match the AngleSharp bUnit 2.12.5 was built against. CI's minimums job runs the bUnit
+       tests against these with -p:TestingMinimums=true. Playwright stays at its latest there, since the browser
+       tests use newer APIs; the helpers still build against its minimum, and tests/Trailblazor.PlaywrightFloorTests
+       runs them on it. -->
   <PropertyGroup>
-    <BunitMinimum>2.8.6</BunitMinimum>
-    <AngleSharpMinimum>1.5.2</AngleSharpMinimum>
+    <BunitMinimum>2.12.5</BunitMinimum>
+    <AngleSharpMinimum>1.8.5</AngleSharpMinimum>
     <TimeProviderTestingMinimum>8.0.0</TimeProviderTestingMinimum>
     <PlaywrightMinimum>1.48.0</PlaywrightMinimum>
   </PropertyGroup>

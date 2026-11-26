@@ -10,6 +10,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-26
 
+- Trailblazor.Testing with bUnit 2.8.6 to 2.12.4 → bUnit 2.12.5 or later, since before it the file upload helpers' waits can miss the render that ends an upload
 - Custom properties a component sets for its own layout or state, such as --tb-dialog-width, --tb-dock-x, --tb-color-picker-value and --tb-button-fill → the same names starting with --_tb-, which marks them private: TbTokens lists every property an app may set or read, and a --_tb- one can change in any release. To recolor one button, set --tb-color-primary or --tb-color-secondary in its Style, and its hover and pressed colors follow; for another tone, also set that tone's -hover and -active tokens and its --tb-color-on- token
 
 #### 2026-11-25
