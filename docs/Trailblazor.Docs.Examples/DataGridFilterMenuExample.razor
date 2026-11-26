@@ -14,7 +14,7 @@
         </TbColumn>
     </TbDataGrid>
     <output aria-label="Camp filters">
-        @(_filters.Count == 0 ? "No filters." : $"Filters: {string.Join("; ", _filters.Select(Describe))}.")
+        @(_filters.Count == 0 ? "No filters." : $"Filters: {Describe(_filters)}.")
     </output>
 </TbStack>
 
@@ -32,9 +32,11 @@
 
     private IReadOnlyList<GridFilter> _filters = [];
 
-    private static string Describe(GridFilter filter) => filter.Value is IEnumerable<object> values
-        ? $"{filter.Column} {filter.Operator} {string.Join(", ", values)}"
-        : $"{filter.Column} {filter.Operator} {filter.Value}";
+    // A filter joined by Or follows the one before it after "or"; the others are listed apart.
+    private static string Describe(IReadOnlyList<GridFilter> filters) => string.Concat(filters.Select((filter, at) =>
+        (at == 0 ? "" : filter.Join == FilterJoin.Or ? " or " : "; ") + (filter.Value is IEnumerable<object> values
+            ? $"{filter.Column} {filter.Operator} {string.Join(", ", values)}"
+            : $"{filter.Column} {filter.Operator} {filter.Value}")));
 
     private enum Season
     {

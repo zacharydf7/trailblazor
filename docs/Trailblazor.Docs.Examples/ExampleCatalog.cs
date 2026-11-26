@@ -13286,9 +13286,12 @@ public static class ExampleCatalog
                     typeof(DataGridFilterExample)),
                 new("filter-menu", "Filter menu", "With `FilterMode` set to `Menu`, each filterable header gets a "
                     + "filter button whose menu takes a condition and a value, or has checkboxes for the values of an "
-                    + "enum, a bool or a column's `FilterChoices`. Nothing applies until you press Apply, or Enter in "
-                    + "the value field. Clear removes the column's filter. A `FilterTemplate` draws a filter of your "
-                    + "own.",
+                    + "enum, a bool or a column's `FilterChoices`. A menu with a condition has an Add a condition "
+                    + "button, for a second condition joined to the first by And (a row must meet both) or Or (either "
+                    + "will do); it reaches the grid's `Filters` as a second filter on the column, with its `Join`, "
+                    + "and a second condition with no value is left out. Nothing applies until you press Apply, or "
+                    + "Enter in a value field. Clear removes the column's filter. A `FilterTemplate` draws a filter of "
+                    + "your own.",
                     typeof(DataGridFilterMenuExample)),
                 new("group-rows", "Group rows", "The rows can be grouped by any `Groupable` column, picked from the "
                     + "\"Group by\" list or set from code through `Groups`. Groups nest in the order they are picked, "
@@ -13424,7 +13427,9 @@ public static class ExampleCatalog
                     typeof(DataGridFailedLoadExample)),
                 new("server-data", "Rows from a server", "A `DataProvider` loads one page at a time, sorted by the "
                     + "server, which says how many rows there are in all. It receives the page, the sorts and the "
-                    + "filters the grid asks for, and a new request cancels the last one. The [data grid from a "
+                    + "filters the grid asks for, and a new request cancels the last one. With `FilterMode` set to "
+                    + "`Menu`, a column's second filter can have `Join` set to `Or`, so a provider that applies each "
+                    + "filter as a `Where` must join those with or, or refuse them. The [data grid from a "
                     + "database](recipes/grid-from-database) recipe does this with an EF Core query.",
                     typeof(DataGridServerExample)),
                 new("prerendered-rows", "Rows from a prerendered page", "On a prerendered page, a grid with a "
@@ -13454,6 +13459,7 @@ public static class ExampleCatalog
                 typeof(DataGridClasses),
                 typeof(GridRequest),
                 typeof(GridResult<>), typeof(GridSort), typeof(GridFilter), typeof(FilterOperator),
+                typeof(FilterJoin),
                 typeof(GridFilterMode), typeof(GridFilterContext), typeof(ColumnPin), typeof(GridCellEdit<>),
                 typeof(GridCellEditContext<>), typeof(GridEditMode), typeof(GridRowEdit<>),
                 typeof(GridState), typeof(ColumnAggregate), typeof(GridAggregate), typeof(GridBatchEdit<>),
@@ -13522,7 +13528,7 @@ public static class ExampleCatalog
                 new(["Ctrl+C", "Cmd+C"], "Copies the range, or the cell in focus without one, as text and as a "
                     + "table.") { When = "With `CellSelection`" },
                 new(["Escape"], "Clears the range.") { When = "With `CellSelection` and a range" },
-                new(["Enter"], "In the value field, applies the filter.") { When = "In a filter menu" },
+                new(["Enter"], "In a value field, applies the filter.") { When = "In a filter menu" },
                 new(["Escape"], "Closes the menu.") { When = "In a filter menu" },
                 new(["Up", "Down"], "Moves the row up or down, and focus stays on the handle.")
                     { When = "On a row's move handle" },
@@ -13541,7 +13547,10 @@ public static class ExampleCatalog
                 "Each filter is a labeled field named \"Filter\" followed by the column's title. In `Menu` mode, its "
                     + "icon button has that name, with \", on\" added while the column is filtered, and the menu "
                     + "holds a labeled \"Condition\" select and \"Value\" field, a \"Value\" date range, or a checkbox "
-                    + "group of values.",
+                    + "group of values. After its Add a condition button, a condition menu also holds a "
+                    + "\"Match\" radio group of \"And\" and \"Or\", a \"Second condition\" select and "
+                    + "\"Second value\" field, and a \"Remove the second condition\" button, each worded by "
+                    + "`Labels`.",
                 "A group's button is named by the column, the group's value and its row count, such as \"Region: "
                     + "North ridge Rows: 2\". The \"Group by\" list is a `TbMultiSelect`.",
                 "An edit's field is named by its column, and a row's Save and Cancel buttons by the row, such as "
@@ -13671,6 +13680,10 @@ public static class ExampleCatalog
                 new("resize", "The edge of a resizable column's header, which a drag moves."),
                 new("filter-apply", "The filter menu's Apply button."),
                 new("filter-clear", "The filter menu's Clear button."),
+                new("filter-condition", "A condition and its value in the filter menu."),
+                new("filter-add-condition", "The filter menu's button that adds a second condition."),
+                new("filter-join", "The filter menu's choice of And or Or for its second condition."),
+                new("filter-remove-condition", "The filter menu's button that removes its second condition."),
                 new("toolbar", "The bar above the rows that holds the group-by list and the Columns menu."),
                 new("group-by", "The list that chooses the columns to group by."),
                 new("column-chooser", "The Columns menu, which hides and shows columns."),
@@ -13741,7 +13754,8 @@ public static class ExampleCatalog
                     + "page, click the header's link, and `GoToPageAsync` follows the pager's.",
                 "With a `StateHref`, start a test at a view by opening the page at an address with "
                     + "`GridState.ToQueryParameters` in its query.",
-                "In a filter menu, `FilterAsync(\"Sites\", \"At least\", \"16\")` picks a condition too.",
+                "In a filter menu, `FilterAsync(\"Sites\", \"At least\", \"16\")` picks a condition too, and "
+                    + "`FilterAsync(\"Sites\", \"At most\", \"8\", FilterJoin.Or, \"At least\", \"40\")` sets two.",
                 "`FilterChoicesAsync(\"Region\", \"North ridge\")` leaves exactly those values picked, in a menu's "
                     + "checkboxes or the filter row's multiple select.",
                 "In the filter row, a choice filter is a select named for its column: `page.Tb().Select(\"Filter "

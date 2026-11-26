@@ -2117,7 +2117,10 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
         if (await menu.CountAsync() > 0)
         {
             var panel = await OpenAsync(menu);
-            await panel.Locator(ValueSelector).FillAsync(text);
+            await RemoveSecondConditionAsync(panel);
+            var first = panel.Locator("[data-part=filter-condition]").First;
+            await (await first.CountAsync() > 0 ? first.Locator(ValueSelector) : panel.Locator(ValueSelector))
+                .FillAsync(text);
             await ApplyAsync(panel);
             return;
         }
@@ -2152,18 +2155,52 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
 
     /// <summary>In the filter menu of the column with this title, chooses the condition with this name, such as
     /// "At least", types the text as the value, unless the condition takes none, applies the menu, and waits for a
-    /// <c>DataProvider</c>'s rows.</summary>
+    /// <c>DataProvider</c>'s rows. A second condition the menu holds is removed first.</summary>
     public async Task FilterAsync(string column, string condition, string text)
     {
         await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
         var panel = await OpenAsync(Menu(column));
-        await new TbSelectLocator(scope, panel.Locator("[role=combobox]")).ChooseAsync(condition);
-        if (await panel.Locator(ValueSelector).CountAsync() > 0)
+        await RemoveSecondConditionAsync(panel);
+        await SetConditionAsync(panel, 0, condition, text);
+        await ApplyAsync(panel);
+    }
+
+    /// <summary>In the filter menu of the column with this title, sets two conditions, each named as the menu shows
+    /// it and with its value unless it takes none, joins them by And or Or, applies the menu, and waits for a
+    /// <c>DataProvider</c>'s rows.</summary>
+    public async Task FilterAsync(string column, string condition, string text, FilterJoin join,
+        string secondCondition, string secondText)
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var panel = await OpenAsync(Menu(column));
+        if (await panel.Locator("[data-part=filter-add-condition]").CountAsync() > 0)
         {
-            await panel.Locator(ValueSelector).FillAsync(text);
+            await panel.Locator("[data-part=filter-add-condition]").ClickAsync();
         }
 
+        await SetConditionAsync(panel, 0, condition, text);
+        await panel.Locator("[data-part=filter-join] input[type=radio]").Nth(join == FilterJoin.Or ? 1 : 0)
+            .CheckAsync();
+        await SetConditionAsync(panel, 1, secondCondition, secondText);
         await ApplyAsync(panel);
+    }
+
+    private static async Task RemoveSecondConditionAsync(ILocator panel)
+    {
+        if (await panel.Locator("[data-part=filter-remove-condition]").CountAsync() > 0)
+        {
+            await panel.Locator("[data-part=filter-remove-condition]").ClickAsync();
+        }
+    }
+
+    private async Task SetConditionAsync(ILocator panel, int index, string condition, string text)
+    {
+        var part = panel.Locator("[data-part=filter-condition]").Nth(index);
+        await new TbSelectLocator(scope, part.Locator("[role=combobox]")).ChooseAsync(condition);
+        if (await part.Locator(ValueSelector).CountAsync() > 0)
+        {
+            await part.Locator(ValueSelector).FillAsync(text);
+        }
     }
 
     /// <summary>Leaves exactly these choices picked in the list filter of the column with this title, naming each as
@@ -2222,7 +2259,8 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
         await ApplyAsync(panel);
     }
 
-    private const string ValueSelector = "[data-part=input]:not([role=combobox]):not([type=checkbox])";
+    private const string ValueSelector =
+        "[data-part=input]:not([role=combobox]):not([type=checkbox]):not([type=radio])";
 
     private ILocator Menu(string column) => Header(column).Locator("[data-part=filter-menu]");
 

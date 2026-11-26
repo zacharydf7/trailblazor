@@ -42,6 +42,8 @@
         {
             hikes = filter switch
             {
+                // Each filter narrows the rows, so one that joins by Or can't be applied this way.
+                { Join: FilterJoin.Or } => throw new NotSupportedException($"This query can't join {filter} by or."),
                 { Column: nameof(Hike.Trail), Operator: FilterOperator.Contains, Value: string text } =>
                     hikes.Where(hike => hike.Trail.Contains(text)),
                 _ => throw new NotSupportedException($"This query has no way to apply {filter}."),

@@ -293,6 +293,141 @@ public class TbDataGridFilterTests : BunitContext
     }
 
     [Fact]
+    public async Task Menu_ShouldShowRowsMeetingEitherCondition_WhenTwoAreJoinedByOr()
+    {
+        IReadOnlyList<GridFilter>? filters = null;
+        var cut = RenderHikes(configure: parameters => parameters.Add(grid => grid.FilterMode, GridFilterMode.Menu)
+            .Add(grid => grid.FiltersChanged, (IReadOnlyList<GridFilter> changed) => filters = changed));
+
+        await cut.Tb().Grid("Hikes").FilterAsync("Name", "Starts with", "pine", FilterJoin.Or, "Starts with", "cedar");
+
+        Assert.Equal(["Pine Hollow", "Cedar Flats"], Names(cut));
+        Assert.Equal([new GridFilter("Name", FilterOperator.StartsWith, "pine"),
+            new GridFilter("Name", FilterOperator.StartsWith, "cedar") { Join = FilterJoin.Or }], filters);
+    }
+
+    [Fact]
+    public async Task Menu_ShouldShowRowsMeetingBothConditions_WhenTwoAreJoinedByAnd()
+    {
+        var cut = RenderHikes(configure: parameters => parameters.Add(grid => grid.FilterMode, GridFilterMode.Menu));
+
+        await cut.Tb().Grid("Hikes").FilterAsync("Length km", "At least", "5", FilterJoin.And, "At most", "10");
+
+        Assert.Equal(["Pine Hollow", "Ridge Loop"], Names(cut));
+    }
+
+    [Fact]
+    public void Filters_ShouldShowRowsMeetingEitherOfAColumnsFilters_WhenTheSecondJoinsByOr()
+    {
+        var cut = RenderHikes(configure: parameters => parameters.Add(grid => grid.Filters,
+        [
+            new GridFilter("Name", FilterOperator.Contains, "ridge"),
+            new GridFilter("Name", FilterOperator.Contains, "pine") { Join = FilterJoin.Or },
+            new GridFilter("Difficulty", FilterOperator.EqualTo, Difficulty.Easy),
+        ]));
+
+        Assert.Equal(["Pine Hollow"], Names(cut));
+    }
+
+    [Fact]
+    public async Task Menu_ShouldOpenOnBothConditionsAndTheirJoin_WhenTheColumnHasTwoFilters()
+    {
+        var cut = RenderHikes(configure: parameters => parameters.Add(grid => grid.FilterMode, GridFilterMode.Menu)
+            .Add(grid => grid.Filters,
+            [
+                new GridFilter("Name", FilterOperator.StartsWith, "pine"),
+                new GridFilter("Name", FilterOperator.EndsWith, "flats") { Join = FilterJoin.Or },
+            ]));
+
+        await cut.Find("th[data-column=Name] [data-part=filter-menu] > button").ClickAsync(new());
+
+        var menu = cut.Find("th[data-column=Name] [data-part=filter-menu]");
+        Assert.Equal(2, menu.QuerySelectorAll("[data-part=filter-condition]").Length);
+        Assert.Equal([false, true], menu.QuerySelectorAll("[data-part=filter-join] input[type=radio]")
+            .Select(radio => radio.HasAttribute("checked")));
+        Assert.Empty(menu.QuerySelectorAll("[data-part=filter-add-condition]"));
+        var second = menu.QuerySelectorAll("[data-part=filter-condition]")[1];
+        Assert.Equal("Ends with", second.QuerySelector("[role=combobox]")!.TextContent.Trim());
+        Assert.Equal("flats", second.QuerySelector("input")!.GetAttribute("value"));
+    }
+
+    [Fact]
+    public async Task FilterAsync_ShouldLeaveOneCondition_WhenTheTextHelperFiltersAMenuThatHeldTwo()
+    {
+        IReadOnlyList<GridFilter>? filters = null;
+        var cut = RenderHikes(configure: parameters => parameters.Add(grid => grid.FilterMode, GridFilterMode.Menu)
+            .Add(grid => grid.Filters,
+            [
+                new GridFilter("Name", FilterOperator.StartsWith, "pine"),
+                new GridFilter("Name", FilterOperator.EndsWith, "flats") { Join = FilterJoin.Or },
+            ])
+            .Add(grid => grid.FiltersChanged, (IReadOnlyList<GridFilter> changed) => filters = changed));
+
+        await cut.Tb().Grid("Hikes").FilterAsync("Name", "ridge");
+
+        Assert.Equal([new GridFilter("Name", FilterOperator.StartsWith, "ridge")], filters);
+    }
+
+    [Fact]
+    public async Task Menu_ShouldLeaveOutTheSecondCondition_WhenTheFirstHasNoValue()
+    {
+        var changes = 0;
+        var cut = RenderHikes(configure: parameters => parameters.Add(grid => grid.FilterMode, GridFilterMode.Menu)
+            .Add(grid => grid.FiltersChanged, (IReadOnlyList<GridFilter> _) => changes++));
+
+        await cut.Tb().Grid("Hikes").FilterAsync("Name", "Contains", "", FilterJoin.Or, "Contains", "ridge");
+
+        Assert.Equal(0, changes);
+        Assert.Equal(4, Names(cut).Count);
+    }
+
+    [Fact]
+    public async Task DataProvider_ShouldBeAskedAgain_WhenOnlyTheJoinChanges()
+    {
+        var requests = new List<GridRequest>();
+        var cut = Render<TbDataGrid<Hike>>(parameters => parameters.Add(grid => grid.AriaLabel, "Hikes")
+            .Add(grid => grid.FilterMode, GridFilterMode.Menu).Add(grid => grid.ChildContent, Columns(_ => true))
+            .Add(grid => grid.DataProvider, (GridRequest request, CancellationToken _) =>
+            {
+                requests.Add(request);
+                return Task.FromResult(new GridResult<Hike>([.. Hikes], Hikes.Count));
+            }));
+        var hikes = cut.Tb().Grid("Hikes");
+        await hikes.FilterAsync("Length km", "At most", "5", FilterJoin.And, "At least", "10");
+        var asked = requests.Count;
+
+        await hikes.FilterAsync("Length km", "At most", "5", FilterJoin.Or, "At least", "10");
+
+        Assert.Equal(asked + 1, requests.Count);
+        Assert.Equal(FilterJoin.Or, requests[^1].Filters[1].Join);
+    }
+
+    [Fact]
+    public async Task FilterAsync_ShouldLeaveOneCondition_WhenTheMenuHeldTwo()
+    {
+        IReadOnlyList<GridFilter>? filters = null;
+        var cut = RenderHikes(configure: parameters => parameters.Add(grid => grid.FilterMode, GridFilterMode.Menu)
+            .Add(grid => grid.Filters,
+            [
+                new GridFilter("Name", FilterOperator.StartsWith, "pine"),
+                new GridFilter("Name", FilterOperator.EndsWith, "flats") { Join = FilterJoin.Or },
+            ])
+            .Add(grid => grid.FiltersChanged, (IReadOnlyList<GridFilter> changed) => filters = changed));
+
+        await cut.Tb().Grid("Hikes").FilterAsync("Name", "Contains", "ridge");
+
+        Assert.Equal([new GridFilter("Name", FilterOperator.Contains, "ridge")], filters);
+    }
+
+    [Fact]
+    public void Equals_ShouldTellFiltersApart_WhenOnlyTheirJoinDiffers()
+    {
+        var and = new GridFilter("Name", FilterOperator.Contains, "ridge");
+
+        Assert.NotEqual(and, and with { Join = FilterJoin.Or });
+    }
+
+    [Fact]
     public async Task Menu_ShouldMatchTheTextAsTheConditionSays_WhenATextConditionIsChosen()
     {
         var cut = RenderHikes(configure: parameters => parameters.Add(grid => grid.FilterMode, GridFilterMode.Menu));

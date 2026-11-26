@@ -5393,6 +5393,7 @@ public sealed class TbGridDriver
     {
         if (Menu(column) is not null)
         {
+            await RemoveSecondConditionAsync(column);
             await EnterAsync(ValueInput(column) ?? throw new InvalidOperationException(
                 $"The \"{column}\" column's filter takes no typed value."), text);
             await ApplyAsync(column);
@@ -5413,8 +5414,43 @@ public sealed class TbGridDriver
     }
 
     /// <summary>In the filter menu of the column with this title, chooses the condition with this name, such as
-    /// "At least", types the text as the value, unless the condition takes none, and applies the menu.</summary>
+    /// "At least", types the text as the value, unless the condition takes none, and applies the menu. A second
+    /// condition the menu holds is removed first.</summary>
     public async Task FilterAsync(string column, string condition, string text)
+    {
+        RequireConditions(column);
+        await RemoveSecondConditionAsync(column);
+        await SetConditionAsync(column, 0, condition, text);
+        await ApplyAsync(column);
+    }
+
+    /// <summary>In the filter menu of the column with this title, sets two conditions, each named as the menu shows
+    /// it and with its value unless it takes none, joins them by And or Or, and applies the menu.</summary>
+    public async Task FilterAsync(string column, string condition, string text, FilterJoin join,
+        string secondCondition, string secondText)
+    {
+        RequireConditions(column);
+        if (Menu(column)!.QuerySelector("[data-part=filter-add-condition]") is { } add)
+        {
+            await add.ClickAsync(new MouseEventArgs { Detail = 1 });
+        }
+
+        await SetConditionAsync(column, 0, condition, text);
+        await Menu(column)!.QuerySelectorAll("[data-part=filter-join] input[type=radio]")[join == FilterJoin.Or ? 1 : 0]
+            .ChangeAsync(new ChangeEventArgs());
+        await SetConditionAsync(column, 1, secondCondition, secondText);
+        await ApplyAsync(column);
+    }
+
+    private async Task RemoveSecondConditionAsync(string column)
+    {
+        if (Menu(column)!.QuerySelector("[data-part=filter-remove-condition]") is { } remove)
+        {
+            await remove.ClickAsync(new MouseEventArgs { Detail = 1 });
+        }
+    }
+
+    private void RequireConditions(string column)
     {
         var menu = Menu(column) ?? throw new InvalidOperationException(
             $"The \"{column}\" column has no filter menu; set the grid's FilterMode to Menu.");
@@ -5423,18 +5459,21 @@ public sealed class TbGridDriver
             throw new InvalidOperationException($"The \"{column}\" column's filter has no conditions; use "
                 + "FilterAsync(column, text) or FilterChoicesAsync.");
         }
+    }
 
-        // Found again on each use, since opening the list renders new markup.
-        await new TbSelectDriver(() => Menu(column)!.QuerySelector("[role=combobox]")!, _findAll, _scripts)
+    // Found on each use: choosing a condition renders the menu again, without a value field if it takes none.
+    private async Task SetConditionAsync(string column, int index, string condition, string text)
+    {
+        await new TbSelectDriver(() => Condition(column, index).QuerySelector("[role=combobox]")!, _findAll, _scripts)
             .ChooseAsync(condition);
-        // Choosing renders the menu again, without a value field for a condition that takes none.
-        if (ValueInput(column) is { } input)
+        if (Condition(column, index).QuerySelector(ValueSelector) is { } input)
         {
             await EnterAsync(input, text);
         }
-
-        await ApplyAsync(column);
     }
+
+    private IElement Condition(string column, int index) =>
+        Menu(column)!.QuerySelectorAll("[data-part=filter-condition]")[index];
 
     /// <summary>Leaves exactly these choices picked in the list filter of the column with this title, naming each as
     /// the filter shows it; pass none to clear the filter. Works with the filter row's multiple select and with a
@@ -5490,7 +5529,8 @@ public sealed class TbGridDriver
         await ApplyAsync(column);
     }
 
-    private const string ValueSelector = "[data-part=input]:not([role=combobox]):not([type=checkbox])";
+    private const string ValueSelector =
+        "[data-part=input]:not([role=combobox]):not([type=checkbox]):not([type=radio])";
 
     /// <summary>The columns' titles, in the order they show.</summary>
     public IReadOnlyList<string> Columns => _find().QuerySelectorAll("thead th[data-title]")
@@ -5553,7 +5593,10 @@ public sealed class TbGridDriver
         _find().QuerySelector($"[data-part=filter][data-column=\"{Header(column).GetAttribute("data-column")}\"]")
         ?? throw new InvalidOperationException($"The \"{column}\" column has no filter; make it Filterable.");
 
-    private IElement? ValueInput(string column) => Menu(column)!.QuerySelector(ValueSelector);
+    // The first condition's value, or the only value a menu without conditions has.
+    private IElement? ValueInput(string column) =>
+        Menu(column)!.QuerySelector($"[data-part=filter-condition] {ValueSelector}")
+        ?? Menu(column)!.QuerySelector(ValueSelector);
 
     // A row's list filter is a multiple select; an enum's or a bool's is a select of one.
     private static bool IsList(IElement cell) =>

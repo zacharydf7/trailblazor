@@ -27,6 +27,8 @@ public class TbDataGridLabelsTests : BunitContext
         Hide = "Drop {0}", ColumnHidden = "{0} gone", ColumnMoved = "{0} now {1} of {2}", Filter = "Narrow {0}",
         FilterOn = "Narrow {0}, active", FilterCondition = "Rule", FilterValue = "Target", FilterAny = "Whatever",
         FilterYes = "Sure", FilterNo = "Nah", FilterClear = "Reset", FilterApply = "Use", RowsShown = "Showing {0}",
+        FilterMatch = "Combine", FilterAnd = "Plus", FilterOr = "Either", FilterSecondCondition = "Rule two",
+        FilterSecondValue = "Target two", FilterAddCondition = "Another rule", FilterRemoveCondition = "Drop rule two",
         Totals = "Grand", GroupTotals = "Subtotal {0}", GroupHeading = "{0} ~ {1}", GroupNone = "(none)",
         GroupCount = "[{0}]", Sum = "Added", Average = "Mean", Count = "Tally", Min = "Least", Max = "Most",
         RowHandles = new() { Handle = "Drag {0}", Hint = "Arrows shift it", Moved = "{0} sits at {1} of {2}" },
@@ -124,6 +126,20 @@ public class TbDataGridLabelsTests : BunitContext
         await plain.Find("th[data-column=Name] [data-part=sort]").ClickAsync(new());
 
         host.WaitForAssertion(() => Assert.Contains("Name in no order", Spoken(host)));
+    }
+
+    [Fact]
+    public async Task Labels_ShouldWordTheFilterMenusSecondCondition_WhenGiven()
+    {
+        var cut = RenderHikes(parameters => parameters.Add(grid => grid.FilterMode, GridFilterMode.Menu));
+        await cut.Find("th[data-column=Name] [data-part=filter-menu] > button").ClickAsync(new());
+        Assert.Contains("Another rule", cut.Find("th[data-column=Name] [data-part=filter-add-condition]").TextContent);
+
+        await cut.Find("th[data-column=Name] [data-part=filter-add-condition]").ClickAsync(new());
+
+        var menu = cut.Find("th[data-column=Name] [data-part=filter-menu]").TextContent;
+        Assert.All(new[] { "Combine", "Plus", "Either", "Rule two", "Target two", "Drop rule two" },
+            word => Assert.Contains(word, menu));
     }
 
     [Fact]

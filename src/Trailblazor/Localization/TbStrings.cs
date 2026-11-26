@@ -1676,6 +1676,28 @@ public static class TbStrings
     /// <summary>"Value": names the value field in a data grid's filter menu.</summary>
     public const string DataGridFilterValue = "DataGrid.FilterValue";
 
+    /// <summary>"Match": names the choice of how a data grid's filter menu joins its two conditions.</summary>
+    public const string DataGridFilterMatch = "DataGrid.FilterMatch";
+
+    /// <summary>"And": the choice that a row must meet both of a data grid filter menu's conditions.</summary>
+    public const string DataGridFilterAnd = "DataGrid.FilterAnd";
+
+    /// <summary>"Or": the choice that a row may meet either of a data grid filter menu's conditions.</summary>
+    public const string DataGridFilterOr = "DataGrid.FilterOr";
+
+    /// <summary>"Second condition": names the second list of conditions in a data grid's filter menu.</summary>
+    public const string DataGridFilterSecondCondition = "DataGrid.FilterSecondCondition";
+
+    /// <summary>"Second value": names the second value field in a data grid's filter menu.</summary>
+    public const string DataGridFilterSecondValue = "DataGrid.FilterSecondValue";
+
+    /// <summary>"Add a condition": the button that adds a second condition to a data grid's filter menu.</summary>
+    public const string DataGridFilterAddCondition = "DataGrid.FilterAddCondition";
+
+    /// <summary>"Remove the second condition": the button that takes the second condition out of a data grid's
+    /// filter menu.</summary>
+    public const string DataGridFilterRemoveCondition = "DataGrid.FilterRemoveCondition";
+
     /// <summary>"Contains": the condition that the column's text contains the filter's value.</summary>
     public const string DataGridFilterContains = "DataGrid.FilterContains";
 
@@ -2476,6 +2498,13 @@ public static class TbStrings
         [DataGridFilterClear] = "Clear",
         [DataGridFilterCondition] = "Condition",
         [DataGridFilterValue] = "Value",
+        [DataGridFilterMatch] = "Match",
+        [DataGridFilterAnd] = "And",
+        [DataGridFilterOr] = "Or",
+        [DataGridFilterSecondCondition] = "Second condition",
+        [DataGridFilterSecondValue] = "Second value",
+        [DataGridFilterAddCondition] = "Add a condition",
+        [DataGridFilterRemoveCondition] = "Remove the second condition",
         [DataGridFilterContains] = "Contains",
         [DataGridFilterDoesNotContain] = "Doesn't contain",
         [DataGridFilterStartsWith] = "Starts with",

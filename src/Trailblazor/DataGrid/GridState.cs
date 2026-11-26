@@ -14,8 +14,8 @@ public sealed record GridState
     /// from JSON, reads as none.</summary>
     public IReadOnlyList<GridSort> Sorts { get; init => field = value ?? []; } = [];
 
-    /// <summary>The conditions rows must all meet to show, as in <see cref="TbDataGrid{TItem}.Filters"/>. A null reads
-    /// as none.</summary>
+    /// <summary>The conditions rows must meet to show, as in <see cref="TbDataGrid{TItem}.Filters"/>. A null reads as
+    /// none.</summary>
     public IReadOnlyList<GridFilter> Filters { get; init => field = value ?? []; } = [];
 
     /// <summary>The columns the rows are grouped by, outermost first, as in <see cref="TbDataGrid{TItem}.Groups"/>. A

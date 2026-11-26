@@ -231,9 +231,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public EventCallback<IReadOnlyList<GridSort>> SortsChanged { get; set; }
 
-    /// <summary>The conditions rows must all meet to show, which the user sets in the filter row of each
-    /// <see cref="TbColumn{TItem}.Filterable"/> column. Bind it with <c>@bind-Filters</c> to filter from code or to
-    /// save it. A <see cref="DataProvider"/> gets them in its <see cref="GridRequest"/>.</summary>
+    /// <summary>The conditions rows must meet to show, joined as <see cref="GridFilter"/> says, which the user sets in
+    /// the filter row or filter menu of each <see cref="TbColumn{TItem}.Filterable"/> column. Bind it with
+    /// <c>@bind-Filters</c> to filter from code or to save it. A <see cref="DataProvider"/> gets them in its
+    /// <see cref="GridRequest"/>.</summary>
     [Parameter]
     public IReadOnlyList<GridFilter>? Filters { get; set; }
 
@@ -747,6 +748,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         _columnsChanged = false;
+        await FocusAddButtonsAsync();
         if (_nextRender is { } rendered)
         {
             _nextRender = null;
@@ -2460,13 +2462,16 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private IEnumerable<TItem> Arranged(bool filtered = true) => Sorted((Items ?? []).Where(Matcher(filtered)));
 
+    // Each column's filters apply in order, each joined to those before it, and a row must meet every column's.
     private Func<TItem, bool> Matcher(bool filtered)
     {
-        var filters = filtered ? AppliedFilters.ToList() : [];
-        return item => filters.All(applied =>
+        var columns = filtered ? AppliedFilters.GroupBy(applied => applied.Column).ToList() : [];
+        return item => columns.All(filters =>
         {
-            var value = applied.Column.FilterValueOf(item);
-            return FilterMatch.Matches(value, () => applied.Column.TextOf(value), applied.Filter);
+            var value = filters.Key.FilterValueOf(item);
+            bool Meets(GridFilter filter) => FilterMatch.Matches(value, () => filters.Key.TextOf(value), filter);
+            return filters.Skip(1).Aggregate(Meets(filters.First().Filter), (before, next) =>
+                next.Filter.Join == FilterJoin.Or ? before || Meets(next.Filter) : before && Meets(next.Filter));
         });
     }
 

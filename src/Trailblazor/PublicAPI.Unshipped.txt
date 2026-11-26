@@ -8127,3 +8127,29 @@ Trailblazor.DateTimePickerLabels.OpenTimes.get -> string?
 Trailblazor.DateTimePickerLabels.OpenTimes.init -> void
 Trailblazor.TbDateTimePicker<TDateTime>.DisposeAsync() -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbDateTimePicker<TDateTime>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+Trailblazor.FilterJoin
+Trailblazor.FilterJoin.And = 0 -> Trailblazor.FilterJoin
+Trailblazor.FilterJoin.Or = 1 -> Trailblazor.FilterJoin
+Trailblazor.GridFilter.Join.get -> Trailblazor.FilterJoin
+Trailblazor.GridFilter.Join.init -> void
+Trailblazor.DataGridLabels.FilterMatch.get -> string?
+Trailblazor.DataGridLabels.FilterMatch.init -> void
+Trailblazor.DataGridLabels.FilterAnd.get -> string?
+Trailblazor.DataGridLabels.FilterAnd.init -> void
+Trailblazor.DataGridLabels.FilterOr.get -> string?
+Trailblazor.DataGridLabels.FilterOr.init -> void
+Trailblazor.DataGridLabels.FilterSecondCondition.get -> string?
+Trailblazor.DataGridLabels.FilterSecondCondition.init -> void
+Trailblazor.DataGridLabels.FilterSecondValue.get -> string?
+Trailblazor.DataGridLabels.FilterSecondValue.init -> void
+const Trailblazor.TbStrings.DataGridFilterMatch = "DataGrid.FilterMatch" -> string!
+const Trailblazor.TbStrings.DataGridFilterAnd = "DataGrid.FilterAnd" -> string!
+const Trailblazor.TbStrings.DataGridFilterOr = "DataGrid.FilterOr" -> string!
+const Trailblazor.TbStrings.DataGridFilterSecondCondition = "DataGrid.FilterSecondCondition" -> string!
+const Trailblazor.TbStrings.DataGridFilterSecondValue = "DataGrid.FilterSecondValue" -> string!
+Trailblazor.DataGridLabels.FilterAddCondition.get -> string?
+Trailblazor.DataGridLabels.FilterAddCondition.init -> void
+Trailblazor.DataGridLabels.FilterRemoveCondition.get -> string?
+Trailblazor.DataGridLabels.FilterRemoveCondition.init -> void
+const Trailblazor.TbStrings.DataGridFilterAddCondition = "DataGrid.FilterAddCondition" -> string!
+const Trailblazor.TbStrings.DataGridFilterRemoveCondition = "DataGrid.FilterRemoveCondition" -> string!

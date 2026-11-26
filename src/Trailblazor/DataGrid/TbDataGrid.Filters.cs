@@ -30,7 +30,7 @@ public partial class TbDataGrid<TItem>
 
     // The current filters as text for the request key, with each filter's values as invariant text.
     private string FiltersKey => string.Join(",", _filters.Select(filter =>
-        $"{filter.Column}|{filter.Operator}|{string.Join(";", filter.Values.Select(ChoiceKey))}"));
+        $"{filter.Column}|{filter.Join}|{filter.Operator}|{string.Join(";", filter.Values.Select(ChoiceKey))}"));
 
     private string FilterLabel(TbColumn<TItem> column) =>
         Format(Labels.Filter, TbStrings.DataGridFilter, column.Heading);
@@ -156,11 +156,12 @@ public partial class TbDataGrid<TItem>
 
     private void ResetDraft(TbColumn<TItem> column, FilterDraft draft)
     {
-        var first = FiltersOf(column).FirstOrDefault();
-        draft.Operator = first?.Operator is { } op && FilterOperators(column).Contains(op) ? op
-            : FilterOperators(column)[0];
-        draft.Text = first?.Value as string;
-        draft.Number = NumberTypes.TryToDecimal(first?.Value, out var number) ? number : null;
+        var filters = FiltersOf(column);
+        draft.First.Reset(filters.FirstOrDefault(), FilterOperators(column));
+        draft.Second.Reset(filters.Skip(1).FirstOrDefault(), FilterOperators(column));
+        draft.HasSecond = filters.Count > 1;
+        draft.FocusSecond = false;
+        draft.Join = filters.Skip(1).FirstOrDefault()?.Join ?? FilterJoin.And;
         draft.Range = DateFilter(column);
         draft.Chosen = ChoiceFilter(column) is { } choice ? [choice] : ChoicesFilter(column);
     }
@@ -176,16 +177,50 @@ public partial class TbDataGrid<TItem>
     private Task ApplyOnEnterAsync(TbColumn<TItem> column, KeyboardEventArgs args) =>
         args is { Key: "Enter", IsComposing: false } ? ApplyFilterMenuAsync(column) : Task.CompletedTask;
 
+    // A second condition counts only when the first one is complete.
     private Task ApplyFilterMenuAsync(TbColumn<TItem> column)
     {
         var draft = DraftFor(column);
         draft.Open = false;
-        object? value = column.FilterKind == ColumnFilterKind.Number ? draft.Number
-            : string.IsNullOrEmpty(draft.Text) ? null : draft.Text;
-        return SetFiltersAsync(column, HasChoiceList(column) ? AnyOf(column, draft.Chosen)
-            : column.FilterKind == ColumnFilterKind.Date ? RangeFilters(column, draft.Range)
-            : !Comparisons.NeedsValue(draft.Operator) ? [new(column.Key, draft.Operator)]
-            : value is null ? [] : [new(column.Key, draft.Operator, value)]);
+        if (HasChoiceList(column) || column.FilterKind == ColumnFilterKind.Date)
+        {
+            return SetFiltersAsync(column, HasChoiceList(column) ? AnyOf(column, draft.Chosen)
+                : RangeFilters(column, draft.Range));
+        }
+
+        List<GridFilter> filters = [];
+        if (draft.First.FilterFor(column) is { } first)
+        {
+            filters.Add(first);
+            if (draft.HasSecond && draft.Second.FilterFor(column) is { } second)
+            {
+                filters.Add(second with { Join = draft.Join });
+            }
+        }
+
+        return SetFiltersAsync(column, filters);
+    }
+
+    private static void AddSecond(FilterDraft draft)
+    {
+        draft.HasSecond = true;
+        draft.FocusSecond = true;
+    }
+
+    private static void RemoveSecond(FilterDraft draft)
+    {
+        draft.HasSecond = false;
+        draft.FocusAdd = true;
+    }
+
+    // The Add a condition button comes back as the second condition goes, and takes the focus the Remove button had.
+    private async Task FocusAddButtonsAsync()
+    {
+        foreach (var draft in _drafts.Values.Where(draft => draft.FocusAdd && draft.AddButton is not null))
+        {
+            draft.FocusAdd = false;
+            await draft.AddButton!.FocusAsync();
+        }
     }
 
     private Task ClearFilterMenuAsync(TbColumn<TItem> column)
@@ -229,19 +264,57 @@ public partial class TbDataGrid<TItem>
         }
     }
 
-    // What a filter menu shows until it is applied.
+    // What a filter menu shows until it is applied: up to two conditions, or a range, or the chosen values.
     private sealed class FilterDraft
     {
         public bool Open { get; set; }
 
+        public ConditionDraft First { get; } = new();
+
+        public bool HasSecond { get; set; }
+
+        public bool FocusSecond { get; set; }
+
+        public bool FocusAdd { get; set; }
+
+        public TbButton? AddButton { get; set; }
+
+        public FilterJoin Join { get; set; }
+
+        public ConditionDraft Second { get; } = new();
+
+        public DateRange<DateOnly> Range { get; set; }
+
+        public IReadOnlyList<string> Chosen { get; set; } = [];
+    }
+
+    // A condition and its value in a filter menu.
+    private sealed class ConditionDraft
+    {
         public FilterOperator Operator { get; set; }
 
         public string? Text { get; set; }
 
         public decimal? Number { get; set; }
 
-        public DateRange<DateOnly> Range { get; set; }
+        public void Reset(GridFilter? filter, IReadOnlyList<FilterOperator> operators)
+        {
+            Operator = filter?.Operator is { } op && operators.Contains(op) ? op : operators[0];
+            Text = filter?.Value as string;
+            Number = NumberTypes.TryToDecimal(filter?.Value, out var number) ? number : null;
+        }
 
-        public IReadOnlyList<string> Chosen { get; set; } = [];
+        // The filter this condition makes, or null while it still needs a value.
+        public GridFilter? FilterFor(TbColumn<TItem> column)
+        {
+            if (!Comparisons.NeedsValue(Operator))
+            {
+                return new(column.Key, Operator);
+            }
+
+            object? value = column.FilterKind == ColumnFilterKind.Number ? Number
+                : string.IsNullOrEmpty(Text) ? null : Text;
+            return value is null ? null : new(column.Key, Operator, value);
+        }
     }
 }

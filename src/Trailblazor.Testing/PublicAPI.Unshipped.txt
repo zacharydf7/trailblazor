@@ -667,3 +667,4 @@ Trailblazor.Testing.TbKanbanDriver.Cards(string! column, string! lane) -> System
 Trailblazor.Testing.TbKanbanDriver.Cell(string! column, string! lane) -> Trailblazor.Testing.TbSortableDriver!
 Trailblazor.Testing.TbKanbanDriver.Lanes.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TbKanbanDriver.MoveToColumnAsync(string! card, string! column, string! lane) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbGridDriver.FilterAsync(string! column, string! condition, string! text, Trailblazor.FilterJoin join, string! secondCondition, string! secondText) -> System.Threading.Tasks.Task!

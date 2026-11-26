@@ -225,6 +225,34 @@ public sealed record DataGridLabels
     /// text for <see cref="TbStrings.DataGridFilterValue"/>.</summary>
     public string? FilterValue { get; init; }
 
+    /// <summary>Names the choice of how a data grid's filter menu joins its two conditions: "Match" in English. Leave
+    /// it null for the app's text for <see cref="TbStrings.DataGridFilterMatch"/>.</summary>
+    public string? FilterMatch { get; init; }
+
+    /// <summary>The choice that a row must meet both conditions: "And" in English. Leave it null for the app's text
+    /// for <see cref="TbStrings.DataGridFilterAnd"/>.</summary>
+    public string? FilterAnd { get; init; }
+
+    /// <summary>The choice that a row may meet either condition: "Or" in English. Leave it null for the app's text for
+    /// <see cref="TbStrings.DataGridFilterOr"/>.</summary>
+    public string? FilterOr { get; init; }
+
+    /// <summary>Names the second list of conditions in a data grid's filter menu: "Second condition" in English. Leave
+    /// it null for the app's text for <see cref="TbStrings.DataGridFilterSecondCondition"/>.</summary>
+    public string? FilterSecondCondition { get; init; }
+
+    /// <summary>Names the second value field in a data grid's filter menu: "Second value" in English. Leave it null
+    /// for the app's text for <see cref="TbStrings.DataGridFilterSecondValue"/>.</summary>
+    public string? FilterSecondValue { get; init; }
+
+    /// <summary>The button that adds a second condition to a data grid's filter menu: "Add a condition" in English.
+    /// Leave it null for the app's text for <see cref="TbStrings.DataGridFilterAddCondition"/>.</summary>
+    public string? FilterAddCondition { get; init; }
+
+    /// <summary>The button that takes the second condition out of a data grid's filter menu: "Remove the second
+    /// condition" in English. Leave it null for the app's text for <see cref="TbStrings.DataGridFilterRemoveCondition"/>.</summary>
+    public string? FilterRemoveCondition { get; init; }
+
     /// <summary>Shown in a data grid's choice filter when it filters nothing: "Any" in English. Leave it null for the
     /// app's text for <see cref="TbStrings.DataGridFilterAny"/>.</summary>
     public string? FilterAny { get; init; }

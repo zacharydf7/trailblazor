@@ -373,6 +373,33 @@
 </div>
 
 @code {
+    // A filter menu's condition and, when it needs one, its value; Enter in the value applies the menu.
+    private RenderFragment Condition(TbColumn<TItem> column, ConditionDraft condition, string label,
+        string valueLabel, bool autoFocus) => @<div data-part="filter-condition" class="tb-data-grid__filter-condition">
+        <TbSelect TValue="FilterOperator" Size="Size.Small" @bind-Value="condition.Operator" Label="@label"
+                  AutoFocus="autoFocus">
+            @foreach (var op in FilterOperators(column))
+            {
+                <TbOption Value="op">@OperatorLabel(op)</TbOption>
+            }
+        </TbSelect>
+        @if (Comparisons.NeedsValue(condition.Operator))
+        {
+            <div @onkeydown="_applyOnEnter.For(column)">
+                @if (column.FilterKind == ColumnFilterKind.Number)
+                {
+                    <TbNumberField TValue="decimal?" Size="Size.Small" HideStepButtons Label="@valueLabel"
+                                   UpdateOnInput @bind-Value="condition.Number" />
+                }
+                else
+                {
+                    <TbTextField TValue="string" Label="@valueLabel" Size="Size.Small" UpdateOnInput
+                                 @bind-Value="condition.Text" />
+                }
+            </div>
+        }
+    </div>;
+
     private RenderFragment Row(TItem item, object key, bool selected, int at, string? rowClass, string? label,
         bool expanded, TreePlace? tree) =>
         @<tr @ref="_rowRefs[key]" data-part="row" data-key="@IdOf(item)" data-selected="@(selected ? "" : null)"
@@ -855,28 +882,37 @@
                             }
                             else
                             {
-                                <TbSelect TValue="FilterOperator" Size="Size.Small" @bind-Value="draft.Operator"
-                                          Label="@Text(Labels.FilterCondition, TbStrings.DataGridFilterCondition)">
-                                    @foreach (var op in FilterOperators(column))
-                                    {
-                                        <TbOption Value="op">@OperatorLabel(op)</TbOption>
-                                    }
-                                </TbSelect>
-                                @if (Comparisons.NeedsValue(draft.Operator))
+                                @Condition(column, draft.First,
+                                    Text(Labels.FilterCondition, TbStrings.DataGridFilterCondition), FilterValueLabel,
+                                    autoFocus: false)
+                                @* Focus goes to the second condition as it's added, and back to Add as it goes. *@
+                                @if (draft.HasSecond)
                                 {
-                                    <div @onkeydown="_applyOnEnter.For(column)">
-                                        @if (column.FilterKind == ColumnFilterKind.Number)
-                                        {
-                                            <TbNumberField TValue="decimal?" Size="Size.Small" HideStepButtons
-                                                           Label="@FilterValueLabel"
-                                                           UpdateOnInput @bind-Value="draft.Number" />
-                                        }
-                                        else
-                                        {
-                                            <TbTextField TValue="string" Label="@FilterValueLabel"
-                                                         Size="Size.Small" UpdateOnInput @bind-Value="draft.Text" />
-                                        }
-                                    </div>
+                                    <TbRadioGroup TValue="FilterJoin" Row Size="Size.Small" @bind-Value="draft.Join"
+                                                  Label="@Text(Labels.FilterMatch, TbStrings.DataGridFilterMatch)"
+                                                  data-part="filter-join">
+                                        <TbRadio Value="FilterJoin.And">
+                                            @Text(Labels.FilterAnd, TbStrings.DataGridFilterAnd)
+                                        </TbRadio>
+                                        <TbRadio Value="FilterJoin.Or">
+                                            @Text(Labels.FilterOr, TbStrings.DataGridFilterOr)
+                                        </TbRadio>
+                                    </TbRadioGroup>
+                                    @Condition(column, draft.Second,
+                                        Text(Labels.FilterSecondCondition, TbStrings.DataGridFilterSecondCondition),
+                                        Text(Labels.FilterSecondValue, TbStrings.DataGridFilterSecondValue),
+                                        autoFocus: draft.FocusSecond)
+                                    <TbButton Variant="Variant.Text" Size="Size.Small"
+                                              data-part="filter-remove-condition" OnClick="() => RemoveSecond(draft)">
+                                        @Text(Labels.FilterRemoveCondition, TbStrings.DataGridFilterRemoveCondition)
+                                    </TbButton>
+                                }
+                                else
+                                {
+                                    <TbButton @ref="draft.AddButton" Variant="Variant.Text" Size="Size.Small"
+                                              data-part="filter-add-condition" OnClick="() => AddSecond(draft)">
+                                        @Text(Labels.FilterAddCondition, TbStrings.DataGridFilterAddCondition)
+                                    </TbButton>
                                 }
                             }
                             <div class="tb-data-grid__filter-actions">

@@ -278,6 +278,40 @@ public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FilterMenu_ShouldShowRowsMeetingEitherCondition_WhenASecondIsJoinedByOr(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var camps = page.Tb().Grid("Campsites");
+
+        await camps.FilterAsync("Sites", "At most", "8", FilterJoin.Or, "At least", "40");
+
+        await Expect(Names(page, "Campsites")).ToHaveTextAsync(["Boulder Cove", "Dune Point"]);
+        await Expect(Readout(page, "Camp filters"))
+            .ToHaveTextAsync("Filters: Sites LessThanOrEqualTo 8 or Sites GreaterThanOrEqualTo 40.");
+        await camps.FilterAsync("Sites", "At least", "16");
+        await Expect(Names(page, "Campsites")).ToHaveTextAsync(["Aspen Flat", "Dune Point", "Elk Meadow"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FilterMenu_ShouldMoveFocusToTheSecondConditionAndBack_WhenItIsAddedAndRemoved(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = Table(page, "Campsites") }))
+            .ToHaveAttributeAsync("data-ready", "");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Filter Sites" }).ClickAsync();
+        var add = page.Locator("[data-part=filter-add-condition]:visible");
+
+        await add.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.Locator("[data-part=filter-condition]:visible").Nth(1).Locator("[role=combobox]"))
+            .ToBeFocusedAsync();
+        await page.Locator("[data-part=filter-remove-condition]:visible").FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(add).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task PinnedColumns_ShouldStayAtTheirSidesOverTheOtherCells_WhenTheRowsScrollSideways(string browser)
     {
         var page = await OpenAsync(browser, "/pinned-grid");
