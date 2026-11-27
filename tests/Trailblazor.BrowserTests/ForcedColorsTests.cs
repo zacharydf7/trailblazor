@@ -35,6 +35,65 @@ public class ForcedColorsTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Empty(ringless);
     }
 
+    // A disabled control shows in the system's GrayText, or is dimmed. Left out: a group, since its disabled children
+    // show it; native checkboxes, radios and sliders, which forced colors bring back and the browser grays itself; and
+    // a list's status message, a disabled option that carries information in muted text.
+    [Theory, MemberData(nameof(Examples))]
+    public async Task Example_ShouldShowEachDisabledControlAsDisabled_WhenColorsAreForced(string example)
+    {
+        var page = await OpenAsync("chromium", $"/examples/{example}", new() { ForcedColors = ForcedColors.Active });
+
+        var enabledLooking = await page.EvaluateAsync<string[]>("""
+            () => {
+                const probe = document.body.appendChild(document.createElement('div'));
+                probe.style.cssText = 'forced-color-adjust: none; color: GrayText';
+                const gray = getComputedStyle(probe).color;
+                probe.remove();
+                const disabled = ':disabled, [aria-disabled="true"]';
+                const dimmed = element => {
+                    for (let each = element; each; each = each.parentElement) {
+                        if (parseFloat(getComputedStyle(each).opacity) < 1) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                };
+                return [...document.querySelectorAll(`main :is(${disabled})`)]
+                    .filter(element => element.checkVisibility() && !element.querySelector(disabled)
+                        && !['checkbox', 'radio', 'range', 'hidden'].includes(element.type)
+                        && element.dataset.part !== 'status')
+                    .filter(element => getComputedStyle(element).color !== gray && !dimmed(element))
+                    .map(element => `${element.localName} "${(element.getAttribute('aria-label')
+                        ?? element.textContent).trim().slice(0, 30)}"`);
+            }
+            """);
+
+        Assert.Empty(enabledLooking);
+    }
+
+    // An app's own palette sets the token outside the library's layers, where it would win over a rule inside them.
+    [Fact]
+    public async Task DisabledText_ShouldStayGrayText_WhenAnAppsOwnPaletteSetsIt()
+    {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
+        var page = await OpenAsync("chromium", "/examples/tree-view", new() { ForcedColors = ForcedColors.Active });
+
+        var colors = await page.EvaluateAsync<string[]>("""
+            () => {
+                const palette = document.head.appendChild(document.createElement('style'));
+                palette.textContent = '[data-tb-palette="app"] { --tb-color-text-disabled: rgb(1, 2, 3); }';
+                document.documentElement.dataset.tbPalette = 'app';
+                const probe = document.body.appendChild(document.createElement('div'));
+                probe.style.cssText = 'forced-color-adjust: none; color: GrayText';
+                const row = document.querySelector('main .tb-tree__item[aria-disabled="true"]');
+                return [getComputedStyle(probe).color, getComputedStyle(row).color];
+            }
+            """);
+
+        Assert.Equal(colors[0], colors[1]);
+    }
+
     // Returns null when focus changes an outline, the focused element's name when it doesn't, and "" once focus has
     // left the example. The outline may be on the element, on one of its pseudo-elements (a separator draws its line
     // in ::before), or on an ancestor: a field rings the box that holds its input, and a card rings itself for its

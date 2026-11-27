@@ -30,6 +30,7 @@ Familiar apps: a native `<select size>`, the list panes in Windows dialogs and m
 - [x] In a multiple-selection list, Shift+click adds the enabled options from the active one through the clicked one, in either direction, as one change to the value. `ListBoxKeysTests.MultiListBox_ShouldChooseTheRangeAsOneChange_WhenAnOptionIsShiftClicked`, `ListBoxKeysTests.MultiListBox_ShouldChooseTheRangeUpward_WhenTheShiftClickedOptionIsAboveTheLastOne`, `ListBoxKeysTests.MultiListBox_ShouldKeepWhatIsChosen_WhenARangeIsShiftClickedOverIt`, `TbListBoxTests.ChooseRange_ShouldMakeOneChangeOnceTheLastBatchIsIn_WhenTheRangeArrivesInBatches`
 - [x] On a list of a thousand options, Ctrl+A and a Shift+click across them all work over a server circuit. `ListBoxKeysTests.MultiListBox_ShouldChooseEveryOption_WhenCtrlAIsPressedOnAVeryLongList`, `ListBoxKeysTests.MultiListBox_ShouldChooseTheRange_WhenItCrossesAVeryLongList`
 - [x] Clicking a disabled option does nothing. `TbOption.razor`
+- [x] In forced colors, a disabled option is in the system's gray text color. `ForcedColorsTests.Example_ShouldShowEachDisabledControlAsDisabled_WhenColorsAreForced`
 - [x] A disabled list's options can't be chosen. `TbListBoxTests.Click_ShouldLeaveTheValue_WhenTheListboxIsDisabled`
 - [x] A read-only list keeps its value. `TbListBoxTests.Click_ShouldKeepTheValue_WhenReadOnly`
 

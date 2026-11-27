@@ -74,6 +74,7 @@ Familiar apps: File Explorer, VS Code's file tree, Finder's list view
 - [x] A focused row shows a focus ring. `trailblazor.css`
 - [x] When the focused row goes away, as when a button in its end slot deletes it, focus moves to the nearest row above it if that row closed around it, otherwise to the row now in its place, or to the row before it when it was last. Focus that has left the tree stays where it is. `TreeFocusTests.Tree_ShouldFocusTheNextRow_WhenTheFocusedRowIsDeleted`, `TreeFocusTests.Tree_ShouldFocusTheRowBefore_WhenTheLastRowIsDeleted`, `TreeFocusTests.Tree_ShouldFocusTheRowNowInItsPlace_WhenRowsAboveWentFirst`, `TreeFocusTests.Tree_ShouldFocusTheParent_WhenCodeClosesItAroundTheFocusedRow`, `TreeFocusTests.Tree_ShouldFocusTheClosedRow_WhenCodeClosesARowAboveTheFocusedRowsParent`, `TreeFocusTests.Tree_ShouldLeaveFocusOutside_WhenItsRowGoesAfterFocusLeft`
 - [x] In forced colors, a focused selected row doubles its selection outline, since a single one looks the same with or without focus. `ForcedColorsTests.Example_ShouldShowAFocusRingAtEachTabStop_WhenColorsAreForced`
+- [x] In forced colors, a disabled row, and every row of a disabled tree, is in the system's gray text color. `ForcedColorsTests.Example_ShouldShowEachDisabledControlAsDisabled_WhenColorsAreForced`
 
 ## Not applicable
 

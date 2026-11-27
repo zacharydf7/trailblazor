@@ -911,6 +911,15 @@
         --tb-color-hover: color-mix(in srgb, var(--tb-color-text) 6%, transparent);
         --tb-color-pressed: color-mix(in srgb, var(--tb-color-text) 10%, transparent);
     }
+
+    /* Forced colors repaint every color but the system's, so disabled text uses GrayText to stay gray. Important, since
+       a seeded or app palette, or an inline style, sets the token too, and would otherwise win. */
+    @media (forced-colors: active) {
+        :root,
+        [data-tb-palette] {
+            --tb-color-text-disabled: GrayText !important;
+        }
+    }
 }
 
 @layer tb.components {
