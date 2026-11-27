@@ -643,6 +643,9 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
             () => tb.Chart("Slow counts").ClickPointAsync("Letters", "Lake"),
             () => tb.Chart("Slow counts").HideSeriesAsync("Vowels"),
             () => tb.Chart("Slow counts").ShowSeriesAsync("Vowels"),
+            () => tb.Chart("Slow zoom").ZoomInAsync(),
+            () => tb.Chart("Slow zoom").MoveForwardAsync(),
+            () => tb.Chart("Slow zoom").ShowAllAsync(),
         })
         {
             await act();
@@ -656,7 +659,7 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
             "paced 40", "town Be", "town Ashland", "climb 20-60",
             "town Ashland", "town Bend", "town ", "town Ashland", "town ",
             "guide copied", "hotkey pressed", "section jump", "point Lake 4", "vowels hidden True",
-            "vowels hidden False"], seen);
+            "vowels hidden False", "chart view 5-15", "chart view 8-18", "chart view -"], seen);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

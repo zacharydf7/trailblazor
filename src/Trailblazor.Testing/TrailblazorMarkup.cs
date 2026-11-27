@@ -6676,6 +6676,50 @@ public sealed class TbChartDriver
         await _scripts.InvokeAsync(() => events.OnActivate(column, row, "pointer"));
     }
 
+    /// <summary>What a zoomable chart says it shows, such as "Showing Jun 3 to Jun 7", or null for a chart without
+    /// zoom buttons: one whose <c>TbXAxis</c> isn't <c>Zoomable</c>, or on a static page.</summary>
+    public string? View => _find().QuerySelector("[data-part=zoom] [data-part=view]")?.TextContent;
+
+    /// <summary>Whether a zoomable chart shows only part of its scale.</summary>
+    public bool IsZoomed => _find().QuerySelector(":scope > .tb-chart__body > [data-part=plot]")!
+        .HasAttribute("data-zoomed");
+
+    /// <summary>Zooms in around the middle of what is shown, as pressing Zoom in does, and waits for the app's
+    /// <c>ViewChanged</c> to run. A chart without zoom buttons throws, and so does one zoomed in as far as it
+    /// goes.</summary>
+    public Task ZoomInAsync() => PressZoomAsync("zoom-in", "zoom in any further");
+
+    /// <summary>Zooms out around the middle of what is shown, as pressing Zoom out does, and waits for the app's
+    /// <c>ViewChanged</c> to run. A chart without zoom buttons throws, and so does one that shows all of its
+    /// scale.</summary>
+    public Task ZoomOutAsync() => PressZoomAsync("zoom-out", "zoom out any further");
+
+    /// <summary>Moves back along the scale by a quarter of what is shown, as pressing Move back does, and waits for
+    /// the app's <c>ViewChanged</c> to run. A chart without zoom buttons throws, and so does one that shows the
+    /// start of its scale.</summary>
+    public Task MoveBackAsync() => PressZoomAsync("move-back", "move back any further");
+
+    /// <summary>Moves forward along the scale by a quarter of what is shown, as pressing Move forward does, and
+    /// waits for the app's <c>ViewChanged</c> to run. A chart without zoom buttons throws, and so does one that shows
+    /// the end of its scale.</summary>
+    public Task MoveForwardAsync() => PressZoomAsync("move-forward", "move forward any further");
+
+    /// <summary>Shows all of the scale, as pressing Show all does, and waits for the app's <c>ViewChanged</c> to
+    /// run. A chart without zoom buttons throws, and so does one that already shows all of its scale.</summary>
+    public Task ShowAllAsync() => PressZoomAsync("show-all", "show any more of its scale");
+
+    private async Task PressZoomAsync(string part, string cannot)
+    {
+        var button = _find().QuerySelector($"[data-part=zoom] [data-part={part}]") ?? throw new
+            InvalidOperationException("The chart has no zoom buttons: its TbXAxis isn't Zoomable, or the page is static.");
+        if (button.GetAttribute("aria-disabled") == "true")
+        {
+            throw new InvalidOperationException($"The chart can't {cannot}.");
+        }
+
+        await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
     private (int Column, int Row) Find(string series, string place)
     {
         var (column, row) = (Series.ToList().IndexOf(series), Places.ToList().IndexOf(place));

@@ -400,6 +400,51 @@ public class TbChartZoomTests : BunitContext
                 builder.CloseComponent();
             }));
 
+    [Fact]
+    public async Task Helpers_ShouldZoomMoveAndShowAll_WhenTheChartIsZoomable()
+    {
+        ChartView? bound = null;
+        // Buttons the app has reworded are still found.
+        var chart = Render(Numbers, number => number, view => bound = view,
+            labels: new ChartLabels { ZoomIn = "Closer", ZoomOut = "Farther", ShowAll = "Everything" })
+            .Tb().Chart("Readings");
+
+        Assert.Equal("Showing 0 to 20", chart.View);
+        Assert.False(chart.IsZoomed);
+        await chart.ZoomInAsync();
+        Assert.Equal(("Showing 5 to 15", true, new ChartView(5L, 15L)), (chart.View, chart.IsZoomed, bound));
+        await chart.MoveForwardAsync();
+        Assert.Equal(new ChartView(8L, 18L), bound);
+        await chart.MoveBackAsync();
+        Assert.Equal(new ChartView(5L, 15L), bound);
+        await chart.ZoomInAsync();
+        await chart.ZoomOutAsync();
+        Assert.Equal(new ChartView(6L, 16L), bound);
+
+        // From a view a quarter of the scale wide, only Show all shows all of it.
+        await chart.ZoomInAsync();
+        await chart.ShowAllAsync();
+        Assert.Equal(("Showing 0 to 20", false, (ChartView?)null), (chart.View, chart.IsZoomed, bound));
+    }
+
+    [Fact]
+    public async Task Helpers_ShouldSayWhatTheChartCannotDo_WhenItsButtonIsOffOrMissing()
+    {
+        var chart = RenderChart().Tb().Chart("Readings");
+
+        Assert.Equal("The chart can't zoom out any further.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(chart.ZoomOutAsync)).Message);
+        Assert.Equal("The chart can't show any more of its scale.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(chart.ShowAllAsync)).Message);
+        Assert.Equal("The chart can't move back any further.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(chart.MoveBackAsync)).Message);
+
+        var plain = Render(Numbers, number => number, zoomable: false).Tb().Chart("Readings");
+        Assert.Null(plain.View);
+        Assert.Equal("The chart has no zoom buttons: its TbXAxis isn't Zoomable, or the page is static.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(plain.ZoomInAsync)).Message);
+    }
+
     private static string Status<T>(IRenderedComponent<TbChart<T>> cut) =>
         cut.Find("[data-part=zoom] [role=status]").TextContent;
 
@@ -417,9 +462,9 @@ public class TbChartZoomTests : BunitContext
 
     private IRenderedComponent<TbChart<T>> Render<T>(IEnumerable<T> items, Func<T, object?> x,
         Action<ChartView?>? changed = null, ChartView? view = null, ChartScale scale = ChartScale.Continuous,
-        bool zoomable = true, string? format = null) =>
+        bool zoomable = true, string? format = null, ChartLabels? labels = null) =>
         Render<TbChart<T>>(parameters => parameters.Add(chart => chart.Items, items).Add(chart => chart.X, x)
-            .Add(chart => chart.Title, "Readings")
+            .Add(chart => chart.Title, "Readings").Add(chart => chart.Labels, labels ?? new())
             .Add(chart => chart.ChildContent, builder => Content<T>(builder, view, changed, format, _ => 1, scale,
                 zoomable)));
 

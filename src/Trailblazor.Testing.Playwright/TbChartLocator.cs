@@ -156,6 +156,78 @@ public sealed class TbChartLocator(ILocator scope, string? name)
         });
     }
 
+    /// <summary>What a zoomable chart says it shows, such as "Showing Jun 3 to Jun 7", or null for a chart without
+    /// zoom buttons: one whose <c>TbXAxis</c> isn't <c>Zoomable</c>, or on a static page. It waits for the page to be
+    /// interactive first.</summary>
+    public async Task<string?> ViewAsync()
+    {
+        await Chart.WaitForAsync();
+        // A prerendered chart has no zoom buttons until the page is interactive.
+        if (await Plot.GetAttributeAsync("data-static") is null)
+        {
+            await Assertions.Expect(Plot).ToHaveAttributeAsync("data-ready", "");
+        }
+
+        return await Chart.EvaluateAsync<string?>(
+            "chart => chart.querySelector('[data-part=zoom] [data-part=view]')?.textContent ?? null");
+    }
+
+    /// <summary>Whether a zoomable chart shows only part of its scale.</summary>
+    public async Task<bool> IsZoomedAsync()
+    {
+        await Chart.WaitForAsync();
+        return await Plot.GetAttributeAsync("data-zoomed") is not null;
+    }
+
+    /// <summary>Zooms in around the middle of what is shown by pressing Zoom in, and waits for the app's
+    /// <c>ViewChanged</c> to run. A chart without zoom buttons throws, and so does one zoomed in as far as it goes. It
+    /// waits for the page to be interactive first.</summary>
+    public Task ZoomInAsync() => PressZoomAsync("zoom-in", "zoom in any further");
+
+    /// <summary>Zooms out around the middle of what is shown by pressing Zoom out, and waits for the app's
+    /// <c>ViewChanged</c> to run. A chart without zoom buttons throws, and so does one that shows all of its scale. It
+    /// waits for the page to be interactive first.</summary>
+    public Task ZoomOutAsync() => PressZoomAsync("zoom-out", "zoom out any further");
+
+    /// <summary>Moves back along the scale by a quarter of what is shown by pressing Move back, and waits for the
+    /// app's <c>ViewChanged</c> to run. A chart without zoom buttons throws, and so does one that shows the start of
+    /// its scale. It waits for the page to be interactive first.</summary>
+    public Task MoveBackAsync() => PressZoomAsync("move-back", "move back any further");
+
+    /// <summary>Moves forward along the scale by a quarter of what is shown by pressing Move forward, and waits for
+    /// the app's <c>ViewChanged</c> to run. A chart without zoom buttons throws, and so does one that shows the end of
+    /// its scale. It waits for the page to be interactive first.</summary>
+    public Task MoveForwardAsync() => PressZoomAsync("move-forward", "move forward any further");
+
+    /// <summary>Shows all of the scale by pressing Show all, and waits for the app's <c>ViewChanged</c> to run. A
+    /// chart without zoom buttons throws, and so does one that already shows all of its scale. It waits for the page
+    /// to be interactive first.</summary>
+    public Task ShowAllAsync() => PressZoomAsync("show-all", "show any more of its scale");
+
+    private async Task PressZoomAsync(string part, string cannot)
+    {
+        await Chart.WaitForAsync();
+        if (await Plot.GetAttributeAsync("data-static") is not null)
+        {
+            throw new InvalidOperationException("The chart has no zoom buttons: the page is static.");
+        }
+
+        // A prerendered chart has no zoom buttons until the page is interactive.
+        await Assertions.Expect(Plot).ToHaveAttributeAsync("data-ready", "");
+        var button = Chart.Locator($"[data-part=zoom] [data-part={part}]");
+        if (await button.CountAsync() == 0)
+        {
+            throw new InvalidOperationException("The chart has no zoom buttons: its TbXAxis isn't Zoomable.");
+        }
+
+        if (await button.GetAttributeAsync("aria-disabled") == "true")
+        {
+            throw new InvalidOperationException($"The chart can't {cannot}.");
+        }
+
+        await Commit.ClickedAsync(button);
+    }
+
     private static string Missing(string what, string series, string place) => what switch
     {
         "series" => $"The chart has no series named \"{series}\".",

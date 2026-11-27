@@ -758,3 +758,10 @@ Trailblazor.Testing.Playwright.TbPieChartLocator.TbPieChartLocator(Microsoft.Pla
 Trailblazor.Testing.Playwright.TbPieChartLocator.ValueAsync(string! slice) -> System.Threading.Tasks.Task<string!>!
 Trailblazor.Testing.Playwright.TrailblazorPage.PieChart(string? name = null) -> Trailblazor.Testing.Playwright.TbPieChartLocator!
 Trailblazor.Testing.Playwright.TbChartLocator.ReferencesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbChartLocator.IsZoomedAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbChartLocator.MoveBackAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbChartLocator.MoveForwardAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbChartLocator.ShowAllAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbChartLocator.ViewAsync() -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.Playwright.TbChartLocator.ZoomInAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbChartLocator.ZoomOutAsync() -> System.Threading.Tasks.Task!

@@ -34,6 +34,10 @@
         <TbBarSeries Name="Vowels" Value="name => name.Count(letter => Vowels.Contains(letter))"
                      Hidden="_vowelsHidden" HiddenChanged="VowelsAsync" />
     </TbChart>
+    <TbChart TItem="int" Items="Enumerable.Range(0, 21)" X="number => number" AriaLabel="Slow zoom" Height="6rem">
+        <TbXAxis Scale="ChartScale.Continuous" Zoomable View="_chartView" ViewChanged="ChartViewAsync" />
+        <TbLineSeries Name="Level" Value="@(number => number % 5)" />
+    </TbChart>
     <TbDatePicker TDate="DateOnly" Label="Slow day" Value="_day" ValueChanged="DayAsync" />
     <TbCalendar TDate="DateOnly" Label="Slow hike" Value="_hike" ValueChanged="HikeAsync" />
     <TbFileUpload Label="Slow map" Value="_map" ValueChanged="MapAsync" />
@@ -137,6 +141,7 @@
 
     private bool _open;
     private bool _vowelsHidden;
+    private ChartView? _chartView;
     private string? _step = "dates";
     private string _slow = "";
     private bool _closable = true;
@@ -157,6 +162,9 @@
     private Task PointAsync(ChartPoint<string> point) => SlowlyAsync($"point {point.Item} {point.Value}");
 
     private Task VowelsAsync(bool hidden) => SlowlyAsync($"vowels hidden {hidden}", () => _vowelsHidden = hidden);
+
+    private Task ChartViewAsync(ChartView? view) =>
+        SlowlyAsync($"chart view {view?.From}-{view?.To}", () => _chartView = view);
 
     private Task PaceAsync(int pace) => SlowlyAsync($"pace {pace}", () => _pace = pace);
 

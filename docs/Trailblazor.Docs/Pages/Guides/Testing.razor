@@ -390,7 +390,11 @@
                             chart's data table writes it. <code>HideSeriesAsync(series)</code> and
                             <code>ShowSeriesAsync(series)</code> press a legend button,
                             <code>IsSeriesHidden(series)</code> reads whether a series is hidden, and
-                            <code>Tone(series, place)</code> reads a mark's tone.
+                            <code>Tone(series, place)</code> reads a mark's tone, and <code>References</code>
+                            lists what the chart writes for its reference lines and bands. On a zoomable chart,
+                            <code>ZoomInAsync()</code>, <code>ZoomOutAsync()</code>, <code>MoveBackAsync()</code>,
+                            <code>MoveForwardAsync()</code> and <code>ShowAllAsync()</code> press its buttons, and
+                            <code>View</code> and <code>IsZoomed</code> read what it shows.
                         </td>
                     </tr>
                     <tr>
@@ -1875,7 +1879,9 @@
             + "`ShowSeriesAsync(series)` press a legend button and wait until the app's `HiddenChanged` has run; "
             + "`IsSeriesHiddenAsync(series)` reads whether a series is hidden, `ToneAsync(series, place)` "
             + "reads a mark's tone, and `ReferencesAsync()` lists what the chart writes for its reference lines "
-            + "and bands."),
+            + "and bands. On a zoomable chart, `ZoomInAsync()`, `ZoomOutAsync()`, `MoveBackAsync()`, "
+            + "`MoveForwardAsync()` and `ShowAllAsync()` press its buttons and wait until the app's `ViewChanged` "
+            + "has run, and `ViewAsync()` and `IsZoomedAsync()` read what it shows."),
         new("Pie chart", "Its Title or AriaLabel, or none for the only one", "`PieChart(name)."
             + "ClickSliceAsync(slice)` clicks a slice once the page is interactive and waits until the app's "
             + "`OnSliceClick` has run; `SlicesAsync()` lists the items' labels, and `ValueAsync(slice)` and "

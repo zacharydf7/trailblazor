@@ -691,3 +691,10 @@ Trailblazor.Testing.TbPieChartDriver.Slices.get -> System.Collections.Generic.IR
 Trailblazor.Testing.TbPieChartDriver.Value(string! slice) -> string!
 Trailblazor.Testing.TrailblazorMarkup.PieChart(string? name = null) -> Trailblazor.Testing.TbPieChartDriver!
 Trailblazor.Testing.TbChartDriver.References.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbChartDriver.IsZoomed.get -> bool
+Trailblazor.Testing.TbChartDriver.MoveBackAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbChartDriver.MoveForwardAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbChartDriver.ShowAllAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbChartDriver.View.get -> string?
+Trailblazor.Testing.TbChartDriver.ZoomInAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbChartDriver.ZoomOutAsync() -> System.Threading.Tasks.Task!

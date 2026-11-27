@@ -114,6 +114,31 @@ public class ChartZoomTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helpers_ShouldReadAndChangeTheViewAndWaitForTheApp_WhenTheChartIsZoomable(string browser)
+    {
+        var page = await OpenAsync(browser, "/chart-zoom");
+        var chart = page.Tb().Chart("Readings");
+        var view = page.GetByTestId("view");
+
+        Assert.Equal(("Showing 0 to 20", false), (await chart.ViewAsync(), await chart.IsZoomedAsync()));
+        // Each helper returns once the app has the new view.
+        await chart.ZoomInAsync();
+        Assert.Equal("5 to 15", await view.TextContentAsync());
+        Assert.Equal(("Showing 5 to 15", true), (await chart.ViewAsync(), await chart.IsZoomedAsync()));
+        await chart.MoveForwardAsync();
+        Assert.Equal("8 to 18", await view.TextContentAsync());
+        await chart.MoveBackAsync();
+        Assert.Equal("5 to 15", await view.TextContentAsync());
+        await chart.ZoomOutAsync();
+        Assert.Equal("all", await view.TextContentAsync());
+        Assert.Equal("The chart can't show any more of its scale.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(chart.ShowAllAsync)).Message);
+        await chart.ZoomInAsync();
+        await chart.ShowAllAsync();
+        Assert.Equal("all", await view.TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task HorizontalChart_ShouldMoveDownItsScale_WhenShiftDownIsPressedOrItsMarksAreDraggedUp(
         string browser)
     {

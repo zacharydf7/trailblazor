@@ -110,27 +110,29 @@
     @if (_extent is not null && RendererInfo.IsInteractive)
     {
         <div data-part="zoom" class="tb-chart__zoom">
-            <TbIconButton Icon="BuiltInIcons.ChevronStart" Size="Size.Small" Variant="Variant.Text"
-                          AriaLabel="@(Labels.MoveBack ?? Localizer[TbStrings.ChartMoveBack])"
+            <TbIconButton data-part="move-back" Icon="BuiltInIcons.ChevronStart" Size="Size.Small"
+                          Variant="Variant.Text" AriaLabel="@(Labels.MoveBack ?? Localizer[TbStrings.ChartMoveBack])"
                           Disabled="!CanMoveBack" FocusableWhenDisabled BusyWhileRunning="false"
                           OnClick="@(args => ZoomAsync("back", null, Input(args)))" />
-            <TbIconButton Icon="BuiltInIcons.Minus" Size="Size.Small" Variant="Variant.Text"
+            <TbIconButton data-part="zoom-out" Icon="BuiltInIcons.Minus" Size="Size.Small" Variant="Variant.Text"
                           AriaLabel="@(Labels.ZoomOut ?? Localizer[TbStrings.ChartZoomOut])"
                           Disabled="!CanZoomOut" FocusableWhenDisabled BusyWhileRunning="false"
                           OnClick="@(args => ZoomAsync("out", null, Input(args)))" />
-            <TbIconButton Icon="BuiltInIcons.Plus" Size="Size.Small" Variant="Variant.Text"
+            <TbIconButton data-part="zoom-in" Icon="BuiltInIcons.Plus" Size="Size.Small" Variant="Variant.Text"
                           AriaLabel="@(Labels.ZoomIn ?? Localizer[TbStrings.ChartZoomIn])"
                           Disabled="!CanZoomIn" FocusableWhenDisabled BusyWhileRunning="false"
                           OnClick="@(args => ZoomAsync("in", null, Input(args)))" />
-            <TbIconButton Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" Variant="Variant.Text"
+            <TbIconButton data-part="move-forward" Icon="BuiltInIcons.ChevronEnd" Size="Size.Small"
+                          Variant="Variant.Text"
                           AriaLabel="@(Labels.MoveForward ?? Localizer[TbStrings.ChartMoveForward])"
                           Disabled="!CanMoveForward" FocusableWhenDisabled BusyWhileRunning="false"
                           OnClick="@(args => ZoomAsync("forward", null, Input(args)))" />
-            <TbButton Size="Size.Small" Variant="Variant.Text" Disabled="!CanZoomOut" FocusableWhenDisabled
-                      BusyWhileRunning="false" OnClick="@(args => ZoomAsync("all", null, Input(args)))">
+            <TbButton data-part="show-all" Size="Size.Small" Variant="Variant.Text" Disabled="!CanZoomOut"
+                      FocusableWhenDisabled BusyWhileRunning="false"
+                      OnClick="@(args => ZoomAsync("all", null, Input(args)))">
                 @(Labels.ShowAll ?? Localizer[TbStrings.ChartShowAll])
             </TbButton>
-            <span role="status" class="tb-chart__view">@ViewText()</span>
+            <span data-part="view" role="status" class="tb-chart__view">@ViewText()</span>
         </div>
     }
     @* The title of the axis up the plot's side shows above it, and the title of the one along its base under it. *@
@@ -170,7 +172,9 @@
            each place's name from it, and each series' values and points from the series' own element. *@
         <div @ref="_plot" id="@_plotId" data-part="plot" data-places="@(blank ? null : Places(plan))"
              data-at="@(blank ? null : At(plan))" data-horizontal="@(Horizontal ? "" : null)"
-             data-zoomable="@(_extent is null || !RendererInfo.IsInteractive ? null : "")" data-zoomed="@(Axes.X?.CurrentView is null ? null : "")"
+             data-zoomable="@(_extent is null || !RendererInfo.IsInteractive ? null : "")"
+             data-zoomed="@(Axes.X?.CurrentView is null ? null : "")"
+             data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
              data-activates="@(RendererInfo.IsInteractive && OnPointClick.HasDelegate ? "" : null)"
              data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
              class="@ClassNames.Join("tb-chart__plot", blank ? "tb-chart__plot--empty" : null, Classes?.Plot)">

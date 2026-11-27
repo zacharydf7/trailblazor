@@ -1453,6 +1453,12 @@ public static class ExampleCatalog
                 new("tooltip", "The values at the place the pointer or the keys are on."),
                 new("values", "The labels of the values written on marks, with `ShowValues`."),
                 new("zoom", "A zoomable chart's buttons, with the text that says what part of the scale is shown."),
+                new("move-back", "A zoomable chart's Move back button, inside `zoom`."),
+                new("zoom-out", "A zoomable chart's Zoom out button, inside `zoom`."),
+                new("zoom-in", "A zoomable chart's Zoom in button, inside `zoom`."),
+                new("move-forward", "A zoomable chart's Move forward button, inside `zoom`."),
+                new("show-all", "A zoomable chart's Show all button, inside `zoom`."),
+                new("view", "The text that says what part of the scale is shown, inside `zoom`."),
                 new("reference", "A reference line's or band's name and values, written over the plot."),
                 new("table", "The disclosure that holds the data table."),
                 new("references", "The list of the reference lines and bands under the data table."),
@@ -1495,13 +1501,19 @@ public static class ExampleCatalog
                 "Without the helpers, find a chart with `GetByRole(AriaRole.Figure, new() { Name = \"Hikers by "
                     + "month\" })` and its drawing with `GetByRole(AriaRole.Img, new() { Name = \"Bar chart: "
                     + "Hikers\" })`; the point that has the tab stop is an image too.",
-                "On a zoomable chart, press its buttons by name: `GetByRole(AriaRole.Button, new() { Name = \"Zoom "
-                    + "in\" })`, or `[aria-label='Zoom in']` in bUnit, and the same for \"Zoom out\", \"Move back\" "
-                    + "and \"Move forward\". In bUnit, find \"Show all\" by its text.",
-                "The text in `[data-part=zoom] [role=status]` says what part of the scale is shown, such as "
-                    + "\"Showing Mar 9 to Apr 7\".",
+                "On a zoomable chart, `ZoomInAsync()`, `ZoomOutAsync()`, `MoveBackAsync()`, `MoveForwardAsync()` and "
+                    + "`ShowAllAsync()` press its buttons and return once the app's `ViewChanged` has run.",
+                "Each of those throws for a chart without zoom buttons, and for a disabled button, such as Zoom out "
+                    + "while all of the scale shows. In Playwright they and `ViewAsync()` wait for the page to be "
+                    + "interactive, since a prerendered chart has no zoom buttons.",
+                "`View` reads what a zoomable chart says it shows, such as \"Showing Mar 9 to Apr 7\", and "
+                    + "`IsZoomed` whether it shows only part of its scale (`ViewAsync()` and `IsZoomedAsync()` in "
+                    + "Playwright).",
+                "Without the helpers, press a zoom button by name, as `GetByRole(AriaRole.Button, new() { Name = "
+                    + "\"Zoom in\" })`, or by `[data-part=zoom-in]` and the like, which hold when `Labels` rewords "
+                    + "the names. The text after them is `[data-part=view]`, and a zoomed plot has `data-zoomed`.",
                 "`Places` lists only the items in a zoomed view. Set `View` to show a part of the scale in a test "
-                    + "without pressing the buttons. While zoomed, the plot has `data-zoomed`.",
+                    + "without pressing the buttons.",
                 "A series' marks are under an element with `data-series` set to its `Name`: a `g` of `rect` bars, "
                     + "the `path` of a line or of an area's line, or a `g` of a scatter's marks. An area's fill is a "
                     + "`path.tb-chart__area` in `svg.tb-chart__fills`, outside its series' element. A hidden series "
