@@ -1461,8 +1461,8 @@ public static class ExampleCatalog
                     + "and the drawing's name leaves it out. It stays in the data table with no share, and with "
                     + "its value unless that is null or not finite. A value that isn't a number throws, naming "
                     + "its item."),
-                new("Shares are written as whole percents, so they may not add up to exactly 100%. A share under "
-                    + "1% shows one decimal."),
+                new("Shares are written as whole percents, as the current culture writes them, so they may not add "
+                    + "up to exactly 100%. A share under 1% shows one decimal."),
                 new("Slices take the theme's eight series colors by their item's place in `Items`, so an item "
                     + "keeps its color when another's value drops to zero. A ninth item starts over at the first "
                     + "color, which is one more reason to keep to a few.") { Pitfall = true },

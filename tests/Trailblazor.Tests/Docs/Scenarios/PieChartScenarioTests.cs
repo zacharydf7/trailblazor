@@ -1,3 +1,4 @@
+using System.Globalization;
 using Bunit;
 using Trailblazor.Docs.Examples;
 using Trailblazor.Testing;
@@ -15,10 +16,11 @@ public class PieChartScenarioTests : BunitContext
         var cut = Render<PieChartClickExample>();
         var chart = cut.Tb().PieChart("Rescues by cause");
 
-        // Values and shares are read as the chart's data table writes them, by the item's label.
+        // Values and shares are read as the chart's data table writes them, by the item's label. A share is written
+        // as the current culture writes a percentage, "28%" in English.
         Assert.Equal(["Lost", "Injury", "Weather", "Exhaustion"], chart.Slices);
         Assert.Equal("9", chart.Value("Injury"));
-        Assert.Equal("28%", chart.Share("Injury"));
+        Assert.Equal(0.28.ToString("P0", CultureInfo.CurrentCulture), chart.Share("Injury"));
 
         // A click on a slice returns once the app's OnSliceClick has run.
         await chart.ClickSliceAsync("Injury");

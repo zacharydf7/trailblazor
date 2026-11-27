@@ -1,3 +1,4 @@
+using System.Globalization;
 using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests.Scenarios;
@@ -11,10 +12,11 @@ public class PieChartScenarioTests(BrowserFixture fixture) : BrowserTest(fixture
         var page = await OpenAsync(browser, "/examples/pie-chart/click");
         var chart = page.Tb().PieChart("Rescues by cause");
 
-        // Values and shares are read as the chart's data table writes them, by the item's label.
+        // Values and shares are read as the chart's data table writes them, by the item's label. A share is written
+        // as the current culture writes a percentage, "28%" in English.
         Assert.Equal(["Lost", "Injury", "Weather", "Exhaustion"], await chart.SlicesAsync());
         Assert.Equal("9", await chart.ValueAsync("Injury"));
-        Assert.Equal("28%", await chart.ShareAsync("Injury"));
+        Assert.Equal(0.28.ToString("P0", CultureInfo.CurrentCulture), await chart.ShareAsync("Injury"));
 
         // A click on a slice returns once the app's OnSliceClick has run.
         await chart.ClickSliceAsync("Injury");

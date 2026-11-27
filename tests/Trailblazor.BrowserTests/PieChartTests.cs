@@ -19,6 +19,10 @@ public class PieChartTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static ILocator Pie(IPage page, string title) => page.GetByRole(AriaRole.Figure, new() { Name = title });
 
+    // A share as the machine's culture writes a percentage, "33%" in one and "33 %" in another, since the test's
+    // pages keep that culture.
+    private static string Share(double share) => share.ToString("P0", CultureInfo.CurrentCulture);
+
     // Where the middle of an item's slice is on the page, from what the chart writes for its script.
     private static async Task<(float X, float Y)> MiddleAsync(ILocator chart, int place)
     {
@@ -84,7 +88,7 @@ public class PieChartTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         // The tooltip names the slice, gives its value and share beside a key in its color, and is level with it.
         await Expect(tooltip.Locator(".tb-chart__tooltip-place")).ToHaveTextAsync("Week");
-        await Expect(tooltip.Locator(".tb-chart__tooltip-value")).ToHaveTextAsync("260 (33%)");
+        await Expect(tooltip.Locator(".tb-chart__tooltip-value")).ToHaveTextAsync($"260 ({Share(0.33)})");
         await Expect(tooltip.Locator(".tb-chart__tooltip-key"))
             .ToHaveCSSAsync("background-color", await SystemColorAsync(page, "var(--tb-chart-series-2)"));
         await Expect(plot.Locator(".tb-chart__crosshair")).ToBeHiddenAsync();
@@ -108,19 +112,19 @@ public class PieChartTests(BrowserFixture fixture) : BrowserTest(fixture)
         var focused = page.Locator(":focus");
 
         await plot.Locator("[tabindex='0']").FocusAsync();
-        await Expect(focused).ToHaveAccessibleNameAsync("Lost: 14 (44%), 1 of 4");
+        await Expect(focused).ToHaveAccessibleNameAsync($"Lost: 14 ({Share(0.44)}), 1 of 4");
         await page.Keyboard.PressAsync("ArrowRight");
-        await Expect(focused).ToHaveAccessibleNameAsync("Injury: 9 (28%), 2 of 4");
+        await Expect(focused).ToHaveAccessibleNameAsync($"Injury: 9 ({Share(0.28)}), 2 of 4");
         await page.Keyboard.PressAsync("ArrowDown");
-        await Expect(focused).ToHaveAccessibleNameAsync("Weather: 5 (16%), 3 of 4");
+        await Expect(focused).ToHaveAccessibleNameAsync($"Weather: 5 ({Share(0.16)}), 3 of 4");
         await page.Keyboard.PressAsync("ArrowUp");
-        await Expect(focused).ToHaveAccessibleNameAsync("Injury: 9 (28%), 2 of 4");
+        await Expect(focused).ToHaveAccessibleNameAsync($"Injury: 9 ({Share(0.28)}), 2 of 4");
         await page.Keyboard.PressAsync("ArrowLeft");
-        await Expect(focused).ToHaveAccessibleNameAsync("Lost: 14 (44%), 1 of 4");
+        await Expect(focused).ToHaveAccessibleNameAsync($"Lost: 14 ({Share(0.44)}), 1 of 4");
         await page.Keyboard.PressAsync("End");
-        await Expect(focused).ToHaveAccessibleNameAsync("Exhaustion: 4 (12%), 4 of 4");
+        await Expect(focused).ToHaveAccessibleNameAsync($"Exhaustion: 4 ({Share(0.12)}), 4 of 4");
         await page.Keyboard.PressAsync("Home");
-        await Expect(focused).ToHaveAccessibleNameAsync("Lost: 14 (44%), 1 of 4");
+        await Expect(focused).ToHaveAccessibleNameAsync($"Lost: 14 ({Share(0.44)}), 1 of 4");
         await page.Keyboard.PressAsync("End");
 
         // The element that has focus sits inside its slice, the last and thinnest one, and the tooltip is for it.
@@ -145,7 +149,7 @@ public class PieChartTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await page.Keyboard.PressAsync("Escape");
         await Expect(tooltip).ToBeHiddenAsync();
-        await Expect(focused).ToHaveAccessibleNameAsync("Lost: 14 (44%), 1 of 4");
+        await Expect(focused).ToHaveAccessibleNameAsync($"Lost: 14 ({Share(0.44)}), 1 of 4");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -185,8 +189,9 @@ public class PieChartTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(chart.GetByRole(AriaRole.Row)).ToHaveCountAsync(4);
         // Back on the pie, focus is on the slice it left.
         await page.Keyboard.PressAsync("Shift+Tab");
-        await Expect(page.Locator(":focus")).ToHaveAccessibleNameAsync("Week: 260 (33%), 2 of 3");
-        await Expect(chart.GetByRole(AriaRole.Row).Nth(2)).ToHaveTextAsync(new Regex(@"^Week\s*260\s*33%$"));
+        await Expect(page.Locator(":focus")).ToHaveAccessibleNameAsync($"Week: 260 ({Share(0.33)}), 2 of 3");
+        await Expect(chart.GetByRole(AriaRole.Row).Nth(2)).ToHaveTextAsync(
+            new Regex($@"^Week\s*260\s*{Regex.Escape(Share(0.33))}$"));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -203,7 +208,7 @@ public class PieChartTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("ArrowLeft");
 
         // The pie is mirrored, so its first slice is on the left half, and the focus ring is still inside its slice.
-        await Expect(page.Locator(":focus")).ToHaveAccessibleNameAsync("Week: 260 (33%), 2 of 3");
+        await Expect(page.Locator(":focus")).ToHaveAccessibleNameAsync($"Week: 260 ({Share(0.33)}), 2 of 3");
         Assert.True(first!.X + first.Width / 2 < box!.X + box.Width / 2, $"The first slice's middle is at {first.X}.");
         Assert.Equal("1", await page.EvaluateAsync<string>(SliceUnderFocus));
     }
