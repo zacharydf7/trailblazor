@@ -33,7 +33,6 @@ public static class UpcomingCatalog
         new("Diagram", ExampleCategory.Content, 207),
         new("Gantt chart", ExampleCategory.Content, 203),
         new("Image editor", ExampleCategory.Content, 210),
-        new("Linear gauge", ExampleCategory.Content, 200),
         new("Maps", ExampleCategory.Content, 208),
         new("PDF viewer", ExampleCategory.Content, 205),
         new("Pivot grid", ExampleCategory.Content, 202),

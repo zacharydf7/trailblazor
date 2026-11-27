@@ -99,7 +99,7 @@ public class DriverParityTests
         ["TbGauge"] = NotInteractive, ["TbGrid"] = NotInteractive, ["TbIcon"] = NotInteractive,
         ["TbMasonry"] = NotInteractive,
         ["TbInteractiveMark"] = NotInteractive, ["TbKbd"] = NotInteractive,
-        ["TbLabel"] = NotInteractive,
+        ["TbLabel"] = NotInteractive, ["TbLinearGauge"] = NotInteractive,
         ["TbProgress"] = NotInteractive, ["TbQrCode"] = NotInteractive, ["TbRoot"] = NotInteractive,
         ["TbSkeleton"] = NotInteractive,
         ["TbSpacer"] = NotInteractive, ["TbSparkline"] = NotInteractive, ["TbStack"] = NotInteractive,
@@ -109,7 +109,7 @@ public class DriverParityTests
         ["TbThemeHead"] = NotInteractive, ["TbTimeline"] = NotInteractive, ["TbWatermark"] = NotInteractive,
         ["TbLineSeries"] = "part of TbChart", ["TbBarSeries"] = "part of TbChart",
         ["TbXAxis"] = "part of TbChart", ["TbYAxis"] = "part of TbChart", ["TbAreaSeries"] = "part of TbChart",
-        ["TbScatterSeries"] = "part of TbChart", ["TbGaugeRange"] = "part of TbGauge",
+        ["TbScatterSeries"] = "part of TbChart", ["TbGaugeRange"] = "part of TbGauge and TbLinearGauge",
     };
 
     // Members only one package has, by type and member signature, and why.

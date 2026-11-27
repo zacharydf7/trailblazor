@@ -1,0 +1,5 @@
+<TbStack Gap="6" Style="max-inline-size: 24rem">
+    <TbLinearGauge Value="310" Max="500" Target="400" Label="Volunteer hours this season (goal 400)" ShowEnds />
+    <TbLinearGauge Value="46" Max="60" Target="40" Label="Campers at the lake tonight (limit 40)" Tone="Tone.Danger"
+                   Labels="@(new() { ValueWithTarget = "{0}, limit {1}" })" ShowEnds />
+</TbStack>

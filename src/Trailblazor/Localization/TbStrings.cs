@@ -104,6 +104,10 @@ public static class TbStrings
     /// the value's text and <c>{1}</c> the range's name, as in "72%, High".</summary>
     public const string GaugeValueInRange = "Gauge.ValueInRange";
 
+    /// <summary>"{0}, target {1}": what screen readers hear for a linear gauge with a target. <c>{0}</c> is what it
+    /// says without one and <c>{1}</c> the target's text, as in "72%, High, target 80%".</summary>
+    public const string GaugeValueWithTarget = "Gauge.ValueWithTarget";
+
     /// <summary>"Message": names the box a chat's user types in.</summary>
     public const string ChatMessage = "Chat.Message";
 
@@ -2129,6 +2133,7 @@ public static class TbStrings
         [ChartShare] = "Share",
         [GaugeNoValue] = "No value",
         [GaugeValueInRange] = "{0}, {1}",
+        [GaugeValueWithTarget] = "{0}, target {1}",
         [ChatMessage] = "Message",
         [ChatSend] = "Send",
         [ChatAttach] = "Attach files",

@@ -37,6 +37,7 @@ public static class AccessibilityStatusCatalog
         new("pie-chart", Tested, Tested, None),
         new("sparkline", None, Tested, None),
         new("gauge", None, Tested, Tested),
+        new("linear-gauge", None, Tested, Tested),
         new("carousel", Tested, Tested, Tested),
         new("virtual-list", Tested, None, None),
         new("chat", Tested, NotYet, None),

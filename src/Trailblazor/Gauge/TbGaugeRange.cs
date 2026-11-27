@@ -17,7 +17,7 @@ public sealed class TbGaugeRange : ComponentBase, IDisposable
     [Parameter]
     public double? To { get; set; }
 
-    /// <summary>What the range is called, such as "High". The gauge shows it under its value and reads it out, so
+    /// <summary>What the range is called, such as "High". The gauge shows it with its value and reads it out, so
     /// the range is never told by its color alone.</summary>
     [Parameter]
     public string? Name { get; set; }

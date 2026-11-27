@@ -1,0 +1,31 @@
+<TbTable aria-label="Beds booked tonight">
+    <thead>
+        <tr>
+            <th scope="col">Hut</th>
+            <th scope="col">Beds booked tonight</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var hut in Huts)
+        {
+            <tr>
+                <th scope="row">@hut.Name</th>
+                <td>
+                    <TbLinearGauge Value="hut.Booked" Max="hut.Beds" Format="@($"0 'of {hut.Beds}'")"
+                                   AriaLabel="@($"{hut.Name}, beds booked tonight")">
+                        <TbGaugeRange To="hut.Beds * 0.6" Name="Quiet" Tone="Tone.Success" />
+                        <TbGaugeRange To="hut.Beds * 0.85" Name="Busy" Tone="Tone.Warning" />
+                        <TbGaugeRange Name="Nearly full" Tone="Tone.Danger" />
+                    </TbLinearGauge>
+                </td>
+            </tr>
+        }
+    </tbody>
+</TbTable>
+
+@code {
+    private static readonly Hut[] Huts =
+        [new("Lower hut", 12, 40), new("Ridge hut", 21, 30), new("Summit hut", 15, 16)];
+
+    private sealed record Hut(string Name, int Booked, int Beds);
+}

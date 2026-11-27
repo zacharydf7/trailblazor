@@ -17,7 +17,8 @@ public class ComponentContractTests : BunitContext
     // TbCarouselSlide, TbDockPanel and TbRibbonTab only render inside their parent (see their parents' tests),
     // TbTreeItemEnd only in a tree row's template, TbSmartPaste and TbValidationSummary only inside a TbForm,
     // TbDescriptionItem only inside a TbDescriptionList, TbLineSeries, TbAreaSeries, TbScatterSeries,
-    // TbBarSeries, TbXAxis and TbYAxis only inside a TbChart, and TbGaugeRange only inside a TbGauge.
+    // TbBarSeries, TbXAxis and TbYAxis only inside a TbChart, and TbGaugeRange only inside a TbGauge or a
+    // TbLinearGauge.
     internal static readonly Type[] NotRenderedAlone =
     [
         typeof(TbRoot), typeof(TbStyles), typeof(TbThemeHead), typeof(TbInteractiveMark), typeof(TbRadio<>),
@@ -57,6 +58,7 @@ public class ComponentContractTests : BunitContext
         [typeof(TbTooltip)] = (nameof(TbTooltip.Text), "Sample"),
         [typeof(TbProgress)] = (nameof(TbProgress.Label), "Sample"),
         [typeof(TbGauge)] = (nameof(TbGauge.Label), "Sample"),
+        [typeof(TbLinearGauge)] = (nameof(TbLinearGauge.Label), "Sample"),
         [typeof(TbDescriptionItem)] = (nameof(TbDescriptionItem.Term), "Sample"),
         [typeof(TbToggleGroup<string>)] = (nameof(TbToggleGroup<string>.AriaLabel), "Sample"),
         [typeof(TbMultiToggleGroup<string>)] = (nameof(TbMultiToggleGroup<string>.AriaLabel), "Sample"),

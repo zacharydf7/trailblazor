@@ -1675,9 +1675,11 @@ public static class ExampleCatalog
                 "For a number with no ends, show the number.",
                 "To compare several values, use bars in one [chart](components/chart): they compare better than "
                     + "a row of gauges and take less room.",
+                "In a list, a table's cell or a narrow card, or to show a value against a target, use a "
+                    + "[linear gauge](components/linear-gauge).",
                 "For a value people set, use a [slider](components/slider).",
             ],
-            Related = ["progress", "chart", "sparkline", "slider"],
+            Related = ["linear-gauge", "progress", "chart", "sparkline", "slider"],
             Sections =
             [
                 new("basic", "Gauge", "`Value` is drawn along the dial from `Min` to `Max`, 0 and 100 unless you "
@@ -1797,6 +1799,169 @@ public static class ExampleCatalog
                     + "so check `aria-valuetext` for what the gauge says.",
                 "A band is a `path.tb-gauge__band`, with a class such as `tb-gauge__band--danger` for its tone, "
                     + "and the gauge has `tb-gauge--danger` while its value is in that range.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"hut-beds\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders. Nothing about it can be used, so it counts nothing else. What it shows is never "
+                    + "recorded.",
+            ],
+        },
+        new("linear-gauge", "Linear gauge", ExampleCategory.Content,
+            "A bar that shows where one value is between two ends, with an optional target and named ranges.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for one measured value that has a lowest and a highest end, where a dial would take too "
+                    + "much room: in a list, a table's cell or a narrow card.",
+                "Use it with a `Target` to show a value against a goal or a limit, such as hours worked against "
+                    + "the hours planned.",
+                "Use several under each other to compare the same measure across things, such as beds booked in "
+                    + "each hut.",
+            ],
+            WhenNotToUse =
+            [
+                "For how far along a task is, use a [progress bar](components/progress).",
+                "For one value that should stand out on a dashboard, use a [gauge](components/gauge).",
+                "For a value over time, use a [chart](components/chart) or a [sparkline](components/sparkline).",
+                "To compare many values on one scale, use bars in a [chart](components/chart). Gauges under each "
+                    + "other suit things that each have ends of their own, such as huts of different sizes.",
+                "For a value people set, use a [slider](components/slider).",
+            ],
+            Related = ["gauge", "progress", "chart", "sparkline", "slider"],
+            Sections =
+            [
+                new("basic", "Linear gauge", "`Value` fills the bar from `Min` to `Max`, 0 and 100 unless you set "
+                    + "them, and is written above the bar's end. `Format` is a .NET number format for that text, "
+                    + "here `0'%'`, applied in the current culture. `Label` is the text above the bar's start, and "
+                    + "it names the gauge. The bar is as wide as the room it has.", typeof(LinearGaugeExample)),
+                new("ranges", "Ranges", "A `TbGaugeRange` marks a part of the scale: a band under the bar, and a "
+                    + "`Name` shown after the value while the value is in the range. Each range runs from the end "
+                    + "of the range below it to its `To`, and one without a `To` runs to `Max`, whatever order they "
+                    + "are written in. The band has the range's `Tone`, and the filled part takes it while the "
+                    + "value is in the range; a range without a `Tone` has a neutral band and leaves the filled "
+                    + "part its own tone. Move the slider to see the range change.",
+                    typeof(LinearGaugeRangesExample)),
+                new("target", "Target", "`Target` draws a mark across the bar at a value to reach or to stay "
+                    + "under, and screen readers hear it after the value, as in \"310, target 400\", in the "
+                    + "value's `Format`. The mark alone doesn't say what the target is, so say it in the label "
+                    + "too. `Labels.ValueWithTarget` rewords what is heard, here to \"46, limit 40\" for the "
+                    + "campers.", typeof(LinearGaugeTargetExample)),
+                new("ends", "Ends and format", "`ShowEnds` writes `Min` and `Max` under the bar's two ends in the "
+                    + "value's `Format`. A value below `Min` or above `Max` is drawn at that end, and its text "
+                    + "still says the value: the summit here is colder than its gauge goes.",
+                    typeof(LinearGaugeEndsExample)),
+                new("tones", "Tone and height", "`Tone` colors the filled part, primary by default; a range's tone "
+                    + "wins over it. `--tb-linear-gauge-height` sets how high the bar is, 0.5rem by default.",
+                    typeof(LinearGaugeToneExample)),
+                new("empty", "No value", "With a null `Value`, as for a sensor that hasn't answered, nothing is "
+                    + "filled and the gauge says \"No value\". A value that isn't finite is shown the same way. "
+                    + "`Labels.NoValue` rewords it, here to \"Offline\". A gauge without a value still marks "
+                    + "and says its `Target`.", typeof(LinearGaugeEmptyExample)),
+                new("table", "In a table", "A gauge in each row compares the same measure across things. Each "
+                    + "row's first cell shows which hut it is, so these gauges have no `Label`, and their "
+                    + "`AriaLabel` says the hut and the measure together, as in \"Summit hut, beds booked "
+                    + "tonight\". Without a label, the value's text stays above the bar's end.",
+                    typeof(LinearGaugeTableExample)),
+            ],
+            Api = [typeof(TbLinearGauge), typeof(TbGaugeRange), typeof(GaugeLabels)],
+            Anatomy = """
+                <TbLinearGauge Value="…" Min="…" Max="…" Target="…" Label="…" Format="…">
+                    <TbGaugeRange To="…" Name="…" Tone="…" />
+                    <TbGaugeRange Name="…" Tone="…" />
+                </TbLinearGauge>
+                """,
+            Pattern = new("meter", "https://www.w3.org/WAI/ARIA/apg/patterns/meter/"),
+            Labeling =
+            [
+                "A `Label` names it through `aria-labelledby`. Without one, give an `AriaLabel`; with both, the "
+                    + "`AriaLabel` names it. With neither, it throws when it renders.",
+                "Use an `AriaLabel` without a `Label` when a heading or a table's row beside the gauge already "
+                    + "says what it measures, and with one when the short label needs more, such as what a list "
+                    + "of gauges has in common.",
+                "Give each range a `Name`. It is shown after the value and read out after it, so the range is "
+                    + "never told by its color alone.",
+            ],
+            Announcements =
+            [
+                "A `meter` with its name and, for its value, the text above the bar, such as \"72%\".",
+                "In a named range, the range's name follows the value, as in \"29, Busy\". The `Gauge.ValueInRange` "
+                    + "string words the two together, and `Labels.ValueInRange` rewords it for one gauge.",
+                "A target follows those, as in \"29, Busy, target 30\". The `Gauge.ValueWithTarget` string words "
+                    + "it, and `Labels.ValueWithTarget` rewords it for one gauge.",
+                "Without a value it says \"No value\", the `Gauge.NoValue` string, or `Labels.NoValue`.",
+                "A change of value isn't announced: a meter is read when a screen reader reaches it.",
+            ],
+            Accessibility =
+            [
+                "It can't be focused and handles no keys, since it has nothing to operate. Screen readers reach it "
+                    + "as they read the page.",
+                "The value and the range's name are text in the text colors, never in the range's color. The "
+                    + "filled part and the bands have 3:1 contrast against the surface in both themes.",
+                "The target's mark is in the text color with a ring in the surface's color, so it shows on the "
+                    + "filled part and off it.",
+                "A change of value moves the filled part over a fifth of a second, or at once with reduced motion.",
+                "In forced-colors mode, such as Windows high contrast, the bar has an outline, the filled part "
+                    + "takes the system's highlight color, and the bands and the target the text color.",
+            ],
+            AppDuties =
+            [
+                "Name the gauge with a `Label` or an `AriaLabel` that says what is measured.",
+                "Give each range a `Name`, and say what a `Target` is in the label.",
+                "Announce a change that people must not miss, such as a value that passes its limit, with an "
+                    + "[alert](components/alert) or the [announcer](guides/announcements).",
+            ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
+            BeforeInteractive =
+            [
+                PlainHtml,
+            ],
+            Notes =
+            [
+                new("A range holds the value it ends at: with a range to 24, a value of 24 is in it and 24.5 is in "
+                    + "the next one."),
+                new("Where the ranges stop short of `Max`, a value past the last of them is in no range: it has no "
+                    + "name after it and the gauge's own `Tone`."),
+                new("The success and danger tones are hard to tell apart for people with red-green color "
+                    + "blindness, so a range needs its `Name` as well as its tone.") { Pitfall = true },
+                new("The target's mark has no text of its own. Sighted people learn what it is only from the label "
+                    + "or the text around the gauge.") { Pitfall = true },
+                new("A `Target` below `Min` or above `Max` is marked at that end and read out as it is. One that "
+                    + "isn't finite is left out."),
+                new("The value's text and the range's name stay on one line. A long label wraps beside them."),
+                new("Right to left, the bar fills from the right, and `Min` is under its right end."),
+                new("`Max` has to be above `Min`, and both finite, or the gauge throws when it renders. A "
+                    + "`TbGaugeRange` outside a gauge throws too."),
+                new("A range that ends below `Min` has no length and holds no value, and one that ends above `Max` "
+                    + "stops there."),
+            ],
+            Target = new("meter", "Trailhead parking"),
+            Blocks = ["tb-linear-gauge"],
+            DataParts =
+            [
+                new("label", "The gauge's visible label."),
+                new("value", "The value's text, or \"No value\"."),
+                new("range", "The name of the range the value is in."),
+                new("bar", "The bar from `Min` to `Max`."),
+                new("indicator", "The filled part of the bar, which runs up to the value."),
+                new("target", "The mark across the bar at the `Target`."),
+                new("min", "The text of `Min` under the bar's start, shown with `ShowEnds`."),
+                new("max", "The text of `Max` under the bar's end, shown with `ShowEnds`."),
+            ],
+            Scenario = new("table", "it finds two huts' gauges by their names and reads their values and ranges.")
+                { WithoutHelpers = true },
+            TestingTips =
+            [
+                "Find it with `GetByRole(AriaRole.Meter, new() { Name = \"Summit hut, beds booked tonight\" })` and "
+                    + "check `aria-valuetext`, which holds the value's text and the range's name, as in \"15 of "
+                    + "16, Nearly full\", and after them a `Target`, as in \"310, target 400\".",
+                "The value's text and the range's name are also in `[data-part=value]` and `[data-part=range]`. A "
+                    + "linear gauge has no helper in the testing packages.",
+                "`aria-valuenow` holds the value kept within `Min` and `Max`, and `Min` while there is no value, "
+                    + "so check `aria-valuetext` for what the gauge says.",
+                "A band is a `div.tb-linear-gauge__band`, with a class such as `tb-linear-gauge__band--danger` for "
+                    + "its tone, and the gauge has `tb-linear-gauge--danger` while its value is in that range.",
             ],
             Telemetry =
             [
@@ -6829,8 +6994,10 @@ public static class ExampleCatalog
                 "For content that's loading into a known shape, use a [skeleton](components/skeleton).",
                 "A button waiting on its own action shows its own spinner; see the "
                     + "[button](components/button#busy).",
+                "For a measured value between two ends that isn't work in progress, such as storage used, use a "
+                    + "[linear gauge](components/linear-gauge) or a [gauge](components/gauge).",
             ],
-            Related = ["skeleton", "button", "alert"],
+            Related = ["skeleton", "button", "alert", "linear-gauge", "gauge"],
             Sections =
             [
                 new("value", "Value or indeterminate", "A progress bar's `Value` shows how far along the work is. "

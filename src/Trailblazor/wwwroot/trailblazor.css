@@ -12323,6 +12323,117 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         min-inline-size: 36%;
     }
 
+    /* A linear gauge is a bar with its label and its value's text above it, and under it the ranges' bands and
+       the ends' values. */
+    .tb-linear-gauge {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        color: var(--tb-color-text);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-linear-gauge--primary { --_tb-gauge-fill: var(--tb-color-primary-text); }
+    .tb-linear-gauge--secondary { --_tb-gauge-fill: var(--tb-color-secondary-text); }
+    .tb-linear-gauge--neutral { --_tb-gauge-fill: var(--tb-color-neutral-text); }
+    .tb-linear-gauge--success { --_tb-gauge-fill: var(--tb-color-success-text); }
+    .tb-linear-gauge--warning { --_tb-gauge-fill: var(--tb-color-warning-text); }
+    .tb-linear-gauge--danger { --_tb-gauge-fill: var(--tb-color-danger-text); }
+    .tb-linear-gauge--info { --_tb-gauge-fill: var(--tb-color-info-text); }
+
+    .tb-linear-gauge__header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--tb-space-2);
+    }
+
+    /* The value and its range's name stay at the end of the line when the gauge has no label before them. */
+    .tb-linear-gauge__reading {
+        display: inline-flex;
+        align-items: baseline;
+        gap: var(--tb-space-1);
+        margin-inline-start: auto;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .tb-linear-gauge__value {
+        font-weight: var(--tb-font-weight-semibold);
+    }
+
+    .tb-linear-gauge--empty .tb-linear-gauge__value {
+        color: var(--tb-color-text-muted);
+        font-weight: var(--tb-font-weight-regular);
+    }
+
+    .tb-linear-gauge__range {
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-linear-gauge__bar {
+        position: relative;
+        block-size: var(--tb-linear-gauge-height, 0.5rem);
+        border-radius: var(--tb-radius-full);
+        background: var(--tb-border-subtle);
+    }
+
+    .tb-linear-gauge__indicator {
+        position: absolute;
+        inset-block: 0;
+        inset-inline-start: 0;
+        inline-size: calc(var(--_tb-gauge-percent) * 1%);
+        border-radius: inherit;
+        background: var(--_tb-gauge-fill);
+        transition: inline-size var(--tb-motion-duration-normal) var(--tb-motion-easing-standard),
+            background-color var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
+    }
+
+    /* The target is a mark across the bar, a little higher than it, centered on its value and ringed in the
+       surface's color so it shows on the filled part too. */
+    .tb-linear-gauge__target {
+        position: absolute;
+        inset-block: -0.1875rem;
+        inset-inline-start: calc(var(--_tb-gauge-target) * 1%);
+        inline-size: 0.1875rem;
+        margin-inline-start: -0.09375rem;
+        border-radius: 1px;
+        background: var(--tb-color-text);
+        box-shadow: 0 0 0 1px var(--tb-color-surface);
+    }
+
+    /* Each band runs between its two values. A clear line on either side of it leaves the surface showing where
+       two bands meet. */
+    .tb-linear-gauge__bands {
+        position: relative;
+        block-size: 0.1875rem;
+    }
+
+    .tb-linear-gauge__band {
+        position: absolute;
+        inset-block: 0;
+        inset-inline-start: calc(var(--_tb-gauge-from) * 1%);
+        box-sizing: border-box;
+        inline-size: calc((var(--_tb-gauge-to) - var(--_tb-gauge-from)) * 1%);
+        border-inline: 1px solid transparent;
+        background: var(--tb-color-neutral-text) padding-box;
+    }
+
+    .tb-linear-gauge__band--primary { background-color: var(--tb-color-primary-text); }
+    .tb-linear-gauge__band--secondary { background-color: var(--tb-color-secondary-text); }
+    .tb-linear-gauge__band--success { background-color: var(--tb-color-success-text); }
+    .tb-linear-gauge__band--warning { background-color: var(--tb-color-warning-text); }
+    .tb-linear-gauge__band--danger { background-color: var(--tb-color-danger-text); }
+    .tb-linear-gauge__band--info { background-color: var(--tb-color-info-text); }
+
+    .tb-linear-gauge__ends {
+        display: flex;
+        justify-content: space-between;
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-xs);
+        font-variant-numeric: tabular-nums;
+    }
+
     /* A pie is a square beside its legend, which drops under it where there is no room. */
     .tb-pie__body {
         display: flex;
@@ -12468,6 +12579,28 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
         .tb-gauge__band {
             stroke: CanvasText;
+        }
+
+        /* Forced colors paint every background in the page's own color, so a linear gauge's bar gets an outline
+           and its filled part, bands and target take system colors. */
+        .tb-linear-gauge__bar {
+            border: 1px solid CanvasText;
+        }
+
+        .tb-linear-gauge__indicator {
+            forced-color-adjust: none;
+            background: Highlight;
+        }
+
+        .tb-linear-gauge__band {
+            forced-color-adjust: none;
+            background-color: CanvasText;
+        }
+
+        .tb-linear-gauge__target {
+            forced-color-adjust: none;
+            background: CanvasText;
+            box-shadow: 0 0 0 1px Canvas;
         }
 
         /* A sparkline is drawn in the text color, and an area keeps its line and loses its fill. */

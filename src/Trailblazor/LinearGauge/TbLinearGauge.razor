@@ -1,0 +1,57 @@
+@namespace Trailblazor
+@inherits TbGaugeBase
+
+@{
+    var bands = Ranges.Between(Min, Max);
+    var reading = Read(bands);
+}
+<div role="meter" aria-label="@Name" aria-labelledby="@(Name is null ? LabelId : null)"
+     aria-valuemin="@Number(Min)" aria-valuemax="@Number(Max)" aria-valuenow="@Number(reading.Now)"
+     aria-valuetext="@Spoken(reading)" @attributes="AdditionalAttributes"
+     class="@ClassNames.Join("tb-linear-gauge", ClassNames.Modifier("tb-linear-gauge", reading.Range?.Tone ?? Tone),
+                reading.Share is null ? "tb-linear-gauge--empty" : null, Class)"
+     style="@Styles.Join(reading.Share is null ? null : $"--_tb-gauge-percent: {Percent(reading.Now)}",
+                Goal is { } goal ? $"--_tb-gauge-target: {Percent(goal)}" : null, Style)">
+    <div class="tb-linear-gauge__header">
+        @if (!string.IsNullOrWhiteSpace(Label))
+        {
+            <span id="@LabelId" data-part="label" class="tb-linear-gauge__label">@Label</span>
+        }
+        <span class="tb-linear-gauge__reading">
+            <span data-part="value" class="tb-linear-gauge__value">@reading.Text</span>
+            @if (!string.IsNullOrWhiteSpace(reading.Range?.Name))
+            {
+                <span data-part="range" class="tb-linear-gauge__range">@reading.Range.Name</span>
+            }
+        </span>
+    </div>
+    <div data-part="bar" class="tb-linear-gauge__bar">
+        @if (reading.Share is not null)
+        {
+            <div data-part="indicator" class="tb-linear-gauge__indicator"></div>
+        }
+        @if (Goal is not null)
+        {
+            <div data-part="target" class="tb-linear-gauge__target"></div>
+        }
+    </div>
+    @if (bands.Count > 0)
+    {
+        <div class="tb-linear-gauge__bands">
+            @foreach (var band in bands)
+            {
+                <div class="@ClassNames.Join("tb-linear-gauge__band", band.Range.Tone is { } tone
+                                ? ClassNames.Modifier("tb-linear-gauge__band", tone) : null)"
+                     style="--_tb-gauge-from: @Percent(band.From); --_tb-gauge-to: @Percent(band.To)"></div>
+            }
+        </div>
+    }
+    @if (ShowEnds)
+    {
+        <div class="tb-linear-gauge__ends">
+            <span data-part="min">@Text(Min)</span>
+            <span data-part="max">@Text(Max)</span>
+        </div>
+    }
+    <CascadingValue Value="Ranges" IsFixed="true">@ChildContent</CascadingValue>
+</div>
