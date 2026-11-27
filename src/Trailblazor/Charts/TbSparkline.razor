@@ -1,0 +1,27 @@
+@namespace Trailblazor
+@typeparam TValue
+@inherits TbComponentBase
+
+@* A picture with a name, or one hidden from screen readers when the text beside it says what it shows. *@
+<svg @attributes="AdditionalAttributes" role="@(Name is null ? null : "img")" aria-label="@Name"
+     aria-hidden="@(Name is null ? "true" : null)" focusable="false" viewBox="@Box" preserveAspectRatio="none"
+     style="@Styles.Join(Width is null ? null : $"--tb-sparkline-width: {Width}",
+                Height is null ? null : $"--tb-sparkline-height: {Height}",
+                Color is null ? null : $"--_tb-sparkline-color: {Color}", Style)"
+     class="@ClassNames.Join("tb-sparkline", Tone is { } tone ? ClassNames.Modifier("tb-sparkline", tone) : null,
+                Class)">
+    @{ var drawing = Draw(); }
+    @foreach (var bar in drawing.Bars)
+    {
+        <rect class="tb-sparkline__bar" x="@ChartPath.Percent(bar.X)" y="@ChartPath.Percent(bar.Y)"
+              width="@ChartPath.Percent(bar.Width)" height="@ChartPath.Percent(bar.Height)" />
+    }
+    @if (drawing.Area.Length > 0)
+    {
+        <path class="tb-sparkline__area" d="@drawing.Area" />
+    }
+    @if (drawing.Line.Length > 0)
+    {
+        <path class="tb-sparkline__line" d="@drawing.Line" />
+    }
+</svg>

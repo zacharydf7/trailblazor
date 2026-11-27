@@ -1,0 +1,36 @@
+<TbTable aria-label="Hikers by trail this week">
+    <thead>
+        <tr>
+            <th scope="col">Trail</th>
+            <th scope="col">Hikers</th>
+            <th scope="col">By day</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var trail in Trails)
+        {
+            <tr>
+                <th scope="row">@trail.Name</th>
+                <td>@trail.Days.Sum()</td>
+                <td>
+                    <TbSparkline Values="trail.Days" Kind="SparklineKind.Bars" Min="0" Max="Busiest"
+                                 AriaLabel="@trail.Shape" />
+                </td>
+            </tr>
+        }
+    </tbody>
+</TbTable>
+
+@code {
+    private static readonly Trail[] Trails =
+    [
+        new("Ridge loop", [40, 36, 44, 41, 58, 96, 104], "Ridge loop by day, busiest at the weekend"),
+        new("Lake path", [22, 25, 21, 24, 23, 26, 24], "Lake path by day, steady and far below the ridge loop"),
+        new("Summit trail", [9, 7, 0, 0, 12, 31, 38], "Summit trail by day, closed midweek"),
+    ];
+
+    // Every row has the same scale, so a bar in one row can be compared with a bar in another.
+    private static readonly double Busiest = Trails.Max(trail => trail.Days.Max());
+
+    private sealed record Trail(string Name, int[] Days, string Shape);
+}

@@ -12112,6 +12112,48 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         transform: none;
     }
 
+    /* A sparkline is a picture about as high as a line of text, stretched to its box. A line on the box's edge
+       is drawn in full, not cut in half along it. */
+    .tb-sparkline {
+        --_tb-sparkline-color: var(--tb-chart-series-1);
+        display: inline-block;
+        inline-size: var(--tb-sparkline-width, 6rem);
+        block-size: var(--tb-sparkline-height, 1.5em);
+        overflow: visible;
+        vertical-align: middle;
+    }
+
+    /* Right to left, it runs from the right, as a chart does. */
+    .tb-sparkline:dir(rtl) {
+        transform: scaleX(-1);
+    }
+
+    .tb-sparkline--primary { --_tb-sparkline-color: var(--tb-color-primary-text); }
+    .tb-sparkline--secondary { --_tb-sparkline-color: var(--tb-color-secondary-text); }
+    .tb-sparkline--neutral { --_tb-sparkline-color: var(--tb-color-neutral-text); }
+    .tb-sparkline--success { --_tb-sparkline-color: var(--tb-color-success-text); }
+    .tb-sparkline--warning { --_tb-sparkline-color: var(--tb-color-warning-text); }
+    .tb-sparkline--danger { --_tb-sparkline-color: var(--tb-color-danger-text); }
+    .tb-sparkline--info { --_tb-sparkline-color: var(--tb-color-info-text); }
+
+    .tb-sparkline__line {
+        fill: none;
+        stroke: var(--_tb-sparkline-color);
+        stroke-width: 1.5;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+        vector-effect: non-scaling-stroke;
+    }
+
+    .tb-sparkline__area {
+        fill: var(--_tb-sparkline-color);
+        fill-opacity: 0.2;
+    }
+
+    .tb-sparkline__bar {
+        fill: var(--_tb-sparkline-color);
+    }
+
     /* A pie is a square beside its legend, which drops under it where there is no room. */
     .tb-pie__body {
         display: flex;
@@ -12243,6 +12285,19 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         .tb-chart__series--8 > .tb-chart__bar {
             fill: Canvas;
             stroke-dasharray: 1 3;
+        }
+
+        /* A sparkline is drawn in the text color, and an area keeps its line and loses its fill. */
+        .tb-sparkline__line {
+            stroke: CanvasText;
+        }
+
+        .tb-sparkline__area {
+            fill: none;
+        }
+
+        .tb-sparkline__bar {
+            fill: CanvasText;
         }
 
         /* A pie's slices differ as bars do: filled, hollow, dashed or dotted, each outlined in the text color. */

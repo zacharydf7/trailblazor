@@ -966,6 +966,8 @@ public static class ExampleCatalog
             WhenNotToUse =
             [
                 "For one number, show the number: a chart of a single value says less than the value does.",
+                "For the shape of a few values beside a number or in a table's cell, with no axes, use a "
+                    + "[sparkline](components/sparkline).",
                 "When readers need exact values more than the shape, use a [table](components/table) or a "
                     + "[data grid](components/data-grid).",
                 "For how far along one task is, use a [progress bar](components/progress).",
@@ -973,7 +975,7 @@ public static class ExampleCatalog
                 "Don't give one chart two series with different units: it has one value axis, and two charts read "
                     + "better than two scales. A scatter's second measure runs along the chart, as its `X`.",
             ],
-            Related = ["pie-chart", "table", "data-grid", "progress", "async-content"],
+            Related = ["pie-chart", "sparkline", "table", "data-grid", "progress", "async-content"],
             Sections =
             [
                 new("basic", "Bars", "`Items` is the list the chart draws, one place along the chart for each item in "
@@ -1338,7 +1340,7 @@ public static class ExampleCatalog
                 "For values that don't add up to a whole, such as averages, or values below zero, use bars.",
                 "For how far along one task is, use a [progress bar](components/progress).",
             ],
-            Related = ["chart", "progress", "table"],
+            Related = ["chart", "sparkline", "progress", "table"],
             Sections =
             [
                 new("basic", "Pie", "`Items` is the list the chart draws, a slice for each item, clockwise from the "
@@ -1514,6 +1516,104 @@ public static class ExampleCatalog
                     + "`keyboard` or `pointer` each time a slice is clicked or chosen with Enter or Space, when the "
                     + "chart has an `OnSliceClick`. Moving over the pie or between its slices isn't counted, and "
                     + "what it shows is never recorded.",
+            ],
+        },
+        new("sparkline", "Sparkline", ExampleCategory.Content,
+            "A small chart with no axes, for the shape of a few values beside a number or in a table's cell.")
+        {
+            WhenToUse =
+            [
+                "Use it beside a number to show how the number got there, such as hikers a day this week next to "
+                    + "the week's total.",
+                "Use one in each row of a table to compare how several things changed.",
+            ],
+            WhenNotToUse =
+            [
+                "When people need to read values off it, use a [chart](components/chart): a sparkline has no axis, "
+                    + "no tooltip and no data table.",
+                "For how far along one task is, use a [progress bar](components/progress).",
+                "Don't use it alone: without a number or a label beside it, a shape says little.",
+            ],
+            Related = ["chart", "pie-chart", "progress", "table"],
+            Sections =
+            [
+                new("basic", "Line", "`Values` are the numbers to draw, in order, of any number type. The line puts "
+                    + "the lowest of them at the bottom and the highest at the top, so it shows their shape and "
+                    + "not their size. It is about as high as a line of text and sits in the text's flow. "
+                    + "`AriaLabel` says what the shape shows, since no value is read out.",
+                    typeof(SparklineExample)),
+                new("kinds", "Area and bars", "`Kind=\"SparklineKind.Area\"` fills the area under the line, and "
+                    + "`SparklineKind.Bars` draws a bar for each value. Both measure from zero, so their size "
+                    + "means something, and a value below zero hangs under the zero line.",
+                    typeof(SparklineKindsExample)),
+                new("table", "In a table", "Each sparkline fits its own values unless `Min` and `Max` set the "
+                    + "bottom and the top. Give every row the same ones to compare the rows with each other: here "
+                    + "the lake path's bars are short because the ridge loop is busier.",
+                    typeof(SparklineTableExample)),
+                new("tones", "Tones and size", "`Tone` gives a sparkline the color of what it means, such as danger "
+                    + "for rescues, and `Color` any CSS color, which wins over a tone. `Width` and `Height` set "
+                    + "its size, 6rem by 1.5em by default.", typeof(SparklineToneExample)),
+                new("gaps", "Missing values", "A null value leaves a gap: the line breaks and starts again, and "
+                    + "the bars leave that one out.", typeof(SparklineGapsExample)),
+            ],
+            Api = [typeof(TbSparkline<>), typeof(SparklineKind)],
+            Labeling =
+            [
+                "`AriaLabel` names the picture. Say what the values are and what their shape shows, as in \"Hikers "
+                    + "a day this week, rising to the weekend\": screen readers hear the name and no values.",
+                "Without an `AriaLabel` the picture is hidden from screen readers. Leave it out only when the text "
+                    + "beside it says the same, as in \"Bookings rose every month\".",
+            ],
+            Accessibility =
+            [
+                "A sparkline is one image that handles no keys and has no tooltip or data table, so what matters "
+                    + "about it has to be in its name or in the text beside it.",
+                "The default color and the tones' colors have 3:1 contrast against the surface in both themes.",
+                "In forced-colors mode, such as Windows high contrast, it is drawn in the system's text color, and "
+                    + "an area keeps its line and loses its fill.",
+            ],
+            AppDuties =
+            [
+                "Put the number, or a label, beside the sparkline.",
+                "Give it an `AriaLabel` that says what its shape shows, unless the text beside it already does.",
+                "Check a `Color` you set for 3:1 contrast against the surface in both themes.",
+            ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
+            BeforeInteractive =
+            [
+                PlainHtml,
+            ],
+            Notes =
+            [
+                new("A line's bottom is its lowest value, not zero, so a line that falls to the bottom has not "
+                    + "fallen to nothing. Use an area or bars, or `Min=\"0\"`, when the size matters.")
+                    { Pitfall = true },
+                new("A value beyond a `Min` or a `Max` you set is drawn at the picture's edge."),
+                new("For a line, values that are all the same run along the middle, and one value alone is a dot."),
+                new("With no values, or only missing ones, it draws nothing and keeps its name, so word the "
+                    + "`AriaLabel` for that case too, or leave the sparkline out.") { Pitfall = true },
+                new("A value that isn't a number throws. A value that is null, or isn't finite, leaves a gap."),
+                new("It is drawn stretched to its box, so the same markup fits any `Width` and `Height`. "
+                    + "`--tb-sparkline-width` and `--tb-sparkline-height` set the size of every sparkline under an "
+                    + "element, such as all those in one table."),
+                new("Right to left, the sparkline runs from the right, as a chart does: the first value is at "
+                    + "the right edge."),
+            ],
+            Target = new("img", "Hikers a day this week, rising to the weekend"),
+            Blocks = ["tb-sparkline"],
+            Scenario = new("table", "it finds a row's sparkline by its name and counts its bars.")
+                { WithoutHelpers = true },
+            TestingTips =
+            [
+                "A line is a `path.tb-sparkline__line`, an area's fill a `path.tb-sparkline__area`, and each bar a "
+                    + "`rect.tb-sparkline__bar`. A sparkline has no helper in the testing packages: test the values "
+                    + "you give it, not the path it draws.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"hikers-this-week\"`, it counts `trailblazor.control.shown` as "
+                    + "it first renders. Nothing about it can be used, so it counts nothing else. What it shows is "
+                    + "never recorded.",
             ],
         },
         new("carousel", "Carousel", ExampleCategory.Content,

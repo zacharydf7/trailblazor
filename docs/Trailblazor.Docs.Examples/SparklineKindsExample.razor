@@ -1,0 +1,17 @@
+<TbStack Gap="2">
+    <TbText>
+        Snow depth
+        <TbSparkline Values="Depth" Kind="SparklineKind.Area" AriaLabel="Snow depth this week, lowest on Friday" />
+    </TbText>
+    <TbText>
+        Change each day
+        <TbSparkline Values="Change" Kind="SparklineKind.Bars"
+                     AriaLabel="Change in snow depth each day, down from Wednesday to Friday" />
+    </TbText>
+</TbStack>
+
+@code {
+    private static readonly int[] Depth = [62, 67, 59, 56, 42, 45, 54];
+
+    private static readonly int[] Change = [12, 5, -8, -3, -14, 3, 9];
+}

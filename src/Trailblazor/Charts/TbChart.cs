@@ -305,7 +305,7 @@ public partial class TbChart<TItem>
 
     // Where a label is along the axis: at its mark, or against the plot's far end when its mark is on that edge.
     private static string Along(double x, string? edge) =>
-        edge == "end" ? "inset-inline-end: 0" : $"inset-inline-start: {Percent(x)}";
+        edge == "end" ? "inset-inline-end: 0" : $"inset-inline-start: {ChartPath.Percent(x)}";
 
     private static string Steps(ChartPlan plan) =>
         Math.Round(plan.Along.Steps, 3).ToString(CultureInfo.InvariantCulture);
@@ -332,9 +332,6 @@ public partial class TbChart<TItem>
 
     private static string Spot(double x, double y) => string.Create(CultureInfo.InvariantCulture,
         $"{Math.Round(x * ChartPath.Grid)},{Math.Round(y * ChartPath.Grid)}");
-
-    private static string Percent(double share) =>
-        Math.Round(share * 100, 3).ToString(CultureInfo.InvariantCulture) + "%";
 
     // What a screen reader hears for the drawing: the kind of chart and the series it shows, as "Bar chart:
     // Completed, Failed".

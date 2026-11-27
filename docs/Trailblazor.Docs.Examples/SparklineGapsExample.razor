@@ -1,0 +1,15 @@
+<TbStack Gap="2">
+    <TbText>
+        Snow depth at the pass
+        <TbSparkline Values="Depth" AriaLabel="Snow depth over two weeks, falling, with one day not measured" />
+    </TbText>
+    <TbText>
+        The same as bars
+        <TbSparkline Values="Depth" Kind="SparklineKind.Bars"
+                     AriaLabel="Snow depth over two weeks as bars, falling, with one day not measured" />
+    </TbText>
+</TbStack>
+
+@code {
+    private static readonly int?[] Depth = [72, 70, 69, 66, null, 61, 58, 59, 55, 52, 49, 47, 44, 40];
+}

@@ -1,0 +1,17 @@
+<TbStack Gap="2">
+    <TbText>
+        Rescues a month
+        <TbSparkline Values="Rescues" Tone="Tone.Danger" AriaLabel="Rescues a month this year, rising since May" />
+    </TbText>
+    <TbText>
+        Huts booked
+        <TbSparkline Values="Booked" Color="var(--tb-chart-series-5)" Width="10rem" Height="2rem"
+                     AriaLabel="Huts booked a month this year, highest in July" />
+    </TbText>
+</TbStack>
+
+@code {
+    private static readonly int[] Rescues = [1, 0, 1, 2, 2, 5, 9, 7];
+
+    private static readonly int[] Booked = [4, 6, 9, 14, 22, 27, 30, 28];
+}

@@ -8527,3 +8527,31 @@ override Trailblazor.TbPieChart<TItem>.OnParametersSet() -> void
 static Trailblazor.PieChartLabels.operator !=(Trailblazor.PieChartLabels? left, Trailblazor.PieChartLabels? right) -> bool
 static Trailblazor.PieChartLabels.operator ==(Trailblazor.PieChartLabels? left, Trailblazor.PieChartLabels? right) -> bool
 ~override Trailblazor.TbPieChart<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.SparklineKind
+Trailblazor.SparklineKind.Area = 1 -> Trailblazor.SparklineKind
+Trailblazor.SparklineKind.Bars = 2 -> Trailblazor.SparklineKind
+Trailblazor.SparklineKind.Line = 0 -> Trailblazor.SparklineKind
+Trailblazor.TbSparkline<TValue>
+Trailblazor.TbSparkline<TValue>.AriaLabel.get -> string?
+Trailblazor.TbSparkline<TValue>.AriaLabel.set -> void
+Trailblazor.TbSparkline<TValue>.Color.get -> string?
+Trailblazor.TbSparkline<TValue>.Color.set -> void
+Trailblazor.TbSparkline<TValue>.Height.get -> string?
+Trailblazor.TbSparkline<TValue>.Height.set -> void
+Trailblazor.TbSparkline<TValue>.Kind.get -> Trailblazor.SparklineKind
+Trailblazor.TbSparkline<TValue>.Kind.set -> void
+Trailblazor.TbSparkline<TValue>.Max.get -> double?
+Trailblazor.TbSparkline<TValue>.Max.set -> void
+Trailblazor.TbSparkline<TValue>.Min.get -> double?
+Trailblazor.TbSparkline<TValue>.Min.set -> void
+Trailblazor.TbSparkline<TValue>.TbSparkline() -> void
+Trailblazor.TbSparkline<TValue>.Tone.get -> Trailblazor.Tone?
+Trailblazor.TbSparkline<TValue>.Tone.set -> void
+Trailblazor.TbSparkline<TValue>.Values.get -> System.Collections.Generic.IEnumerable<TValue>?
+Trailblazor.TbSparkline<TValue>.Values.set -> void
+Trailblazor.TbSparkline<TValue>.Width.get -> string?
+Trailblazor.TbSparkline<TValue>.Width.set -> void
+~override Trailblazor.TbSparkline<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbSparkline<TValue>.TelemetryName.get -> string?
+Trailblazor.TbSparkline<TValue>.TelemetryName.set -> void
+override Trailblazor.TbSparkline<TValue>.OnAfterRender(bool firstRender) -> void

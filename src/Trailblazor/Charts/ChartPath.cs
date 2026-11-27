@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 
 namespace Trailblazor;
@@ -8,6 +9,10 @@ namespace Trailblazor;
 internal static class ChartPath
 {
     public const int Grid = 10000;
+
+    // A share of the plot as a percentage, for a mark the browser places itself.
+    public static string Percent(double share) =>
+        Math.Round(share * 100, 3).ToString(CultureInfo.InvariantCulture) + "%";
 
     // A missing point (null) leaves a gap: the line stops before it and starts again after it.
     public static string Line(IReadOnlyList<(double X, double Y)?> points, ChartCurve curve)
