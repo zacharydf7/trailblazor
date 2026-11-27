@@ -24,6 +24,8 @@ jobs:
     # to run the tests as this job does.
     runs-on: ubuntu-24.04
     env:
+      # The unit tests write their coverage of the library in this job only.
+      TRAILBLAZOR_COVERAGE: true
       TRAILBLAZOR_BROWSERS: >-
         ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && 'chromium' || '' }}
     steps:
@@ -44,6 +46,22 @@ jobs:
       # One test project at a time, so the browser tests don't slow the timing tests in the others past their limit.
       - id: tests
         run: dotnet test --configuration Release --no-build --max-parallel-test-modules 1
+      # The unit tests' coverage of the library, published for reading, with no minimum to meet.
+      - if: ${{ !cancelled() && steps.tests.conclusion != 'skipped' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: TestResults/coverage.cobertura.xml
+          if-no-files-found: warn
+      - if: ${{ !cancelled() && steps.tests.conclusion != 'skipped' }}
+        shell: pwsh
+        run: |
+          $file = 'TestResults/coverage.cobertura.xml'
+          if (Test-Path $file) {
+            $coverage = ([xml](Get-Content $file)).coverage
+            "Unit test coverage: {0:N1}% of lines, {1:N1}% of branches" -f (100 * [double]$coverage.'line-rate'),
+              (100 * [double]$coverage.'branch-rate') >> $env:GITHUB_STEP_SUMMARY
+          }
       # The suites for the components a dock panel often holds run again with each page inside a panel that shows in a
       # browser window of its own, where a script that asks the page's window for something gives itself away. Run
       # this way, the suites have no hang dump of their own, so the step has a time limit: 15 minutes for each browser

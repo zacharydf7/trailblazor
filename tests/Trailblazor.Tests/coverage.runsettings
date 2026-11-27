@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What CI measures the unit tests' coverage of: the library's packages and the bUnit testing helpers, not the tests,
+     the docs or the Playwright helpers, which the browser tests run. -->
+<Configuration>
+  <CodeCoverage>
+    <ModulePaths>
+      <Include>
+        <ModulePath>.*[\\/]Trailblazor\.dll$</ModulePath>
+        <ModulePath>.*[\\/]Trailblazor\.Primitives\.dll$</ModulePath>
+        <ModulePath>.*[\\/]Trailblazor\.Testing\.dll$</ModulePath>
+        <ModulePath>.*[\\/]Trailblazor\.Icons\.Material\.dll$</ModulePath>
+      </Include>
+    </ModulePaths>
+  </CodeCoverage>
+</Configuration>

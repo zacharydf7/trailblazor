@@ -4,6 +4,8 @@
     <OutputType>Exe</OutputType>
     <!-- Five minutes with no test finishing ends the run, with a dump and a log of the tests still running. -->
     <TestingPlatformCommandLineArguments>--hangdump --hangdump-timeout 5m --hangdump-type Mini</TestingPlatformCommandLineArguments>
+    <!-- CI's build job also writes the library's coverage to TestResults, and publishes it without a minimum. -->
+    <TestingPlatformCommandLineArguments Condition="'$(TRAILBLAZOR_COVERAGE)' == 'true'">$(TestingPlatformCommandLineArguments) --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --coverage-settings "$(MSBuildProjectDirectory)/coverage.runsettings"</TestingPlatformCommandLineArguments>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +15,7 @@
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <!-- Its source generator builds the validation types that AddValidation registers. -->
     <PackageReference Include="Microsoft.Extensions.Validation" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
     <PackageReference Include="Microsoft.Testing.Extensions.HangDump" />
     <PackageReference Include="xunit.v3" />
   </ItemGroup>
