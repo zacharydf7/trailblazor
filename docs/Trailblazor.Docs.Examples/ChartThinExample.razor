@@ -1,0 +1,19 @@
+<TbChart Items="Readings" X="reading => reading.At" Title="River level every two hours">
+    <TbXAxis Scale="ChartScale.Continuous" Format="MMM d" Zoomable />
+    <TbYAxis Title="cm" />
+    <TbLineSeries Name="Level" Value="reading => reading.Level" />
+</TbChart>
+
+@code {
+    // A reading every two hours from March to October: a slow swell with the snowmelt, a daily ripple and a few
+    // sudden floods, which thinning keeps.
+    private static readonly Reading[] Readings = [.. Enumerable.Range(0, 2900).Select(step =>
+    {
+        var day = step / 12.0;
+        var flood = step % 700 is > 300 and < 312 ? 40 - Math.Abs(step % 700 - 306) * 6 : 0;
+        var level = 60 + 30 * Math.Sin(day / 38) + 4 * Math.Sin(day * Math.Tau) + flood;
+        return new Reading(new DateTime(2026, 3, 1).AddHours(step * 2), Math.Round(level, 1));
+    })];
+
+    private sealed record Reading(DateTime At, double Level);
+}

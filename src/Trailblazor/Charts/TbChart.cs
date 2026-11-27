@@ -82,6 +82,14 @@ public partial class TbChart<TItem>
     [Parameter]
     public string? Height { get; set; }
 
+    /// <summary>About how many points each line or area is drawn through, 1,000 by default. A longer series is drawn
+    /// through about that many of its points, chosen to keep its peaks and dips, so its drawing stays small; its
+    /// tooltip, keys and data table still have every item. A line broken by gaps, or a stack of areas, can be drawn
+    /// through more, and a series with markers through all of its points. 0 draws every point, and a value below 0
+    /// throws.</summary>
+    [Parameter]
+    public int MaxDrawnPoints { get; set; } = 1000;
+
     /// <summary>Whether the user can hide and show each series from the legend, whose entries are then buttons on
     /// an interactive page. True by default. A series' own <c>Hidden</c> hides it either way.</summary>
     [Parameter]
@@ -117,6 +125,11 @@ public partial class TbChart<TItem>
         if (X is null)
         {
             throw new InvalidOperationException($"{nameof(TbChart<>)} needs an {nameof(X)}.");
+        }
+
+        if (MaxDrawnPoints < 0)
+        {
+            throw new InvalidOperationException($"{nameof(TbChart<>)} needs a {nameof(MaxDrawnPoints)} of 0 or more.");
         }
 
         // A static page never reaches OnAfterRender, so a render the chart's parent starts opens a new round too.
@@ -283,7 +296,8 @@ public partial class TbChart<TItem>
         var stacked = Stacking != ChartStacking.None;
         List<ChartSeriesValues> series = StackedEdges([.. _series.Select(one =>
             new ChartSeriesValues(one.Name, one.Bars, one.Line, [.. items.Select(one.ValueOf)], one.IsHidden,
-                one.Filled, EdgeValue(one, edges?.Before, true, stacked), EdgeValue(one, edges?.After, false, stacked)))]);
+                one.Filled, EdgeValue(one, edges?.Before, true, stacked),
+                EdgeValue(one, edges?.After, false, stacked), one.HasMarkers ?? items.Count <= MostMarkers))]);
         var axis = Axes.Y is { } y ? new ChartValueAxis(y.Min, y.Max, y.Step, y.Format) : default;
         var bars = series.Any(one => one.Bars && !one.Hidden);
         // A scatter's marks sit clear of the plot's edges where they can: its axis runs between round values, as the
@@ -293,7 +307,7 @@ public partial class TbChart<TItem>
             x.Format, x.MarkFormat, culture, new(view?.From ?? x.Min, view?.To ?? x.Max, x.Step, round)) : null;
         List<double> alsoReach = [.. References.All.Select(one => one.Values).OfType<(double Low, double High)>()
             .SelectMany(values => new[] { values.Low, values.High })];
-        return ChartPlan.Build(places, series, Stacking, axis, culture, along, alsoReach);
+        return ChartPlan.Build(places, series, Stacking, axis, culture, along, alsoReach, MaxDrawnPoints);
     }
 
     // The whole of a zoomable scale: its first and last positions, widened to the axis's ends where the app set

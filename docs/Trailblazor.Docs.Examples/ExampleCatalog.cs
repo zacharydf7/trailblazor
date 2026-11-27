@@ -1116,6 +1116,11 @@ public static class ExampleCatalog
                     + "more as the chart gets wider, or taller for the names down a horizontal chart. A line of "
                     + "more than 30 points has no markers. `Height` sets the height of the plot, and the chart is "
                     + "as wide as its container.", typeof(ChartLongExample)),
+                new("thin", "Very long series", "A line or an area of more than 1,000 points is drawn through about "
+                    + "1,000 of them, chosen to keep its peaks and dips, as the floods in this river's 2,900 readings show. "
+                    + "The tooltip, the keys and the data table still have every reading, and zooming in draws the "
+                    + "part shown in more detail. `MaxDrawnPoints` sets how many points are drawn, and 0 draws them "
+                    + "all.", typeof(ChartThinExample)),
                 new("long-names", "Long names", "A label along the axis is never wrapped or cut short: it shows in "
                     + "full, or not at all when its neighbors leave it no room. With long names on a narrow chart, "
                     + "most places go unlabeled, so keep names along the axis short and put the full ones in the "
@@ -1434,9 +1439,14 @@ public static class ExampleCatalog
                     + "`From` not below its `To`, neither or both of a value and a place, or only one of a band's "
                     + "two values or places; when its place on a continuous scale isn't a date on a scale of dates "
                     + "or a finite number on a scale of numbers; and when it is outside a chart."),
-                new("Every item's values are in the page's markup twice, in the drawing and in the table, so a chart "
-                    + "of thousands of points makes a large page. Draw a summary, such as a value a day in place "
-                    + "of one a minute."),
+                new("A long line or area is drawn through about `MaxDrawnPoints` points, but every item's values "
+                    + "are still in the page's markup for the tooltip and the data table, so a chart of tens of "
+                    + "thousands of items makes a large page. Draw a summary, such as a value a day in place of one "
+                    + "a minute."),
+                new("A thinned stack of areas is drawn through every place any of its areas keeps, so its areas "
+                    + "still meet, and a line broken by gaps keeps each run's ends; both can be drawn through more "
+                    + "than `MaxDrawnPoints` points. A series with markers is drawn through every point, so each "
+                    + "marker sits on its line. Bars and scatter marks are never thinned."),
             ],
             Target = new("figure", "Hikers by month"),
             Ready = new("[data-part=plot]", "the plot"),
@@ -1512,6 +1522,8 @@ public static class ExampleCatalog
                 "Without the helpers, press a zoom button by name, as `GetByRole(AriaRole.Button, new() { Name = "
                     + "\"Zoom in\" })`, or by `[data-part=zoom-in]` and the like, which hold when `Labels` rewords "
                     + "the names. The text after them is `[data-part=view]`, and a zoomed plot has `data-zoomed`.",
+                "A thinned line's `path` goes through fewer points than it has items. Read values with "
+                    + "`Value(series, place)` or `Places`, which keep every item.",
                 "`Places` lists only the items in a zoomed view. Set `View` to show a part of the scale in a test "
                     + "without pressing the buttons.",
                 "A series' marks are under an element with `data-series` set to its `Name`: a `g` of `rect` bars, "

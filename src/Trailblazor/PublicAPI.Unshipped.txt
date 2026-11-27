@@ -8701,3 +8701,5 @@ override Trailblazor.ChartView.GetHashCode() -> int
 override Trailblazor.ChartView.ToString() -> string!
 static Trailblazor.ChartView.operator !=(Trailblazor.ChartView? left, Trailblazor.ChartView? right) -> bool
 static Trailblazor.ChartView.operator ==(Trailblazor.ChartView? left, Trailblazor.ChartView? right) -> bool
+Trailblazor.TbChart<TItem>.MaxDrawnPoints.get -> int
+Trailblazor.TbChart<TItem>.MaxDrawnPoints.set -> void
