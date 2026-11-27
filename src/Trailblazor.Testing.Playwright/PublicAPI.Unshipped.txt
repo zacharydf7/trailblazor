@@ -757,3 +757,4 @@ Trailblazor.Testing.Playwright.TbPieChartLocator.SlicesAsync() -> System.Threadi
 Trailblazor.Testing.Playwright.TbPieChartLocator.TbPieChartLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TbPieChartLocator.ValueAsync(string! slice) -> System.Threading.Tasks.Task<string!>!
 Trailblazor.Testing.Playwright.TrailblazorPage.PieChart(string? name = null) -> Trailblazor.Testing.Playwright.TbPieChartLocator!
+Trailblazor.Testing.Playwright.TbChartLocator.ReferencesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!

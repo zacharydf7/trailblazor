@@ -1,0 +1,18 @@
+@page "/chart-reference"
+
+@* A horizontal chart of a known width whose axis runs from 0 to 40, with a band from 10 to 20, a line at 30, and
+   a line at 40, the end of the axis. *@
+<div style="width: 30rem">
+    <TbChart TItem="Trail" Items="Trails" X="trail => trail.Name" Title="Hikers by trail" Height="12rem" Horizontal>
+        <TbBarSeries Name="Hikers" Value="trail => trail.Hikers" />
+        <TbReferenceLine Value="30" Name="Limit" Tone="Tone.Danger" />
+        <TbReferenceBand From="10" To="20" Name="Usual" />
+        <TbReferenceLine Value="40" Name="Record" />
+    </TbChart>
+</div>
+
+@code {
+    private static readonly Trail[] Trails = [new("Ridge loop", 40), new("Lake path", 16), new("Summit trail", 8)];
+
+    private sealed record Trail(string Name, int Hikers);
+}

@@ -55,6 +55,15 @@ public sealed class TbChartLocator(ILocator scope, string? name)
             + "'[data-part=table] tbody th')].map(heading => heading.textContent)");
     }
 
+    /// <summary>What the chart writes for each of its reference lines and bands, such as "Target: 60", in the order
+    /// the chart lists them under its data table. A chart without any gives an empty list.</summary>
+    public async Task<IReadOnlyList<string>> ReferencesAsync()
+    {
+        await Chart.WaitForAsync();
+        return await Chart.EvaluateAsync<string[]>("chart => [...chart.querySelectorAll("
+            + "'[data-part=references] li')].map(item => item.textContent)");
+    }
+
     /// <summary>The value of this series at this place, as the chart's data table writes it, or an empty string
     /// where the series has no value. A series or a place the chart doesn't have throws.</summary>
     public async Task<string> ValueAsync(string series, string place) =>

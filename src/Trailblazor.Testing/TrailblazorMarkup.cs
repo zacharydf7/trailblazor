@@ -6598,6 +6598,11 @@ public sealed class TbChartDriver
     /// <summary>What the chart's items are called along it, in order.</summary>
     public IReadOnlyList<string> Places => [.. _find().QuerySelectorAll("[data-part=table] tbody th").Select(Text)];
 
+    /// <summary>What the chart writes for each of its reference lines and bands, such as "Target: 60", in the order
+    /// the chart lists them under its data table. A chart without any gives an empty list.</summary>
+    public IReadOnlyList<string> References =>
+        [.. _find().QuerySelectorAll("[data-part=references] li").Select(Text)];
+
     /// <summary>The value of this series at this place, as the chart's data table writes it, or an empty string
     /// where the series has no value. A series or a place the chart doesn't have throws.</summary>
     public string Value(string series, string place) => Cell(series, place).TextContent;

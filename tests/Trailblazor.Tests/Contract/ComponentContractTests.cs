@@ -17,8 +17,8 @@ public class ComponentContractTests : BunitContext
     // TbCarouselSlide, TbDockPanel and TbRibbonTab only render inside their parent (see their parents' tests),
     // TbTreeItemEnd only in a tree row's template, TbSmartPaste and TbValidationSummary only inside a TbForm,
     // TbDescriptionItem only inside a TbDescriptionList, TbLineSeries, TbAreaSeries, TbScatterSeries,
-    // TbBarSeries, TbXAxis and TbYAxis only inside a TbChart, and TbGaugeRange only inside a TbGauge or a
-    // TbLinearGauge.
+    // TbBarSeries, TbXAxis, TbYAxis, TbReferenceLine and TbReferenceBand only inside a TbChart, and TbGaugeRange
+    // only inside a TbGauge or a TbLinearGauge.
     internal static readonly Type[] NotRenderedAlone =
     [
         typeof(TbRoot), typeof(TbStyles), typeof(TbThemeHead), typeof(TbInteractiveMark), typeof(TbRadio<>),
@@ -31,7 +31,7 @@ public class ComponentContractTests : BunitContext
         typeof(TbDialogHeaderActions), typeof(TbDialogHeader), typeof(TbTreeItemEnd), typeof(TbSmartPaste),
         typeof(TbDockPanel), typeof(TbDescriptionItem), typeof(TbValidationSummary), typeof(TbLineSeries<>),
         typeof(TbBarSeries<>), typeof(TbXAxis), typeof(TbYAxis), typeof(TbAreaSeries<>),
-        typeof(TbScatterSeries<>), typeof(TbGaugeRange),
+        typeof(TbScatterSeries<>), typeof(TbGaugeRange), typeof(TbReferenceLine), typeof(TbReferenceBand),
     ];
 
     // Generic components, such as fields, are checked with string as their type argument unless listed here.
@@ -338,6 +338,8 @@ public class ComponentContractTests : BunitContext
                 var type when type == typeof(int) => 3,
                 var type when type == typeof(TimeSpan) => TimeSpan.FromMinutes(1),
                 var type when type == typeof(Icon) => new Icon("<path d=\"M4 4h16v16H4z\" />"),
+                // A reference band's To has to be above its From.
+                var type when type == typeof(double) => property.Name == nameof(TbReferenceBand.To) ? 2d : 1d,
                 var type when type == typeof(IEnumerable<string>) => Array.Empty<string>(),
                 var type when type == typeof(IReadOnlyList<string>) => Array.Empty<string>(),
                 var type when type == typeof(IReadOnlyList<CascaderItem<string>>) =>

@@ -48,8 +48,10 @@ internal sealed class ChartPlan
     private const int MostLabels = 48;
 
     private ChartPlan(IReadOnlyList<string> places, ChartTicks ticks, IReadOnlyList<ChartSeriesPlan> series,
-        IReadOnlyList<(double Y, string Text, bool Zero)> valueTicks, ChartAlong along)
+        IReadOnlyList<(double Y, string Text, bool Zero)> valueTicks, ChartAlong along,
+        Func<double, string> referenceText)
     {
+        ReferenceText = referenceText;
         Places = places;
         Ticks = ticks;
         Series = series;
@@ -74,6 +76,10 @@ internal sealed class ChartPlan
     // Each tick of the value axis: its share of the plot from the top, its label, and whether it is the zero line.
     public IReadOnlyList<(double Y, string Text, bool Zero)> ValueTicks { get; }
 
+    // Writes a value of the axis for a reference line or band: as the data table writes the series' values, or as
+    // the axis writes its marks on a chart of shares, whose table holds amounts and not shares.
+    public Func<double, string> ReferenceText { get; }
+
     // A long axis renders a label for every second, fourth or eighth place, and so on.
     public int LabelEvery { get; }
 
@@ -95,8 +101,10 @@ internal sealed class ChartPlan
     internal static int Stride(int index, int count) =>
         index == 0 ? (int)BitOperations.RoundUpToPowerOf2((uint)count) : index & -index;
 
+    // `alsoReach` are values the axis has to reach besides the series' own, such as a reference line's.
     public static ChartPlan Build(IReadOnlyList<string> places, IReadOnlyList<ChartSeriesValues> series,
-        ChartStacking stacking, ChartValueAxis axis, CultureInfo culture, ChartAlong? along = null)
+        ChartStacking stacking, ChartValueAxis axis, CultureInfo culture, ChartAlong? along = null,
+        IReadOnlyList<double>? alsoReach = null)
     {
         along ??= ChartAlong.Even(places.Count);
         // Bars pile with bars and areas with areas.
@@ -111,6 +119,7 @@ internal sealed class ChartPlan
             .Concat(series.Where(one => !one.Bars && !one.Filled && !one.Hidden).SelectMany(one => one.Values)
                 .OfType<double>())
             .ToList();
+        reached.AddRange(alsoReach ?? []);
         var shares = stacking == ChartStacking.Percent && bars.Count + areas.Count > 0;
         var ticks = TicksFor(reached, axis, shares);
 
@@ -153,7 +162,8 @@ internal sealed class ChartPlan
             }
         }
 
-        return new(places, ticks, planned, valueTicks, along);
+        return new(places, ticks, planned, valueTicks, along,
+            value => value.ToString(shares ? format : valueFormat, culture));
     }
 
     // Where each value of these series starts and ends: from zero, or on top of the series before it.

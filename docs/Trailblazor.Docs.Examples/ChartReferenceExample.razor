@@ -1,0 +1,16 @@
+<TbChart Items="Days" X="day => day.Name" Title="River level at the ford this week">
+    <TbYAxis Format="0 'cm'" />
+    <TbLineSeries Name="Level" Value="day => day.Level" />
+    <TbReferenceBand From="20" To="45" Name="Usual for June" Tone="Tone.Info" />
+    <TbReferenceLine Value="70" Name="Flood warning" Tone="Tone.Danger" />
+</TbChart>
+
+@code {
+    private static readonly Day[] Days =
+    [
+        new("Mon", 38), new("Tue", 41), new("Wed", 52), new("Thu", 66), new("Fri", 58), new("Sat", 47),
+        new("Sun", 40),
+    ];
+
+    private sealed record Day(string Name, int Level);
+}

@@ -55,6 +55,7 @@ public class TelemetryContractTests : BunitContext
         ["TbTimelineItem"] = Part, ["TbToolbarSeparator"] = Part, ["TbTreeItem"] = Part, ["TbTreeItemEnd"] = Part,
         ["TbLineSeries"] = Part, ["TbBarSeries"] = Part, ["TbXAxis"] = Part, ["TbYAxis"] = Part,
         ["TbAreaSeries"] = Part, ["TbScatterSeries"] = Part, ["TbGaugeRange"] = Part,
+        ["TbReferenceLine"] = Part, ["TbReferenceBand"] = Part,
 
         ["TbFocusScope"] = Plumbing, ["TbInteractiveMark"] = Plumbing, ["TbModelField"] = Plumbing,
         ["TbRoot"] = Plumbing, ["TbStyles"] = Plumbing, ["TbThemeHead"] = Plumbing,

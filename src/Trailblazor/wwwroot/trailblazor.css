@@ -12044,6 +12044,62 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         stroke-width: 2;
     }
 
+    /* A reference line is dashed, so it reads as neither a grid line nor a series' line, and a reference band is
+       a tint under the marks. Neither takes the pointer from the marks. */
+    .tb-chart__reference {
+        stroke: var(--_tb-chart-series, var(--tb-color-text-muted));
+        stroke-width: 1.5;
+        stroke-dasharray: 5 3;
+        pointer-events: none;
+    }
+
+    .tb-chart__band {
+        fill: var(--_tb-chart-series, var(--tb-color-text-muted));
+        fill-opacity: 0.14;
+        pointer-events: none;
+    }
+
+    /* A reference's text sits on its line at the plot's end, under the line when it is near the plot's top, or in
+       a band's top corner, on a patch of the surface's color so it reads over the marks. A text longer than the
+       plot is cut short. */
+    .tb-chart__reference-name {
+        position: absolute;
+        inset-inline-end: 0;
+        max-inline-size: 100%;
+        padding-inline: var(--tb-space-1);
+        overflow: hidden;
+        transform: translateY(-100%);
+        background: color-mix(in srgb, var(--tb-color-surface) 85%, transparent);
+        color: var(--tb-color-text);
+        font-size: var(--tb-font-size-xs);
+        line-height: 1.4;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        pointer-events: none;
+    }
+
+    .tb-chart__reference-name--under {
+        transform: none;
+    }
+
+    /* In a horizontal chart a reference runs up the plot, and its text is beside it: a line's at the plot's
+       bottom and a band's at its top, so a line inside a band doesn't write over the band's text. */
+    .tb-chart__plot[data-horizontal] > .tb-chart__reference-name {
+        inset-block-end: 0;
+        inset-inline-end: auto;
+        transform: none;
+    }
+
+    .tb-chart__plot[data-horizontal] > .tb-chart__reference-name--band {
+        inset-block: 0 auto;
+    }
+
+    .tb-chart__references {
+        margin-block: var(--tb-space-2) 0;
+        padding-inline-start: var(--tb-space-4);
+        font-size: var(--tb-font-size-sm);
+    }
+
     /* With a handler for its points, the plot is something to press. */
     .tb-chart__plot[data-activates] {
         cursor: pointer;
@@ -12644,6 +12700,17 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
         .tb-chart__grid {
             stroke: GrayText;
+        }
+
+        /* A reference line takes the text color, and a band has a dotted outline in place of its tint. */
+        .tb-chart__reference {
+            stroke: CanvasText;
+        }
+
+        .tb-chart__band {
+            fill: none;
+            stroke: CanvasText;
+            stroke-dasharray: 1 3;
         }
 
         .tb-chart__gap {

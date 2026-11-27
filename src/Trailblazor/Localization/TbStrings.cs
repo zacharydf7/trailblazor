@@ -73,6 +73,14 @@ public static class TbStrings
     /// </summary>
     public const string ChartScatter = "Chart.Scatter";
 
+    /// <summary>"{0}: {1}": what a chart writes for a reference line. <c>{0}</c> is its name and <c>{1}</c> its
+    /// value, as in "Target: 60".</summary>
+    public const string ChartReferenceLine = "Chart.ReferenceLine";
+
+    /// <summary>"{0}: {1} to {2}": what a chart writes for a reference band. <c>{0}</c> is its name, and
+    /// <c>{1}</c> and <c>{2}</c> the values it runs between, as in "Normal: 20 to 40".</summary>
+    public const string ChartReferenceBand = "Chart.ReferenceBand";
+
     /// <summary>"Bar and line chart": the kind of a chart with bars beside lines, areas or scatters, in
     /// <see cref="ChartSummary"/>.</summary>
     public const string ChartBarsAndLines = "Chart.BarsAndLines";
@@ -2124,6 +2132,8 @@ public static class TbStrings
         [ChartLines] = "Line chart",
         [ChartAreas] = "Area chart",
         [ChartScatter] = "Scatter chart",
+        [ChartReferenceLine] = "{0}: {1}",
+        [ChartReferenceBand] = "{0}: {1} to {2}",
         [ChartBarsAndLines] = "Bar and line chart",
         [ChartPie] = "Pie chart",
         [ChartDonut] = "Donut chart",

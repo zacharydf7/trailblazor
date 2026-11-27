@@ -690,3 +690,4 @@ Trailblazor.Testing.TbPieChartDriver.Share(string! slice) -> string!
 Trailblazor.Testing.TbPieChartDriver.Slices.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TbPieChartDriver.Value(string! slice) -> string!
 Trailblazor.Testing.TrailblazorMarkup.PieChart(string? name = null) -> Trailblazor.Testing.TbPieChartDriver!
+Trailblazor.Testing.TbChartDriver.References.get -> System.Collections.Generic.IReadOnlyList<string!>!

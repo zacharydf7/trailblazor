@@ -99,13 +99,16 @@ public partial class TbChart<TItem>
     [Parameter]
     public ChartClasses? Classes { get; set; }
 
-    /// <summary>The chart's series, and its axes when they need settings: <see cref="TbLineSeries{TItem}"/>,
-    /// <see cref="TbAreaSeries{TItem}"/>, <see cref="TbScatterSeries{TItem}"/>, <see cref="TbBarSeries{TItem}"/>,
-    /// <see cref="TbXAxis"/> and <see cref="TbYAxis"/>.</summary>
+    /// <summary>The chart's series, its axes when they need settings, and its reference lines and bands:
+    /// <see cref="TbLineSeries{TItem}"/>, <see cref="TbAreaSeries{TItem}"/>, <see cref="TbScatterSeries{TItem}"/>,
+    /// <see cref="TbBarSeries{TItem}"/>, <see cref="TbXAxis"/>, <see cref="TbYAxis"/>,
+    /// <see cref="TbReferenceLine"/> and <see cref="TbReferenceBand"/>.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
     private ChartAxes Axes => field ??= new(SeriesChanged);
+
+    private ChartReferences References => field ??= new(SeriesChanged);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -271,7 +274,59 @@ public partial class TbChart<TItem>
         var round = !bars && _series.Any(one => one.Dots && !one.IsHidden);
         var along = Axes.X is { Scale: ChartScale.Continuous } x ? ChartAlong.Continuous([.. items.Select(X!)], bars,
             x.Format, x.MarkFormat, culture, new(x.Min, x.Max, x.Step, round)) : null;
-        return ChartPlan.Build(places, series, Stacking, axis, culture, along);
+        List<double> alsoReach = [.. References.All.SelectMany(one => new[] { one.Values.Low, one.Values.High })];
+        return ChartPlan.Build(places, series, Stacking, axis, culture, along, alsoReach);
+    }
+
+    // A reference line or band as the chart shows it: the shares of the value axis it runs between, from the axis's
+    // low end, which are the same for a line, and what the plot and the list under the data table say for it. One
+    // that lies outside an axis whose ends the app set is listed and not drawn.
+    private readonly record struct PlacedReference(TbChartReference Reference, bool Band, double Low, double High,
+        string Text)
+    {
+        public bool Drawn => Band ? High > Low : Low is >= 0 and <= 1;
+
+        // In an upright chart a band's text hangs under its higher edge, inside it, and so does the text of a line
+        // too near the top of the axis to have room over it.
+        public bool TextUnder => Band || High > 0.85;
+    }
+
+    private List<PlacedReference> PlaceReferences(ChartPlan plan) => [.. References.All.Select(one =>
+    {
+        var band = one is TbReferenceBand;
+        var (low, high) = one.Values;
+        var text = band
+            ? string.Format(CultureInfo.CurrentCulture, Labels.ReferenceBand ?? Localizer[TbStrings.ChartReferenceBand],
+                one.Name, plan.ReferenceText(low), plan.ReferenceText(high))
+            : string.Format(CultureInfo.CurrentCulture, Labels.ReferenceLine ?? Localizer[TbStrings.ChartReferenceLine],
+                one.Name, plan.ReferenceText(low));
+        // A band is cut off at the plot's edges.
+        var (from, to) = (plan.Ticks.Share(low), plan.Ticks.Share(high));
+        return band ? new PlacedReference(one, true, Math.Max(0, from), Math.Min(1, to), text)
+            : new(one, false, from, to, text);
+    })];
+
+    // A band's box in the plot, as shares from its left and top.
+    private (double X, double Y, double Width, double Height) Box(PlacedReference band)
+    {
+        var (from, to) = (Turn(0, 1 - band.High), Turn(1, 1 - band.Low));
+        return (Math.Min(from.X, to.X), Math.Min(from.Y, to.Y), Math.Abs(to.X - from.X), Math.Abs(to.Y - from.Y));
+    }
+
+    // Where a reference's text sits. In an upright chart it is as far up the plot as the line, or as the band's
+    // higher edge. In a horizontal one it starts at the line, or at the band's lower edge; past the middle of the
+    // plot it ends at the line, or at the band's higher edge. Either way it is no wider than the plot is on that
+    // side, so it stays inside the plot.
+    private string NameStyle(PlacedReference placed)
+    {
+        if (!Horizontal)
+        {
+            return $"inset-block-start: {ChartPath.Percent(1 - placed.High)}";
+        }
+
+        var (side, at, room) = placed.Low > 0.5 ? ("end", 1 - placed.High, placed.High)
+            : ("start", placed.Low, 1 - placed.Low);
+        return $"inset-inline-{side}: {ChartPath.Percent(at)}; max-inline-size: {ChartPath.Percent(room)}";
     }
 
     // A series' classes: the color its position gives it, and its tone's color in place of that when it has one.

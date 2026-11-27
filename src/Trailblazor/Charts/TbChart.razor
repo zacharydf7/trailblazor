@@ -14,7 +14,9 @@
         style="@Styles.Join(Height is null ? null : $"--tb-chart-height: {Height}", Style)"
         class="@ClassNames.Join("tb-chart", Horizontal ? "tb-chart--horizontal" : null, Class)">
     <CascadingValue Value="this" IsFixed="true">
-        <CascadingValue Value="Axes" IsFixed="true">@ChildContent</CascadingValue>
+        <CascadingValue Value="Axes" IsFixed="true">
+            <CascadingValue Value="References" IsFixed="true">@ChildContent</CascadingValue>
+        </CascadingValue>
     </CascadingValue>
     @* Every position is a share of the plot, so the same markup fits any size and nothing is measured: marks the
        browser can place by percentage are plain SVG shapes, lines are paths in a nested SVG stretched over the plot,
@@ -33,6 +35,8 @@
         List<(double At, string Text, int Stride)> names = [.. plan.Labels];
         var (side, below) = Horizontal ? (names, values) : (values, names);
         var toggles = CanHideSeries && RendererInfo.IsInteractive;
+        // The references stay in the list under the data table while every series is hidden, as the table stays.
+        var references = empty ? [] : PlaceReferences(plan);
     }
     @if (Title is not null)
     {
@@ -157,6 +161,14 @@
                         <line class="@(tick.Zero ? "tb-chart__grid tb-chart__grid--zero" : "tb-chart__grid")"
                               x1="@Percent(from.X)" x2="@Percent(to.X)" y1="@Percent(from.Y)" y2="@Percent(to.Y)" />
                     }
+                    @* A reference band is under every mark, and a reference line, further down, over them. *@
+                    @foreach (var band in references.Where(one => one.Band && one.Drawn))
+                    {
+                        var box = Box(band);
+                        <rect class="@ClassNames.Join("tb-chart__band", ToneClass(band.Reference.Tone))"
+                              x="@Percent(box.X)" y="@Percent(box.Y)" width="@Percent(box.Width)"
+                              height="@Percent(box.Height)" />
+                    }
                     @* The areas' fills are under the bars and every line, so no fill covers another series' marks,
                        and their drawing ends at the plot's edge when zero is beyond it. In a stack no two fills
                        overlap, so each carries its series' number and a click inside it is on that series. *@
@@ -267,7 +279,22 @@
                             </g>
                         }
                     }
+                    @foreach (var line in references.Where(one => !one.Band && one.Drawn))
+                    {
+                        var (from, to) = (Turn(0, 1 - line.Low), Turn(1, 1 - line.Low));
+                        <line class="@ClassNames.Join("tb-chart__reference", ToneClass(line.Reference.Tone))"
+                              x1="@Percent(from.X)" x2="@Percent(to.X)" y1="@Percent(from.Y)" y2="@Percent(to.Y)" />
+                    }
                 </svg>
+                @* Each reference's name and values, as text over the plot that screen readers read after the
+                   drawing: at a line's end, or in a band's corner. *@
+                @foreach (var placed in references.Where(one => one.Drawn))
+                {
+                    <span data-part="reference" style="@NameStyle(placed)"
+                          class="@ClassNames.Join("tb-chart__reference-name",
+                                     placed.Band ? "tb-chart__reference-name--band" : null,
+                                     placed.TextUnder ? "tb-chart__reference-name--under" : null)">@placed.Text</span>
+                }
             }
             @* The script shows these, moves them and names them, and Blazor never writes inside them: the line at the
                place the pointer or the keys are on, the tooltip, and the two elements focus moves between. *@
@@ -337,6 +364,15 @@
                     }
                 </tbody>
             </TbTable>
+            @if (references.Count > 0)
+            {
+                <ul data-part="references" class="tb-chart__references">
+                    @foreach (var placed in references)
+                    {
+                        <li data-tone="@ToneName(placed.Reference.Tone)">@placed.Text</li>
+                    }
+                </ul>
+            }
         </details>
     }
 </figure>

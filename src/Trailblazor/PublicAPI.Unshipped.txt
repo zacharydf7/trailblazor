@@ -8626,3 +8626,28 @@ const Trailblazor.TbStrings.GaugeValueWithTarget = "Gauge.ValueWithTarget" -> st
 override Trailblazor.TbGaugeBase.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbGaugeBase.OnParametersSet() -> void
 ~override Trailblazor.TbLinearGauge.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.ChartLabels.ReferenceBand.get -> string?
+Trailblazor.ChartLabels.ReferenceBand.init -> void
+Trailblazor.ChartLabels.ReferenceLine.get -> string?
+Trailblazor.ChartLabels.ReferenceLine.init -> void
+Trailblazor.TbChartReference
+Trailblazor.TbChartReference.Dispose() -> void
+Trailblazor.TbChartReference.Name.get -> string?
+Trailblazor.TbChartReference.Name.set -> void
+Trailblazor.TbChartReference.TbChartReference() -> void
+Trailblazor.TbChartReference.Tone.get -> Trailblazor.Tone?
+Trailblazor.TbChartReference.Tone.set -> void
+Trailblazor.TbReferenceBand
+Trailblazor.TbReferenceBand.From.get -> double
+Trailblazor.TbReferenceBand.From.set -> void
+Trailblazor.TbReferenceBand.TbReferenceBand() -> void
+Trailblazor.TbReferenceBand.To.get -> double
+Trailblazor.TbReferenceBand.To.set -> void
+Trailblazor.TbReferenceLine
+Trailblazor.TbReferenceLine.TbReferenceLine() -> void
+Trailblazor.TbReferenceLine.Value.get -> double
+Trailblazor.TbReferenceLine.Value.set -> void
+const Trailblazor.TbStrings.ChartReferenceBand = "Chart.ReferenceBand" -> string!
+const Trailblazor.TbStrings.ChartReferenceLine = "Chart.ReferenceLine" -> string!
+override Trailblazor.TbChartReference.OnInitialized() -> void
+override Trailblazor.TbChartReference.OnParametersSet() -> void
