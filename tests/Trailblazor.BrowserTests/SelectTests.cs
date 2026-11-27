@@ -447,6 +447,20 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldChooseAFilteredOption_WhenItsLongListRunsInWebAssembly(string browser)
+    {
+        var page = await OpenAsync(browser, "/select-items?mode=webassembly");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Filtered trail" });
+        await Expect(trail).ToHaveAttributeAsync("data-ready", "");
+
+        await trail.ClickAsync();
+        await page.Keyboard.TypeAsync("rail 99");
+        await page.GetByRole(AriaRole.Option, new() { Name = "Trail 999", Exact = true }).ClickAsync();
+
+        await Expect(page.GetByTestId("filtered-trail")).ToHaveTextAsync("Trail 999");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldStartOnTheChosenOption_WhenItsVirtualizedListFirstOpensOrIsTypedIn(string browser)
     {
         var page = await OpenAsync(browser, "/select-items");

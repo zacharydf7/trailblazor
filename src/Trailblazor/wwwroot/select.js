@@ -68,6 +68,7 @@ export function createSelect(combobox, listbox, toggle) {
     // The first enabled option at or past a place, in the step's direction, or null. A newer search, or a key that
     // moves without one, replaces it, and then it gives undefined.
     let reaching = 0;
+    let choosing = false;
     const reach = async (index, step) => {
         const ticket = ++reaching;
         for (let at = index; at >= 0 && at < count(); at += step) {
@@ -235,7 +236,11 @@ export function createSelect(combobox, listbox, toggle) {
                 const filtered = filter.value !== '';
                 filter.value = '';
                 applyFilter();
-                if (virtual() && filtered) {
+                // After a choice, a task later, so the click reaches Blazor first: in WebAssembly the reset redraws the
+                // list at once, taking the clicked option and its handler away.
+                if (virtual() && filtered && choosing) {
+                    setTimeout(() => callDotNet(toggle, 'OnFilter', ''));
+                } else if (virtual() && filtered) {
                     callDotNet(toggle, 'OnFilter', '');
                 }
             }
@@ -440,7 +445,9 @@ export function createSelect(combobox, listbox, toggle) {
         const option = event.target.closest('[role="option"]');
         if (option && option.getAttribute('aria-disabled') !== 'true') {
             if (!multiple()) {
+                choosing = true;
                 close();
+                choosing = false;
             }
 
             (isOpen() ? filter ?? combobox : combobox).focus();
