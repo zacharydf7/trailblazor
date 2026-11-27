@@ -23,7 +23,7 @@ document.addEventListener('keydown', event => {
         return;
     }
 
-    const panning = event.target.matches('[data-part="stage"][data-zoomed]');
+    const panning = /** @type {Element} */ (event.target).matches('[data-part="stage"][data-zoomed]');
     const back = rtl(lightbox) ? 'next' : 'previous';
     const on = rtl(lightbox) ? 'previous' : 'next';
     const part = {
@@ -44,8 +44,9 @@ document.addEventListener('keydown', event => {
 // A mouse drags a zoomed image around; a finger scrolls it natively, and swipes between images when it isn't zoomed.
 const swipe = 48;
 document.addEventListener('pointerdown', event => {
-    const stage = event.target.nodeType === Node.ELEMENT_NODE
-        ? event.target.closest('.tb-lightbox [data-part="stage"]') : null;
+    const target = /** @type {Element} */ (event.target);
+    const stage = target.nodeType === Node.ELEMENT_NODE
+        ? target.closest('.tb-lightbox [data-part="stage"]') : null;
     if (!stage || event.button !== 0) {
         return;
     }
@@ -94,7 +95,7 @@ document.addEventListener('pointerdown', event => {
 
 // The image's own shape and size, which the styles fit to the window and zoom from. Each image gets a new frame.
 document.addEventListener('load', event => {
-    const image = event.target;
+    const image = /** @type {HTMLImageElement} */ (event.target);
     if (image.localName !== 'img' || !image.matches('.tb-lightbox [data-part="image"]')
         || image.naturalWidth === 0 || image.naturalHeight === 0) {
         return;

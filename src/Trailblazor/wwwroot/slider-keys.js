@@ -3,7 +3,7 @@
 export const ranges = '.tb-slider input[type="range"], input.tb-color-picker__slider';
 
 document.addEventListener('keydown', event => {
-    const input = event.target;
+    const input = /** @type {HTMLInputElement} */ (event.target);
     if (event.defaultPrevented || (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') || event.altKey
         || event.ctrlKey || event.metaKey || !input.matches?.(ranges) || getComputedStyle(input).direction !== 'rtl') {
         return;

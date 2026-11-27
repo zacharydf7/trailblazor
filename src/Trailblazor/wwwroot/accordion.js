@@ -46,14 +46,16 @@ const ownerOf = item => item.parentElement.closest('.tb-accordion, .tb-accordion
 // Until the page is interactive, a header opens and closes its item here, and find-in-page opens the item whose panel
 // holds a match. Blazor renders an interactive header with data-ready and handles it from then on.
 document.addEventListener('click', event => {
-    const trigger = event.target.closest?.('.tb-accordion__trigger:not([data-ready], :disabled)');
+    const trigger = /** @type {Element} */ (event.target)
+        .closest?.('.tb-accordion__trigger:not([data-ready], :disabled)');
     if (trigger) {
         expand(trigger, trigger.getAttribute('aria-expanded') !== 'true');
     }
 });
 document.addEventListener('beforematch', event => {
-    if (event.target.matches('.tb-accordion__panel')) {
-        expand(event.target.ownerDocument.getElementById(event.target.getAttribute('aria-labelledby')), true);
+    const panel = /** @type {Element} */ (event.target);
+    if (panel.matches('.tb-accordion__panel')) {
+        expand(panel.ownerDocument.getElementById(panel.getAttribute('aria-labelledby')), true);
     }
 }, true);
 // The browser may show a match before this script runs, so an item whose panel it showed opens now.

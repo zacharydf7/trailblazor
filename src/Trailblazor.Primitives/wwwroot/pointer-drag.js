@@ -14,8 +14,8 @@ const scrollSpeed = 0.4;
 // The most time one step makes up for, so a stalled page doesn't leap past what the user was aiming for.
 const longestStep = 50;
 
-export function createPointerDrag(container,
-    { itemSelector, ignoreSelector, ownsPress = () => true, scrolls = true, onStart, onMove, onDrop, onCancel }) {
+export function createPointerDrag(container, { itemSelector, ignoreSelector = null, ownsPress = target => true,
+    scrolls = true, onStart, onMove, onDrop, onCancel }) {
     let pending = null;
     let drag = null;
     // Set when a drag ends, so the click that may follow doesn't also act on the row. That click comes before a timer

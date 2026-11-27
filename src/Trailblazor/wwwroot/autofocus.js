@@ -23,7 +23,7 @@ function focusFirst(marks) {
 onEachPage(page => {
     const added = new MutationObserver(records => focusFirst(records.flatMap(record => [...record.addedNodes])
         .filter(node => node.nodeType === Node.ELEMENT_NODE)
-        .flatMap(node => [...(node.matches('[data-tb-autofocus]') ? [node] : []),
+        .flatMap((/** @type {Element} */ node) => [...(node.matches('[data-tb-autofocus]') ? [node] : []),
             ...node.querySelectorAll('[data-tb-autofocus]')])));
     added.observe(page, { childList: true, subtree: true });
 });

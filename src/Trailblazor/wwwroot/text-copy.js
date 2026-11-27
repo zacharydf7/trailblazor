@@ -4,7 +4,7 @@
 const fullTextOf = text => text.querySelector(':scope > .tb-visually-hidden[data-part="full-text"]');
 
 document.addEventListener('copy', event => {
-    const page = event.target.ownerDocument;
+    const page = /** @type {Node} */ (event.target).ownerDocument;
     const selection = page.getSelection();
     if (!event.clipboardData || !selection || selection.isCollapsed || selection.rangeCount !== 1) {
         return;

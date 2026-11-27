@@ -3,7 +3,7 @@
 const steppingKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End']);
 
 document.addEventListener('click', event => {
-    if (event.target.matches?.('input[type=checkbox][aria-readonly=true]')) {
+    if (/** @type {Element} */ (event.target).matches?.('input[type=checkbox][aria-readonly=true]')) {
         event.preventDefault();
     }
 }, { capture: true });
@@ -11,15 +11,17 @@ document.addEventListener('click', event => {
 // A list can change by the pointer, the keys or assistive technology, so whatever changed it, the choice it was
 // rendered with comes back.
 document.addEventListener('input', event => {
-    if (event.target.matches?.('select[aria-readonly=true]')) {
-        for (const option of event.target.options) {
+    const select = /** @type {HTMLSelectElement} */ (event.target);
+    if (select.matches?.('select[aria-readonly=true]')) {
+        for (const option of select.options) {
             option.selected = option.defaultSelected;
         }
     }
 }, { capture: true });
 
 document.addEventListener('keydown', event => {
-    if (steppingKeys.has(event.key) && event.target.matches?.('input[type=range][aria-readonly=true]')) {
+    if (steppingKeys.has(event.key)
+        && /** @type {Element} */ (event.target).matches?.('input[type=range][aria-readonly=true]')) {
         event.preventDefault();
     }
 }, { capture: true });

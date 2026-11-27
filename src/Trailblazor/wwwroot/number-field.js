@@ -4,7 +4,7 @@ import { watchSizes } from '../Trailblazor.Primitives/pages.js';
 // Text the user edited commits first, so the step starts from it; unedited text matches the rendered aria-valuetext,
 // and committing that would round the value to what the format shows. The JS initializer imports this at startup.
 document.addEventListener('keydown', event => {
-    const input = event.target;
+    const input = /** @type {HTMLInputElement} */ (event.target);
     if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && !isComposing(event)
         && input.matches?.('input[type=text][role=spinbutton][data-part=input]')) {
         if (!input.readOnly && input.value !== input.getAttribute('aria-valuetext')) {
@@ -18,7 +18,7 @@ document.addEventListener('keydown', event => {
 // Chromium steps a focused number box when the wheel turns over it, which changes a value the user only scrolled
 // past. It leaves a read-only box alone and still scrolls the page, so the box is read-only for that one event.
 document.addEventListener('wheel', event => {
-    const input = event.target;
+    const input = /** @type {HTMLInputElement} */ (event.target);
     if (input === input.ownerDocument?.activeElement && input.matches?.('input[type=number][data-part=input]')
         && !input.readOnly) {
         input.readOnly = true;
@@ -37,7 +37,8 @@ document.addEventListener('change', event => typed.delete(event.target), { captu
 // text commits here instead. Unedited text isn't committed: a second click before the first renders would send the old
 // text and undo the first step. A touch doesn't move focus there, since that would open the on-screen keyboard.
 document.addEventListener('mousedown', event => {
-    const button = event.target.closest?.('[data-part="increment"], [data-part="decrement"]');
+    const button = /** @type {Element} */ (event.target).closest?.('[data-part="increment"], [data-part="decrement"]');
+    /** @type {HTMLInputElement} */
     const input = button?.closest('[data-part="control"]').querySelector('input[data-part="input"]');
     if (!input || event.button !== 0) {
         return;
@@ -58,7 +59,7 @@ document.addEventListener('mousedown', event => {
 // alone: its click could land on the button once the commit turns it back on, and step after all.
 const offButton = '[data-part="increment"]:disabled, [data-part="decrement"]:disabled';
 document.addEventListener('pointerdown', event => {
-    const box = event.target.closest?.('[data-part="control"]');
+    const box = /** @type {Element} */ (event.target).closest?.('[data-part="control"]');
     const input = box?.querySelector('input[data-part="input"]');
     const under = [...(box?.querySelectorAll(offButton) ?? [])].some(button => {
         const { left, right, top, bottom } = button.getBoundingClientRect();
@@ -76,7 +77,7 @@ const step = (input, direction, how) => input.dispatchEvent(new CustomEvent('tb-
 // Page Up and Page Down take a large step, in a number box and a formatted field alike. Typed text commits first, so
 // the step starts from it.
 document.addEventListener('keydown', event => {
-    const input = event.target;
+    const input = /** @type {Element} */ (event.target);
     if ((event.key === 'PageUp' || event.key === 'PageDown') && !isComposing(event) && !event.altKey && !event.ctrlKey
         && !event.metaKey && input.matches?.(spinner)) {
         event.preventDefault();
@@ -118,7 +119,8 @@ const release = () => {
 document.addEventListener('pointerdown', event => {
     release();
     dropping = null;
-    const button = event.target.closest?.('[data-part="increment"], [data-part="decrement"]');
+    /** @type {HTMLButtonElement} */
+    const button = /** @type {Element} */ (event.target).closest?.('[data-part="increment"], [data-part="decrement"]');
     const input = button?.closest('[data-part="control"]')?.querySelector(spinner);
     if (!input || button.disabled || event.button !== 0) {
         return;

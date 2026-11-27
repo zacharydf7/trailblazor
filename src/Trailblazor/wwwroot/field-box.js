@@ -4,14 +4,16 @@
 const interactive = 'a[href], button, input, select, textarea, label, summary, [tabindex], [popover]';
 
 document.addEventListener('mousedown', event => {
-    const box = event.target.closest?.('[data-part="control"]');
+    const target = /** @type {Element} */ (event.target);
+    const box = target.closest?.('[data-part="control"]');
     // Only what is pressed inside the box counts: something around the field can take the focus too, as a tab's
     // panel does.
-    const pressed = event.target.closest?.(interactive);
+    const pressed = target.closest?.(interactive);
     if (!box || event.button !== 0 || (pressed && box.contains(pressed))) {
         return;
     }
 
+    /** @type {HTMLElement} */
     const input = box.querySelector('input.tb-field__input, textarea.tb-field__input, button.tb-field__input');
     if (input && !input.matches(':disabled')) {
         // The press's default action runs after this handler and would take focus back off the input.

@@ -6,7 +6,7 @@ const textEntry = 'input:not([type="checkbox"], [type="radio"], [type="button"],
 // move between those that can take focus, including one marked only aria-disabled. `items` selects them and
 // `filter` drops some, `vertical()` says which arrows move, and `preferred()` names the item that takes the tab stop
 // when focus hasn't been inside yet, such as the pressed one.
-export function createRovingFocus(container, { items, filter = () => true, vertical = () => false,
+export function createRovingFocus(container, { items, filter = item => true, vertical = () => false,
     preferred = () => null }) {
     let current = null;
     let managed = [];

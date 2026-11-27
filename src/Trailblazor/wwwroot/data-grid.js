@@ -904,7 +904,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
 
     // Newly drawn rows give up their tab stops before the next key can reach them; changes inside popups don't count.
     const observer = new MutationObserver(records => {
-        if (records.some(record => !record.target.closest?.('[popover]'))) {
+        if (records.some(record => !/** @type {Element} */ (record.target).closest?.('[popover]'))) {
             updateTabStops();
         }
     });

@@ -27,7 +27,7 @@ const captured = ['focus', 'blur', 'scroll', 'mouseenter', 'mouseleave', 'pointe
 // stops it at the root keeps it from the document. An event on the other document itself, as `selectionchange` is,
 // goes to the page's document.
 const forward = event => {
-    const Type = window[event.constructor.name] ?? Event;
+    const Type = /** @type {typeof Event} */ (window[event.constructor.name] ?? Event);
     const copy = new Type(event.type, event);
     const path = event.composedPath();
     Object.defineProperty(copy, 'target', { value: event.target });
@@ -138,7 +138,8 @@ const mirror = other => {
         }
     };
     const copySheets = () => {
-        const sheets = [...document.querySelectorAll('link[rel~="stylesheet"], style')];
+        const sheets = /** @type {(HTMLLinkElement | HTMLStyleElement)[]} */ (
+            [...document.querySelectorAll('link[rel~="stylesheet"], style')]);
         for (const [sheet, copy] of copies) {
             if (!sheets.includes(sheet)) {
                 copy.remove();
@@ -205,7 +206,8 @@ const mirror = other => {
     copyRoot();
     const sheets = new MutationObserver(records => {
         copySheets();
-        const toggled = records.filter(record => record.attributeName === 'disabled').map(record => record.target);
+        const toggled = records.filter(record => record.attributeName === 'disabled')
+            .map(record => /** @type {HTMLLinkElement} */ (record.target));
         for (const link of new Set(toggled)) {
             const copy = copies.get(link);
             if (copy && !link.disabled) {
@@ -279,7 +281,8 @@ const repeatAnnouncements = page => {
     const follow = new MutationObserver(records => {
         for (const record of records) {
             for (const message of record.addedNodes) {
-                said.set(message, regions.get(record.target).appendChild(page.createElement('p')));
+                said.set(message, regions.get(/** @type {Element} */ (record.target))
+                    .appendChild(page.createElement('p')));
                 said.get(message).textContent = message.textContent;
             }
 

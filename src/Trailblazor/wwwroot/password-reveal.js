@@ -1,6 +1,8 @@
 // A static page has no circuit, so this switches the input's type, aria-pressed and the icon held in data-other-icon.
 document.addEventListener('click', event => {
-    const button = event.target.closest?.('button[data-part="reveal"][data-static]');
+    /** @type {HTMLButtonElement} */
+    const button = /** @type {Element} */ (event.target).closest?.('button[data-part="reveal"][data-static]');
+    /** @type {HTMLInputElement} */
     const input = button?.closest('[data-part="control"]')?.querySelector('[data-part="input"]');
     if (!input || button.disabled) {
         return;

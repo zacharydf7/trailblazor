@@ -330,12 +330,12 @@ export function startsWithControl(panel) {
         node.nodeType === Node.ELEMENT_NODE && skipped(node) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT);
     for (let node = walker.nextNode(); node; node = walker.nextNode()) {
         if (node.nodeType === Node.TEXT_NODE) {
-            if (node.data.trim() !== '' && !node.parentElement.closest('label')) {
+            if (/** @type {Text} */ (node).data.trim() !== '' && !node.parentElement.closest('label')) {
                 return false;
             }
         } else if (isTabbable(node)) {
             return true;
-        } else if (node.matches(pictures)) {
+        } else if (/** @type {Element} */ (node).matches(pictures)) {
             return false;
         }
     }
@@ -377,8 +377,9 @@ document.addEventListener('keydown', event => {
     }
 });
 document.addEventListener('beforematch', event => {
-    if (event.target.matches('.tb-tabs__panel')) {
-        select(event.target.ownerDocument.getElementById(event.target.getAttribute('aria-labelledby')));
+    const panel = /** @type {Element} */ (event.target);
+    if (panel.matches('.tb-tabs__panel')) {
+        select(panel.ownerDocument.getElementById(panel.getAttribute('aria-labelledby')));
     }
 }, true);
 // The browser may show a match before this script runs, so the tab whose panel it showed is selected now.

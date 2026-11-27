@@ -27,7 +27,7 @@ export function discard(field) {
 
 // Blazor hears input on the document, so stopping it at the root keeps it from the server but not from the field.
 document.documentElement.addEventListener('input', event => {
-    const field = event.target;
+    const field = /** @type {HTMLElement} */ (event.target);
     if (sending || !field.matches?.('[data-input-delay]')) {
         return;
     }

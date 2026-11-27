@@ -7,12 +7,14 @@ const pending = event => (event.target.ownerDocument ?? document)
     .querySelectorAll('.tb-select__trigger[data-open-when-ready]');
 
 document.addEventListener('click', event => {
-    const control = event.target.closest?.('[data-part="control"]');
+    const target = /** @type {Element} */ (event.target);
+    const control = target.closest?.('[data-part="control"]');
+    /** @type {HTMLElement} */
     const combobox = control?.querySelector(':scope > .tb-select__trigger');
     // Skip what the attached select ignores too: its buttons, its popup, a chip's remove mark and the app's own
     // controls in the start and end slots.
-    const wanted = combobox && !('ready' in combobox.dataset) && !inAppControl(event.target)
-        && !event.target.closest('button, [popover], [data-part="chip-remove"]') ? combobox : null;
+    const wanted = combobox && !('ready' in combobox.dataset) && !inAppControl(target)
+        && !target.closest('button, [popover], [data-part="chip-remove"]') ? combobox : null;
     // A second click on the same select cancels the first, just as it would close an attached select's list.
     const again = wanted && 'openWhenReady' in wanted.dataset;
     for (const marked of pending(event)) {
@@ -29,10 +31,10 @@ document.addEventListener('click', event => {
     }
 
     // A click on the label of a select that waits for its first use focuses it, as the script would.
-    const label = event.target.closest?.('label[data-part="label"]');
+    const label = target.closest?.('label[data-part="label"]');
     if (label?.id) {
-        label.ownerDocument
-            .querySelector(`.tb-select__trigger[data-attach-on-use][aria-labelledby="${CSS.escape(label.id)}"]`)
+        /** @type {HTMLElement} */ (label.ownerDocument
+            .querySelector(`.tb-select__trigger[data-attach-on-use][aria-labelledby="${CSS.escape(label.id)}"]`))
             ?.focus();
     }
 }, { capture: true });
@@ -41,7 +43,8 @@ document.addEventListener('click', event => {
 // select to open when it attaches.
 const openingKeys = ['ArrowDown', 'ArrowUp', 'Enter', ' '];
 document.addEventListener('keydown', event => {
-    const combobox = event.target.closest?.('.tb-select__trigger');
+    /** @type {HTMLElement} */
+    const combobox = /** @type {Element} */ (event.target).closest?.('.tb-select__trigger');
     if (combobox && !('ready' in combobox.dataset) && openingKeys.includes(event.key) && !event.ctrlKey
         && !event.metaKey) {
         event.preventDefault();

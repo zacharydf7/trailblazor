@@ -10,7 +10,7 @@ const thresholds = [20, 0];
 const length = field => (field.value ?? field.textContent).length;
 
 document.addEventListener('focusin', event => {
-    if (event.target.dataset?.count) {
+    if (/** @type {HTMLElement} */ (event.target).dataset?.count) {
         lastCount.set(event.target, length(event.target));
     }
 }, true);
@@ -18,7 +18,7 @@ document.addEventListener('focusin', event => {
 // Captured before debounced-input.js holds the event back, and read once the field's own listeners, such as a mask's,
 // have changed the text.
 document.addEventListener('input', event => {
-    const field = event.target;
+    const field = /** @type {HTMLElement} */ (event.target);
     if (field.dataset?.count) {
         setTimeout(() => update(field));
     }

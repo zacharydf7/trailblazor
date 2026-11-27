@@ -7,7 +7,7 @@ const describedByError = field => (field.getAttribute('aria-describedby') ?? '')
 
 // A radio or checkbox group marks its fieldset invalid, which can't take focus, so the input its FocusAsync picks does.
 export function focusFirstError(id) {
-    const field = [...(findById(id)?.querySelectorAll('[aria-invalid="true"]') ?? [])]
+    const field = /** @type {HTMLElement[]} */ ([...(findById(id)?.querySelectorAll('[aria-invalid="true"]') ?? [])])
         .find(describedByError);
     if (!field?.matches('fieldset')) {
         field?.focus();

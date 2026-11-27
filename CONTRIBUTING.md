@@ -45,6 +45,11 @@ An issue is done when all of these hold:
   `localName` or `nodeType`, not `instanceof`, since an element made in another window isn't an instance of the
   page's classes. `ScriptWindowsTests` fails when a script asks the page's own `document` or `window` instead; a
   script or a line whose subject is the page goes in its lists, with the reason.
+- The scripts pass TypeScript's checker with the settings in `jsconfig.json`. CI runs
+  `npx --yes --package typescript@7.0.2 tsc -p jsconfig.json`, and an editor that reads `jsconfig.json` shows the same
+  errors as you type. Where the checker can't know what a value is, such as an event's target or an element a selector
+  found, a JSDoc comment names its type: `/** @type {HTMLInputElement} */`. A browser API that TypeScript doesn't
+  declare yet goes in `src/browser-globals.d.ts`.
 - An interactive component has a driver in both `Trailblazor.Testing` (bUnit) and `Trailblazor.Testing.Playwright`,
   with the same names: a bUnit read such as `Text` is `TextAsync()` in Playwright. `DriverParityTests` fails when
   either package lacks one or their names differ; a component without a driver goes in its exemption list, with the

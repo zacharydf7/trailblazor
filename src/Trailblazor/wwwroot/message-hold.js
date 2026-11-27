@@ -8,10 +8,10 @@ let releaseTimer;
 document.addEventListener('pointerdown', event => {
     clearTimeout(releaseTimer);
     // A file upload can show two messages, so its field is listed once.
-    const page = event.target.ownerDocument ?? document;
+    const page = /** @type {Node} */ (event.target).ownerDocument ?? document;
     const fields = new Set([...page.querySelectorAll('.tb-field__error')].map(message => message.parentElement));
     const heights = [...fields].filter(field => !held.has(field))
-        .map(field => [field, getComputedStyle(field).blockSize]);
+        .map(field => /** @type {[HTMLElement, string]} */ ([field, getComputedStyle(field).blockSize]));
     // Every height is read before any is set, so the fields lay out once.
     for (const [field, blockSize] of heights) {
         held.set(field, field.style.minBlockSize);

@@ -18,7 +18,7 @@ const localeOf = listbox => {
 // Hides the options the query leaves out and the groups left empty, and shows the status's no-results text when
 // none is left. ruleFor(option) returns true to hide an option or false to show it whatever the text, or null to let
 // the text decide; moreLeft() says whether options not drawn yet still match, as in a virtualized list.
-export function filterOptions(listbox, query, status, ruleFor = () => null, moreLeft = () => false) {
+export function filterOptions(listbox, query, status, ruleFor = option => null, moreLeft = () => false) {
     const locale = localeOf(listbox);
     const folded = fold(query, locale);
     for (const option of listbox.querySelectorAll('[role="option"]')) {

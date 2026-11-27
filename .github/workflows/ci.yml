@@ -92,6 +92,14 @@ jobs:
           TRAILBLAZOR_BROWSERS: chromium
           TRAILBLAZOR_CSP: strict
 
+  # TypeScript's checker reads the library's scripts, with the settings in jsconfig.json, and writes nothing. It's a job
+  # of its own, so a type error doesn't keep the tests from running.
+  scripts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - run: npx --yes --package typescript@7.0.2 tsc -p jsconfig.json
+
   # The testing packages promise the lowest versions in Directory.Packages.props, so the bUnit tests run against them.
   minimums:
     # Pinned, since the minimum Playwright installs its browsers' dependencies only on the Ubuntu releases it knew.

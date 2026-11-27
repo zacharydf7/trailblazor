@@ -523,7 +523,7 @@ export function createTreeView(tree, events) {
         dispose() {
             frame.cancel();
             resize.disconnect();
-            document.removeEventListener('scroll', scheduleView, { capture: true, passive: true });
+            document.removeEventListener('scroll', scheduleView, { capture: true });
             removeEventListener('resize', scheduleView);
             pointerDrag.dispose();
             observer.disconnect();

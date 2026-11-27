@@ -233,9 +233,10 @@ export function attachSplitter(root, reporter) {
     // measure them again.
     const collapses = new MutationObserver(records => {
         reported = null;
-        for (const { target: pane } of records) {
+        for (const pane of records.map(record => /** @type {Element} */ (record.target))) {
             if (panes().includes(pane) && pane.hasAttribute('data-collapsed')
                 && pane.contains(pane.ownerDocument.activeElement)) {
+                /** @type {HTMLElement} */
                 const separator = (pane.nextElementSibling ?? pane.previousElementSibling)
                     ?.querySelector(':scope > [data-part="separator"]');
                 if (separator?.checkVisibility()) {

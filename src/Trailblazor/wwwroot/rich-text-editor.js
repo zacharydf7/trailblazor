@@ -2388,7 +2388,8 @@ function marksOf(element, inherited, inLink, own) {
 
 function leaves(block) {
     const walker = document.createTreeWalker(block, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
-        acceptNode: node => node !== block && LISTS.has(node.localName) ? NodeFilter.FILTER_REJECT
+        acceptNode: (/** @type {Element} */ node) => node !== block && LISTS.has(node.localName)
+            ? NodeFilter.FILTER_REJECT
             : node.nodeType === Node.TEXT_NODE || node.localName === 'br' ? NodeFilter.FILTER_ACCEPT
             : NodeFilter.FILTER_SKIP,
     });

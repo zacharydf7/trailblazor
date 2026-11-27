@@ -5,7 +5,7 @@ let lastPressed = null;
 let pointerLast = false;
 
 document.addEventListener('pointerdown', event => {
-    lastPressed = event.target.closest?.(pressableSelector) ?? null;
+    lastPressed = /** @type {Element} */ (event.target).closest?.(pressableSelector) ?? null;
     pointerLast = true;
 }, { capture: true });
 

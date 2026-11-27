@@ -164,17 +164,19 @@ function registerEvents(blazor) {
     // A link or other control inside a label still takes focus when pressed.
     const ownPress = 'a[href], button, input, select, textarea, summary, [tabindex], [contenteditable]';
     document.addEventListener('mousedown', event => {
-        const root = event.target.closest?.('[data-tb-focus-root]');
-        const label = event.target.closest?.('label');
+        const target = /** @type {Element} */ (event.target);
+        const root = target.closest?.('[data-tb-focus-root]');
+        const label = target.closest?.('label');
         if (event.button === 0 && root?.contains(root.ownerDocument.activeElement) && label
-            && !label.contains(event.target.closest(ownPress))) {
+            && !label.contains(target.closest(ownPress))) {
             event.preventDefault();
         }
     }, true);
 
     // A press on a field's show-password button leaves focus, and the caret, in the field.
     document.addEventListener('mousedown', event => {
-        const field = event.target.closest?.('.tb-field [data-part="reveal"]')?.closest('.tb-field');
+        const field = /** @type {Element} */ (event.target).closest?.('.tb-field [data-part="reveal"]')
+            ?.closest('.tb-field');
         if (event.button === 0 && field?.contains(field.ownerDocument.activeElement)) {
             event.preventDefault();
         }

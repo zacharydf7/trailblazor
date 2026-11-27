@@ -810,6 +810,7 @@ export const frontModal = page => stackIn(page).findLast(entry => entry.modal)?.
 // Resolves once the dialog's window has drawn two frames, by which time a dialog that just opened is in the
 // accessibility tree. A dialog that changes windows meanwhile is waited for in its new one, and one that is gone
 // already isn't waited for.
+/** @returns {Promise<void>} */
 export function nextFrame(dialog) {
     return new Promise(resolve => {
         if (!dialog) {

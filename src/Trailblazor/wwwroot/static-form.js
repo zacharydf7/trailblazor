@@ -51,7 +51,7 @@ document.addEventListener('submit', event => {
         return;
     }
 
-    const form = event.target;
+    const form = /** @type {HTMLFormElement} */ (event.target);
     if (event.defaultPrevented || !form.matches?.('form.tb-form[data-tb-static]')) {
         return;
     }
@@ -63,7 +63,7 @@ document.addEventListener('submit', event => {
 
     // A post into another window leaves this page as it is. The form's own attribute is read, since a field named
     // target would stand in for form.target.
-    const target = event.submitter?.formTarget || form.getAttribute('target');
+    const target = /** @type {HTMLButtonElement} */ (event.submitter)?.formTarget || form.getAttribute('target');
     if (target && target !== '_self') {
         return;
     }

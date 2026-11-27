@@ -6,7 +6,7 @@ import { frames, watchSizes } from '../Trailblazor.Primitives/pages.js';
 // startup, so static pages are covered too.
 document.addEventListener('keydown', event => {
     if (event.key === 'Enter' && !isComposing(event) && !event.defaultPrevented
-        && event.target.closest?.('[data-part="page-box"]')) {
+        && /** @type {Element} */ (event.target).closest?.('[data-part="page-box"]')) {
         event.preventDefault();
         event.target.dispatchEvent(new Event('change', { bubbles: true }));
     }

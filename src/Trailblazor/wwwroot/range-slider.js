@@ -19,8 +19,10 @@ const thumbWidth = where => {
 };
 
 document.addEventListener('pointerdown', event => {
-    const where = event.target.closest?.(control);
+    const where = /** @type {Element} */ (event.target).closest?.(control);
+    /** @type {HTMLInputElement} */
     const start = where?.querySelector('[data-part="start-thumb"]');
+    /** @type {HTMLInputElement} */
     const end = where?.querySelector('[data-part="end-thumb"]');
     if (!where || event.button !== 0 || start.matches(':disabled') || start.getAttribute('aria-readonly') === 'true') {
         return;
@@ -149,15 +151,17 @@ document.addEventListener('pointerdown', event => {
 // A thumb focused by a press shows its ring once the keyboard takes over.
 for (const type of ['keydown', 'focusout']) {
     document.addEventListener(type, event => {
-        if (event.target.matches?.(`${control} input`)) {
-            delete event.target.dataset.pointerFocus;
+        const input = /** @type {HTMLElement} */ (event.target);
+        if (input.matches?.(`${control} input`)) {
+            delete input.dataset.pointerFocus;
         }
     });
 }
 
 // A press on anything but an input in the control would take focus from the thumb and start selecting text.
 document.addEventListener('mousedown', event => {
-    if (event.target.closest?.(control) && event.target.tagName !== 'INPUT') {
+    const target = /** @type {Element} */ (event.target);
+    if (target.closest?.(control) && target.tagName !== 'INPUT') {
         event.preventDefault();
     }
 });

@@ -36,7 +36,7 @@ const setLost = lost => {
     }
 };
 document.addEventListener('components-reconnect-state-changed',
-    event => setLost(event.detail?.state !== 'hide'), { capture: true });
+    event => setLost(/** @type {CustomEvent} */ (event).detail?.state !== 'hide'), { capture: true });
 const watchFrameworkUi = () => {
     const ui = document.getElementById('components-reconnect-modal');
     if (ui?.shadowRoot) {
@@ -114,7 +114,7 @@ export function attachDock(root, reporter) {
         const wanted = inReadingOrder();
         const now = [...root.children];
         const places = wanted.map(part => now.indexOf(part));
-        const kept = wanted.map(cost);
+        const kept = /** @type {number[]} */ (wanted.map(cost));
         const before = wanted.map(() => -1);
         wanted.forEach((part, at) => {
             for (let earlier = 0; earlier < at; earlier++) {
@@ -259,10 +259,10 @@ export function attachDock(root, reporter) {
             return null;
         }
 
-        const parts = [
+        const parts = /** @type {[object, object][]} */ ([
             [before, { ...before, [length]: edge - before[start] }],
             [after, { ...after, [start]: edge, [length]: after[start] + after[length] - edge }],
-        ];
+        ]);
         const scale = (box, [from, into]) => ({
             ...box,
             [start]: into[start] + (box[start] - from[start]) * into[length] / from[length],
@@ -765,8 +765,9 @@ export function attachDock(root, reporter) {
     const tabsOf = group => [...group.querySelectorAll('.tb-dock__tabs > .tb-dock__tab')];
     // The side of a box that a point is nearest, when it is within reach of it.
     const nearSide = (box, x, y, reachX, reachY) => {
-        const gaps = [['left', (x - box.left) / reachX], ['right', (box.right - x) / reachX],
-            ['top', (y - box.top) / reachY], ['bottom', (box.bottom - y) / reachY]];
+        const gaps = /** @type {[string, number][]} */ ([['left', (x - box.left) / reachX],
+            ['right', (box.right - x) / reachX], ['top', (y - box.top) / reachY],
+            ['bottom', (box.bottom - y) / reachY]]);
         const [side, gap] = gaps.reduce((nearest, each) => each[1] < nearest[1] ? each : nearest);
         return gap < 1 ? side : null;
     };

@@ -3,7 +3,7 @@
 // initializer imports this at startup, so no chip makes a call of its own.
 document.addEventListener('keydown', event => {
     if ((event.key === 'Backspace' || event.key === 'Delete')
-        && event.target.closest?.('.tb-chip')?.querySelector(':scope > [data-part=remove]')) {
+        && /** @type {Element} */ (event.target).closest?.('.tb-chip')?.querySelector(':scope > [data-part=remove]')) {
         event.preventDefault();
     }
 });

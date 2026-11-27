@@ -117,7 +117,7 @@ document.addEventListener('pointerout', event => {
 // control, not its description. A text field is, since its user is about to type.
 document.addEventListener('focusin', event => {
     const anchor = anchorOf(event.target) ?? heldTextOf(event.target);
-    if (anchor && event.target.matches(':focus-visible')) {
+    if (anchor && /** @type {Element} */ (event.target).matches(':focus-visible')) {
         // Focus a closing popup hands back arrives mid-hide, when showPopover() throws, so the show waits a task.
         later(anchor, show, 0);
     }

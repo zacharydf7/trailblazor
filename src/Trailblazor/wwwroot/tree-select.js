@@ -5,7 +5,8 @@ import { flush } from './debounced-input.js';
 // server. It first sends any text still waiting out the input delay, so the tree moves to a match of all of it. The JS
 // initializer imports this at startup.
 document.addEventListener('keydown', event => {
-    if (event.key === 'ArrowDown' && !isComposing(event) && event.target.matches?.('.tb-tree-select__filter')) {
+    if (event.key === 'ArrowDown' && !isComposing(event)
+        && /** @type {Element} */ (event.target).matches?.('.tb-tree-select__filter')) {
         // The key is used here, so it is prevented, as every key a control uses is.
         event.preventDefault();
         flush(event.target);

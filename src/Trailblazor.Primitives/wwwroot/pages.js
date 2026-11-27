@@ -62,7 +62,7 @@ export const pagesChanged = () => moved();
 let current = document;
 for (const type of ['keydown', 'pointerdown', 'focusin']) {
     document.addEventListener(type, event => {
-        const page = event.target.ownerDocument ?? current;
+        const page = /** @type {Node} */ (event.target).ownerDocument ?? current;
         if (page !== current) {
             current = page;
             moved(event);
@@ -213,6 +213,7 @@ export function frames(element, callback) {
 // Blazor starts: it keeps a browser's observer in each window that holds a target, and its callback gets this
 // observer, not the browser's, as its observer argument and as `this`.
 const BrowsersObserver = window.IntersectionObserver;
+// @ts-expect-error The static block below adds the option members, which TypeScript can't see.
 window.IntersectionObserver = class IntersectionObserver {
     #watch;
     #options;

@@ -20,7 +20,7 @@ const send = input => {
 
 // Blazor hears input on the document, so holding it back on the window keeps it from the server.
 window.addEventListener('input', event => {
-    const input = event.target;
+    const input = /** @type {Element} */ (event.target);
     if (sending || !input.matches?.(ranges)) {
         return;
     }
@@ -32,7 +32,8 @@ window.addEventListener('input', event => {
 }, { capture: true });
 
 window.addEventListener('change', event => {
-    const slider = event.target.closest?.('.tb-slider') ?? event.target;
+    const target = /** @type {Element} */ (event.target);
+    const slider = target.closest?.('.tb-slider') ?? target;
     for (const input of [slider, ...slider.querySelectorAll('input')].filter(input => waiting.get(input)?.timer)) {
         send(input);
     }
