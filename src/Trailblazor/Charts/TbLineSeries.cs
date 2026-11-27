@@ -15,9 +15,17 @@ public sealed class TbLineSeries<TItem> : TbChartSeries<TItem>
     [Parameter]
     public bool? Markers { get; set; }
 
+    /// <summary>Whether the series writes each value over its point, as the data table writes it. The series shows
+    /// them all while the room between the closest two places is as wide as the longest of them, and none otherwise.
+    /// False by default.</summary>
+    [Parameter]
+    public bool ShowValues { get; set; }
+
     internal override bool Bars => false;
 
     internal override ChartCurve Line => Curve;
 
     internal override bool? HasMarkers => Markers;
+
+    internal override bool ShowsValues => ShowValues;
 }

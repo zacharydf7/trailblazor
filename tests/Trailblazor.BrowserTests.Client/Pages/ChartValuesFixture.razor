@@ -1,0 +1,71 @@
+@page "/chart-values"
+
+@* Charts of a known width that write their values on their marks. The changes reach both ends of their axis,
+   from -10 to 20. *@
+<div style="width: 30rem">
+    <TbChart TItem="Month" Items="Months" X="month => month.Name" Title="Change by month" Height="12rem">
+        <TbBarSeries Name="Change" Value="month => month.Change" ShowValues />
+    </TbChart>
+</div>
+
+<div style="width: 30rem">
+    <TbChart TItem="Month" Items="Months" X="month => month.Name" Title="Stacked by month" Height="12rem"
+             Stacking="ChartStacking.Stacked">
+        <TbBarSeries Name="Booked" Value="month => month.Booked" ShowValues />
+        <TbBarSeries Name="Free" Value="month => month.Free" ShowValues />
+    </TbChart>
+</div>
+
+<div style="width: 30rem">
+    <TbChart TItem="Month" Items="Months" X="month => month.Name" Title="Booked across" Height="12rem" Horizontal>
+        <TbBarSeries Name="Booked" Value="month => month.Booked" ShowValues />
+    </TbChart>
+</div>
+
+<div style="width: 30rem">
+    <TbChart TItem="Month" Items="Months" X="month => month.Name" Title="Change across" Height="12rem" Horizontal>
+        <TbBarSeries Name="Change" Value="month => month.Change" ShowValues />
+    </TbChart>
+</div>
+
+@* Labels of eleven characters past the longest bar, which reaches the axis's end. *@
+<div style="width: 30rem">
+    <TbChart TItem="Month" Items="Months" X="month => month.Name" Title="Long across" Height="12rem" Horizontal>
+        <TbYAxis Format="#,0 'beds'" Max="36000" />
+        <TbBarSeries Name="Booked" Value="month => month.Booked * 1000" ShowValues />
+    </TbChart>
+</div>
+
+<div style="width: 30rem">
+    <TbChart TItem="Month" Items="Months" X="month => month.Name" Title="Level by month" Height="12rem">
+        <TbLineSeries Name="Level" Value="month => month.Booked" ShowValues />
+    </TbChart>
+</div>
+
+@* A continuous scale, whose first and last points are on the plot's edges. *@
+<div style="width: 30rem">
+    <TbChart TItem="Reading" Items="Readings" X="reading => reading.Km" Title="Level along" Height="12rem">
+        <TbXAxis Scale="ChartScale.Continuous" />
+        <TbLineSeries Name="Level" Value="reading => reading.Level" ShowValues />
+    </TbChart>
+</div>
+
+@* Too narrow for a label of four digits on bars this thin. *@
+<div style="width: 9rem">
+    <TbChart TItem="Month" Items="Months" X="month => month.Name" Title="Too narrow" Height="8rem">
+        <TbBarSeries Name="Booked" Value="month => month.Booked * 100" ShowValues />
+    </TbChart>
+</div>
+
+@code {
+    private static readonly Month[] Months =
+    [
+        new("Jan", 12, 30, 10), new("Feb", -10, 24, 16), new("Mar", 20, 36, 4), new("Apr", 5, 18, 22),
+    ];
+
+    private static readonly Reading[] Readings = [new(0, 30), new(10, 32), new(25, 20), new(40, 28)];
+
+    private sealed record Month(string Name, int Change, int Booked, int Free);
+
+    private sealed record Reading(int Km, int Level);
+}

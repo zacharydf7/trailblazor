@@ -279,6 +279,107 @@ public partial class TbChart<TItem>
         return ChartPlan.Build(places, series, Stacking, axis, culture, along, alsoReach);
     }
 
+    // Where a value's label sits against its spot: over a bar's end, under the end of a bar that hangs down, in the
+    // middle of a bar in a stack, or over a point, clear of its marker.
+    private enum ValueSide
+    {
+        Above,
+        Below,
+        Middle,
+        Point,
+    }
+
+    // A value written on its mark, placed as shares of an upright plot from its left and top: X across the mark's
+    // middle, Y at its value end, or at its middle for a bar in a stack. Wide is the share of the plot's width the
+    // mark leaves for the label, and High its share of the plot's height, 1 where nothing limits it. Chars is the
+    // length of the series' longest label, so a series shows all its labels past their marks or none; in a stack
+    // it is the label's own length.
+    private readonly record struct ValueLabel(double X, double Y, ValueSide Side, double Wide, double High, int Chars,
+        string Text);
+
+    private List<ValueLabel> ValueLabelsOnMarks(ChartPlan plan)
+    {
+        var stacked = Stacking != ChartStacking.None;
+        // A point's label has the room between the closest two places. One on the plot's start or end isn't
+        // centered on its point, so it reaches as far as one and a half centered labels toward its neighbor: with
+        // a point on an edge, a series' labels have two thirds of the gaps next to the edges at most.
+        var at = plan.Along.At;
+        var room = plan.Along.Slot;
+        if (at.Count > 1 && (at[0] <= 0 || at[^1] >= 1))
+        {
+            room = Math.Min(room, Math.Min(at[1] - at[0], at[^1] - at[^2]) * 2 / 3);
+        }
+
+        List<ValueLabel> labels = [];
+        for (var index = 0; index < _series.Count; index++)
+        {
+            var drawn = plan.Series[index];
+            if (!_series[index].ShowsValues || drawn.Hidden)
+            {
+                continue;
+            }
+
+            var chars = drawn.Text.Max(text => text?.Length ?? 0);
+            for (var place = 0; place < drawn.Text.Count; place++)
+            {
+                if (drawn.Text[place] is not { } text)
+                {
+                    continue;
+                }
+
+                if (drawn.Bars && drawn.Marks[place] is { } bar)
+                {
+                    var middle = bar.X + bar.Width / 2;
+                    labels.Add(stacked
+                        ? new(middle, bar.Y + bar.Height / 2, ValueSide.Middle, bar.Width, bar.Height, text.Length,
+                            text)
+                        : new(middle, bar.Up ? bar.Y : bar.Y + bar.Height, bar.Up ? ValueSide.Above : ValueSide.Below,
+                            bar.Width, 1, chars, text));
+                }
+                else if (!drawn.Bars && drawn.Points[place] is { } point)
+                {
+                    labels.Add(new(point.X, point.Y, ValueSide.Point, room, 1, chars, text));
+                }
+            }
+        }
+
+        return labels;
+    }
+
+    // Where a value's label sits in the plot. A horizontal chart turns the spot, and what limits the label turns
+    // with it: past a bar's end it has to fit the bar's thickness, and in a stacked bar its length too.
+    private string ValueStyle(ValueLabel label)
+    {
+        var (x, y) = Turn(label.X, label.Y);
+        var (wide, high) = !Horizontal ? (label.Wide, label.High)
+            : (label.Side == ValueSide.Middle ? label.High : 1, label.Wide);
+        return string.Create(CultureInfo.InvariantCulture, $"inset-inline-start: {ChartPath.Percent(x)}; "
+            + $"inset-block-start: {ChartPath.Percent(y)}; --_tb-chart-wide: {wide:0.#####}; "
+            + $"--_tb-chart-high: {high:0.#####}; --_tb-chart-chars: {label.Chars}");
+    }
+
+    // How the stylesheet names a label's side: in a horizontal chart, past a bar's end is along the plot.
+    private string SideName(ValueLabel label) => label.Side switch
+    {
+        ValueSide.Above => Horizontal ? "end" : "above",
+        ValueSide.Below => Horizontal ? "start" : "below",
+        ValueSide.Middle => "middle",
+        _ => "point",
+    };
+
+    // A point on the plot's start or end, as a continuous scale's first and last are, has its label start or end
+    // there, as the axis's labels do, instead of centering on it.
+    private static string? ValueEdge(ValueLabel label) => label.Side != ValueSide.Point ? null
+        : label.X <= 0 ? "start" : label.X >= 1 ? "end" : null;
+
+    // The room the chart keeps past its plot for the labels of the marks that reach its ends: past the highest
+    // values, and past the lowest when a bar hangs down. In a horizontal chart that room is along the plot, as wide
+    // as the longest label.
+    // A label in a stacked bar's middle stays inside the plot and needs none of it.
+    private static string? ValueRoom(List<ValueLabel> labels) => ClassNames.Join(
+        labels.Any(label => label.Side != ValueSide.Middle) ? "tb-chart__body--values" : null,
+        labels.Any(label => label.Side == ValueSide.Below) ? "tb-chart__body--values-low" : null);
+
     // A reference line or band as the chart shows it: the shares of its axis it runs between, which are the same for
     // a line, and what the plot and the list under the data table say for it. On the value axis the shares count
     // from the axis's low end, and along the items from the plot's start. A reference that lies outside the plot, or

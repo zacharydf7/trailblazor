@@ -76,6 +76,9 @@ public abstract class TbChartSeries<TItem> : ComponentBase, IDisposable
 
     internal virtual bool? HasMarkers => null;
 
+    // Whether the series writes its values on its marks. A scatter series can't: its marks can lie anywhere.
+    internal virtual bool ShowsValues => false;
+
     // The component's name as markup writes it, without the mark of its type parameter.
     private string Kind => GetType().Name.Split('`')[0];
 
@@ -112,7 +115,7 @@ public abstract class TbChartSeries<TItem> : ComponentBase, IDisposable
         }
 
         // The chart draws before its series take their parameters, so a series that changed has it draw again.
-        object shown = (Name, Value.Method, Color, Tone, ItemTone?.Method, Line, HasMarkers, IsHidden);
+        object shown = (Name, Value.Method, Color, Tone, ItemTone?.Method, Line, HasMarkers, IsHidden, ShowsValues);
         if (!shown.Equals(_shown))
         {
             _shown = shown;

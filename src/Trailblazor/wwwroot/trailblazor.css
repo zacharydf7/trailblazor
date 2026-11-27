@@ -11898,6 +11898,27 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         grid-template-columns: fit-content(40%) minmax(0, 1fr);
     }
 
+    /* A chart that writes values on its marks keeps room for a line of text above the plot, and below it when a
+       bar hangs down, for the labels of the marks that reach the plot's ends. In a horizontal chart the room is
+       along the plot, as wide as the longest label. */
+    .tb-chart__body--values {
+        padding-block-start: 1.5rem;
+    }
+
+    .tb-chart__body--values-low {
+        row-gap: 1.5rem;
+    }
+
+    .tb-chart--horizontal > .tb-chart__body--values {
+        padding-block-start: 0;
+        padding-inline-end: calc(var(--_tb-chart-value-chars) * 1ch + var(--tb-space-1));
+    }
+
+    .tb-chart--horizontal > .tb-chart__body--values-low {
+        row-gap: var(--tb-space-1);
+        column-gap: calc(var(--_tb-chart-value-chars) * 1ch + var(--tb-space-2));
+    }
+
     .tb-chart--horizontal .tb-chart__y {
         min-inline-size: 0;
         font-variant-numeric: normal;
@@ -12042,6 +12063,94 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     .tb-chart__gap {
         stroke: var(--tb-color-surface);
         stroke-width: 2;
+    }
+
+    /* Values written on marks are laid over the plot, which they measure as a container. Each label shrinks to
+       nothing when its mark is narrower than its series' longest label, or, in a stack, narrower than the label
+       itself or less than a line of text high, so a series' labels never run into each other. A patch of the
+       surface's color keeps each readable over the marks. */
+    .tb-chart__values {
+        position: absolute;
+        inset: 0;
+        container-type: size;
+        pointer-events: none;
+    }
+
+    .tb-chart__values > span {
+        position: absolute;
+        max-inline-size: clamp(0px, calc((100cqi * var(--_tb-chart-wide) - var(--_tb-chart-chars) * 1ch - 0.25rem)
+            * 9999), 100cqi);
+        max-block-size: clamp(0px, calc((100cqb * var(--_tb-chart-high) - 1.4em) * 9999), 1.4em);
+        overflow: hidden;
+        background: color-mix(in srgb, var(--tb-color-surface) 85%, transparent);
+        color: var(--tb-color-text);
+        font-size: var(--tb-font-size-xs);
+        font-variant-numeric: tabular-nums;
+        line-height: 1.4;
+        white-space: nowrap;
+    }
+
+    .tb-chart__values > [data-side="above"] {
+        transform: translate(-50%, -100%);
+    }
+
+    .tb-chart__values > [data-side="below"] {
+        transform: translateX(-50%);
+    }
+
+    .tb-chart__values > [data-side="point"] {
+        margin-block-start: -0.3125rem;
+        transform: translate(-50%, -100%);
+    }
+
+    /* A point on the plot's start or end has its label start or end there, as the axis's labels do. */
+    .tb-chart__values > [data-edge="start"] {
+        transform: translateY(-100%);
+    }
+
+    .tb-chart__values > [data-edge="end"] {
+        transform: translate(-100%, -100%);
+    }
+
+    .tb-chart__values > [data-side="middle"] {
+        transform: translate(-50%, -50%);
+    }
+
+    .tb-chart__values > [data-side="end"] {
+        margin-inline-start: 0.125rem;
+        transform: translateY(-50%);
+    }
+
+    .tb-chart__values > [data-side="start"] {
+        margin-inline-start: -0.125rem;
+        transform: translate(-100%, -50%);
+    }
+
+    /* Right to left, a label's start is on its right, so the shifts that center it, or put it before its mark,
+       go the other way. */
+    .tb-chart__values:dir(rtl) > [data-side="above"],
+    .tb-chart__values:dir(rtl) > [data-side="point"] {
+        transform: translate(50%, -100%);
+    }
+
+    .tb-chart__values:dir(rtl) > [data-side="below"] {
+        transform: translateX(50%);
+    }
+
+    .tb-chart__values:dir(rtl) > [data-side="middle"] {
+        transform: translate(50%, -50%);
+    }
+
+    .tb-chart__values:dir(rtl) > [data-side="start"] {
+        transform: translate(100%, -50%);
+    }
+
+    .tb-chart__values:dir(rtl) > [data-edge="start"] {
+        transform: translateY(-100%);
+    }
+
+    .tb-chart__values:dir(rtl) > [data-edge="end"] {
+        transform: translate(100%, -100%);
     }
 
     /* A reference line is dashed, so it reads as neither a grid line nor a series' line, and a reference band is

@@ -1083,6 +1083,16 @@ public static class ExampleCatalog
                     + "number on a scale of numbers, and needn't be an item's. On an even scale it is an item's "
                     + "`X`, as the storm on Thursday is in the chart in Reference lines and bands.",
                     typeof(ChartReferenceAlongExample)),
+                new("values", "Values on marks", "`ShowValues` on a bar, line or area series writes each of its "
+                    + "values on its mark, as the data table writes it: past a bar's end, in the middle of a bar in "
+                    + "a stack, or over a point. A chart of a few bars reads faster with the numbers on it. The "
+                    + "labels need room: a series shows them all while each of its bars, or the room between its "
+                    + "closest two places, is as wide as its longest label, and none otherwise, so on a chart as "
+                    + "narrow as a phone's the numbers go instead of overlapping. In a stack each bar decides for "
+                    + "itself, as "
+                    + "the summit hut's one free bed shows. In a horizontal chart a label past a bar's end needs the "
+                    + "bar to be a line of text thick.",
+                    typeof(ChartValuesExample)),
                 new("gaps", "Missing values", "A null value leaves a gap: no bar, as on Thursday here, and a break "
                     + "in a line, as in the forecast on Wednesday. An area breaks as a line does, fill and all, and "
                     + "in a stack a missing value takes no room, so the bands above it drop at that place. The "
@@ -1194,7 +1204,8 @@ public static class ExampleCatalog
                     + "chart doesn't have, is only in that list.",
                 "Screen readers hear the drawing as one image, then reach the table for the values. On an "
                     + "interactive page the point that has the tab stop is a second image, named for the point. The "
-                    + "axis labels are hidden from them, since the table says the same.",
+                    + "axis labels and the values written on marks are hidden from them, since the table says "
+                    + "the same.",
                 "On an interactive page the plot is one tab stop, on the point last visited or else the first. The "
                     + "focus ring is drawn around the point, and the tooltip shows the values at its place.",
                 "The tooltip shows on hover and on focus, stays for as long as the pointer is over the plot or a "
@@ -1354,6 +1365,17 @@ public static class ExampleCatalog
                     + "backward, is listed and not drawn. A reference along the items leaves the value axis as it "
                     + "is."),
                 new("References are listed in the order they first render, so one that appears later is last."),
+                new("Values on marks show for a whole series or not at all, since a series that showed some of "
+                    + "its labels would read as if the others had no value. A stacked bar's label is the exception: "
+                    + "each shows while its own bar is as wide as the label and a line of text high."),
+                new("A chart with values on its marks keeps room for a line of text above the plot, and below it "
+                    + "when a bar hangs down. In a horizontal chart the room is along the plot, as wide as the "
+                    + "longest label. A continuous scale's first and last points have their labels start and end at "
+                    + "the plot's edges, so a line or an area with a point there needs more room for its labels."),
+                new("Labels of two line series at close values write over each other, as do a line's and a bar's "
+                    + "at one place. Show values on one series of such a chart.") { Pitfall = true },
+                new("With `ChartStacking.Percent` a label writes the value, as the data table does, not its share "
+                    + "of the total."),
                 new("A reference throws when it has no `Name`; when it has a value that isn't finite, a band's "
                     + "`From` not below its `To`, neither or both of a value and a place, or only one of a band's "
                     + "two values or places; when its place on a continuous scale isn't a date on a scale of dates "
@@ -1375,6 +1397,7 @@ public static class ExampleCatalog
                 new("x-title", "The title of the axis the items run along, under the plot, or above it on a "
                     + "horizontal chart."),
                 new("tooltip", "The values at the place the pointer or the keys are on."),
+                new("values", "The labels of the values written on marks, with `ShowValues`."),
                 new("reference", "A reference line's or band's name and values, written over the plot."),
                 new("table", "The disclosure that holds the data table."),
                 new("references", "The list of the reference lines and bands under the data table."),
@@ -1402,6 +1425,11 @@ public static class ExampleCatalog
                 "`References` lists what the chart writes for its reference lines and bands, such as \"Flood "
                     + "warning: 70 cm\" (`ReferencesAsync()` in Playwright). Without the helpers, they are the "
                     + "items of `[data-part=references]`, each with its tone in `data-tone`.",
+                "Values written on marks are spans in `[data-part=values]`, hidden from screen readers. Read a "
+                    + "value with `Value(series, place)` instead (`ValueAsync(series, place)` in Playwright), which "
+                    + "gives the data table's text, the same text the label shows.",
+                "A label without room is still in the markup, at no width or height: Playwright counts it as "
+                    + "hidden, and bUnit still finds it.",
                 "Without the helpers, a series or a mark with a tone has a class such as `tb-chart__tone--danger`, "
                     + "and the data table's cell for the mark has `data-tone=\"danger\"`.",
                 "Without the helpers, a legend button is `GetByRole(AriaRole.Button, new() { Name = \"Shuttle\" })`, "

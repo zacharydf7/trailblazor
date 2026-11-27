@@ -37,6 +37,7 @@
         var toggles = CanHideSeries && RendererInfo.IsInteractive;
         // The references stay in the list under the data table while every series is hidden, as the table stays.
         var references = empty ? [] : PlaceReferences(plan);
+        var onMarks = blank ? [] : ValueLabelsOnMarks(plan);
     }
     @if (Title is not null)
     {
@@ -110,7 +111,8 @@
     {
         <div data-part="@(Horizontal ? "x-title" : "y-title")" class="tb-chart__y-title">@sideTitle</div>
     }
-    <div class="tb-chart__body">
+    <div class="@ClassNames.Join("tb-chart__body", ValueRoom(onMarks))"
+         style="@(onMarks.Count == 0 ? null : $"--_tb-chart-value-chars: {onMarks.Max(label => label.Chars)}")">
         @if (!blank)
         {
             <div class="tb-chart__y" aria-hidden="true"
@@ -286,6 +288,17 @@
                               x1="@Percent(from.X)" x2="@Percent(to.X)" y1="@Percent(from.Y)" y2="@Percent(to.Y)" />
                     }
                 </svg>
+                @* Each value on its mark, which the data table already gives screen readers. *@
+                @if (onMarks.Count > 0)
+                {
+                    <div data-part="values" class="tb-chart__values" aria-hidden="true">
+                        @foreach (var label in onMarks)
+                        {
+                            <span data-side="@SideName(label)" data-edge="@ValueEdge(label)"
+                                  style="@ValueStyle(label)">@label.Text</span>
+                        }
+                    </div>
+                }
                 @* Each reference's name and values, as text over the plot that screen readers read after the
                    drawing: at a line's end, or in a band's corner. *@
                 @foreach (var placed in references.Where(one => one.Drawn))

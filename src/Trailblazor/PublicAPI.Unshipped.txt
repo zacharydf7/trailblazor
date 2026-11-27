@@ -8657,3 +8657,9 @@ Trailblazor.TbReferenceBand.ToX.set -> void
 Trailblazor.TbReferenceLine.Value.get -> double?
 Trailblazor.TbReferenceLine.X.get -> object?
 Trailblazor.TbReferenceLine.X.set -> void
+Trailblazor.TbAreaSeries<TItem>.ShowValues.get -> bool
+Trailblazor.TbAreaSeries<TItem>.ShowValues.set -> void
+Trailblazor.TbBarSeries<TItem>.ShowValues.get -> bool
+Trailblazor.TbBarSeries<TItem>.ShowValues.set -> void
+Trailblazor.TbLineSeries<TItem>.ShowValues.get -> bool
+Trailblazor.TbLineSeries<TItem>.ShowValues.set -> void

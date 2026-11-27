@@ -1,0 +1,22 @@
+<TbStack Gap="6">
+    <TbChart Items="Trails" X="trail => trail.Name" Title="Hikers by trail this week">
+        <TbBarSeries Name="Hikers" Value="trail => trail.Hikers" ShowValues />
+    </TbChart>
+    <TbChart Items="Huts" X="hut => hut.Name" Title="Beds tonight" Stacking="ChartStacking.Stacked" Height="14rem">
+        <TbBarSeries Name="Booked" Value="hut => hut.Booked" ShowValues />
+        <TbBarSeries Name="Free" Value="hut => hut.Free" ShowValues />
+    </TbChart>
+</TbStack>
+
+@code {
+    private static readonly Trail[] Trails =
+        [new("Ridge loop", 1284), new("Lake path", 862), new("Summit trail", 415), new("Forest walk", 1036)];
+
+    // The summit hut has one free bed, whose bar is too low for its label, so that label alone is left out.
+    private static readonly Hut[] Huts =
+        [new("Lower hut", 28, 12), new("Ridge hut", 21, 9), new("Summit hut", 15, 1)];
+
+    private sealed record Trail(string Name, int Hikers);
+
+    private sealed record Hut(string Name, int Booked, int Free);
+}
