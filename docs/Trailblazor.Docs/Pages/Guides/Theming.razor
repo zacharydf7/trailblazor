@@ -422,7 +422,7 @@
 @code {
     private static string TokenValue(string value) =>
         new[] { "primary", "secondary", "success", "warning", "danger", "info" }
-            .FirstOrDefault(tone => value.Contains($"from var(--tb-color-{tone})")) is { } source
+            .FirstOrDefault(tone => value.Contains($"from var(--_tb-color-{tone}-origin)")) is { } source
             ? source is "primary" or "secondary" ? $"From the {source}" : $"From the {source} color" : value;
 
     private const string DefaultBrand = "#0f766e";

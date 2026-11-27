@@ -19,6 +19,30 @@ public class HelperFloorTests(FloorFixture fixture)
         Assert.Equal(1, await radios.GetByText("Paper size value: A4", new() { Exact = true }).CountAsync());
     }
 
+    // Not a helper test, but only this project runs the old Chromium, which crashed on a color derived from a plain
+    // one, such as an app sets inline. The buttons show every tone, so reading their styles computes each derived
+    // color.
+    [Fact]
+    public async Task Styles_ShouldKeepThePageWorking_WhenTheAppSetsItsColorsPlain()
+    {
+        var page = await fixture.OpenAsync("/examples/button");
+
+        var styled = await page.EvaluateAsync<int>("""
+            () => {
+                for (const tone of ['primary', 'secondary', 'success', 'warning', 'danger', 'info']) {
+                    document.documentElement.style.setProperty(`--tb-color-${tone}`, '#0f766e');
+                }
+
+                return [...document.querySelectorAll('button')]
+                    .filter(button => getComputedStyle(button).backgroundColor !== '').length;
+            }
+            """);
+
+        Assert.True(styled > 0);
+        Assert.True(await page.EvaluateAsync<bool>(
+            "() => new Promise(drawn => requestAnimationFrame(() => drawn(true)))"));
+    }
+
     [Fact]
     public async Task Form_ShouldListItsErrors_WhenSubmittedEmpty()
     {

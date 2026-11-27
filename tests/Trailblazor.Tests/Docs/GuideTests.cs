@@ -209,6 +209,16 @@ public class GuideTests : DocsTest
     }
 
     [Fact]
+    public void ThemingGuide_ShouldSayWhichColorADerivedTokenComesFrom_WhenOpened()
+    {
+        var text = PageAt("guides/theming").Find(".docs-article").TextContent;
+
+        Assert.Contains("From the primary", text);
+        Assert.Contains("From the success color", text);
+        Assert.DoesNotContain("var(--_tb-color-", text);
+    }
+
+    [Fact]
     public void IconsGuide_ShouldShowAndCopyTheMatchingIcons_WhenSearched()
     {
         var root = Render<TbRoot>();
