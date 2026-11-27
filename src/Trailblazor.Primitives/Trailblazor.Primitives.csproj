@@ -20,7 +20,8 @@
     <InternalsVisibleTo Include="Trailblazor.Tests" />
     <InternalsVisibleTo Include="Trailblazor.Testing" />
     <InternalsVisibleTo Include="Trailblazor.BrowserTests.Client" />
-    <InternalsVisibleTo Include="Trailblazor.Spikes.Client" />
+    <!-- Debug only: the packages are packed in Release, so they don't open their internals to a spike. -->
+    <InternalsVisibleTo Include="Trailblazor.Spikes.Client" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
 
 </Project>

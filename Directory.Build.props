@@ -12,7 +12,7 @@
     <Authors>Zachary Fry</Authors>
     <Copyright>Copyright (c) 2026 Zachary Fry</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/zacharydf7/trailblazor</PackageProjectUrl>
+    <PackageProjectUrl>https://trailblazor.dev/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/zacharydf7/trailblazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <MinVerTagPrefix>v</MinVerTagPrefix>
@@ -30,7 +30,22 @@
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
     <AdditionalFiles Include="PublicAPI.Shipped.txt" />
     <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
+    <None Include="$(MSBuildThisFileDirectory)src/package-readme.md" Pack="true" PackagePath="README.md"
+          Visible="false" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>blazor;components;ui;accessibility;design-tokens</PackageTags>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <!-- What ships, built in CI, maps its source paths, so they don't depend on the runner; tests keep their real
+         paths. It's set here, by folder, since the compiler's targets read it before a project's IsPackable is
+         known. -->
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true' And
+        $(MSBuildProjectDirectory.StartsWith('$(MSBuildThisFileDirectory)src'))">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
 
   <!-- Every project with Razor markup runs the components' analyzer on itself, as an app using the package does. -->
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkRazor)' == 'true'">

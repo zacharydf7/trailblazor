@@ -255,3 +255,14 @@ and closes when that work is done. Add the `in progress` label to an issue when 
 component ships; remove the component's entry from `All` in the change that adds its page. The Docs workflow fetches the
 issues again on every publish; `docs/update-roadmap.sh` refreshes the committed copy,
 `docs/Trailblazor.Docs.Examples/roadmap.json`.
+
+## Releasing
+
+All five packages share one version, which MinVer reads from the latest `v*` tag, and each depends on the exact version
+of the others it uses, since some read each other's internals. Before tagging, move the entries in each
+`PublicAPI.Unshipped.txt` into `PublicAPI.Shipped.txt` and the analyzer's `AnalyzerReleases.Unshipped.md` entries into
+`AnalyzerReleases.Shipped.md` under the new version, and put the CHANGELOG's Unreleased lists under it too. Tag a
+commit on main whose CI run passed, since the Release workflow runs no tests. Pushing a tag such as `v1.2.3` runs the
+Release workflow: it packs each package with package validation, uploads the packages and their symbol packages
+as an artifact of the run, and publishes them to nuget.org with the `NUGET_API_KEY` secret. Starting the workflow by
+hand packs them only, as a dry run.

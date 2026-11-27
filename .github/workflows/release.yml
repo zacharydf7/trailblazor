@@ -1,0 +1,42 @@
+name: Release
+
+# A version tag (v1.2.3) packs the packages and publishes them to nuget.org. A run started by hand packs them only, as a
+# dry run whose packages can be downloaded from the run.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pack:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # MinVer computes the version from tags and history
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - run: dotnet restore
+      - run: dotnet build --configuration Release --no-restore
+      # dotnet pack runs on every project under src and skips the ones that aren't packages.
+      - run: >-
+          for project in src/*/*.csproj; do
+          dotnet pack "$project" --configuration Release --no-build --output packages;
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: packages/
+
+      - if: github.event_name == 'push'
+        run: >-
+          dotnet nuget push "packages/*.nupkg" --source https://api.nuget.org/v3/index.json
+          --api-key "$NUGET_API_KEY" --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}

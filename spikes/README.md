@@ -19,7 +19,9 @@ Spike code lives in `spikes/Trailblazor.Spikes`, a Blazor Web App that serves ea
 and in WebAssembly. Measurement scripts are Playwright tests in `spikes/Trailblazor.Spikes.Tests`. Spike code is
 throwaway: it is not packed, and whatever survives the gate moves into `src/` with real tests.
 
-Spike measurements run locally, not in CI, because timing on shared CI runners is too noisy to gate on.
+Spike measurements run locally, not in CI, because timing on shared CI runners is too noisy to gate on. The spikes
+build in Debug only, because they use internals of `Trailblazor.Primitives` that only its Debug build opens to them.
+The Release build is the one that gets packed.
 
 ## Measurement environment
 

@@ -1,0 +1,13 @@
+<Project>
+
+  <!-- The packages ship together and some read each other's internals, so each depends on the exact version of the
+       others; a mix of versions is reported at restore (NU1605 or NU1608) instead of failing at run time with a
+       missing member. -->
+  <Target Name="PinTrailblazorPackageVersions" AfterTargets="_GetProjectReferenceVersions"
+          Condition="'$(IsPackable)' == 'true'">
+    <ItemGroup>
+      <_ProjectReferencesWithVersions Update="@(_ProjectReferencesWithVersions)" ProjectVersion="[%(ProjectVersion)]" />
+    </ItemGroup>
+  </Target>
+
+</Project>
