@@ -13,7 +13,7 @@
                 <th scope="row">@trail.Name</th>
                 <td>@trail.Days.Sum()</td>
                 <td>
-                    <TbSparkline Values="trail.Days" Kind="SparklineKind.Bars" Min="0" Max="Busiest"
+                    <TbSparkline Values="trail.Days" Kind="SparklineKind.Bars" Min="0" Max="Busiest" Width="4rem"
                                  AriaLabel="@trail.Shape" />
                 </td>
             </tr>
