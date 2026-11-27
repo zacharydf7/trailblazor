@@ -1,3 +1,4 @@
+using System.Globalization;
 using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
@@ -107,10 +108,12 @@ public class ChartTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("ArrowRight");
         await Expect(page.Locator(":focus")).ToHaveAccessibleNameAsync("Jan 6, Depth: 55, 2 of 8");
 
-        // The axis marks every seventh day, and shows only the marks that fit. The first mark is on the plot's
-        // edge, and its label starts there.
-        await Expect(chart.Locator(".tb-chart__x > span")).ToHaveTextAsync(
-            ["Jan 3", "Jan 10", "Jan 17", "Jan 24", "Jan 31", "Feb 7", "Feb 14"]);
+        // The axis marks every seventh day, and shows only the marks that fit. A mark is written as the machine's
+        // culture writes a month and a day, "Jan 3" in one and "Jan 03" in another, since the test's pages keep
+        // that culture. The first mark is on the plot's edge, and its label starts there.
+        var written = CultureInfo.CurrentCulture.DateTimeFormat.MonthDayPattern.Replace("MMMM", "MMM");
+        await Expect(chart.Locator(".tb-chart__x > span")).ToHaveTextAsync(Enumerable.Range(0, 7).Select(week =>
+            new DateOnly(2026, 1, 3).AddDays(7 * week).ToString(written, CultureInfo.CurrentCulture)).ToArray());
         var first = await chart.Locator(".tb-chart__x > span").First.BoundingBoxAsync();
         Assert.InRange(first!.X - box.X, -1, 1);
 
