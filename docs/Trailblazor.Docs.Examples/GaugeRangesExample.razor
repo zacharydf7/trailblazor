@@ -1,0 +1,12 @@
+<TbStack Gap="4">
+    <TbGauge Value="_booked" Max="40" Label="Hut beds booked tonight" ShowEnds>
+        <TbGaugeRange To="24" Name="Quiet" Tone="Tone.Success" />
+        <TbGaugeRange To="34" Name="Busy" Tone="Tone.Warning" />
+        <TbGaugeRange Name="Nearly full" Tone="Tone.Danger" />
+    </TbGauge>
+    <TbSlider @bind-Value="_booked" Max="40" Label="Beds booked" ShowValue />
+</TbStack>
+
+@code {
+    private int _booked = 29;
+}

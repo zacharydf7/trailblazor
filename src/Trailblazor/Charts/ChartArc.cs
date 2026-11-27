@@ -73,13 +73,13 @@ internal static class ChartArc
     private static (double X, double Y) Point(double turn, double radius) =>
         (Radius + radius * Math.Sin(turn * Math.Tau), Radius - radius * Math.Cos(turn * Math.Tau));
 
-    private static string Spot(double turn, double radius)
+    public static string Spot(double turn, double radius)
     {
         var (x, y) = Point(turn, radius);
         return $"{Number(x)} {Number(y)}";
     }
 
     // Adding zero turns a rounded "-0" into "0".
-    private static string Number(double value) =>
+    public static string Number(double value) =>
         (Math.Round(value, 2) + 0d).ToString(CultureInfo.InvariantCulture);
 }

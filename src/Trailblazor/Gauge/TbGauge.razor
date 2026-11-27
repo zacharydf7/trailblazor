@@ -1,0 +1,52 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@inject ITbLocalizer Localizer
+
+@{
+    var bands = Ranges.Between(Min, Max);
+    var reading = Read(bands);
+    var arc = GaugeArc.Path(0, 1, bands.Count > 0 ? RadiusInsideBands : Radius);
+}
+<div role="meter" aria-label="@Name" aria-labelledby="@(Name is null ? _labelId : null)"
+     aria-valuemin="@Number(Min)" aria-valuemax="@Number(Max)" aria-valuenow="@Number(reading.Now)"
+     aria-valuetext="@reading.Spoken" @attributes="AdditionalAttributes"
+     class="@ClassNames.Join("tb-gauge", ClassNames.Modifier("tb-gauge", reading.Range?.Tone ?? Tone),
+                reading.Share is null ? "tb-gauge--empty" : null, Class)"
+     style="@Styles.Join(Diameter is null ? null : $"--tb-gauge-diameter: {Diameter}",
+                reading.Share is { } share ? $"--_tb-gauge-percent: {Number(share * 100)}" : null, Style)">
+    <div data-part="dial" class="tb-gauge__dial">
+        <svg viewBox="@GaugeArc.Box" aria-hidden="true" focusable="false">
+            <path class="tb-gauge__track" d="@arc" />
+            @for (var place = 0; place < bands.Count; place++)
+            {
+                <path class="@ClassNames.Join("tb-gauge__band", bands[place].Range.Tone is { } tone
+                                 ? ClassNames.Modifier("tb-gauge__band", tone) : null)"
+                      d="@BandPath(bands, place)" />
+            }
+            @if (reading.Share is not null)
+            {
+                @* The whole arc, which the styles fill up to the value, so a change of value can be animated. *@
+                <path data-part="indicator" class="tb-gauge__indicator" d="@arc" pathLength="100" />
+            }
+        </svg>
+        <div class="tb-gauge__reading">
+            <span data-part="value" class="tb-gauge__value">@reading.Text</span>
+            @if (!string.IsNullOrWhiteSpace(reading.Range?.Name))
+            {
+                <span data-part="range" class="tb-gauge__range">@reading.Range.Name</span>
+            }
+        </div>
+    </div>
+    @if (ShowEnds)
+    {
+        <div class="tb-gauge__ends">
+            <span data-part="min">@Text(Min)</span>
+            <span data-part="max">@Text(Max)</span>
+        </div>
+    }
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <span id="@_labelId" data-part="label" class="tb-gauge__label">@Label</span>
+    }
+    <CascadingValue Value="Ranges" IsFixed="true">@ChildContent</CascadingValue>
+</div>

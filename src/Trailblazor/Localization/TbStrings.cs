@@ -97,6 +97,13 @@ public static class TbStrings
     /// <summary>"Share": heads the column of shares in a pie chart's data table.</summary>
     public const string ChartShare = "Chart.Share";
 
+    /// <summary>"No value": shown in a gauge, and read out for it, while it has no value.</summary>
+    public const string GaugeNoValue = "Gauge.NoValue";
+
+    /// <summary>"{0}, {1}": what screen readers hear for a gauge whose value is in a named range. <c>{0}</c> is
+    /// the value's text and <c>{1}</c> the range's name, as in "72%, High".</summary>
+    public const string GaugeValueInRange = "Gauge.ValueInRange";
+
     /// <summary>"Message": names the box a chat's user types in.</summary>
     public const string ChatMessage = "Chat.Message";
 
@@ -2120,6 +2127,8 @@ public static class TbStrings
         [ChartValueAndShare] = "{0} ({1})",
         [ChartValue] = "Value",
         [ChartShare] = "Share",
+        [GaugeNoValue] = "No value",
+        [GaugeValueInRange] = "{0}, {1}",
         [ChatMessage] = "Message",
         [ChatSend] = "Send",
         [ChatAttach] = "Attach files",

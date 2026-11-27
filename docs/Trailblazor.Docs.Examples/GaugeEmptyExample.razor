@@ -1,0 +1,14 @@
+<TbStack Gap="4" Align="Align.Start">
+    <TbGauge Value="_wind" Max="120" Label="Summit wind (km/h)" Labels="@(new() { NoValue = "Offline" })">
+        <TbGaugeRange To="40" Name="Calm" Tone="Tone.Success" />
+        <TbGaugeRange To="80" Name="Windy" Tone="Tone.Warning" />
+        <TbGaugeRange Name="Storm" Tone="Tone.Danger" />
+    </TbGauge>
+    <TbButton OnClick="@(() => _wind = _wind is null ? 52 : null)">
+        @(_wind is null ? "Connect the weather station" : "Disconnect the weather station")
+    </TbButton>
+</TbStack>
+
+@code {
+    private double? _wind;
+}

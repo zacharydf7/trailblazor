@@ -16,8 +16,8 @@ public class ComponentContractTests : BunitContext
     // TbDialogDescription, TbColumn, TbColumnGroup, TbTableOfContentsItem, TbBreadcrumb, TbNavLink, TbNavGroup, TbStep,
     // TbCarouselSlide, TbDockPanel and TbRibbonTab only render inside their parent (see their parents' tests),
     // TbTreeItemEnd only in a tree row's template, TbSmartPaste and TbValidationSummary only inside a TbForm,
-    // TbDescriptionItem only inside a TbDescriptionList, and TbLineSeries, TbAreaSeries, TbScatterSeries,
-    // TbBarSeries, TbXAxis and TbYAxis only inside a TbChart.
+    // TbDescriptionItem only inside a TbDescriptionList, TbLineSeries, TbAreaSeries, TbScatterSeries,
+    // TbBarSeries, TbXAxis and TbYAxis only inside a TbChart, and TbGaugeRange only inside a TbGauge.
     internal static readonly Type[] NotRenderedAlone =
     [
         typeof(TbRoot), typeof(TbStyles), typeof(TbThemeHead), typeof(TbInteractiveMark), typeof(TbRadio<>),
@@ -30,7 +30,7 @@ public class ComponentContractTests : BunitContext
         typeof(TbDialogHeaderActions), typeof(TbDialogHeader), typeof(TbTreeItemEnd), typeof(TbSmartPaste),
         typeof(TbDockPanel), typeof(TbDescriptionItem), typeof(TbValidationSummary), typeof(TbLineSeries<>),
         typeof(TbBarSeries<>), typeof(TbXAxis), typeof(TbYAxis), typeof(TbAreaSeries<>),
-        typeof(TbScatterSeries<>),
+        typeof(TbScatterSeries<>), typeof(TbGaugeRange),
     ];
 
     // Generic components, such as fields, are checked with string as their type argument unless listed here.
@@ -56,6 +56,7 @@ public class ComponentContractTests : BunitContext
         [typeof(TbToolbarButton)] = (nameof(TbToolbarButton.Label), "Sample"),
         [typeof(TbTooltip)] = (nameof(TbTooltip.Text), "Sample"),
         [typeof(TbProgress)] = (nameof(TbProgress.Label), "Sample"),
+        [typeof(TbGauge)] = (nameof(TbGauge.Label), "Sample"),
         [typeof(TbDescriptionItem)] = (nameof(TbDescriptionItem.Term), "Sample"),
         [typeof(TbToggleGroup<string>)] = (nameof(TbToggleGroup<string>.AriaLabel), "Sample"),
         [typeof(TbMultiToggleGroup<string>)] = (nameof(TbMultiToggleGroup<string>.AriaLabel), "Sample"),

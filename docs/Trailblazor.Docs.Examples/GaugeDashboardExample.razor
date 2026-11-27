@@ -1,0 +1,19 @@
+<TbStack Row Gap="4" Wrap Style="--tb-gauge-diameter: 8rem">
+    @foreach (var hut in Huts)
+    {
+        <TbCard Title="@hut.Name" Subtitle="Beds booked tonight">
+            <TbGauge Value="hut.Booked" Max="hut.Beds" AriaLabel="@($"{hut.Name}, beds booked tonight")" ShowEnds>
+                <TbGaugeRange To="hut.Beds * 0.6" Name="Quiet" Tone="Tone.Success" />
+                <TbGaugeRange To="hut.Beds * 0.85" Name="Busy" Tone="Tone.Warning" />
+                <TbGaugeRange Name="Nearly full" Tone="Tone.Danger" />
+            </TbGauge>
+        </TbCard>
+    }
+</TbStack>
+
+@code {
+    private static readonly Hut[] Huts =
+        [new("Lower hut", 12, 40), new("Ridge hut", 21, 30), new("Summit hut", 15, 16)];
+
+    private sealed record Hut(string Name, int Booked, int Beds);
+}

@@ -8563,3 +8563,56 @@ Trailblazor.TbSparkline<TValue>.Width.set -> void
 Trailblazor.TbSparkline<TValue>.TelemetryName.get -> string?
 Trailblazor.TbSparkline<TValue>.TelemetryName.set -> void
 override Trailblazor.TbSparkline<TValue>.OnAfterRender(bool firstRender) -> void
+Trailblazor.TbGauge
+Trailblazor.TbGauge.AriaLabel.get -> string?
+Trailblazor.TbGauge.AriaLabel.set -> void
+Trailblazor.TbGauge.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbGauge.ChildContent.set -> void
+Trailblazor.TbGauge.Diameter.get -> string?
+Trailblazor.TbGauge.Diameter.set -> void
+Trailblazor.TbGauge.Format.get -> string?
+Trailblazor.TbGauge.Format.set -> void
+Trailblazor.TbGauge.Label.get -> string?
+Trailblazor.TbGauge.Label.set -> void
+Trailblazor.TbGauge.Max.get -> double
+Trailblazor.TbGauge.Max.set -> void
+Trailblazor.TbGauge.Min.get -> double
+Trailblazor.TbGauge.Min.set -> void
+Trailblazor.TbGauge.ShowEnds.get -> bool
+Trailblazor.TbGauge.ShowEnds.set -> void
+Trailblazor.TbGauge.TbGauge() -> void
+Trailblazor.TbGauge.TelemetryName.get -> string?
+Trailblazor.TbGauge.TelemetryName.set -> void
+Trailblazor.TbGauge.Tone.get -> Trailblazor.Tone
+Trailblazor.TbGauge.Tone.set -> void
+Trailblazor.TbGauge.Value.get -> double?
+Trailblazor.TbGauge.Value.set -> void
+Trailblazor.TbGaugeRange
+Trailblazor.TbGaugeRange.Dispose() -> void
+Trailblazor.TbGaugeRange.Name.get -> string?
+Trailblazor.TbGaugeRange.Name.set -> void
+Trailblazor.TbGaugeRange.TbGaugeRange() -> void
+Trailblazor.TbGaugeRange.To.get -> double?
+Trailblazor.TbGaugeRange.To.set -> void
+Trailblazor.TbGaugeRange.Tone.get -> Trailblazor.Tone?
+Trailblazor.TbGaugeRange.Tone.set -> void
+const Trailblazor.TbStrings.GaugeNoValue = "Gauge.NoValue" -> string!
+const Trailblazor.TbStrings.GaugeValueInRange = "Gauge.ValueInRange" -> string!
+override Trailblazor.TbGauge.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbGauge.OnParametersSet() -> void
+~override Trailblazor.TbGauge.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.GaugeLabels
+Trailblazor.GaugeLabels.<Clone>$() -> Trailblazor.GaugeLabels!
+Trailblazor.GaugeLabels.Equals(Trailblazor.GaugeLabels? other) -> bool
+Trailblazor.GaugeLabels.GaugeLabels() -> void
+Trailblazor.GaugeLabels.NoValue.get -> string?
+Trailblazor.GaugeLabels.NoValue.init -> void
+Trailblazor.GaugeLabels.ValueInRange.get -> string?
+Trailblazor.GaugeLabels.ValueInRange.init -> void
+Trailblazor.TbGauge.Labels.get -> Trailblazor.GaugeLabels!
+Trailblazor.TbGauge.Labels.set -> void
+override Trailblazor.GaugeLabels.Equals(object? obj) -> bool
+override Trailblazor.GaugeLabels.GetHashCode() -> int
+override Trailblazor.GaugeLabels.ToString() -> string!
+static Trailblazor.GaugeLabels.operator !=(Trailblazor.GaugeLabels? left, Trailblazor.GaugeLabels? right) -> bool
+static Trailblazor.GaugeLabels.operator ==(Trailblazor.GaugeLabels? left, Trailblazor.GaugeLabels? right) -> bool

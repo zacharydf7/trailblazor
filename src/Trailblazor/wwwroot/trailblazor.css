@@ -12210,6 +12210,119 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         fill: var(--_tb-sparkline-color);
     }
 
+    /* A gauge is a dial with its label under it. Its text scales with it, through its width as a container. */
+    .tb-gauge {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--tb-space-1);
+        inline-size: var(--tb-gauge-diameter, 10rem);
+        max-inline-size: 100%;
+        container-type: inline-size;
+        color: var(--tb-color-text);
+        font-size: var(--tb-font-size-sm);
+        text-align: center;
+        vertical-align: top;
+    }
+
+    .tb-gauge--primary { --_tb-gauge-fill: var(--tb-color-primary-text); }
+    .tb-gauge--secondary { --_tb-gauge-fill: var(--tb-color-secondary-text); }
+    .tb-gauge--neutral { --_tb-gauge-fill: var(--tb-color-neutral-text); }
+    .tb-gauge--success { --_tb-gauge-fill: var(--tb-color-success-text); }
+    .tb-gauge--warning { --_tb-gauge-fill: var(--tb-color-warning-text); }
+    .tb-gauge--danger { --_tb-gauge-fill: var(--tb-color-danger-text); }
+    .tb-gauge--info { --_tb-gauge-fill: var(--tb-color-info-text); }
+
+    .tb-gauge__dial {
+        position: relative;
+        inline-size: 100%;
+    }
+
+    .tb-gauge__dial svg {
+        display: block;
+        inline-size: 100%;
+    }
+
+    .tb-gauge__dial path {
+        fill: none;
+    }
+
+    .tb-gauge__track,
+    .tb-gauge__indicator {
+        stroke-width: 8;
+        stroke-linecap: round;
+    }
+
+    .tb-gauge__track {
+        stroke: var(--tb-border-subtle);
+    }
+
+    /* The indicator is the whole arc, 100 long, dashed once up to the value. */
+    .tb-gauge__indicator {
+        stroke: var(--_tb-gauge-fill);
+        stroke-dasharray: var(--_tb-gauge-percent) 100;
+        transition: stroke-dasharray var(--tb-motion-duration-normal) var(--tb-motion-easing-standard),
+            stroke var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
+    }
+
+    .tb-gauge__band {
+        stroke: var(--tb-color-neutral-text);
+        stroke-width: 3;
+    }
+
+    .tb-gauge__band--primary { stroke: var(--tb-color-primary-text); }
+    .tb-gauge__band--secondary { stroke: var(--tb-color-secondary-text); }
+    .tb-gauge__band--success { stroke: var(--tb-color-success-text); }
+    .tb-gauge__band--warning { stroke: var(--tb-color-warning-text); }
+    .tb-gauge__band--danger { stroke: var(--tb-color-danger-text); }
+    .tb-gauge__band--info { stroke: var(--tb-color-info-text); }
+
+    /* The value and its range's name sit in the middle of the arc, which is below the middle of its box. */
+    .tb-gauge__reading {
+        position: absolute;
+        inset: 26% 20% 10%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        line-height: 1.15;
+    }
+
+    .tb-gauge__value {
+        font-size: 18cqi;
+        font-weight: var(--tb-font-weight-semibold);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .tb-gauge--empty .tb-gauge__value {
+        color: var(--tb-color-text-muted);
+        font-size: max(0.75rem, 9cqi);
+        font-weight: var(--tb-font-weight-regular);
+    }
+
+    .tb-gauge__range {
+        color: var(--tb-color-text-muted);
+        font-size: max(0.75rem, 9cqi);
+    }
+
+    /* Each end's value is centered under its end of the arc, 18 and 82 of the dial's 100 across, and a long one
+       grows toward the middle. A dial runs clockwise in either writing direction, so the lowest value is on the
+       left in both. */
+    .tb-gauge__ends {
+        display: flex;
+        justify-content: space-between;
+        align-self: stretch;
+        direction: ltr;
+        color: var(--tb-color-text-muted);
+        font-size: max(0.6875rem, 8cqi);
+        font-variant-numeric: tabular-nums;
+        line-height: 1.2;
+    }
+
+    .tb-gauge__ends > span {
+        min-inline-size: 36%;
+    }
+
     /* A pie is a square beside its legend, which drops under it where there is no room. */
     .tb-pie__body {
         display: flex;
@@ -12341,6 +12454,20 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         .tb-chart__series--8 > .tb-chart__bar {
             fill: Canvas;
             stroke-dasharray: 1 3;
+        }
+
+        /* A gauge's filled part takes the highlight color, and its bands the text color: the range's name says
+           which one the value is in. */
+        .tb-gauge__track {
+            stroke: GrayText;
+        }
+
+        .tb-gauge__indicator {
+            stroke: Highlight;
+        }
+
+        .tb-gauge__band {
+            stroke: CanvasText;
         }
 
         /* A sparkline is drawn in the text color, and an area keeps its line and loses its fill. */

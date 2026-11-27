@@ -1657,6 +1657,154 @@ public static class ExampleCatalog
                     + "never recorded.",
             ],
         },
+        new("gauge", "Gauge", ExampleCategory.Content,
+            "A dial that shows where one value is between two ends, such as a tank's level, and can mark named "
+                + "ranges along it.")
+        {
+            WhenToUse =
+            [
+                "Use it for one measured value that has a lowest and a highest end, such as a tank's level, a "
+                    + "server's load or the beds booked in a hut.",
+                "Use ranges when parts of the scale mean something, such as \"Busy\" above 24 beds.",
+            ],
+            WhenNotToUse =
+            [
+                "For how far along a task is, use a [progress bar](components/progress).",
+                "For a value over time, use a [chart](components/chart) or a [sparkline](components/sparkline): a "
+                    + "gauge shows only the value now.",
+                "For a number with no ends, show the number.",
+                "To compare several values, use bars in one [chart](components/chart): they compare better than "
+                    + "a row of gauges and take less room.",
+                "For a value people set, use a [slider](components/slider).",
+            ],
+            Related = ["progress", "chart", "sparkline", "slider"],
+            Sections =
+            [
+                new("basic", "Gauge", "`Value` is drawn along the dial from `Min` to `Max`, 0 and 100 unless you "
+                    + "set them, and written in its middle. `Format` is a .NET number format for that text, here "
+                    + "`0'%'`, applied in the current culture. `Label` is the text under the dial, and it names the "
+                    + "gauge.", typeof(GaugeExample)),
+                new("ranges", "Ranges", "A `TbGaugeRange` marks a part of the scale: a band along the dial, and a "
+                    + "`Name` shown under the value while the value is in the range. Each range runs from the end "
+                    + "of the range below it to its `To`, and one without a `To` runs to `Max`, whatever order they "
+                    + "are written in. The band has the range's `Tone`, and the filled part takes it while the "
+                    + "value is in the range; a range without a `Tone` has a neutral band and leaves the filled "
+                    + "part its own tone. Move the slider to see the range change.", typeof(GaugeRangesExample)),
+                new("ends", "Ends and format", "`Min` and `Max` set the scale, and `ShowEnds` writes them under the "
+                    + "dial's two ends in the value's `Format`. A value below `Min` or above `Max` is drawn at that "
+                    + "end, and its text still says the value: the summit here is colder than its dial goes.",
+                    typeof(GaugeEndsExample)),
+                new("tones", "Tone and size", "`Tone` colors the filled part of a gauge, primary by default; a "
+                    + "range's tone wins over it. `Diameter` sets how wide a gauge is, 10rem by default, and its "
+                    + "text scales with it.", typeof(GaugeToneExample)),
+                new("empty", "No value", "With a null `Value`, as for a sensor that hasn't answered, the dial is "
+                    + "empty and says \"No value\". A value that isn't finite is shown the same way. "
+                    + "`Labels.NoValue` rewords it, here to \"Offline\".",
+                    typeof(GaugeEmptyExample)),
+                new("dashboard", "On a dashboard", "Each card's title says what its gauge measures, so these gauges "
+                    + "have an `AriaLabel` and no `Label` of their own. `--tb-gauge-diameter` on the row sets the "
+                    + "size of all three.", typeof(GaugeDashboardExample)),
+            ],
+            Api = [typeof(TbGauge), typeof(TbGaugeRange), typeof(GaugeLabels)],
+            Anatomy = """
+                <TbGauge Value="…" Min="…" Max="…" Label="…" Format="…">
+                    <TbGaugeRange To="…" Name="…" Tone="…" />
+                    <TbGaugeRange Name="…" Tone="…" />
+                </TbGauge>
+                """,
+            Pattern = new("meter", "https://www.w3.org/WAI/ARIA/apg/patterns/meter/"),
+            Labeling =
+            [
+                "A `Label` names it through `aria-labelledby`. Without one, give an `AriaLabel`; with both, the "
+                    + "`AriaLabel` names it. With neither, it throws when it renders.",
+                "Use an `AriaLabel` without a `Label` when a heading beside the gauge already says what it "
+                    + "measures, and with one when the short label needs more, such as which server.",
+                "Give each range a `Name`. It is shown under the value and read out after it, so the range is "
+                    + "never told by its color alone.",
+            ],
+            Announcements =
+            [
+                "A `meter` with its name and, for its value, the text in its middle, such as \"72%\".",
+                "In a named range, the range's name follows the value, as in \"29, Busy\". The `Gauge.ValueInRange` "
+                    + "string words the two together, and `Labels.ValueInRange` rewords it for one gauge.",
+                "Without a value it says \"No value\", the `Gauge.NoValue` string, or `Labels.NoValue`.",
+                "A change of value isn't announced: a meter is read when a screen reader reaches it.",
+            ],
+            Accessibility =
+            [
+                "It can't be focused and handles no keys, since it has nothing to operate. Screen readers reach it "
+                    + "as they read the page.",
+                "The value and the range's name are text in the text colors, never in the range's color. The "
+                    + "filled part and the bands have 3:1 contrast against the surface in both themes.",
+                "A change of value moves the filled part over a fifth of a second, or at once with reduced motion.",
+                "In forced-colors mode, such as Windows high contrast, the filled part takes the system's highlight "
+                    + "color, the rest of the arc the system's gray and the bands the text color. The range's name "
+                    + "still says which range the value is in.",
+            ],
+            AppDuties =
+            [
+                "Name the gauge with a `Label` or an `AriaLabel` that says what is measured.",
+                "Give each range a `Name`.",
+                "Announce a change that people must not miss, such as a value that reaches a danger range, with an "
+                    + "[alert](components/alert) or the [announcer](guides/announcements).",
+            ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
+            BeforeInteractive =
+            [
+                PlainHtml,
+            ],
+            Notes =
+            [
+                new("A range holds the value it ends at: with a range to 24, a value of 24 is in it and 24.5 is in "
+                    + "the next one."),
+                new("Where the ranges stop short of `Max`, a value past the last of them is in no range: it has no "
+                    + "name under it and the gauge's own `Tone`."),
+                new("The success and danger tones are hard to tell apart for people with red-green color "
+                    + "blindness, so a range needs its `Name` as well as its tone.") { Pitfall = true },
+                new("The value's text has about three fifths of the dial's width, and a longer one wraps or runs "
+                    + "over the arc. Keep it short, and put a unit of more than a letter or two in the `Label` "
+                    + "instead of the `Format`.") { Pitfall = true },
+                new("The dial is three quarters of a circle, and runs clockwise from the lower left in either "
+                    + "writing direction, as a clock does."),
+                new("`Max` has to be above `Min`, and both finite, or the gauge throws when it renders. A "
+                    + "`TbGaugeRange` outside a gauge throws too."),
+                new("A range that ends below `Min` has no length and holds no value, and one that ends above `Max` "
+                    + "stops there."),
+                new("`--tb-gauge-diameter` sets the size of every gauge under an element, such as all those on one "
+                    + "dashboard. A gauge is never wider than the room it has."),
+            ],
+            Target = new("meter", "Trailhead parking"),
+            Blocks = ["tb-gauge"],
+            DataParts =
+            [
+                new("dial", "The arc, with the value's text in its middle."),
+                new("indicator", "The filled part of the arc, which runs up to the value."),
+                new("value", "The value's text, or \"No value\"."),
+                new("range", "The name of the range the value is in."),
+                new("min", "The text of `Min` at the dial's start, shown with `ShowEnds`."),
+                new("max", "The text of `Max` at the dial's end, shown with `ShowEnds`."),
+                new("label", "The gauge's visible label."),
+            ],
+            Scenario = new("empty", "it connects the weather station and reads the gauge's value and range.")
+                { WithoutHelpers = true },
+            TestingTips =
+            [
+                "Find it with `GetByRole(AriaRole.Meter, new() { Name = \"Summit wind (km/h)\" })` and check "
+                    + "`aria-valuetext`, which holds the value's text and the range's name, as in \"52, Windy\". "
+                    + "The two are also in `[data-part=value]` and `[data-part=range]`. A gauge has no helper in "
+                    + "the testing packages.",
+                "`aria-valuenow` holds the value kept within `Min` and `Max`, and `Min` while there is no value, "
+                    + "so check `aria-valuetext` for what the gauge says.",
+                "A band is a `path.tb-gauge__band`, with a class such as `tb-gauge__band--danger` for its tone, "
+                    + "and the gauge has `tb-gauge--danger` while its value is in that range.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"hut-beds\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders. Nothing about it can be used, so it counts nothing else. What it shows is never "
+                    + "recorded.",
+            ],
+        },
         new("carousel", "Carousel", ExampleCategory.Content,
             "Slides shown one at a time, such as featured trails or photos, with buttons to move between them.")
         {
