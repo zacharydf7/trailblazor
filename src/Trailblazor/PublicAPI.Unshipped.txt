@@ -8638,16 +8638,22 @@ Trailblazor.TbChartReference.TbChartReference() -> void
 Trailblazor.TbChartReference.Tone.get -> Trailblazor.Tone?
 Trailblazor.TbChartReference.Tone.set -> void
 Trailblazor.TbReferenceBand
-Trailblazor.TbReferenceBand.From.get -> double
 Trailblazor.TbReferenceBand.From.set -> void
 Trailblazor.TbReferenceBand.TbReferenceBand() -> void
-Trailblazor.TbReferenceBand.To.get -> double
 Trailblazor.TbReferenceBand.To.set -> void
 Trailblazor.TbReferenceLine
 Trailblazor.TbReferenceLine.TbReferenceLine() -> void
-Trailblazor.TbReferenceLine.Value.get -> double
 Trailblazor.TbReferenceLine.Value.set -> void
 const Trailblazor.TbStrings.ChartReferenceBand = "Chart.ReferenceBand" -> string!
 const Trailblazor.TbStrings.ChartReferenceLine = "Chart.ReferenceLine" -> string!
 override Trailblazor.TbChartReference.OnInitialized() -> void
 override Trailblazor.TbChartReference.OnParametersSet() -> void
+Trailblazor.TbReferenceBand.From.get -> double?
+Trailblazor.TbReferenceBand.FromX.get -> object?
+Trailblazor.TbReferenceBand.FromX.set -> void
+Trailblazor.TbReferenceBand.To.get -> double?
+Trailblazor.TbReferenceBand.ToX.get -> object?
+Trailblazor.TbReferenceBand.ToX.set -> void
+Trailblazor.TbReferenceLine.Value.get -> double?
+Trailblazor.TbReferenceLine.X.get -> object?
+Trailblazor.TbReferenceLine.X.set -> void

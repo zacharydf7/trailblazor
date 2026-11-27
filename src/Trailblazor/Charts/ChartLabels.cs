@@ -55,11 +55,12 @@ public sealed record ChartLabels
     public string? BarsAndLines { get; init; }
 
     /// <summary>What the chart writes for a reference line, with <c>{0}</c> for its name and <c>{1}</c> for its
-    /// value. Leave it null for the app's text for <see cref="TbStrings.ChartReferenceLine"/>.</summary>
+    /// value or its place along the items. Leave it null for the app's text for
+    /// <see cref="TbStrings.ChartReferenceLine"/>.</summary>
     public string? ReferenceLine { get; init; }
 
     /// <summary>What the chart writes for a reference band, with <c>{0}</c> for its name and <c>{1}</c> and
-    /// <c>{2}</c> for the values it runs between. Leave it null for the app's text for
+    /// <c>{2}</c> for the values or places it runs between. Leave it null for the app's text for
     /// <see cref="TbStrings.ChartReferenceBand"/>.</summary>
     public string? ReferenceBand { get; init; }
 }

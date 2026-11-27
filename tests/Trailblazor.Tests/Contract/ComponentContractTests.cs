@@ -328,6 +328,18 @@ public class ComponentContractTests : BunitContext
     // A sample for each parameter a component requires, so it renders.
     internal static IEnumerable<(string Name, object Value)> RequiredParameters(Type component)
     {
+        // A reference line needs a value and a band two, which aren't marked as required because a place along the
+        // chart can stand in for them.
+        if (component == typeof(TbReferenceLine))
+        {
+            yield return (nameof(TbReferenceLine.Value), 1d);
+        }
+        else if (component == typeof(TbReferenceBand))
+        {
+            yield return (nameof(TbReferenceBand.From), 1d);
+            yield return (nameof(TbReferenceBand.To), 2d);
+        }
+
         var required = component.GetProperties()
             .Where(property => property.IsDefined(typeof(EditorRequiredAttribute), inherit: true));
         foreach (var property in required)
@@ -338,8 +350,6 @@ public class ComponentContractTests : BunitContext
                 var type when type == typeof(int) => 3,
                 var type when type == typeof(TimeSpan) => TimeSpan.FromMinutes(1),
                 var type when type == typeof(Icon) => new Icon("<path d=\"M4 4h16v16H4z\" />"),
-                // A reference band's To has to be above its From.
-                var type when type == typeof(double) => property.Name == nameof(TbReferenceBand.To) ? 2d : 1d,
                 var type when type == typeof(IEnumerable<string>) => Array.Empty<string>(),
                 var type when type == typeof(IReadOnlyList<string>) => Array.Empty<string>(),
                 var type when type == typeof(IReadOnlyList<CascaderItem<string>>) =>

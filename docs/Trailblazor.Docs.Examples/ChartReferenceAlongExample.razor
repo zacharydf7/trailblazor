@@ -1,0 +1,19 @@
+<TbChart Items="Days" X="day => day.Date" Title="Hikers on the ridge loop in June">
+    <TbXAxis Scale="ChartScale.Continuous" Format="MMM d" />
+    <TbLineSeries Name="Hikers" Value="day => day.Hikers" />
+    <TbReferenceBand FromX="@(new DateOnly(2026, 6, 8))" ToX="@(new DateOnly(2026, 6, 12))" Name="Trail closed"
+                     Tone="Tone.Warning" />
+    <TbReferenceLine X="@(new DateOnly(2026, 6, 20))" Name="Bridge reopened" />
+</TbChart>
+
+@code {
+    // A count every third day. The trail was closed from the 8th to the 12th.
+    private static readonly Day[] Days =
+    [
+        new(new(2026, 6, 1), 120), new(new(2026, 6, 4), 135), new(new(2026, 6, 7), 128), new(new(2026, 6, 10), 0),
+        new(new(2026, 6, 13), 96), new(new(2026, 6, 16), 140), new(new(2026, 6, 19), 152),
+        new(new(2026, 6, 22), 188), new(new(2026, 6, 25), 176), new(new(2026, 6, 28), 190),
+    ];
+
+    private sealed record Day(DateOnly Date, int Hikers);
+}

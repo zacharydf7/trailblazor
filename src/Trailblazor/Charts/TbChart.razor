@@ -281,7 +281,7 @@
                     }
                     @foreach (var line in references.Where(one => !one.Band && one.Drawn))
                     {
-                        var (from, to) = (Turn(0, 1 - line.Low), Turn(1, 1 - line.Low));
+                        var (from, to) = Ends(line);
                         <line class="@ClassNames.Join("tb-chart__reference", ToneClass(line.Reference.Tone))"
                               x1="@Percent(from.X)" x2="@Percent(to.X)" y1="@Percent(from.Y)" y2="@Percent(to.Y)" />
                     }
@@ -293,7 +293,8 @@
                     <span data-part="reference" style="@NameStyle(placed)"
                           class="@ClassNames.Join("tb-chart__reference-name",
                                      placed.Band ? "tb-chart__reference-name--band" : null,
-                                     placed.TextUnder ? "tb-chart__reference-name--under" : null)">@placed.Text</span>
+                                     RunsUp(placed) ? "tb-chart__reference-name--up" : null,
+                                     TextUnder(placed) ? "tb-chart__reference-name--under" : null)">@placed.Text</span>
                 }
             }
             @* The script shows these, moves them and names them, and Blazor never writes inside them: the line at the

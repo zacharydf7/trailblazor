@@ -1,6 +1,7 @@
 using System.Globalization;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Trailblazor.Docs.Examples;
 using Trailblazor.Testing;
 
 namespace Trailblazor.Tests.Components;
@@ -17,6 +18,8 @@ public class TbChartReferenceTests : BunitContext
     }
 
     private sealed record Month(string Name, int Completed);
+
+    private sealed record Stop(double Km, int Meters);
 
     [Fact]
     public void Line_ShouldCrossThePlotAtItsValueWithItsNameAndValueAtItsEnd_WhenInsideTheAxis()
@@ -247,7 +250,8 @@ public class TbChartReferenceTests : BunitContext
     {
         var thrown = Assert.Throws<InvalidOperationException>(() => RenderChart(Band(from, to, name)));
 
-        Assert.Equal("TbReferenceBand needs a Name and a finite From below its To.", thrown.Message);
+        Assert.Equal("TbReferenceBand needs a Name and a finite From below its To, or a FromX and a ToX, and not "
+            + "both.", thrown.Message);
     }
 
     [Theory]
@@ -257,7 +261,7 @@ public class TbChartReferenceTests : BunitContext
     {
         var thrown = Assert.Throws<InvalidOperationException>(() => RenderChart(Line(value, name)));
 
-        Assert.Equal("TbReferenceLine needs a Name and a finite Value.", thrown.Message);
+        Assert.Equal("TbReferenceLine needs a Name and a finite Value or an X, and not both.", thrown.Message);
     }
 
     [Fact]
@@ -268,6 +272,242 @@ public class TbChartReferenceTests : BunitContext
 
         Assert.Equal("TbReferenceLine must be inside a TbChart.", thrown.Message);
     }
+
+    [Fact]
+    public void LineAlongTheItems_ShouldRunUpThePlotThroughItsItemsPlace_WhenTheScaleIsEven()
+    {
+        var cut = RenderChart(LineAt("Feb", "Storm", Tone.Warning));
+
+        // February is the second of three places, so its middle is halfway across, and the line runs top to bottom.
+        var line = cut.Find("line.tb-chart__reference");
+        Assert.Equal(("tb-chart__reference tb-chart__tone--warning", "50%", "50%", "0%", "100%"), (line.ClassName,
+            line.GetAttribute("x1"), line.GetAttribute("x2"), line.GetAttribute("y1"), line.GetAttribute("y2")));
+        // Its text writes the place as the item axis does, and starts at the line.
+        var name = cut.Find("[data-part=reference]");
+        Assert.Equal(("Storm: Feb", "tb-chart__reference-name tb-chart__reference-name--up",
+            "inset-inline-start: 50%; max-inline-size: 50%"), (name.TextContent, name.ClassName,
+            name.GetAttribute("style")));
+        // A reference along the items leaves the value axis as it is, from 0 to 40.
+        Assert.Equal("40", cut.FindAll(".tb-chart__y > span:not(.tb-chart__y-sizer)")[^1].TextContent.Trim());
+    }
+
+    [Fact]
+    public void BandAlongTheItems_ShouldCoverItsItemsPlaces_WhenTheScaleIsEven()
+    {
+        var cut = RenderChart(BandAt("Feb", "Mar", "Closed"));
+
+        // Each month has a third of the plot, and the band covers February's place and March's whole.
+        var band = cut.Find("rect.tb-chart__band");
+        Assert.Equal(("33.333%", "0%", "66.667%", "100%"), (band.GetAttribute("x"), band.GetAttribute("y"),
+            band.GetAttribute("width"), band.GetAttribute("height")));
+        var name = cut.Find("[data-part=reference]");
+        Assert.Equal(("Closed: Feb to Mar",
+            "tb-chart__reference-name tb-chart__reference-name--band tb-chart__reference-name--up",
+            "inset-inline-start: 33.333%; max-inline-size: 66.667%"), (name.TextContent, name.ClassName,
+            name.GetAttribute("style")));
+    }
+
+    [Fact]
+    public void ReferencesAlongTheItems_ShouldBeListedAndNotDrawn_WhenTheChartHasNoSuchPlaceOrTheyRunBackward()
+    {
+        var cut = RenderChart(LineAt("Apr", "Thaw"), BandAt("Mar", "Jan", "Backward"), LineAt(2, "Not a name"));
+
+        Assert.Empty(cut.FindAll(".tb-chart__reference, .tb-chart__band, [data-part=reference]"));
+        Assert.Equal(["Thaw: Apr", "Backward: Mar to Jan", "Not a name: 2"],
+            cut.Tb().Chart("Jobs by month").References);
+    }
+
+    [Fact]
+    public void ReferencesAlongTheItems_ShouldLieWhereTheirValuesFall_WhenTheScaleIsContinuous()
+    {
+        var cut = RenderTrail(LineAt(3, "Camp"), BandAt(5d, 8d, "Scree"), LineAt(11, "Beyond"));
+
+        // The trail runs from 2 to 6 km: 3 km is a quarter of the way, and the band from 5 km is cut off at the end.
+        var line = Assert.Single(cut.FindAll("line.tb-chart__reference"));
+        Assert.Equal(("25%", "25%"), (line.GetAttribute("x1"), line.GetAttribute("x2")));
+        var band = cut.Find("rect.tb-chart__band");
+        Assert.Equal(("75%", "25%"), (band.GetAttribute("x"), band.GetAttribute("width")));
+        // Past the middle of the plot a text ends at its reference. The places are written in the axis's format.
+        Assert.Equal(["inset-inline-start: 25%; max-inline-size: 75%", "inset-inline-end: 0%; max-inline-size: 100%"],
+            cut.FindAll("[data-part=reference]").Select(name => name.GetAttribute("style")));
+        Assert.Equal(["Camp: 3 km", "Scree: 5 km to 8 km", "Beyond: 11 km"],
+            cut.Tb().Chart("The ridge trail").References);
+    }
+
+    [Fact]
+    public void ReferencesAlongTheItems_ShouldLieWhereTheirDatesFall_WhenTheScaleIsOfDates()
+    {
+        var cut = Render<ChartReferenceAlongExample>();
+
+        // June 1 to 28 is 27 days: the closure from the 8th to the 12th starts 7 days in and lasts 4, and the bridge
+        // reopened 19 days in.
+        var band = cut.Find("rect.tb-chart__band");
+        Assert.Equal(("25.926%", "14.815%"), (band.GetAttribute("x"), band.GetAttribute("width")));
+        Assert.Equal("70.37%", cut.Find("line.tb-chart__reference").GetAttribute("x1"));
+        Assert.Equal(["Trail closed: Jun 8 to Jun 12", "Bridge reopened: Jun 20"],
+            cut.Tb().Chart("Hikers on the ridge loop in June").References);
+    }
+
+    [Fact]
+    public void LineAlongTheItems_ShouldBeInTheMiddle_WhenTheContinuousScaleHasOneValueAndItIsThatValue()
+    {
+        var cut = RenderTrail([new Stop(4, 1400)], LineAt(4, "Camp"), LineAt(5, "Beyond"));
+
+        var line = Assert.Single(cut.FindAll("line.tb-chart__reference"));
+        Assert.Equal("50%", line.GetAttribute("x1"));
+        Assert.Equal(["Camp: 4 km", "Beyond: 5 km"], cut.Tb().Chart("The ridge trail").References);
+    }
+
+    [Fact]
+    public void LineAlongTheItems_ShouldFindTheFirstItemOfItsValueOfAnyNumberType_WhenTheScaleIsEven()
+    {
+        var cut = Render<TbChart<Stop>>(parameters => parameters
+            .Add(chart => chart.Items, [new Stop(2, 1200), new Stop(4, 1400), new Stop(2, 1300), new Stop(6, 1250)])
+            .Add(chart => chart.X, stop => stop.Km).Add(chart => chart.Title, "The ridge trail")
+            .Add(chart => chart.ChildContent, builder =>
+            {
+                builder.OpenComponent<TbLineSeries<Stop>>(0);
+                builder.AddComponentParameter(1, nameof(TbLineSeries<Stop>.Name), "Elevation");
+                builder.AddComponentParameter(2, nameof(TbLineSeries<Stop>.Value), (Func<Stop, object?>)(stop =>
+                    stop.Meters));
+                builder.CloseComponent();
+                LineAt(2, "Camp")(builder);
+            }));
+
+        // The whole number 2 finds the first item whose X is the double 2, the first of four places, not the third.
+        Assert.Equal("12.5%", cut.Find("line.tb-chart__reference").GetAttribute("x1"));
+    }
+
+    [Theory]
+    [InlineData("the hut", "a finite number", "the hut (String)")]
+    [InlineData(double.PositiveInfinity, "a finite number", "∞ (Double)")]
+    public void ReferenceAlongTheItems_ShouldThrow_WhenItsPlaceDoesNotFitTheContinuousScale(object place,
+        string kind, string got)
+    {
+        var thrown = Assert.Throws<InvalidOperationException>(() => RenderTrail(LineAt(place, "Hut")));
+
+        Assert.Equal($"TbReferenceLine \"Hut\" needs {kind} as its place on this chart's continuous scale, and got "
+            + $"{got}.", thrown.Message);
+    }
+
+    [Fact]
+    public void ReferenceAlongTheItems_ShouldThrow_WhenItsPlaceIsADateOnAScaleOfNumbers()
+    {
+        var thrown = Assert.Throws<InvalidOperationException>(() => RenderTrail(
+            BandAt(new DateOnly(2026, 6, 1), new DateOnly(2026, 6, 2), "Closed")));
+
+        Assert.StartsWith("TbReferenceBand \"Closed\" needs a finite number as its place on this chart's continuous "
+            + "scale, and got ", thrown.Message);
+    }
+
+    [Fact]
+    public void ReferenceAlongTheItems_ShouldDrawAgain_WhenItsPlaceChanges()
+    {
+        var cut = RenderChart(LineAt("Jan", "Storm"));
+
+        cut.Render(parameters => parameters.Add(chart => chart.ChildContent, builder =>
+        {
+            Series(builder);
+            LineAt("Mar", "Storm")(builder);
+        }));
+
+        Assert.Equal("83.333%", cut.Find("line.tb-chart__reference").GetAttribute("x1"));
+        Assert.Equal(["Storm: Mar"], cut.Tb().Chart("Jobs by month").References);
+    }
+
+    [Fact]
+    public void ReferencesAlongTheItems_ShouldRunAcrossThePlot_WhenTheChartIsHorizontal()
+    {
+        var cut = RenderChart(parameters => parameters.Add(chart => chart.Horizontal, true), LineAt("Jan", "Storm"),
+            BandAt("Feb", "Mar", "Closed"));
+
+        // The items run down a horizontal chart: January's middle is a sixth of the way down.
+        var line = cut.Find("line.tb-chart__reference");
+        Assert.Equal(("16.667%", "16.667%"), (line.GetAttribute("y1"), line.GetAttribute("y2")));
+        Assert.Equal(["0%", "100%"], new[] { line.GetAttribute("x1"), line.GetAttribute("x2") }.Order());
+        var band = cut.Find("rect.tb-chart__band");
+        Assert.Equal(("0%", "33.333%", "100%", "66.667%"), (band.GetAttribute("x"), band.GetAttribute("y"),
+            band.GetAttribute("width"), band.GetAttribute("height")));
+        // Their texts are as far down the plot as they are. A band's text hangs under its upper edge, inside it.
+        Assert.Equal([("inset-block-start: 16.667%", "tb-chart__reference-name"),
+            ("inset-block-start: 33.333%",
+                "tb-chart__reference-name tb-chart__reference-name--band tb-chart__reference-name--under")],
+            cut.FindAll("[data-part=reference]").Select(name => (name.GetAttribute("style"), name.ClassName)));
+    }
+
+    [Fact]
+    public void References_ShouldThrow_WhenGivenNeitherOrBothAValueAndAPlaceOrHalfAPair()
+    {
+        var neither = Assert.Throws<InvalidOperationException>(() => RenderChart(builder =>
+        {
+            builder.OpenComponent<TbReferenceLine>(30);
+            builder.AddComponentParameter(31, nameof(TbReferenceLine.Name), "Neither");
+            builder.CloseComponent();
+        }));
+        var both = Assert.Throws<InvalidOperationException>(() => RenderChart(builder =>
+        {
+            builder.OpenComponent<TbReferenceLine>(40);
+            builder.AddComponentParameter(41, nameof(TbReferenceLine.Value), (double?)30);
+            builder.AddComponentParameter(42, nameof(TbReferenceLine.X), "Feb");
+            builder.AddComponentParameter(43, nameof(TbReferenceLine.Name), "Both");
+            builder.CloseComponent();
+        }));
+        var half = Assert.Throws<InvalidOperationException>(() => RenderChart(builder =>
+        {
+            builder.OpenComponent<TbReferenceBand>(50);
+            builder.AddComponentParameter(51, nameof(TbReferenceBand.FromX), "Feb");
+            builder.AddComponentParameter(52, nameof(TbReferenceBand.Name), "Half");
+            builder.CloseComponent();
+        }));
+
+        Assert.Equal("TbReferenceLine needs a Name and a finite Value or an X, and not both.", neither.Message);
+        Assert.Equal("TbReferenceLine needs a Name and a finite Value or an X, and not both.", both.Message);
+        Assert.Equal("TbReferenceBand needs a Name and a finite From below its To, or a FromX and a ToX, and not "
+            + "both.", half.Message);
+    }
+
+    // A trail surveyed at three points, on a continuous scale from 2 to 6 km.
+    private IRenderedComponent<TbChart<Stop>> RenderTrail(params RenderFragment[] content) =>
+        RenderTrail([new Stop(2, 1200), new Stop(4, 1400), new Stop(6, 1300)], content);
+
+    private IRenderedComponent<TbChart<Stop>> RenderTrail(Stop[] stops, params RenderFragment[] content) =>
+        Render<TbChart<Stop>>(parameters => parameters
+            .Add(chart => chart.Items, stops)
+            .Add(chart => chart.X, stop => stop.Km).Add(chart => chart.Title, "The ridge trail")
+            .Add(chart => chart.ChildContent, builder =>
+            {
+                builder.OpenComponent<TbXAxis>(0);
+                builder.AddComponentParameter(1, nameof(TbXAxis.Scale), ChartScale.Continuous);
+                builder.AddComponentParameter(2, nameof(TbXAxis.Format), "0 'km'");
+                builder.CloseComponent();
+                builder.OpenComponent<TbLineSeries<Stop>>(3);
+                builder.AddComponentParameter(4, nameof(TbLineSeries<Stop>.Name), "Elevation");
+                builder.AddComponentParameter(5, nameof(TbLineSeries<Stop>.Value), (Func<Stop, object?>)(stop =>
+                    stop.Meters));
+                builder.CloseComponent();
+                foreach (var one in content)
+                {
+                    one(builder);
+                }
+            }));
+
+    private static RenderFragment LineAt(object x, string name, Tone? tone = null) => builder =>
+    {
+        builder.OpenComponent<TbReferenceLine>(60);
+        builder.AddComponentParameter(61, nameof(TbReferenceLine.X), x);
+        builder.AddComponentParameter(62, nameof(TbReferenceLine.Name), name);
+        builder.AddComponentParameter(63, nameof(TbReferenceLine.Tone), tone);
+        builder.CloseComponent();
+    };
+
+    private static RenderFragment BandAt(object from, object to, string name) => builder =>
+    {
+        builder.OpenComponent<TbReferenceBand>(70);
+        builder.AddComponentParameter(71, nameof(TbReferenceBand.FromX), from);
+        builder.AddComponentParameter(72, nameof(TbReferenceBand.ToX), to);
+        builder.AddComponentParameter(73, nameof(TbReferenceBand.Name), name);
+        builder.CloseComponent();
+    };
 
     private IRenderedComponent<TbChart<Month>> RenderChart(params RenderFragment[] content) =>
         RenderChart(parameters => parameters, content);

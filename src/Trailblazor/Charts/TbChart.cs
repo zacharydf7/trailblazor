@@ -274,54 +274,123 @@ public partial class TbChart<TItem>
         var round = !bars && _series.Any(one => one.Dots && !one.IsHidden);
         var along = Axes.X is { Scale: ChartScale.Continuous } x ? ChartAlong.Continuous([.. items.Select(X!)], bars,
             x.Format, x.MarkFormat, culture, new(x.Min, x.Max, x.Step, round)) : null;
-        List<double> alsoReach = [.. References.All.SelectMany(one => new[] { one.Values.Low, one.Values.High })];
+        List<double> alsoReach = [.. References.All.Select(one => one.Values).OfType<(double Low, double High)>()
+            .SelectMany(values => new[] { values.Low, values.High })];
         return ChartPlan.Build(places, series, Stacking, axis, culture, along, alsoReach);
     }
 
-    // A reference line or band as the chart shows it: the shares of the value axis it runs between, from the axis's
-    // low end, which are the same for a line, and what the plot and the list under the data table say for it. One
-    // that lies outside an axis whose ends the app set is listed and not drawn.
-    private readonly record struct PlacedReference(TbChartReference Reference, bool Band, double Low, double High,
-        string Text)
+    // A reference line or band as the chart shows it: the shares of its axis it runs between, which are the same for
+    // a line, and what the plot and the list under the data table say for it. On the value axis the shares count
+    // from the axis's low end, and along the items from the plot's start. A reference that lies outside the plot, or
+    // at a place the chart doesn't have, is listed and not drawn.
+    private readonly record struct PlacedReference(TbChartReference Reference, bool Band, bool Along, double Low,
+        double High, string Text)
     {
         public bool Drawn => Band ? High > Low : Low is >= 0 and <= 1;
-
-        // In an upright chart a band's text hangs under its higher edge, inside it, and so does the text of a line
-        // too near the top of the axis to have room over it.
-        public bool TextUnder => Band || High > 0.85;
     }
 
-    private List<PlacedReference> PlaceReferences(ChartPlan plan) => [.. References.All.Select(one =>
+    // A reference with neither values nor places hasn't checked its parameters yet, since the chart can draw
+    // first; it throws once it does.
+    private List<PlacedReference> PlaceReferences(ChartPlan plan) => [.. References.All
+        .Where(one => one.Values is not null || one.Places is not null).Select(one =>
     {
         var band = one is TbReferenceBand;
-        var (low, high) = one.Values;
-        var text = band
-            ? string.Format(CultureInfo.CurrentCulture, Labels.ReferenceBand ?? Localizer[TbStrings.ChartReferenceBand],
-                one.Name, plan.ReferenceText(low), plan.ReferenceText(high))
-            : string.Format(CultureInfo.CurrentCulture, Labels.ReferenceLine ?? Localizer[TbStrings.ChartReferenceLine],
-                one.Name, plan.ReferenceText(low));
+        var (from, to, low, high) = one.Values is { } values
+            ? (plan.Ticks.Share(values.Low), plan.Ticks.Share(values.High), plan.ReferenceText(values.Low),
+                plan.ReferenceText(values.High))
+            : AlongItems(plan, one, band);
+        // A line's wording has no place for the second value, which is the same as its first.
+        var text = string.Format(CultureInfo.CurrentCulture, band
+            ? Labels.ReferenceBand ?? Localizer[TbStrings.ChartReferenceBand]
+            : Labels.ReferenceLine ?? Localizer[TbStrings.ChartReferenceLine], one.Name, low, high);
         // A band is cut off at the plot's edges.
-        var (from, to) = (plan.Ticks.Share(low), plan.Ticks.Share(high));
-        return band ? new PlacedReference(one, true, Math.Max(0, from), Math.Min(1, to), text)
-            : new(one, false, from, to, text);
+        return band ? new PlacedReference(one, true, one.Values is null, Math.Max(0, from), Math.Min(1, to), text)
+            : new(one, false, one.Values is null, from, to, text);
     })];
+
+    // Where two places along the chart lie, as shares of the plot from its start, with their text as the places are
+    // written. On a continuous scale a place is where its value falls. On an even one it is the middle of the item
+    // whose X it equals, and a band covers the whole of its two items' places. A place the chart can't find has no
+    // share, and a band whose places are out of order ends before it starts; neither is drawn.
+    private (double From, double To, string Low, string High) AlongItems(ChartPlan plan, TbChartReference reference,
+        bool band)
+    {
+        var places = reference.Places!.Value;
+        var culture = CultureInfo.CurrentCulture;
+        var (low, high) = (ChartValues.Text(places.From, Axes.X?.Format, culture),
+            ChartValues.Text(places.To, Axes.X?.Format, culture));
+        if (plan.Along.ByValue)
+        {
+            foreach (var place in new[] { places.From, places.To }.Distinct())
+            {
+                if (!plan.Along.Fits(place))
+                {
+                    throw new InvalidOperationException($"{reference.GetType().Name} \"{reference.Name}\" needs "
+                        + $"{plan.Along.Kind} as its place on this chart's continuous scale, and got {place} "
+                        + $"({place.GetType().Name}).");
+                }
+            }
+
+            return (plan.Along.Share(places.From) ?? double.NaN, plan.Along.Share(places.To) ?? double.NaN, low, high);
+        }
+
+        var (first, last) = (PlaceOf(places.From), PlaceOf(places.To));
+        var half = band ? plan.Along.Slot / 2 : 0;
+        return first < 0 || last < 0 ? (double.NaN, double.NaN, low, high)
+            : (plan.Along.At[first] - half, plan.Along.At[last] + half, low, high);
+    }
+
+    // The first item whose X equals this one, or -1. Numbers of different types are equal when their values are, so
+    // a whole number written in markup finds an item whose X is a double.
+    private int PlaceOf(object x)
+    {
+        for (var place = 0; place < _items.Count; place++)
+        {
+            var item = X!(_items[place]);
+            var numbers = item is not null && ChartValues.IsNumber(item) && ChartValues.IsNumber(x);
+            if (numbers ? Number(item!) == Number(x) : Equals(item, x))
+            {
+                return place;
+            }
+        }
+
+        return -1;
+    }
+
+    private static double Number(object value) => Convert.ToDouble(value, CultureInfo.InvariantCulture);
+
+    // A reference on the value axis runs across an upright chart and up a horizontal one, and a reference along the
+    // items the other way around.
+    private bool RunsUp(PlacedReference placed) => placed.Along != Horizontal;
+
+    // A reference line's two ends in the plot, as shares from its left and top.
+    private ((double X, double Y) From, (double X, double Y) To) Ends(PlacedReference line) => line.Along
+        ? (Turn(line.Low, 0), Turn(line.Low, 1)) : (Turn(0, 1 - line.Low), Turn(1, 1 - line.Low));
 
     // A band's box in the plot, as shares from its left and top.
     private (double X, double Y, double Width, double Height) Box(PlacedReference band)
     {
-        var (from, to) = (Turn(0, 1 - band.High), Turn(1, 1 - band.Low));
+        var (from, to) = band.Along ? (Turn(band.Low, 0), Turn(band.High, 1))
+            : (Turn(0, 1 - band.High), Turn(1, 1 - band.Low));
         return (Math.Min(from.X, to.X), Math.Min(from.Y, to.Y), Math.Abs(to.X - from.X), Math.Abs(to.Y - from.Y));
     }
 
-    // Where a reference's text sits. In an upright chart it is as far up the plot as the line, or as the band's
-    // higher edge. In a horizontal one it starts at the line, or at the band's lower edge; past the middle of the
-    // plot it ends at the line, or at the band's higher edge. Either way it is no wider than the plot is on that
-    // side, so it stays inside the plot.
+    // How far down the plot a reference that runs across it has its text: at the line, or at the band's upper edge.
+    private static double Top(PlacedReference placed) => placed.Along ? placed.Low : 1 - placed.High;
+
+    // The text of a reference that runs across the plot hangs under its place for a band, inside it, and for a line
+    // too near the plot's top to have room over it.
+    private bool TextUnder(PlacedReference placed) => !RunsUp(placed) && (placed.Band || Top(placed) < 0.15);
+
+    // Where a reference's text sits. For one that runs across the plot it is as far down the plot as the line, or as
+    // the band's upper edge. For one that runs up the plot it starts at the line, or at the band's first edge; past
+    // the middle of the plot it ends at the line, or at the band's last edge. Either way it is no wider than the
+    // plot is on that side, so it stays inside the plot.
     private string NameStyle(PlacedReference placed)
     {
-        if (!Horizontal)
+        if (!RunsUp(placed))
         {
-            return $"inset-block-start: {ChartPath.Percent(1 - placed.High)}";
+            return $"inset-block-start: {ChartPath.Percent(Top(placed))}";
         }
 
         var (side, at, room) = placed.Low > 0.5 ? ("end", 1 - placed.High, placed.High)

@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Components;
 namespace Trailblazor;
 
 /// <summary>What <see cref="TbReferenceLine"/> and <see cref="TbReferenceBand"/> share: a name and a tone for
-/// something a <see cref="TbChart{TItem}"/> marks on its value axis, such as a target or a normal range.</summary>
+/// something a <see cref="TbChart{TItem}"/> marks on its value axis, such as a target or a normal range, or along
+/// its items, such as the day of a storm.</summary>
 public abstract class TbChartReference : ComponentBase, IDisposable
 {
     private object? _shown;
@@ -21,8 +22,13 @@ public abstract class TbChartReference : ComponentBase, IDisposable
     [Parameter]
     public Tone? Tone { get; set; }
 
-    // The lowest and the highest value marked, which are the same for a line.
-    internal abstract (double Low, double High) Values { get; }
+    // The lowest and the highest value marked on the value axis, which are the same for a line. Null for a reference
+    // along the chart's items.
+    internal abstract (double Low, double High)? Values { get; }
+
+    // The first and the last place marked along the chart's items, which are the same for a line. Null for a
+    // reference on the value axis.
+    internal abstract (object From, object To)? Places { get; }
 
     // What its values have to be, for the message when they aren't: "a finite Value".
     private protected abstract string Needs { get; }
@@ -49,7 +55,7 @@ public abstract class TbChartReference : ComponentBase, IDisposable
         }
 
         // The chart draws before its references take their parameters, so one that changed has it draw again.
-        object shown = (Name, Tone, Values);
+        object shown = (Name, Tone, Values, Places);
         if (_shown is not null && !shown.Equals(_shown))
         {
             References!.Changed();

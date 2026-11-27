@@ -22,7 +22,7 @@ public class ChartReferenceTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, "/examples/chart/references");
         var chart = page.Tb().Chart(River).Chart;
         var plot = await chart.Locator("[data-part=plot]").BoundingBoxAsync();
-        var line = await chart.Locator(".tb-chart__reference").EvaluateAsync<double[]>(Ends);
+        var line = await chart.Locator(".tb-chart__reference").First.EvaluateAsync<double[]>(Ends);
         var band = await chart.Locator(".tb-chart__band").BoundingBoxAsync();
         var limit = chart.Locator("[data-part=reference]").Filter(new() { HasText = "Flood warning" });
         var usual = chart.Locator("[data-part=reference]").Filter(new() { HasText = "Usual for June" });
@@ -42,8 +42,29 @@ public class ChartReferenceTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.InRange(limitBox!.X + limitBox.Width - (plot.X + plot.Width), -1, 1);
         Assert.InRange(limitBox.Y - plot.Y, -1, 1);
         Assert.InRange(usualBox!.Y - band.Y, -1, 1);
-        Assert.Equal(["Usual for June: 20 cm to 45 cm", "Flood warning: 70 cm"],
+        Assert.Equal(["Usual for June: 20 cm to 45 cm", "Flood warning: 70 cm", "Storm: Thu"],
             await page.Tb().Chart(River).ReferencesAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task LineAlongTheItems_ShouldRunUpThePlotWithItsTextAtTheBottom_WhenTheChartIsUpright(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chart/references");
+        var chart = page.Tb().Chart(River).Chart;
+        var plot = await chart.Locator("[data-part=plot]").BoundingBoxAsync();
+        var line = await chart.Locator(".tb-chart__reference").Last.EvaluateAsync<double[]>(Ends);
+        var storm = chart.Locator("[data-part=reference]").Filter(new() { HasText = "Storm" });
+        await Expect(storm).ToHaveTextAsync("Storm: Thu");
+        var text = await storm.BoundingBoxAsync();
+
+        // Thursday is the fourth of seven days, so its middle is halfway across, and the line runs top to bottom.
+        Assert.InRange(line[0] - (plot!.X + plot.Width / 2), -1, 1);
+        Assert.InRange(line[2] - line[0], -1, 1);
+        Assert.InRange(Math.Abs(line[3] - line[1]) - plot.Height, -1, 1);
+        // Its text starts at the line, at the plot's bottom.
+        Assert.InRange(text!.X - (plot.X + plot.Width / 2), -1.5, 1.5);
+        Assert.InRange(text.Y + text.Height - (plot.Y + plot.Height), -1, 1);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -52,13 +73,13 @@ public class ChartReferenceTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, "/examples/chart/references");
         var chart = page.Tb().Chart(River).Chart;
 
-        await Expect(chart.Locator(".tb-chart__reference")).ToHaveCSSAsync("stroke",
+        await Expect(chart.Locator(".tb-chart__reference").First).ToHaveCSSAsync("stroke",
             await SystemColorAsync(page, "var(--tb-color-danger-text)"));
         await Expect(chart.Locator(".tb-chart__band")).ToHaveCSSAsync("fill",
             await SystemColorAsync(page, "var(--tb-color-info-text)"));
         // The line is dashed, so it reads as neither a grid line nor a series' line.
-        await Expect(chart.Locator(".tb-chart__reference")).Not.ToHaveCSSAsync("stroke-dasharray", "none");
-        foreach (var part in new[] { ".tb-chart__reference", ".tb-chart__band", "[data-part=reference] >> nth=0" })
+        await Expect(chart.Locator(".tb-chart__reference").First).Not.ToHaveCSSAsync("stroke-dasharray", "none");
+        foreach (var part in new[] { ".tb-chart__reference >> nth=0", ".tb-chart__band", "[data-part=reference] >> nth=0" })
         {
             await Expect(chart.Locator(part)).ToHaveCSSAsync("pointer-events", "none");
         }
@@ -131,8 +152,8 @@ public class ChartReferenceTests(BrowserFixture fixture) : BrowserTest(fixture)
         var text = await SystemColorAsync(page, "CanvasText");
 
         // The line keeps its dashes, and the band has a dotted outline in place of its tint.
-        await Expect(chart.Locator(".tb-chart__reference")).ToHaveCSSAsync("stroke", text);
-        await Expect(chart.Locator(".tb-chart__reference")).Not.ToHaveCSSAsync("stroke-dasharray", "none");
+        await Expect(chart.Locator(".tb-chart__reference").First).ToHaveCSSAsync("stroke", text);
+        await Expect(chart.Locator(".tb-chart__reference").First).Not.ToHaveCSSAsync("stroke-dasharray", "none");
         await Expect(chart.Locator(".tb-chart__band")).ToHaveCSSAsync("fill", "none");
         await Expect(chart.Locator(".tb-chart__band")).ToHaveCSSAsync("stroke", text);
     }

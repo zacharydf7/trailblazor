@@ -1071,9 +1071,18 @@ public static class ExampleCatalog
                     + "plot at a `Value` of the value axis, such as a target or a limit, and a `TbReferenceBand` "
                     + "tints the plot between its `From` and its `To`, such as a usual range. Each needs a `Name`, "
                     + "which the chart writes over the plot with its values and lists under the data table, and "
-                    + "can have a `Tone`. The axis reaches every reference: the flood warning here is above every "
-                    + "day's level, and the axis runs up to it. The axis's `Format` writes the references' values "
-                    + "too, here with their unit.", typeof(ChartReferenceExample)),
+                    + "can have a `Tone`. The value axis reaches every reference on it: the flood warning here is "
+                    + "above every day's level, and the axis runs up to it. The axis's `Format` writes the "
+                    + "references' values too, here with their unit. The storm on Thursday marks a place along "
+                    + "the items instead, as Places along the chart shows.", typeof(ChartReferenceExample)),
+                new("references-along", "Places along the chart", "Give a `TbReferenceLine` an `X` in place of a "
+                    + "`Value`, or a `TbReferenceBand` a `FromX` and a `ToX` in place of its `From` and `To`, to "
+                    + "mark a place along the items, such as the days a trail was closed. It runs up an upright "
+                    + "chart and across a horizontal one, and `TbXAxis`'s `Format` writes its place in its text. "
+                    + "On a continuous scale, as here, a place is any date on a scale of dates, or any finite "
+                    + "number on a scale of numbers, and needn't be an item's. On an even scale it is an item's "
+                    + "`X`, as the storm on Thursday is in the chart in Reference lines and bands.",
+                    typeof(ChartReferenceAlongExample)),
                 new("gaps", "Missing values", "A null value leaves a gap: no bar, as on Thursday here, and a break "
                     + "in a line, as in the forecast on Wednesday. An area breaks as a line does, fill and all, and "
                     + "in a stack a missing value takes no room, so the bands above it drop at that place. The "
@@ -1130,6 +1139,8 @@ public static class ExampleCatalog
                     <TbScatterSeries Name="…" Value="…" />
                     <TbReferenceLine Value="…" Name="…" Tone="…" />
                     <TbReferenceBand From="…" To="…" Name="…" Tone="…" />
+                    <TbReferenceLine X="…" Name="…" />
+                    <TbReferenceBand FromX="…" ToX="…" Name="…" />
                 </TbChart>
                 """,
             Keyboard =
@@ -1179,7 +1190,8 @@ public static class ExampleCatalog
                     + "the drawing. Its rows are the items and its columns the series.",
                 "A reference line's or band's text, such as \"Flood warning: 70 cm\", is read after the "
                     + "drawing, and every reference is in a list after the data table, inside its disclosure. A "
-                    + "reference that isn't drawn, beyond an end the axis was given, is only in that list.",
+                    + "reference that isn't drawn, such as one beyond an end the axis was given or at a place the "
+                    + "chart doesn't have, is only in that list.",
                 "Screen readers hear the drawing as one image, then reach the table for the values. On an "
                     + "interactive page the point that has the tab stop is a second image, named for the point. The "
                     + "axis labels are hidden from them, since the table says the same.",
@@ -1226,7 +1238,8 @@ public static class ExampleCatalog
                     + "since a drawing's point is easy to miss and screen readers hear only its kind, its series and "
                     + "what its references say.",
                 "Give a reference a `Name` that says what it is, and its value a unit, through the value axis's "
-                    + "`Format` or in the `Name`: \"Flood warning: 70 cm\" is all that is written and read for it.",
+                    + "`Format`, or `TbXAxis`'s for a place along the items, or in the `Name`: \"Flood warning: 70 "
+                    + "cm\" is all that is written and read for it.",
                 "A change to the data isn't announced. Say what changed in text near the chart when it matters.",
                 "With `OnPointClick`, say in text near the chart what choosing a point does, as in \"Pick a month "
                     + "to see its busiest day\": a point reads as an image, with nothing to say it can be chosen.",
@@ -1316,11 +1329,12 @@ public static class ExampleCatalog
                     + "ellipsis, and the tooltip and the data table have it whole. When the plot is too short to "
                     + "give every name a line, names are left out evenly so the rest don't overlap; give a chart "
                     + "of many items more `Height` to name them all.") { Pitfall = true },
-                new("A reference marks the value axis, so in a horizontal chart it runs up the plot, with a line's "
-                    + "text at the plot's bottom and a band's at its top. A line beyond an end that `TbYAxis` sets "
-                    + "isn't drawn, and a band is cut off there; both stay in the list under the data table, as "
-                    + "every reference does while all the series are hidden. `Labels.ReferenceLine` and "
-                    + "`Labels.ReferenceBand` reword what is written for them."),
+                new("A reference on the value axis runs up a horizontal chart, and one along the items runs up an "
+                    + "upright chart. When a reference runs up the plot, a line's text is at the plot's bottom and "
+                    + "a band's at its top, and past the middle of the plot the text ends at the reference. A line "
+                    + "beyond an end that `TbYAxis` sets isn't drawn, and a band is cut off there; both stay in the "
+                    + "list under the data table, as every reference does while all the series are hidden. "
+                    + "`Labels.ReferenceLine` and `Labels.ReferenceBand` reword what is written for them."),
                 new("A reference has no tooltip and takes no key: its name and values are text over the plot "
                     + "and in the list under the data table, written as the data table writes values."),
                 new("With `ChartStacking.Percent` the axis runs over shares, so a reference's value is a share "
@@ -1329,9 +1343,21 @@ public static class ExampleCatalog
                 new("A reference's text isn't moved out of another's way: two references at close values write "
                     + "over each other, and a text longer than the plot is cut short. Keep names short and "
                     + "references apart.") { Pitfall = true },
-                new("References are listed in the order they first render, so one that appears later is last. A "
-                    + "reference without a `Name`, with a value that isn't finite, with a band's `From` not below "
-                    + "its `To`, or outside a chart throws."),
+                new("On an even scale, a reference along the items is at the first item whose `X` equals its own, "
+                    + "and a band covers its two items' places whole. Numbers of any type match by value, so `X=\"2\"` "
+                    + "finds an item whose `X` is the double 2; other values match only an equal value of the same "
+                    + "type."),
+                new("On a continuous scale a place lies where its value falls. A line beyond the plot's ends is "
+                    + "listed and not drawn, and a band is cut off there. A scale whose items all share one value "
+                    + "has a line at that value in its middle."),
+                new("A reference along the items at a place the chart doesn't have, or a band whose places run "
+                    + "backward, is listed and not drawn. A reference along the items leaves the value axis as it "
+                    + "is."),
+                new("References are listed in the order they first render, so one that appears later is last."),
+                new("A reference throws when it has no `Name`; when it has a value that isn't finite, a band's "
+                    + "`From` not below its `To`, neither or both of a value and a place, or only one of a band's "
+                    + "two values or places; when its place on a continuous scale isn't a date on a scale of dates "
+                    + "or a finite number on a scale of numbers; and when it is outside a chart."),
                 new("Every item's values are in the page's markup twice, in the drawing and in the table, so a chart "
                     + "of thousands of points makes a large page. Draw a summary, such as a value a day in place "
                     + "of one a minute."),

@@ -20,8 +20,13 @@ internal sealed class ChartAlong
     // apart can still be marked by the month.
     private const double AboutAsLong = 0.9;
 
+    // The value at a continuous scale's start, how far it is to its end, which is zero for a scale of one value, and
+    // whether it counts dates, for placing a value that isn't an item's.
+    private readonly (double First, double Span, bool Times)? _scale;
+
     private ChartAlong(IReadOnlyList<double> at, double slot, IReadOnlyList<(double X, string Text)> marks,
-        double steps, bool byValue) => (At, Slot, Marks, Steps, ByValue) = (at, slot, marks, steps, byValue);
+        double steps, bool byValue, (double First, double Span, bool Times)? scale = null) =>
+        (At, Slot, Marks, Steps, ByValue, _scale) = (at, slot, marks, steps, byValue, scale);
 
     // The middle of each item's place, as a share of the plot from its left.
     public IReadOnlyList<double> At { get; }
@@ -69,7 +74,7 @@ internal sealed class ChartAlong
         {
             // One value has the whole plot as its place, and the axis marks it alone.
             return new([.. numbers.Select(_ => 0.5)], 1,
-                [(0.5, ChartValues.Text(values[0], markFormat ?? format, culture))], 1, true);
+                [(0.5, ChartValues.Text(values[0], markFormat ?? format, culture))], 1, true, (first, 0, times));
         }
 
         // Values that are all the same lie between ends the app set, with a place as wide as a step of that range.
@@ -129,8 +134,24 @@ internal sealed class ChartAlong
             steps = span / ticks.Step;
         }
 
-        return new([.. numbers.Select(number => (number - first) / span)], gap / span, marks, steps, true);
+        return new([.. numbers.Select(number => (number - first) / span)], gap / span, marks, steps, true,
+            (first, span, times));
     }
+
+    // What a value has to be to have a place on this continuous scale: "a date" or "a finite number".
+    public string Kind => _scale is { Times: true } ? "a date" : "a finite number";
+
+    // Whether a value can be placed on this continuous scale: a date on a scale of dates, and a finite number on a
+    // scale of numbers, as an end the app gives the axis has to be.
+    public bool Fits(object value) => _scale is { } scale && (scale.Times ? IsTime(value)
+        : ChartValues.IsNumber(value) && double.IsFinite(Convert.ToDouble(value, CultureInfo.InvariantCulture)));
+
+    // Where a value that fits lies along a continuous scale, as a share of the plot from its left: below 0 or above 1
+    // beyond the plot's ends. A scale of one value has it in the middle and nothing else on it. Null on an even
+    // scale, where only the items have places.
+    public double? Share(object value) => _scale is not { } scale ? null
+        : scale.Span == 0 ? (Number(value) == scale.First ? 0.5 : double.NaN)
+        : (Number(value) - scale.First) / scale.Span;
 
     // The plot's ends: the app's where it set them, and the items' own otherwise. An end the app set beyond every
     // item still needs a plot with some width, so the other end moves as far from it as the items span.
