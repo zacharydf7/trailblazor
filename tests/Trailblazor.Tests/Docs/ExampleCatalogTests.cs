@@ -195,6 +195,7 @@ public class ExampleCatalogTests
     private static readonly Dictionary<string, string[]> NamedParts = new()
     {
         ["Announcer"] = ["polite", "assertive"],
+        ["Charts"] = ["x-title", "y-title"],
         ["ColorPicker"] = ["hue", "saturation", "brightness", "alpha", "red", "green", "blue"],
         ["DataGrid"] = ["tree-cell"],
         ["Dialog"] = ["minimize", "maximize", "move", "resize"],

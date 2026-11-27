@@ -11892,6 +11892,38 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         visibility: hidden;
     }
 
+    /* A horizontal chart has its places' names down its side. Their column is as wide as the longest name, up to
+       two fifths of the chart, and a name too long for that is cut short. */
+    .tb-chart--horizontal > .tb-chart__body {
+        grid-template-columns: fit-content(40%) minmax(0, 1fr);
+    }
+
+    .tb-chart--horizontal .tb-chart__y {
+        min-inline-size: 0;
+        font-variant-numeric: normal;
+    }
+
+    /* Every name is in the column once with no height, which makes the column as wide as the widest of them. */
+    .tb-chart--horizontal .tb-chart__y > .tb-chart__y-sizer {
+        display: block;
+        block-size: 0;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    /* A name shows while the names of its stride have a line of room each. That follows from the plot's height,
+       which is a length the stylesheet has, so nothing is measured. */
+    .tb-chart--horizontal .tb-chart__y > span:not(.tb-chart__y-sizer) {
+        display: block;
+        max-inline-size: 100%;
+        max-block-size: clamp(0px, calc((var(--tb-chart-height, 20rem) * var(--_tb-chart-stride)
+            / var(--_tb-chart-count) - 1.25em) * 9999), 1.5em);
+        overflow: hidden;
+        line-height: 1.25;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .tb-chart__plot {
         position: relative;
         grid-column: 2;
@@ -11997,6 +12029,16 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         clip-path: inset(0 round 0 0 4px 4px);
     }
 
+    /* A bar that runs across has its value at its end, toward the higher values, or at its start for a value below
+       zero. The marks are mirrored right to left, so the end is on the right here either way. */
+    .tb-chart__bar--end {
+        clip-path: inset(0 round 0 4px 4px 0);
+    }
+
+    .tb-chart__bar--start {
+        clip-path: inset(0 round 4px 0 0 4px);
+    }
+
     .tb-chart__gap {
         stroke: var(--tb-color-surface);
         stroke-width: 2;
@@ -12015,6 +12057,20 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         inline-size: 1px;
         background: var(--tb-border-strong);
         pointer-events: none;
+    }
+
+    /* On a horizontal chart the line runs across the plot at the place, and the tooltip hangs from the plot's far
+       side, under or over the line. */
+    .tb-chart__plot[data-horizontal] > .tb-chart__crosshair {
+        inset-block: auto;
+        inset-inline: 0;
+        inline-size: auto;
+        block-size: 1px;
+    }
+
+    .tb-chart__plot[data-horizontal] > .tb-chart__tooltip {
+        inset-block-start: auto;
+        inset-inline-end: var(--tb-space-2);
     }
 
     .tb-chart__tooltip {

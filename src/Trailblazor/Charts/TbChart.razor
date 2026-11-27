@@ -12,7 +12,7 @@
 @{ _changed = false; }
 <figure @attributes="AdditionalAttributes" aria-label="@AriaLabel"
         style="@Styles.Join(Height is null ? null : $"--tb-chart-height: {Height}", Style)"
-        class="@ClassNames.Join("tb-chart", Class)">
+        class="@ClassNames.Join("tb-chart", Horizontal ? "tb-chart--horizontal" : null, Class)">
     <CascadingValue Value="this" IsFixed="true">
         <CascadingValue Value="Axes" IsFixed="true">@ChildContent</CascadingValue>
     </CascadingValue>
@@ -27,6 +27,11 @@
         var blank = empty || plan.Series.All(one => one.Hidden);
         var markers = plan.Places.Count <= MostMarkers;
         var tones = ItemTones(plan, markers);
+        // The values' labels run up the plot's side and the places' along its base, or the other way around when
+        // the chart is horizontal.
+        List<(double At, string Text, int Stride)> values = [.. ValueLabels(plan)];
+        List<(double At, string Text, int Stride)> names = [.. plan.Labels];
+        var (side, below) = Horizontal ? (names, values) : (values, names);
         var toggles = CanHideSeries && RendererInfo.IsInteractive;
     }
     @if (Title is not null)
@@ -96,29 +101,42 @@
             }
         </ul>
     }
-    @if (Axes.Y?.Title is { } valueTitle && !blank)
+    @* The title of the axis up the plot's side shows above it, and the title of the one along its base under it. *@
+    @if (!blank && (Horizontal ? Axes.X?.Title : Axes.Y?.Title) is { } sideTitle)
     {
-        <div data-part="y-title" class="tb-chart__y-title">@valueTitle</div>
+        <div data-part="@(Horizontal ? "x-title" : "y-title")" class="tb-chart__y-title">@sideTitle</div>
     }
     <div class="tb-chart__body">
         @if (!blank)
         {
-            <div class="tb-chart__y" aria-hidden="true">
+            <div class="tb-chart__y" aria-hidden="true"
+                 style="@(Horizontal ? $"--_tb-chart-count: {Steps(plan)}" : null)">
                 @* The longest label, unseen, gives the column its width; WebKit won't place the labels by percentage
-                   inside a column sized by the grid alone. *@
-                <span class="tb-chart__y-sizer">
-                    @plan.ValueTicks.Select(tick => tick.Text).MaxBy(text => text.Length)
-                </span>
-                @foreach (var tick in plan.ValueTicks)
+                   inside a column sized by the grid alone. Names differ in how wide their letters are, so a
+                   horizontal chart has every name there, with no height. *@
+                @if (Horizontal)
                 {
-                    <span style="top: @Percent(tick.Y)">@tick.Text</span>
+                    foreach (var label in side)
+                    {
+                        <span class="tb-chart__y-sizer">@label.Text</span>
+                    }
+                }
+                else
+                {
+                    <span class="tb-chart__y-sizer">
+                        @side.Select(label => label.Text).MaxBy(text => text.Length)
+                    </span>
+                }
+                @foreach (var label in side)
+                {
+                    <span style="@SideStyle(label.At, label.Stride)">@label.Text</span>
                 }
             </div>
         }
         @* The plot is one element whether it has anything to draw or not, so the script stays on it. The script reads
            each place's name from it, and each series' values and points from the series' own element. *@
         <div @ref="_plot" id="@_plotId" data-part="plot" data-places="@(blank ? null : Places(plan))"
-             data-at="@(blank ? null : At(plan))"
+             data-at="@(blank ? null : At(plan))" data-horizontal="@(Horizontal ? "" : null)"
              data-activates="@(RendererInfo.IsInteractive && OnPointClick.HasDelegate ? "" : null)"
              data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
              class="@ClassNames.Join("tb-chart__plot", blank ? "tb-chart__plot--empty" : null, Classes?.Plot)">
@@ -135,8 +153,9 @@
                 <svg class="tb-chart__marks" role="img" aria-label="@Summary()" focusable="false">
                     @foreach (var tick in plan.ValueTicks)
                     {
-                        <line class="@(tick.Zero ? "tb-chart__grid tb-chart__grid--zero" : "tb-chart__grid")" x1="0"
-                              x2="100%" y1="@Percent(tick.Y)" y2="@Percent(tick.Y)" />
+                        var (from, to) = (Turn(0, tick.Y), Turn(1, tick.Y));
+                        <line class="@(tick.Zero ? "tb-chart__grid tb-chart__grid--zero" : "tb-chart__grid")"
+                              x1="@Percent(from.X)" x2="@Percent(to.X)" y1="@Percent(from.Y)" y2="@Percent(to.Y)" />
                     }
                     @* The areas' fills are under the bars and every line, so no fill covers another series' marks,
                        and their drawing ends at the plot's edge when zero is beyond it. In a stack no two fills
@@ -168,10 +187,11 @@
                                 {
                                     if (drawn.Marks[place] is { } bar)
                                     {
+                                        var box = Box(bar);
                                         <rect class="@ClassNames.Join(BarClass(bar.End),
                                                          ToneClass(tones[index]?[place]))"
-                                              x="@Percent(bar.X)" y="@Percent(bar.Y)" width="@Percent(bar.Width)"
-                                              height="@Percent(bar.Height)" />
+                                              x="@Percent(box.X)" y="@Percent(box.Y)" width="@Percent(box.Width)"
+                                              height="@Percent(box.Height)" />
                                     }
                                 }
                             </g>
@@ -184,9 +204,10 @@
                         {
                             if (mark is { End: ChartBarEnd.None, Height: > 0 } bar)
                             {
-                                var end = Percent(bar.Up ? bar.Y : bar.Y + bar.Height);
-                                <line class="tb-chart__gap" x1="@Percent(bar.X)" x2="@Percent(bar.X + bar.Width)"
-                                      y1="@end" y2="@end" />
+                                var end = bar.Up ? bar.Y : bar.Y + bar.Height;
+                                var (from, to) = (Turn(bar.X, end), Turn(bar.X + bar.Width, end));
+                                <line class="tb-chart__gap" x1="@Percent(from.X)" x2="@Percent(to.X)"
+                                      y1="@Percent(from.Y)" y2="@Percent(to.Y)" />
                             }
                         }
                     }
@@ -261,12 +282,12 @@
                a child of the grid item instead. *@
             <div class="tb-chart__x-row" aria-hidden="true">
                 <div class="tb-chart__x"
-                     style="--_tb-chart-count: @Steps(plan); --_tb-chart-chars: @Longest(plan)">
-                    @foreach (var label in plan.Labels)
+                     style="--_tb-chart-count: @BaseSteps(plan); --_tb-chart-chars: @Longest(below)">
+                    @foreach (var label in below)
                     {
                         @* A mark on the plot's edge has its label inside the plot, not half out of it. *@
-                        var edge = label.X <= 0 ? "start" : label.X >= 1 ? "end" : null;
-                        <span data-edge="@edge" style="@Along(label.X, edge); --_tb-chart-stride: @label.Stride">
+                        var edge = label.At <= 0 ? "start" : label.At >= 1 ? "end" : null;
+                        <span data-edge="@edge" style="@Along(label.At, edge); --_tb-chart-stride: @label.Stride">
                             @label.Text
                         </span>
                     }
@@ -274,9 +295,9 @@
             </div>
         }
     </div>
-    @if (Axes.X?.Title is { } placeTitle && !blank)
+    @if (!blank && (Horizontal ? Axes.Y?.Title : Axes.X?.Title) is { } baseTitle)
     {
-        <div data-part="x-title" class="tb-chart__x-title">@placeTitle</div>
+        <div data-part="@(Horizontal ? "y-title" : "x-title")" class="tb-chart__x-title">@baseTitle</div>
     }
     @if (!empty)
     {

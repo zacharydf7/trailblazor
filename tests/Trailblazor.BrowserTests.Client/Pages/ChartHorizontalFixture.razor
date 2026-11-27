@@ -1,0 +1,42 @@
+@page "/chart-horizontal"
+
+@* Two bars to a trail, so a test can tell which of them a click or a key picked, in a chart of a known width. The
+   last name is too long for its column. *@
+<div style="width: 30rem">
+    <TbChart TItem="Trail" Items="Trails" X="trail => trail.Name" Title="Hikers by trail" Height="15rem" Horizontal
+             OnPointClick="@(point => _picked = $"{point.Series} {point.Item.Name} {point.Value}")">
+        <TbBarSeries Name="Weekdays" Value="trail => trail.Weekdays" />
+        <TbBarSeries Name="Weekend" Value="trail => trail.Weekend" />
+    </TbChart>
+</div>
+<output data-testid="picked">@_picked</output>
+
+@* More trails than the plot has lines for, so the names are thinned. *@
+<div style="width: 30rem">
+    <TbChart TItem="int" Items="Enumerable.Range(1, 40)" X="@(number => $"Trail {number}")" Title="Forty trails"
+             Height="10rem" Horizontal>
+        <TbBarSeries Name="Hikers" Value="@(number => number * 3)" />
+    </TbChart>
+</div>
+
+@* A short name of wide letters beside a longer one of narrow letters, both well under two fifths of the chart. *@
+<div style="width: 30rem">
+    <TbChart TItem="Trail" Items="Names" X="trail => trail.Name" Title="Wide and narrow names" Height="8rem"
+             Horizontal>
+        <TbBarSeries Name="Weekdays" Value="trail => trail.Weekdays" />
+    </TbChart>
+</div>
+
+@code {
+    private static readonly Trail[] Names = [new("WWWWWWWW", 40, 0), new("illi lil tilt till", 60, 0)];
+
+    private static readonly Trail[] Trails =
+    [
+        new("Ridge loop", 40, 90), new("Lake path", 60, 30),
+        new("Summit trail by the long north face route", 20, 50),
+    ];
+
+    private string? _picked;
+
+    private sealed record Trail(string Name, int Weekdays, int Weekend);
+}

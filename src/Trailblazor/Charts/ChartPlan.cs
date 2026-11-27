@@ -92,7 +92,7 @@ internal sealed class ChartPlan
         : Enumerable.Range(0, (Places.Count + LabelEvery - 1) / LabelEvery).Select(index => index * LabelEvery)
             .Select(place => (Middle(place), Places[place], Stride(place)));
 
-    private static int Stride(int index, int count) =>
+    internal static int Stride(int index, int count) =>
         index == 0 ? (int)BitOperations.RoundUpToPowerOf2((uint)count) : index & -index;
 
     public static ChartPlan Build(IReadOnlyList<string> places, IReadOnlyList<ChartSeriesValues> series,

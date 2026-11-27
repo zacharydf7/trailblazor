@@ -999,6 +999,13 @@ public static class ExampleCatalog
                 new("percent", "Shares of a total", "`ChartStacking.Percent` draws each bar as its share of the "
                     + "place's total, so every stack is the same height and the axis reads from 0% to 100%. The data "
                     + "table keeps the values as given.", typeof(ChartPercentExample)),
+                new("horizontal", "Horizontal bars", "`Horizontal` turns the chart on its side: the items run "
+                    + "down it and the bars across, with the value axis along the bottom. Use it for a ranking, or "
+                    + "for long names, which get a column of their own up to two fifths of the chart's width. The "
+                    + "items run down in the order given, so sort them for a ranking. Only bar series can be "
+                    + "turned: a line, an area or a scatter series in a horizontal chart throws. `Height` sets "
+                    + "the plot's height, so give a chart of many items more of it. A continuous scale turns "
+                    + "too, and places the items down the chart by their `X`.", typeof(ChartHorizontalExample)),
                 new("area", "Areas", "A `TbAreaSeries` draws a line and fills the area between it and zero in a tint "
                     + "of its color, for an amount whose size matters as well as how it changes. Its axis reaches "
                     + "zero, as a bar's does, and it takes `Curve` and `Markers` as a line series does.",
@@ -1071,12 +1078,15 @@ public static class ExampleCatalog
                     + "moves from one pile to the other: use bars, not areas, for values of mixed signs.",
                     typeof(ChartBelowZeroExample)),
                 new("long", "Many points", "An axis shows only the labels it has room for, evenly spaced, and shows "
-                    + "more as the chart gets wider. A line of more than 30 points has no markers. `Height` sets the "
-                    + "height of the plot, and the chart is as wide as its container.", typeof(ChartLongExample)),
-                new("long-names", "Long names", "A label is never wrapped or cut short: it shows in full, or not at "
-                    + "all when its neighbors leave it no room. With long names on a narrow chart, most places go "
-                    + "unlabeled, so keep names along the axis short and put the full ones in the text or a table.",
-                    typeof(ChartLongNamesExample)),
+                    + "more as the chart gets wider, or taller for the names down a horizontal chart. A line of "
+                    + "more than 30 points has no markers. `Height` sets the height of the plot, and the chart is "
+                    + "as wide as its container.", typeof(ChartLongExample)),
+                new("long-names", "Long names", "A label along the axis is never wrapped or cut short: it shows in "
+                    + "full, or not at all when its neighbors leave it no room. With long names on a narrow chart, "
+                    + "most places go unlabeled, so keep names along the axis short and put the full ones in the "
+                    + "text or a table. For a bar chart, `Horizontal` gives the names a column of their own, as "
+                    + "\"Horizontal bars\" shows, where a name too long for the column is cut short with an "
+                    + "ellipsis.", typeof(ChartLongNamesExample)),
                 new("click", "Acting on a point", "`OnPointClick` is raised with the item, the series' name and the "
                     + "value when the user clicks or taps a point, or presses Enter or Space while it has focus. A "
                     + "click on the plot picks the bar under the pointer, or else the nearest point at that place, "
@@ -1115,9 +1125,13 @@ public static class ExampleCatalog
             Keyboard =
             [
                 new(["Right", "Left"], "Moves to the next or the previous point of the series, passing over a place "
-                    + "where the series has no value.") { When = "On the plot" },
+                    + "where the series has no value.") { When = "On an upright chart's plot" },
                 new(["Down", "Up"], "Moves to the same place in the next or the previous series that has a value "
-                    + "there, in the legend's order.") { When = "On the plot" },
+                    + "there, in the legend's order.") { When = "On an upright chart's plot" },
+                new(["Down", "Up"], "Moves to the next or the previous point of the series, passing over a place "
+                    + "where the series has no value.") { When = "On a horizontal chart's plot" },
+                new(["Right", "Left"], "Moves to the same place in the next or the previous series that has a value "
+                    + "there, in the legend's order.") { When = "On a horizontal chart's plot" },
                 new(["Home", "End"], "Moves to the first or the last point of the series.") { When = "On the plot" },
                 new(["Enter", "Space"], "Raises `OnPointClick` for the point, when the chart has one.")
                     { When = "On the plot" },
@@ -1127,7 +1141,7 @@ public static class ExampleCatalog
                 new(["Enter", "Space"], "Opens or closes the data table.") { When = "On \"Data table\"" },
             ],
             RightToLeftKeys = "Left moves to the next point and Right to the previous one, as the chart runs from "
-                + "the right.",
+                + "the right. On a horizontal chart, Left moves to the next series and Right to the previous one.",
             Announcements =
             [
                 "As focus moves to a point, it is read by its place, its series, its value and its position, as in "
@@ -1164,10 +1178,10 @@ public static class ExampleCatalog
                     + "a field being edited in the dialog takes the key first. Everything it shows is in the data "
                     + "table too.",
                 "A click or a tap anywhere over a place picks a point there, so on an even scale no target is "
-                    + "smaller than the place is wide. In a stack of areas, it picks the point of the band it is "
-                    + "inside. On a continuous scale an item's target is the stretch nearer to it than to its "
-                    + "neighbors, so items close together are hard to tell apart with a pointer; the arrow keys "
-                    + "still reach each one.",
+                    + "smaller than the place is wide, or tall on a horizontal chart. In a stack of areas, it "
+                    + "picks the point of the band it is inside. On a continuous scale an item's target is the "
+                    + "stretch nearer to it than to its neighbors, so items close together are hard to tell apart "
+                    + "with a pointer; the arrow keys still reach each one.",
                 "The eight series colors each have 3:1 contrast against the surface in both themes, and colors next "
                     + "to each other in the order stay easy to tell apart for people with red-green color blindness.",
                 "Two or more series always have a legend, whose keys are drawn as the marks are: a block for bars, "
@@ -1277,7 +1291,14 @@ public static class ExampleCatalog
                     + "share of the series that show. The tooltip and the data table keep the values as given."),
                 new("What the user chooses in the legend holds until the app gives the series' `Hidden` a new "
                     + "value. A chart with one series has no legend, so only the app can hide or show that series."),
-                new("Right to left, the chart runs from the right: the first item is at the right edge."),
+                new("Right to left, an upright chart runs from the right: the first item is at the right edge."),
+                new("On a horizontal chart `TbYAxis` still sets the value axis, which runs along the bottom, and "
+                    + "`TbXAxis` the axis the items run down. The value axis's low end is at the left, or at the "
+                    + "right in a right-to-left layout, and the first item is at the top."),
+                new("On a horizontal chart a name longer than two fifths of the chart's width is cut short with an "
+                    + "ellipsis, and the tooltip and the data table have it whole. When the plot is too short to "
+                    + "give every name a line, names are left out evenly so the rest don't overlap; give a chart "
+                    + "of many items more `Height` to name them all.") { Pitfall = true },
                 new("Every item's values are in the page's markup twice, in the drawing and in the table, so a chart "
                     + "of thousands of points makes a large page. Draw a summary, such as a value a day in place "
                     + "of one a minute."),
@@ -1290,9 +1311,10 @@ public static class ExampleCatalog
                 new("title", "The chart's title."),
                 new("legend", "The list of series names with their keys, each a button on an interactive page "
                     + "unless `CanHideSeries` is false."),
-                new("y-title", "The value axis's title."),
+                new("y-title", "The value axis's title, above the plot, or under it on a horizontal chart."),
                 new("plot", "The area the series are drawn in, or the message when there is nothing to draw."),
-                new("x-title", "The title of the axis the items run along."),
+                new("x-title", "The title of the axis the items run along, under the plot, or above it on a "
+                    + "horizontal chart."),
                 new("tooltip", "The values at the place the pointer or the keys are on."),
                 new("table", "The disclosure that holds the data table."),
             ],

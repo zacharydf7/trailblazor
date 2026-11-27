@@ -19,6 +19,8 @@ export function attachChart(plot, events, point, noValue, activates) {
     const proxies = [...plot.querySelectorAll(':scope > .tb-chart__focus')];
     // A pie's places are its slices, set around a circle and not in order along the chart.
     const round = plot.hasAttribute('data-round');
+    // A horizontal chart's places run down it. The app may turn a chart while the page is up.
+    const horizontal = () => plot.hasAttribute('data-horizontal');
     let model = null;
     let active = null;
     let pointer = null;
@@ -70,8 +72,10 @@ export function attachChart(plot, events, point, noValue, activates) {
             return;
         }
 
-        const x = across(read().at[place]);
-        crosshair.style.left = `${x * 100}%`;
+        // How far along the chart the place is: across the plot, or down the plot of a horizontal chart.
+        const where = horizontal() ? read().at[place] : across(read().at[place]);
+        crosshair.style.left = horizontal() ? '' : `${where * 100}%`;
+        crosshair.style.top = horizontal() ? `${where * 100}%` : '';
         crosshair.hidden = false;
         const rows = series.map((one, index) => {
             const row = element('div', 'tb-chart__tooltip-row');
@@ -92,12 +96,20 @@ export function attachChart(plot, events, point, noValue, activates) {
             return row;
         });
         tooltip.replaceChildren(element('div', 'tb-chart__tooltip-place', places[place]), ...rows);
-        // The tooltip sits on the side of the line that has more room.
-        tooltip.style.left = x < 0.5 ? `calc(${x * 100}% + 0.75rem)` : '';
-        tooltip.style.right = x < 0.5 ? '' : `calc(${(1 - x) * 100}% + 0.75rem)`;
+        // The tooltip sits on the side of the line that has more room: beside it, or under or over the line of a
+        // horizontal chart.
+        const [before, after] = horizontal() ? ['top', 'bottom'] : ['left', 'right'];
+        for (const edge of ['left', 'right', 'top', 'bottom']) {
+            tooltip.style[edge] = '';
+        }
+
+        tooltip.style[where < 0.5 ? before : after] = `calc(${(where < 0.5 ? where : 1 - where) * 100}% + 0.75rem)`;
         // A pie's tooltip is level with the middle of its slice.
         const middle = round && series[0].points[place];
-        tooltip.style.top = middle ? `${middle.y * 100}%` : '';
+        if (middle) {
+            tooltip.style.top = `${middle.y * 100}%`;
+        }
+
         tooltip.hidden = false;
     }
 
@@ -106,9 +118,10 @@ export function attachChart(plot, events, point, noValue, activates) {
         tooltip.hidden = true;
     }
 
-    const placeAt = clientX => {
+    const placeAt = event => {
         const box = plot.getBoundingClientRect();
-        const share = across((clientX - box.left) / box.width);
+        const share = horizontal() ? (event.clientY - box.top) / box.height
+            : across((event.clientX - box.left) / box.width);
         const { at } = read();
         let nearest = 0;
         at.forEach((x, place) => {
@@ -123,7 +136,7 @@ export function attachChart(plot, events, point, noValue, activates) {
     // along the chart, or else the nearest place along the chart.
     const placeOf = event => {
         const mark = event.target.closest?.('.tb-chart__marks [data-place]');
-        return mark ? Number(mark.dataset.place) : round ? -1 : placeAt(event.clientX);
+        return mark ? Number(mark.dataset.place) : round ? -1 : placeAt(event);
     };
 
     // A press within this many pixels of a point is on that point: a marker's size.
@@ -342,17 +355,20 @@ export function attachChart(plot, events, point, noValue, activates) {
             return;
         }
 
-        const forward = mirrored() ? 'ArrowLeft' : 'ArrowRight';
-        const back = mirrored() ? 'ArrowRight' : 'ArrowLeft';
+        // Right and Left move along the chart and Down and Up between its series, or the other way around on a
+        // horizontal chart, whose places run down it.
+        const [right, left] = mirrored() ? ['ArrowLeft', 'ArrowRight'] : ['ArrowRight', 'ArrowLeft'];
+        const [forward, back, next, previous] = horizontal() ? ['ArrowDown', 'ArrowUp', right, left]
+            : [right, left, 'ArrowDown', 'ArrowUp'];
         let { series: seriesIndex, place: placeIndex } = active;
         // A pie has one series, so Down and Up move around it as the other arrows do.
-        if (event.key === forward || (round && event.key === 'ArrowDown')) {
+        if (event.key === forward || (round && event.key === next)) {
             placeIndex = along(seriesIndex, placeIndex, 1);
-        } else if (event.key === back || (round && event.key === 'ArrowUp')) {
+        } else if (event.key === back || (round && event.key === previous)) {
             placeIndex = along(seriesIndex, placeIndex, -1);
-        } else if (event.key === 'ArrowDown') {
+        } else if (event.key === next) {
             seriesIndex = upOrDown(seriesIndex, placeIndex, 1);
-        } else if (event.key === 'ArrowUp') {
+        } else if (event.key === previous) {
             seriesIndex = upOrDown(seriesIndex, placeIndex, -1);
         } else if (event.key === 'Home') {
             placeIndex = along(seriesIndex, -1, 1);

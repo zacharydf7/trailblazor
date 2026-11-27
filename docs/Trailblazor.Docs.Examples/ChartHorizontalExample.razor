@@ -1,0 +1,16 @@
+<TbChart Items="Trails" X="trail => trail.Name" Title="Hikers by trail this month" Horizontal Height="16rem">
+    <TbYAxis Title="Hikers" />
+    <TbBarSeries Name="Hikers" Value="trail => trail.Hikers" />
+</TbChart>
+
+@code {
+    // Ranked, with the busiest trail first.
+    private static readonly Trail[] Trails =
+    [
+        new("Ridge loop from the east gate", 1840), new("Lake path", 1310),
+        new("Summit trail by the north face", 960), new("Old mill walk", 720),
+        new("Waterfall gorge and the two bridges", 540), new("Meadow circuit", 310),
+    ];
+
+    private sealed record Trail(string Name, int Hikers);
+}

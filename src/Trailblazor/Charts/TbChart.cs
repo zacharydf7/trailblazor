@@ -70,6 +70,12 @@ public partial class TbChart<TItem>
     [Parameter]
     public ChartStacking Stacking { get; set; }
 
+    /// <summary>Whether the chart is turned on its side, with its items down the side and its bars running across,
+    /// which gives long names room and suits a ranking. Only bar series can be turned: a chart with any other
+    /// series throws an <see cref="InvalidOperationException"/>. False by default.</summary>
+    [Parameter]
+    public bool Horizontal { get; set; }
+
     /// <summary>The height of the area the series are drawn in, as a CSS length such as <c>"12rem"</c>. Without it,
     /// the <c>--tb-chart-height</c> token sets it, 20rem by default. The chart is as wide as its container.</summary>
     [Parameter]
@@ -247,6 +253,12 @@ public partial class TbChart<TItem>
     private ChartPlan Plan()
     {
         var culture = CultureInfo.CurrentCulture;
+        if (Horizontal && _series.FirstOrDefault(one => !one.Bars) is { } other)
+        {
+            throw new InvalidOperationException($"A {nameof(TbChart<>)} that is {nameof(Horizontal)} draws bar "
+                + $"series only, and \"{other.Name}\" isn't one.");
+        }
+
         var items = _items = Items as IReadOnlyList<TItem> ?? [.. Items ?? []];
         List<string> places = [.. items.Select(item => ChartValues.Text(X!(item), Axes.X?.Format, culture))];
         List<ChartSeriesValues> series = [.. _series.Select(one =>
@@ -289,22 +301,54 @@ public partial class TbChart<TItem>
 
     private string? Color(int index) => _series[index].Color is { } color ? $"--_tb-chart-series: {color}" : null;
 
-    private static string BarClass(ChartBarEnd end) => end switch
+    // A bar's end that shows its value is rounded: the top or the bottom, or, on a bar that runs across, the end
+    // toward the higher values or the start toward the lower ones.
+    private string BarClass(ChartBarEnd end) => end switch
     {
-        ChartBarEnd.Top => "tb-chart__bar tb-chart__bar--top",
-        ChartBarEnd.Bottom => "tb-chart__bar tb-chart__bar--bottom",
+        ChartBarEnd.Top => Horizontal ? "tb-chart__bar tb-chart__bar--end" : "tb-chart__bar tb-chart__bar--top",
+        ChartBarEnd.Bottom => Horizontal ? "tb-chart__bar tb-chart__bar--start" : "tb-chart__bar tb-chart__bar--bottom",
         _ => "tb-chart__bar",
     };
+
+    // A spot in the plot, as shares from its left and its top. A horizontal chart is the plan turned: what was up
+    // the plot runs across it, and what ran along it runs down.
+    private (double X, double Y) Turn(double x, double y) => Horizontal ? (1 - y, x) : (x, y);
+
+    // A bar's box, as shares of the plot from its left and its top.
+    private (double X, double Y, double Width, double Height) Box(ChartBar bar) => Horizontal
+        ? (1 - bar.Y - bar.Height, bar.X, bar.Height, bar.Width) : (bar.X, bar.Y, bar.Width, bar.Height);
+
+    // The value axis's labels: each with its share of the plot along that axis, from the top or, on a horizontal
+    // chart, from the start, with its text and its stride.
+    private IEnumerable<(double At, string Text, int Stride)> ValueLabels(ChartPlan plan) => plan.ValueTicks.Select(
+        (tick, index) => (Horizontal ? 1 - tick.Y : tick.Y, tick.Text, ChartPlan.Stride(index, plan.ValueTicks.Count)));
 
     // The room a label needs, in characters: the longest one's, and half as much again when a label is on one of
     // the plot's edges, since that one isn't centered on its mark and reaches farther toward its neighbor. With a
     // label on each edge the two may be the only ones showing, and they need a whole label's room each.
-    private static int Longest(ChartPlan plan)
+    private static int Longest(IReadOnlyList<(double At, string Text, int Stride)> labels)
     {
-        var longest = plan.Labels.Max(label => label.Text.Length);
-        var (start, end) = (plan.Labels.Any(label => label.X <= 0), plan.Labels.Any(label => label.X >= 1));
+        // A value axis whose ends hold no multiple of its step has no labels.
+        if (labels.Count == 0)
+        {
+            return 0;
+        }
+
+        var longest = labels.Max(label => label.Text.Length);
+        var (start, end) = (labels.Any(label => label.At <= 0), labels.Any(label => label.At >= 1));
         return start && end ? longest * 2 : start || end ? (longest * 3 + 1) / 2 : longest;
     }
+
+    // A label up the plot's side: how far down it is, and on a horizontal chart, where the labels are the places'
+    // names, its stride for the stylesheet to thin them by.
+    private string SideStyle(double at, int stride) => Horizontal
+        ? string.Create(CultureInfo.InvariantCulture, $"top: {ChartPath.Percent(at)}; --_tb-chart-stride: {stride}")
+        : $"top: {ChartPath.Percent(at)}";
+
+    // How many steps of the labels along the base fit across the plot: the places', or the value axis's on a
+    // horizontal chart.
+    private string BaseSteps(ChartPlan plan) => Horizontal
+        ? (plan.ValueTicks.Count - 1).ToString(CultureInfo.InvariantCulture) : Steps(plan);
 
     // Where a label is along the axis: at its mark, or against the plot's far end when its mark is on that edge.
     private static string Along(double x, string? edge) =>
@@ -328,13 +372,17 @@ public partial class TbChart<TItem>
 
     // Where the keys and the pointer find each of a series' values, as whole steps of the 10,000 grid: the middle of
     // a bar's value end, or a line's point. A place with no value has a dash.
-    private static string Points(ChartSeriesPlan drawn) => string.Join(' ', drawn.Bars
+    private string Points(ChartSeriesPlan drawn) => string.Join(' ', drawn.Bars
         ? drawn.Marks.Select(mark => mark is { } bar
             ? Spot(bar.X + bar.Width / 2, bar.Up ? bar.Y : bar.Y + bar.Height) : "-")
         : drawn.Points.Select(point => point is { } at ? Spot(at.X, at.Y) : "-"));
 
-    private static string Spot(double x, double y) => string.Create(CultureInfo.InvariantCulture,
-        $"{Math.Round(x * ChartPath.Grid)},{Math.Round(y * ChartPath.Grid)}");
+    private string Spot(double x, double y)
+    {
+        var (across, down) = Turn(x, y);
+        return string.Create(CultureInfo.InvariantCulture,
+            $"{Math.Round(across * ChartPath.Grid)},{Math.Round(down * ChartPath.Grid)}");
+    }
 
     // What a screen reader hears for the drawing: the kind of chart and the series it shows, as "Bar chart:
     // Completed, Failed".
