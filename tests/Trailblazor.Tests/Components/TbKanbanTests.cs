@@ -75,6 +75,38 @@ public class TbKanbanTests : BunitContext
     }
 
     [Fact]
+    public void CardLabel_ShouldNameEachCardAndItsHandle_WhenGiven()
+    {
+        var cut = RenderBoard(parameters => parameters.Add(board => board.CardLabel, card => $"Task: {card}"));
+
+        Assert.Contains("Task: Clear the ridge path",
+            cut.Find("[data-key=todo] [data-part=handle] > [data-part=trigger]").GetAttribute("aria-label"));
+        Assert.Equal(["Task: Clear the ridge path", "Task: Mark the river ford"], cut.Tb().Kanban().Cards("To do"));
+    }
+
+    [Fact]
+    public async Task Labels_ShouldReplaceTheCountFullCollapseAndMoveWords_WhenGiven()
+    {
+        _cards["done"].Add("Paint the trail blazes");
+        _doneLimit = 1;
+        var cut = RenderBoard(parameters => parameters.Add(board => board.Collapsible, true)
+            .Add(board => board.Labels, new KanbanLabels
+            {
+                Count = "{0}/{1}", Full = "No room in {0} ({1})", Cards = "Fold {0}",
+                Moves = new() { Handle = "Drag {0}" },
+            }));
+        var handle = cut.Find("[data-key=todo] [data-part=handle] > [data-part=trigger]").GetAttribute("aria-label");
+
+        await cut.Tb().Kanban().MoveToColumnAsync("Fix the footbridge", "Done");
+
+        var done = cut.Find("[data-key=done]");
+        Assert.Equal("1/1", done.QuerySelector("[data-part=count]")!.TextContent);
+        Assert.Equal("No room in Done (1)", Announcer.Polite[^1]);
+        Assert.Equal("Fold Done", done.QuerySelector("[data-part=collapse]")!.GetAttribute("aria-label"));
+        Assert.Equal("Drag Clear the ridge path", handle);
+    }
+
+    [Fact]
     public async Task Column_ShouldStillReorderItsCards_WhenTheColumnIsFull()
     {
         _cards["done"].AddRange(["Paint the trail blazes", "Mow the meadow loop"]);
@@ -131,6 +163,19 @@ public class TbKanbanTests : BunitContext
             column => builder => builder.AddContent(0, $"Add to {column.Title}")));
 
         Assert.Equal(["Add to To do", "Add to Doing", "Add to Done"],
+            cut.FindAll("[data-part=footer]").Select(footer => footer.TextContent));
+    }
+
+    [Fact]
+    public async Task ColumnFooterTemplate_ShouldBeHidden_WhenItsColumnIsCollapsed()
+    {
+        var cut = RenderBoard(parameters => parameters.Add(board => board.Collapsible, true)
+            .Add(board => board.ColumnFooterTemplate,
+                column => builder => builder.AddContent(0, $"Add to {column.Title}")));
+
+        await cut.Tb().Kanban("Trail work").CollapseAsync("To do");
+
+        Assert.Equal(["Add to Doing", "Add to Done"],
             cut.FindAll("[data-part=footer]").Select(footer => footer.TextContent));
     }
 

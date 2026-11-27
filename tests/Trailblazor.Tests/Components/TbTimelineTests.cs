@@ -81,4 +81,15 @@ public class TbTimelineTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=time], [data-part=title]"));
         Assert.Equal("Weather checked.", cut.Find("[data-part=content]").TextContent);
     }
+
+    [Fact]
+    public void Render_ShouldDrawAnEmptyNeutralDotAndNoListName_WhenNoToneIconOrLabelIsGiven()
+    {
+        var cut = Render<TbTimeline>(parameters => parameters.AddChildContent<TbTimelineItem>(item => item
+            .Add(i => i.Title, "Weather checked")));
+
+        Assert.Equal(["tb-timeline__item", "tb-timeline__item--neutral"], cut.Find("li").ClassList);
+        Assert.Empty(cut.Find("[data-part=dot]").Children);
+        Assert.False(cut.Find("ol").HasAttribute("aria-label"));
+    }
 }

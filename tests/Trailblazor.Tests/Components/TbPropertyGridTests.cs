@@ -162,6 +162,35 @@ public class TbPropertyGridTests : BunitContext
         Assert.Equal(new DateOnly(2026, 6, 1), day);
     }
 
+    [Fact]
+    public async Task Change_ShouldSetTheValue_WhenTheEditorForItsTypeChanges()
+    {
+        var values = new Dictionary<string, object?>
+        {
+            ["Crew"] = 3, ["Distance"] = (long?)4, ["Fee"] = 1.5m, ["Start"] = new DateTime(2026, 5, 1, 8, 0, 0),
+            ["Meet"] = null,
+        };
+        Type[] types = [typeof(int), typeof(long?), typeof(decimal), typeof(DateTime), typeof(TimeOnly?)];
+        var cut = Render<TbPropertyGrid<object>>(parameters => parameters.Add(grid => grid.Label, "Shift")
+            .Add(grid => grid.Fields, values.Keys.Zip(types, (name, type) => new PropertyGridField
+            {
+                Name = name, Type = type, Get = () => values[name], Set = value => values[name] = value,
+            }).ToList()));
+
+        await cut.InvokeAsync(() => cut.FindComponent<TbNumberField<int>>().Instance.ValueChanged.InvokeAsync(5));
+        await cut.InvokeAsync(() => cut.FindComponent<TbNumberField<long?>>().Instance.ValueChanged.InvokeAsync(null));
+        await cut.InvokeAsync(() => cut.FindComponent<TbNumberField<decimal>>().Instance.ValueChanged
+            .InvokeAsync(2.25m));
+        await cut.InvokeAsync(() => cut.FindComponent<TbDateTimePicker<DateTime>>().Instance.ValueChanged
+            .InvokeAsync(new DateTime(2026, 5, 2, 9, 30, 0)));
+        await cut.InvokeAsync(() => cut.FindComponent<TbTimePicker<TimeOnly>>().Instance.ValueChanged
+            .InvokeAsync(new TimeOnly(7, 15)));
+
+        Assert.Equal((5, (long?)null, 2.25m, new DateTime(2026, 5, 2, 9, 30, 0), (TimeOnly?)new TimeOnly(7, 15)),
+            ((int)values["Crew"]!, (long?)values["Distance"], (decimal)values["Fee"]!, (DateTime)values["Start"]!,
+                (TimeOnly?)values["Meet"]));
+    }
+
     [Theory]
     [InlineData(null, true, "needs a Model or Fields")]
     [InlineData("", false, "needs a Label")]
