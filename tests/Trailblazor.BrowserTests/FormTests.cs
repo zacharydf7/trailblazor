@@ -170,7 +170,7 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenStaticAsync(browser, "/static-form-submit");
         var posts = 0;
-        await page.RouteAsync("**/static-form-submit", async route =>
+        await page.RouteAsync("**/static-form-submit*", async route =>
         {
             // The first post is held long enough for a second press to land while it is on its way.
             if (route.Request.Method == "POST" && ++posts == 1)
@@ -208,7 +208,7 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenStaticAsync(browser, "/static-form-enhanced");
         var posts = 0;
-        await page.RouteAsync("**/static-form-enhanced", async route =>
+        await page.RouteAsync("**/static-form-enhanced*", async route =>
         {
             // The first post is held long enough for a second press to land while it is on its way.
             if (route.Request.Method == "POST" && ++posts == 1)
@@ -247,7 +247,7 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenStaticAsync(browser, "/static-form-submit");
         // An answer with no content keeps the page, as a stopped post or a download would. Playwright waits on the
         // navigation that never finishes, so the page is read with script.
-        await page.RouteAsync("**/static-form-submit", route => route.Request.Method == "POST"
+        await page.RouteAsync("**/static-form-submit*", route => route.Request.Method == "POST"
             ? route.FulfillAsync(new() { Status = 204 }) : route.ContinueAsync());
         const string Busy = "() => [document.querySelector('button[type=submit]').getAttribute('aria-busy'), "
             + "'tbSubmitting' in document.querySelector('form').dataset].join(' ')";

@@ -18,10 +18,11 @@ An issue is done when all of these hold:
   server; a class whose tests need the server, as the circuit tests do, overrides `NeedsTheServer`, and a single test
   that needs it opens its page with `?mode=server`. The weekly run, and one started by hand, also run the browser tests
   in Chromium in each of those modes, and in WebKit on macOS, which is closer to Safari; `TRAILBLAZOR_BROWSERS=webkit`
-  on a Mac runs that leg locally. `TRAILBLAZOR_POPPED=1` runs each test that opens an interactive page against that
-  page inside a dock panel that shows in a browser window of its own. CI runs the suites listed in `ci.yml` that way,
-  in the browsers of the run, and a test in them that can't run there skips itself with `Assert.SkipWhen(Popped, ...)`
-  and one of the reasons in `BrowserTest`.
+  on a Mac runs that leg locally, with keyboard navigation turned on (System Settings > Keyboard), since macOS
+  otherwise tabs only to text fields. `TRAILBLAZOR_POPPED=1` runs each test that opens an interactive page against
+  that page inside a dock panel that shows in a browser window of its own. CI runs the suites listed in `ci.yml`
+  that way, in the browsers of the run, and a test in them that can't run there skips itself with
+  `Assert.SkipWhen(Popped, ...)` and one of the reasons in `BrowserTest`.
 - CI's browsers run on Linux, where a few things differ. The system's font is wider there (DejaVu Sans), so a test or
   an example must not count on how wide its text runs: a box that has to hold some text gets a width in `ch`, or room
   to spare. While one page of Firefox holds a mouse button down, clicks and moves meant for the browser's other pages

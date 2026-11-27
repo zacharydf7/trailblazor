@@ -138,6 +138,9 @@ jobs:
       - run: >-
           pwsh tests/Trailblazor.BrowserTests/bin/Release/net10.0/playwright.ps1 install --with-deps
           ${{ matrix.browser }}
+      # macOS tabs only to text fields unless full keyboard access is on, and the tests tab to every control.
+      - if: runner.os == 'macOS'
+        run: defaults write -g AppleKeyboardUIMode -int 2
       # Through dotnet test for the hang dump, as in the strict policy step.
       - run: dotnet test --configuration Release --no-build --project tests/Trailblazor.BrowserTests
       - if: failure()

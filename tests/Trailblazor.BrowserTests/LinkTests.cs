@@ -162,7 +162,7 @@ public class LinkTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(link).ToBeDisabledAsync();
         await link.ClickAsync(new() { Force = true });
 
-        await Expect(page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex("/examples/link$"));
+        await Expect(page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex(@"/examples/link(\?|$)"));
         await Expect(link).ToHaveCSSAsync("text-decoration-line", "none");
     }
 
