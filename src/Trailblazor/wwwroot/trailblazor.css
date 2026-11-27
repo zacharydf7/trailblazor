@@ -12407,10 +12407,22 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
     /* The value and its range's name stay at the end of the line when the gauge has no label before them. */
     .tb-linear-gauge__reading {
         display: inline-flex;
+        flex-wrap: wrap;
         align-items: baseline;
-        gap: var(--tb-space-1);
+        justify-content: flex-end;
+        column-gap: var(--tb-space-1);
         margin-inline-start: auto;
         font-variant-numeric: tabular-nums;
+    }
+
+    /* A long label wraps before the value and the range's name do: it takes the room they leave. */
+    .tb-linear-gauge__label {
+        flex: 1 1 0;
+    }
+
+    /* The value and the range's name each stay whole. Where the gauge is too narrow for both, as in a table's
+       cell, the name goes under the value. */
+    .tb-linear-gauge__reading > * {
         white-space: nowrap;
     }
 

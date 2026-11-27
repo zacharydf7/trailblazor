@@ -60,6 +60,49 @@ public class LinearGaugeTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeName_ShouldStayBesideTheValue_WhenALongLabelWrapsAndThereIsRoomForBoth(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/linear-gauge/ranges");
+        var gauge = page.GetByRole(AriaRole.Meter, new() { Name = "Hut beds booked tonight" });
+        var line = (await gauge.Locator("[data-part=value]").BoundingBoxAsync())!.Height;
+        await page.GetByRole(AriaRole.Slider, new() { Name = "Beds booked" }).PressAsync("End");
+        await Expect(gauge.Locator("[data-part=range]")).ToHaveTextAsync("Nearly full");
+
+        await gauge.Locator("[data-part=label]").EvaluateAsync("label => { label.textContent = "
+            + "'Hut beds booked tonight across the ridge loop, the lake path and the summit trail'; }");
+
+        // The label gives way, and the value and the range's name keep their one line together.
+        var label = await gauge.Locator("[data-part=label]").BoundingBoxAsync();
+        var (value, range) = (await gauge.Locator("[data-part=value]").BoundingBoxAsync(),
+            await gauge.Locator("[data-part=range]").BoundingBoxAsync());
+        Assert.True(label!.Height > line * 1.8, $"The label is {label.Height} high.");
+        Assert.InRange(range!.Y - value!.Y, -2, 2);
+        Assert.True(range.X > value.X, "The range's name isn't after the value.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeName_ShouldGoUnderTheValue_WhenTheGaugeIsTooNarrowForBoth(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/linear-gauge/table");
+        var gauge = page.GetByRole(AriaRole.Meter, new() { Name = "Summit hut, beds booked tonight" });
+        var value = gauge.Locator("[data-part=value]");
+        var range = gauge.Locator("[data-part=range]");
+        var line = (await value.BoundingBoxAsync())!.Height;
+
+        await gauge.EvaluateAsync("gauge => { gauge.style.inlineSize = '5rem'; }");
+
+        // Each keeps its one line, and the name is under the value, both at the bar's end, and inside the gauge.
+        var (box, bar) = (await gauge.BoundingBoxAsync(), await gauge.Locator("[data-part=bar]").BoundingBoxAsync());
+        var (above, below) = (await value.BoundingBoxAsync(), await range.BoundingBoxAsync());
+        Assert.InRange(above!.Height - line, -0.5, 0.5);
+        Assert.InRange(below!.Height - line, -0.5, 0.5);
+        Assert.True(below.Y >= above.Y + above.Height - 0.5, "The range's name isn't under the value.");
+        Assert.InRange(above.X + above.Width - (bar!.X + bar.Width), -0.5, 0.5);
+        Assert.InRange(below.X + below.Width - (bar.X + bar.Width), -0.5, 0.5);
+        Assert.True(below.X >= box!.X - 0.5, "The range's name runs out of the gauge.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Gauge_ShouldTakeTheNameAndToneOfTheRange_WhenItsValueMovesIntoIt(string browser)
     {
         var page = await OpenAsync(browser, "/examples/linear-gauge/ranges");

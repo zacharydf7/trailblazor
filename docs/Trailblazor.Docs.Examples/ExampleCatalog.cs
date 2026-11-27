@@ -1967,7 +1967,8 @@ public static class ExampleCatalog
                     + "or the text around the gauge.") { Pitfall = true },
                 new("A `Target` below `Min` or above `Max` is marked at that end and read out as it is. One that "
                     + "isn't finite is left out."),
-                new("The value's text and the range's name stay on one line. A long label wraps beside them."),
+                new("The value's text and the range's name each stay on one line, and the name goes under the "
+                    + "value where the gauge is too narrow for both. A long label wraps beside them."),
                 new("Right to left, the bar fills from the right, and `Min` is under its right end."),
                 new("`Max` has to be above `Min`, and both finite, or the gauge throws when it renders. A "
                     + "`TbGaugeRange` outside a gauge throws too."),
