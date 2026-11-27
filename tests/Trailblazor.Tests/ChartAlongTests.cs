@@ -191,6 +191,117 @@ public class ChartAlongTests
             + $"{got}.", thrown.Message);
     }
 
-    private static ChartAlong Continuous(object?[] values, bool bars = false) =>
-        ChartAlong.Continuous(values, bars, format: null, markFormat: null, English);
+    [Fact]
+    public void Continuous_ShouldRunBetweenTheAppsEnds_WhenMinAndMaxAreGiven()
+    {
+        var along = Continuous([10, 20, 30], ends: new(0, 40, null, false));
+
+        Assert.Equal([0.25, 0.5, 0.75], along.At);
+        Assert.Equal([(0, "0"), (0.25, "10"), (0.5, "20"), (0.75, "30"), (1, "40")], along.Marks);
+    }
+
+    [Fact]
+    public void Continuous_ShouldMarkTheMultiplesOfTheAppsStep_WhenGivenOne()
+    {
+        var along = Continuous([0, 10, 40], ends: new(null, null, 20, false));
+
+        Assert.Equal([(0, "0"), (0.5, "20"), (1, "40")], along.Marks);
+        Assert.Equal(2, along.Steps);
+    }
+
+    [Fact]
+    public void Continuous_ShouldPassOverTheAppsStep_WhenItWouldGiveMoreThanFiftyMarks()
+    {
+        var along = Continuous([0, 100], ends: new(null, null, 2, false));
+
+        Assert.Equal(["0", "100"], along.Marks.Select(mark => mark.Text));
+    }
+
+    [Fact]
+    public void Continuous_ShouldPassOverTheAppsStep_WhenItWouldLeaveFewerThanTwoMarks()
+    {
+        var along = Continuous([1, 2, 4], ends: new(null, null, 10, false));
+
+        // No multiple of ten lies between 1 and 4, so the axis keeps its own marks.
+        Assert.Equal(["1", "2", "3", "4"], along.Marks.Select(mark => mark.Text));
+    }
+
+    [Fact]
+    public void Continuous_ShouldMoveAnEndOutToTheNearestMark_WhenRounded()
+    {
+        var along = Continuous([2.4, 7.9, 14.2], ends: new(null, null, null, true));
+
+        // The marks are five apart, so the plot runs from 0 to 15 and holds every item inside its edges.
+        Assert.Equal([0.16, 0.527, 0.947], along.At.Select(at => Math.Round(at, 3)));
+        Assert.Equal(["0", "5", "10", "15"], along.Marks.Select(mark => mark.Text));
+        Assert.Equal(3, along.Steps);
+    }
+
+    [Fact]
+    public void Continuous_ShouldLeaveAnItemOnAMarkWhereItIs_WhenRounded()
+    {
+        var along = Continuous([2020, 2021, 2022], ends: new(null, null, null, true));
+
+        // The first and the last year are marks themselves, so the plot still runs from one to the other.
+        Assert.Equal([0, 0.5, 1], along.At);
+    }
+
+    [Theory]
+    [InlineData(30, null, 30d, 40d)]
+    [InlineData(null, 5, -5d, 5d)]
+    public void Continuous_ShouldMoveTheOtherEnd_WhenAnEndIsSetBeyondEveryItem(int? min, int? max, double first,
+        double last)
+    {
+        var along = Continuous([10, 20], ends: new(min, max, null, false));
+
+        // The plot is as wide as the items span, from the end the app gave, and the items lie outside it.
+        Assert.Equal([(10 - first) / (last - first), (20 - first) / (last - first)], along.At);
+        Assert.All(along.At, at => Assert.False(at is > 0 and < 1));
+    }
+
+    [Fact]
+    public void Continuous_ShouldPlaceOneItemBetweenTheAppsEnds_WhenItIsTheOnlyValue()
+    {
+        var along = Continuous([5, 5], bars: true, ends: new(0, 20, null, false));
+
+        // Its place is as wide as a step of the app's range, a quarter of the plot here, not the whole range.
+        Assert.Equal([0.25, 0.25], along.At);
+        Assert.Equal(0.25, along.Slot);
+        Assert.Equal(["0", "5", "10", "15", "20"], along.Marks.Select(mark => mark.Text));
+    }
+
+    [Fact]
+    public void Continuous_ShouldKeepABarsPlaceInsideThePlot_WhenOnlyOneEndIsSetAndItIsTheOnlyValue()
+    {
+        var along = Continuous([5, 5], bars: true, ends: new(null, 20, null, false));
+
+        // The end left to the chart moves out by half a place, so the place starts at the plot's edge.
+        Assert.Equal(along.Slot / 2, along.At[0], 9);
+        Assert.Equal("20", along.Marks[^1].Text);
+    }
+
+    [Fact]
+    public void Continuous_ShouldRunBetweenTheAppsDates_WhenGivenDatesAsEnds()
+    {
+        var along = Continuous([new DateOnly(2026, 1, 3), new DateOnly(2026, 1, 10)],
+            ends: new(new DateOnly(2026, 1, 1), new DateTime(2026, 1, 31), null, false));
+
+        Assert.Equal([0.066667, 0.3], along.At.Select(at => Math.Round(at, 6)));
+    }
+
+    [Fact]
+    public void Continuous_ShouldSayWhatKindOfEndItNeeds_WhenAnEndIsNotOfTheItemsKind()
+    {
+        var onNumbers = Assert.Throws<InvalidOperationException>(() =>
+            Continuous([1, 2], ends: new(new DateOnly(2026, 1, 1), null, null, false)));
+        var onDates = Assert.Throws<InvalidOperationException>(() =>
+            Continuous([new DateOnly(2026, 1, 3), new DateOnly(2026, 1, 10)], ends: new(null, 31, null, false)));
+
+        const string message = "TbXAxis needs a Min and a Max of the kind its items' X values are: numbers for "
+            + "numbers, dates for dates.";
+        Assert.Equal((message, message), (onNumbers.Message, onDates.Message));
+    }
+
+    private static ChartAlong Continuous(object?[] values, bool bars = false, ChartAlongEnds ends = default) =>
+        ChartAlong.Continuous(values, bars, format: null, markFormat: null, English, ends);
 }

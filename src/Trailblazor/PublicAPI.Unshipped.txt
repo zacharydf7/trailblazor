@@ -8456,6 +8456,12 @@ Trailblazor.ChartLabels.Scatter.init -> void
 Trailblazor.TbScatterSeries<TItem>
 Trailblazor.TbScatterSeries<TItem>.TbScatterSeries() -> void
 Trailblazor.TbChartSeries<TItem>.ItemTone.get -> System.Func<TItem, Trailblazor.Tone?>?
+Trailblazor.TbXAxis.Max.get -> object?
+Trailblazor.TbXAxis.Max.set -> void
+Trailblazor.TbXAxis.Min.get -> object?
+Trailblazor.TbXAxis.Min.set -> void
+Trailblazor.TbXAxis.Step.get -> double?
+Trailblazor.TbXAxis.Step.set -> void
 Trailblazor.TbChartSeries<TItem>.ItemTone.set -> void
 Trailblazor.TbChartSeries<TItem>.Tone.get -> Trailblazor.Tone?
 Trailblazor.TbChartSeries<TItem>.Tone.set -> void

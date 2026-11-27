@@ -47,9 +47,6 @@ internal sealed class ChartPlan
     // No plot has room for more labels than this, so a longer axis leaves the rest out of the markup.
     private const int MostLabels = 48;
 
-    // A step the app sets that would give more than about this many marks is passed over for the chart's own.
-    private const int MostTicks = 50;
-
     private ChartPlan(IReadOnlyList<string> places, ChartTicks ticks, IReadOnlyList<ChartSeriesPlan> series,
         IReadOnlyList<(double Y, string Text, bool Zero)> valueTicks, ChartAlong along)
     {
@@ -172,7 +169,7 @@ internal sealed class ChartPlan
         var highest = axis.Max ?? (shares ? 1 : reached.Count == 0 ? 1 : reached.Max());
         // An end left to the chart sits on a multiple of the step, the app's or the chart's own. An end the app set
         // is kept as given, even off a step, and the marks stay on multiples of the step.
-        var ticks = axis.Step is { } step && (highest - lowest) / step < MostTicks
+        var ticks = axis.Step is { } step && (highest - lowest) / step < ChartTicks.MostSteps
             ? ChartTicks.Reach(lowest, highest, step) : ChartTicks.Cover(lowest, highest);
         var (min, max) = (axis.Min ?? ticks.Min, axis.Max ?? ticks.Max);
         if (max > min)

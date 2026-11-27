@@ -1014,11 +1014,13 @@ public static class ExampleCatalog
                     + "`Format`, such as `\"MMM d\"` for dates or `\"0.0\"` for one decimal, in the current culture. "
                     + "`TbYAxis` also takes `Min` and `Max` for the ends of the axis, and `Step` for the distance "
                     + "between its marks, which sit on multiples of the step. Without them the chart picks round "
-                    + "values.", typeof(ChartAxesExample)),
+                    + "values. On a continuous scale `TbXAxis` takes the three too, as \"The ends of a scale\" "
+                    + "shows.", typeof(ChartAxesExample)),
                 new("scale", "A time scale", "By default each item is one place, and the places are evenly spaced. "
                     + "`Scale=\"ChartScale.Continuous\"` on `TbXAxis` places each item by its `X` value, a number or "
                     + "a date, so the gaps between items show: these readings were taken on patrol days, not every "
-                    + "day. The plot runs from the first value to the last, and the axis marks round times that the "
+                    + "day. Unless the axis has a `Min` or a `Max`, the plot runs from the first value to the last. "
+                    + "The axis marks round times that the "
                     + "chart picks to suit the span, no finer than the items are spaced: here, every seventh day. "
                     + "`Format` writes the items in the tooltip and the data table, and `MarkFormat` the marks, "
                     + "which without it read as a time, a day, a month or a year. Marks by the hour show no date, so "
@@ -1028,6 +1030,13 @@ public static class ExampleCatalog
                     + "sits at its distance along the trail, and the axis marks whole kilometers. A whole-number "
                     + "`X`, such as a year, is marked by whole numbers, written without digit grouping.",
                     typeof(ChartProfileExample)),
+                new("axis-ends", "The ends of a scale", "`Min` and `Max` on `TbXAxis` set the values at the plot's "
+                    + "start and end on a continuous scale, as numbers or as dates to match the items, such as "
+                    + "`Min=\"@(new DateOnly(2026, 6, 1))\"`. `Step` sets the distance between a number scale's "
+                    + "marks. Here the trail is 8 km long but surveyed only as far as 6 km, so the last quarter of "
+                    + "the plot is empty, and the axis marks every 2 km. `Min` and `Max` leave no item out: an item "
+                    + "beyond them is drawn outside the plot, a bar included, so filter the items first.",
+                    typeof(ChartAxisEndsExample)),
                 new("scatter", "Scatter", "A `TbScatterSeries` draws a mark for each item and no line between them, "
                     + "for how two measures go together: here each trail's climb against its length. Give it a "
                     + "continuous scale, since on an even one the marks are evenly spaced whatever their `X`. A "
@@ -1035,7 +1044,9 @@ public static class ExampleCatalog
                     + "order they are given, so they differ by shape as well as by color; a fifth starts over, and "
                     + "no parameter picks a shape. Every item with a value has a mark, however many there are. The "
                     + "tooltip and a click go to the mark under the pointer, and the keys move between a series' "
-                    + "marks. Like a line's, its axis starts near the lowest value, not at zero.",
+                    + "marks. Like a line's, its value axis starts near the lowest value, not at zero. Along the "
+                    + "chart, a scale of numbers runs between the round values that hold the first and the last "
+                    + "`X`, so the shortest and the longest trail sit inside the plot's edges.",
                     typeof(ChartScatterExample)),
                 new("combined", "Bars with a line", "Bar and line series share a chart and its one value axis, so "
                     + "give them values in the same unit. `Tone` gives a series the color of what it means, in "
@@ -1220,13 +1231,18 @@ public static class ExampleCatalog
                     + "the chart. The pointer reaches each of a scatter's marks there but only the first of a "
                     + "line's or a bar's items; the keys reach each."),
                 new("Where a scatter's marks overlap, they're drawn one on another, each with a ring in the "
-                    + "surface's color around it. The plot runs from the first `X` to the last, so the marks at the "
-                    + "ends sit on its edges. Past a few hundred marks a scatter is hard to read and to point at."),
+                    + "surface's color around it. Past a few hundred marks a scatter is hard to read and to point "
+                    + "at."),
+                new("With no bars showing, a scatter's scale of numbers runs between round values, so an item sits "
+                    + "on the plot's edge only when its `X` is itself one of the axis's marks, as 2020 and 2022 are "
+                    + "when the axis marks every year. A scale of dates runs from the first date to the last, "
+                    + "with those items on its edges; give it a `Min` and a `Max` for room."),
                 new("Dates are placed by their clock time as written: a `DateTimeOffset`'s offset and a `DateTime`'s "
                     + "kind aren't applied, so convert the times to one zone first.") { Pitfall = true },
                 new("On a continuous scale an item's bars together take seven tenths of the smallest gap between two "
                     + "`X` values, so one close pair makes every bar thin: bars suit values a regular step apart. "
-                    + "The plot has half that gap as room at each end while a bar series shows.") { Pitfall = true },
+                    + "The plot has half that gap as room at each end while a bar series shows, unless the axis "
+                    + "has a `Min` or a `Max` there.") { Pitfall = true },
                 new("Series take the theme's eight series colors in the order they first render, and a ninth starts "
                     + "over at the first. A series inside an `@if` that shows later goes last, in the legend and the "
                     + "table too. Past four or five series a chart is hard to read; show fewer, or several small "
@@ -1241,12 +1257,15 @@ public static class ExampleCatalog
                     + "tone: an `ItemTone` colors markers, never a stretch of the line.") { Pitfall = true },
                 new("A value that isn't a number throws, naming its series. A value that is null, or isn't finite, "
                     + "leaves a gap. On a continuous scale, an `X` that isn't a finite number, a `DateTime`, a "
-                    + "`DateTimeOffset` or a `DateOnly` throws, null included."),
+                    + "`DateTimeOffset` or a `DateOnly` throws, null included. So does a `TbXAxis` whose `Min` or "
+                    + "`Max` isn't of the items' kind, whose `Min` isn't below its `Max`, or whose `Step` isn't "
+                    + "above zero."),
                 new("When a series' `Value` or `ItemTone` reads something from outside the item, such as a field "
                     + "that picks what to show, the chart draws again as its parent renders. A series inside a "
                     + "component of yours that renders by itself may be drawn a render behind, so have such a "
                     + "change render the chart's parent too.") { Pitfall = true },
-                new("A line's or a scatter's value beyond a `Min` or `Max` you set is drawn outside the plot. A bar "
+                new("A line's or a scatter's value beyond a `Min` or `Max` you set on `TbYAxis` is drawn outside the "
+                    + "plot. A bar "
                     + "or an area's fill stops at the plot's edge, and a bar cut short there has a square end.")
                     { Pitfall = true },
                 new("With `ChartStacking.Percent` the axis runs from 0% to 100%, and a line or scatter series is "

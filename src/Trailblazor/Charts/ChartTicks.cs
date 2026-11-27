@@ -7,6 +7,9 @@ internal readonly record struct ChartTicks(double Min, double Max, double Step)
     // Float division lands a hair off a whole number of steps, such as 0.3 / 0.1; this much is taken as on it.
     internal const double Slack = 1e-9;
 
+    // A step the app sets that would give more than about this many marks is passed over for the chart's own.
+    internal const int MostSteps = 50;
+
     // The digits after the decimal point that the step has, so labels neither round a tick nor pad it: 1 for a step
     // of 2.5, and 2 for one of 0.25.
     public int Decimals => DecimalsOf(Step);

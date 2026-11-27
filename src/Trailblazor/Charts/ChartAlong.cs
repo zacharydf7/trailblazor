@@ -2,6 +2,11 @@ using System.Globalization;
 
 namespace Trailblazor;
 
+// What the app, or the kind of chart, asks of a continuous scale's ends and marks: the values at the plot's start and
+// end, the distance between the marks of a number scale, and whether an end left to the chart sits on a mark, as a
+// scatter's does, so that its outermost items are not on the plot's edge.
+internal readonly record struct ChartAlongEnds(object? Min, object? Max, double? Step, bool Round);
+
 // Where a chart's items sit along it. On an even scale each item is one place, all the same width. On a continuous
 // one each item is placed by its X value, a number or a date, and the axis marks round values in place of items.
 internal sealed class ChartAlong
@@ -41,16 +46,25 @@ internal sealed class ChartAlong
     // each end, and a place is as wide as that gap. `format` writes the items, and `markFormat` the marks; without
     // one, a number mark is written as the items are, and a time mark as its step suits.
     public static ChartAlong Continuous(IReadOnlyList<object?> values, bool bars, string? format, string? markFormat,
-        CultureInfo culture)
+        CultureInfo culture, ChartAlongEnds ends = default)
     {
         if (values.Count == 0)
         {
             return new([], 1, [], 1, true);
         }
 
-        var times = values.All(value => value is DateTime or DateTimeOffset or DateOnly);
+        var times = values.All(IsTime);
         double[] numbers = [.. values.Select(Number)];
         var (first, last) = (numbers.Min(), numbers.Max());
+        var distinct = numbers.Distinct().Order().ToArray();
+        // The smallest gap between two values, or null when every value is the same.
+        double? apart = distinct.Length > 1 ? distinct.Zip(distinct.Skip(1), (one, next) => next - one).Min() : null;
+        if (bars && apart is { } room)
+        {
+            (first, last) = (first - room / 2, last + room / 2);
+        }
+
+        (first, last) = Between(first, last, ends, times);
         if (first == last)
         {
             // One value has the whole plot as its place, and the axis marks it alone.
@@ -58,14 +72,15 @@ internal sealed class ChartAlong
                 [(0.5, ChartValues.Text(values[0], markFormat ?? format, culture))], 1, true);
         }
 
-        var distinct = numbers.Distinct().Order().ToArray();
-        var gap = distinct.Zip(distinct.Skip(1), (one, next) => next - one).Min();
-        if (bars)
-        {
-            (first, last) = (first - gap / 2, last + gap / 2);
-        }
-
+        // Values that are all the same lie between ends the app set, with a place as wide as a step of that range.
         var span = last - first;
+        var gap = apart ?? ChartTicks.StepFor(span, NumberSteps);
+        if (bars && apart is null)
+        {
+            // Their bars have half a place of room at an end the app left to the chart, as other bars do.
+            (first, last) = (ends.Min is null ? first - gap / 2 : first, ends.Max is null ? last + gap / 2 : last);
+            span = last - first;
+        }
         List<(double X, string Text)> marks;
         double steps;
         if (times)
@@ -81,9 +96,25 @@ internal sealed class ChartAlong
             // Whole numbers aren't marked by the half: the step is no shorter than the items' spacing. Where no two
             // marks that far apart lie on the axis, as between 1 and 4, it is the longest step that gives two.
             var step = Math.Max(ChartTicks.StepFor(span, NumberSteps), ChartTicks.StepNoLessThan(gap * AboutAsLong));
-            while (new ChartTicks(first, last, step).Values.Count < 2)
+            if (ends.Step is { } given && span / given < ChartTicks.MostSteps
+                && new ChartTicks(first, last, given).Values.Count >= 2)
             {
-                step = ChartTicks.StepBelow(step);
+                step = given;
+            }
+            else
+            {
+                while (new ChartTicks(first, last, step).Values.Count < 2)
+                {
+                    step = ChartTicks.StepBelow(step);
+                }
+            }
+
+            if (ends.Round)
+            {
+                // An end left to the chart moves out to the nearest mark, and an end the app set stays as given.
+                var reach = ChartTicks.Reach(first, last, step);
+                (first, last) = (ends.Min is null ? reach.Min : first, ends.Max is null ? reach.Max : last);
+                span = last - first;
             }
 
             var ticks = new ChartTicks(first, last, step);
@@ -100,6 +131,31 @@ internal sealed class ChartAlong
 
         return new([.. numbers.Select(number => (number - first) / span)], gap / span, marks, steps, true);
     }
+
+    // The plot's ends: the app's where it set them, and the items' own otherwise. An end the app set beyond every
+    // item still needs a plot with some width, so the other end moves as far from it as the items span.
+    private static (double First, double Last) Between(double first, double last, ChartAlongEnds ends, bool times)
+    {
+        bool Fits(object? end) => end is null || (times ? IsTime(end) : ChartValues.IsNumber(end));
+        if (!Fits(ends.Min) || !Fits(ends.Max))
+        {
+            throw new InvalidOperationException($"{nameof(TbXAxis)} needs a {nameof(TbXAxis.Min)} and a "
+                + $"{nameof(TbXAxis.Max)} of the kind its items' X values are: numbers for numbers, dates for dates.");
+        }
+
+        var width = last > first ? last - first : 1;
+        var (min, max) = (ends.Min is null ? first : Number(ends.Min), ends.Max is null ? last : Number(ends.Max));
+        return max > min || (ends.Min is null && ends.Max is null) ? (min, max)
+            : ends.Max is null ? (min, min + width) : (max - width, max);
+    }
+
+    // Whether an axis's two ends are in order. Ends that aren't both numbers or both dates can't be compared, and
+    // are told apart from the items once there are items.
+    public static bool InOrder(object? min, object? max) => min is null || max is null
+        || IsTime(min) != IsTime(max) || !(IsTime(min) || (ChartValues.IsNumber(min) && ChartValues.IsNumber(max)))
+        || Number(min) < Number(max);
+
+    private static bool IsTime(object? value) => value is DateTime or DateTimeOffset or DateOnly;
 
     // A day or a month reads with its month's short name, in the order the culture writes them.
     private static string Short(string kind, CultureInfo culture) => kind switch

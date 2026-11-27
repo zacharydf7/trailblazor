@@ -1,0 +1,17 @@
+<TbChart Items="Points" X="point => point.Km" Title="The ridge trail, surveyed so far">
+    <TbXAxis Scale="ChartScale.Continuous" Title="Distance" Format="0.0 km" MarkFormat="0 km" Min="0" Max="8"
+             Step="2" />
+    <TbYAxis Title="m" Min="1200" />
+    <TbLineSeries Name="Elevation" Value="point => point.Meters" />
+</TbChart>
+
+@code {
+    // The trail is 8 km long, and the survey has reached 6.
+    private static readonly Point[] Points =
+    [
+        new(0, 1240), new(0.8, 1310), new(1.5, 1420), new(2.1, 1395), new(3.4, 1560), new(4.0, 1610),
+        new(5.2, 1480), new(6.0, 1300),
+    ];
+
+    private sealed record Point(double Km, int Meters);
+}

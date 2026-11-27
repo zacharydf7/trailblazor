@@ -254,8 +254,11 @@ public partial class TbChart<TItem>
                 one.Filled))];
         var axis = Axes.Y is { } y ? new ChartValueAxis(y.Min, y.Max, y.Step, y.Format) : default;
         var bars = series.Any(one => one.Bars && !one.Hidden);
-        var along = Axes.X is { Scale: ChartScale.Continuous } x
-            ? ChartAlong.Continuous([.. items.Select(X!)], bars, x.Format, x.MarkFormat, culture) : null;
+        // A scatter's marks sit clear of the plot's edges where they can: its axis runs between round values, as the
+        // value axis does. Bars already have room at each end.
+        var round = !bars && _series.Any(one => one.Dots && !one.IsHidden);
+        var along = Axes.X is { Scale: ChartScale.Continuous } x ? ChartAlong.Continuous([.. items.Select(X!)], bars,
+            x.Format, x.MarkFormat, culture, new(x.Min, x.Max, x.Step, round)) : null;
         return ChartPlan.Build(places, series, Stacking, axis, culture, along);
     }
 
