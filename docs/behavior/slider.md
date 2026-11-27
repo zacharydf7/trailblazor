@@ -46,7 +46,7 @@ Familiar apps: the volume slider in an OS or video player, the price range filte
 
 ## Focus
 
-- [x] The thumb shows a focus ring for keyboard focus. `trailblazor.css`
+- [x] The thumb shows a focus ring for keyboard focus, and forced colors keep it. `SliderTests.Slider_ShouldRingItsThumb_WhenFocusedWithColorsForced`
 - [x] A click on a range slider's track focuses the thumb without the ring, and the ring appears once a key is pressed, or when focus comes back. `SliderDragTests.RangeSlider_ShouldHoldBackTheRingUntilAKey_WhenTheTrackIsClicked`, `SliderDragTests.RangeSlider_ShouldStopHoldingBackTheRing_WhenFocusLeavesTheThumb`
 - [x] A read-only slider stays focusable. `ReadOnlyTests.ReadOnlySlider_ShouldKeepItsValue_WhenDraggedOrMovedWithTheKeys`
 - [x] A disabled slider can't take focus. `SliderExampleTests.StatesExample_ShouldMarkOneReadOnlySoItPostsAndDisableTheOther_WhenRendered`

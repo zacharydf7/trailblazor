@@ -68,6 +68,21 @@ public class SliderTests(BrowserFixture fixture) : SliderKeysTests(fixture)
         Assert.Equal(colors[..2], colors[2..]);
     }
 
+    // getComputedStyle can't read the thumb's ring, so the test compares screenshots: focus must change how it looks.
+    [Fact]
+    public async Task Slider_ShouldRingItsThumb_WhenFocusedWithColorsForced()
+    {
+        var page = await OpenAsync("chromium", "/examples/slider", new() { ForcedColors = ForcedColors.Active });
+        var slider = page.Locator(".tb-slider").First;
+        var input = slider.Locator("[data-part=input]");
+        var unfocused = await slider.ScreenshotAsync();
+
+        await input.FocusAsync();
+
+        Assert.True(await input.EvaluateAsync<bool>("input => input.matches(':focus-visible')"));
+        Assert.NotEqual(unfocused, await slider.ScreenshotAsync());
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Slider_ShouldFillFromTheRightAndCenterItsValue_WhenTheTextIsRightToLeft(string browser)
     {

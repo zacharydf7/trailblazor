@@ -8176,10 +8176,11 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
             background: CanvasText;
         }
 
+        /* Forced colors drop shadows, so an outline thickens the line. */
         .tb-splitter__separator:hover::before,
         .tb-splitter__separator:focus-visible:not([data-pointer-focus])::before {
             background: Highlight;
-            box-shadow: 0 0 0 1px Highlight;
+            outline: 1px solid Highlight;
         }
     }
 
@@ -8841,10 +8842,11 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
             background: CanvasText;
         }
 
+        /* Forced colors drop shadows, so an outline thickens the line. */
         :is(.tb-dock__separator, .tb-dock__slide-separator):hover::before,
         :is(.tb-dock__separator, .tb-dock__slide-separator):focus-visible:not([data-pointer-focus])::before {
             background: Highlight;
-            box-shadow: 0 0 0 1px Highlight;
+            outline: 1px solid Highlight;
         }
 
         .tb-dock__drop {
@@ -9166,6 +9168,12 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         :is(.tb-tabs--soft, .tb-tabs--filled) > .tb-tabs__list > .tb-tabs__tab[aria-selected="true"] {
             outline: 2px solid Highlight;
             outline-offset: -2px;
+        }
+
+        /* Focus doubles the selection's outline, since a single one looks the same with or without focus. */
+        :is(.tb-tabs--soft, .tb-tabs--filled) > .tb-tabs__list > .tb-tabs__tab[aria-selected="true"]:focus-visible {
+            outline: 6px double Highlight;
+            outline-offset: -6px;
         }
     }
 
@@ -10739,6 +10747,12 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         .tb-tree__item--selected {
             outline: 2px solid Highlight;
             outline-offset: -2px;
+        }
+
+        /* Focus doubles the selection's outline, since a single one looks the same with or without focus. */
+        .tb-tree__item--selected:focus-visible {
+            outline: 6px double Highlight;
+            outline-offset: -6px;
         }
 
         .tb-tree__item[data-drop="before"] {
