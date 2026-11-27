@@ -1,0 +1,107 @@
+@namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@typeparam TItem
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@inject ITbLocalizer Localizer
+@inject JsModuleLoader Modules
+
+<figure @attributes="AdditionalAttributes" aria-label="@AriaLabel"
+        style="@Styles.Join(Diameter is null ? null : $"--tb-pie-diameter: {Diameter}", Style)"
+        class="@ClassNames.Join("tb-pie", Class)">
+    @{
+        var rows = Rows();
+        var empty = rows.All(row => row.Slice is null);
+    }
+    @if (Title is not null)
+    {
+        <figcaption data-part="title" class="@ClassNames.Join("tb-chart__title", Classes?.Title)">@Title</figcaption>
+    }
+    <div class="tb-pie__body">
+        @* The plot is one element whether it has anything to draw or not, so the script stays on it. The script reads
+           each slice's name from it, and the values and the slices' middles from the slices' group. *@
+        <div @ref="_plot" id="@_plotId" data-part="plot" data-round data-places="@(empty ? null : Places(rows))"
+             data-at="@(empty ? null : At(rows))"
+             data-activates="@(RendererInfo.IsInteractive && OnSliceClick.HasDelegate ? "" : null)"
+             data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
+             class="@ClassNames.Join("tb-chart__plot tb-pie__plot", empty ? "tb-chart__plot--empty" : null,
+                        Classes?.Plot)">
+            @if (empty)
+            {
+                @(Labels.Empty ?? Localizer[TbStrings.ChartEmpty])
+            }
+            else
+            {
+                <svg class="tb-chart__marks" viewBox="@Box" role="img" aria-label="@Summary(rows)" focusable="false">
+                    <g data-series="" data-number="0" data-values="@Values(rows)" data-points="@Points(rows)">
+                        @for (var place = 0; place < rows.Count; place++)
+                        {
+                            if (rows[place].Slice is { } slice)
+                            {
+                                <path class="@ClassNames.Join("tb-pie__slice", Color(place, rows[place]))"
+                                      data-place="@place" d="@slice.Path" />
+                            }
+                        }
+                    </g>
+                </svg>
+                @if (Donut && ChildContent is not null)
+                {
+                    @* One element around the app's content, so its words flow together as the grid's one item. *@
+                    <div data-part="center" class="tb-pie__center"><div>@ChildContent</div></div>
+                }
+            }
+            @* The script shows these, moves them and names them, and Blazor never writes inside them: the line at the
+               place, which a pie hides, the tooltip and the two elements focus moves between. *@
+            <div class="tb-chart__crosshair" hidden></div>
+            <div data-part="tooltip" class="tb-chart__tooltip" hidden></div>
+            <span class="tb-chart__focus"></span>
+            <span class="tb-chart__focus"></span>
+        </div>
+        @if (!empty)
+        {
+            <ul data-part="legend" class="@ClassNames.Join("tb-chart__legend tb-pie__legend", Classes?.Legend)">
+                @for (var place = 0; place < rows.Count; place++)
+                {
+                    var row = rows[place];
+                    if (row.Slice is not null)
+                    {
+                        <li>
+                            <svg class="@ClassNames.Join("tb-chart__key", Color(place, row))" aria-hidden="true"
+                                 focusable="false">
+                                <rect class="tb-chart__bar" x="1" y="1" width="10" height="10" />
+                            </svg>
+                            @* One element for the label and its share, so the share follows a label that wraps. *@
+                            <span>@row.Label <span class="tb-pie__share">@row.Share</span></span>
+                        </li>
+                    }
+                }
+            </ul>
+        }
+    </div>
+    @if (rows.Count > 0)
+    {
+        <details data-part="table" class="@ClassNames.Join("tb-chart__table", Classes?.Table)">
+            <summary>@(Labels.Table ?? Localizer[TbStrings.ChartTable])</summary>
+            <TbTable Size="Size.Small" aria-label="@(Title ?? AriaLabel)">
+                <thead>
+                    <tr>
+                        <td></td>
+                        <th scope="col">@(Labels.Value ?? Localizer[TbStrings.ChartValue])</th>
+                        <th scope="col">@(Labels.Share ?? Localizer[TbStrings.ChartShare])</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in rows)
+                    {
+                        <tr>
+                            <th scope="row">@row.Label</th>
+                            <td data-tone="@row.Tone?.ToString().ToLowerInvariant()">@row.Value</td>
+                            <td>@row.Share</td>
+                        </tr>
+                    }
+                </tbody>
+            </TbTable>
+        </details>
+    }
+</figure>

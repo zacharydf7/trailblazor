@@ -8460,3 +8460,70 @@ Trailblazor.TbChartSeries<TItem>.ItemTone.set -> void
 Trailblazor.TbChartSeries<TItem>.Tone.get -> Trailblazor.Tone?
 Trailblazor.TbChartSeries<TItem>.Tone.set -> void
 const Trailblazor.TbStrings.ChartScatter = "Chart.Scatter" -> string!
+Trailblazor.PieChartLabels
+Trailblazor.PieChartLabels.<Clone>$() -> Trailblazor.PieChartLabels!
+Trailblazor.PieChartLabels.Donut.get -> string?
+Trailblazor.PieChartLabels.Donut.init -> void
+Trailblazor.PieChartLabels.Empty.get -> string?
+Trailblazor.PieChartLabels.Empty.init -> void
+Trailblazor.PieChartLabels.Equals(Trailblazor.PieChartLabels? other) -> bool
+Trailblazor.PieChartLabels.Pie.get -> string?
+Trailblazor.PieChartLabels.Pie.init -> void
+Trailblazor.PieChartLabels.PieChartLabels() -> void
+Trailblazor.PieChartLabels.Share.get -> string?
+Trailblazor.PieChartLabels.Share.init -> void
+Trailblazor.PieChartLabels.Slice.get -> string?
+Trailblazor.PieChartLabels.Slice.init -> void
+Trailblazor.PieChartLabels.Summary.get -> string?
+Trailblazor.PieChartLabels.Summary.init -> void
+Trailblazor.PieChartLabels.Table.get -> string?
+Trailblazor.PieChartLabels.Table.init -> void
+Trailblazor.PieChartLabels.Value.get -> string?
+Trailblazor.PieChartLabels.Value.init -> void
+Trailblazor.PieChartLabels.ValueAndShare.get -> string?
+Trailblazor.PieChartLabels.ValueAndShare.init -> void
+Trailblazor.TbPieChart<TItem>
+Trailblazor.TbPieChart<TItem>.AriaLabel.get -> string?
+Trailblazor.TbPieChart<TItem>.AriaLabel.set -> void
+Trailblazor.TbPieChart<TItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbPieChart<TItem>.ChildContent.set -> void
+Trailblazor.TbPieChart<TItem>.Classes.get -> Trailblazor.ChartClasses?
+Trailblazor.TbPieChart<TItem>.Classes.set -> void
+Trailblazor.TbPieChart<TItem>.Diameter.get -> string?
+Trailblazor.TbPieChart<TItem>.Diameter.set -> void
+Trailblazor.TbPieChart<TItem>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbPieChart<TItem>.Donut.get -> bool
+Trailblazor.TbPieChart<TItem>.Donut.set -> void
+Trailblazor.TbPieChart<TItem>.Format.get -> string?
+Trailblazor.TbPieChart<TItem>.Format.set -> void
+Trailblazor.TbPieChart<TItem>.ItemTone.get -> System.Func<TItem, Trailblazor.Tone?>?
+Trailblazor.TbPieChart<TItem>.ItemTone.set -> void
+Trailblazor.TbPieChart<TItem>.Items.get -> System.Collections.Generic.IEnumerable<TItem>?
+Trailblazor.TbPieChart<TItem>.Items.set -> void
+Trailblazor.TbPieChart<TItem>.Label.get -> System.Func<TItem, object?>?
+Trailblazor.TbPieChart<TItem>.Label.set -> void
+Trailblazor.TbPieChart<TItem>.Labels.get -> Trailblazor.PieChartLabels!
+Trailblazor.TbPieChart<TItem>.Labels.set -> void
+Trailblazor.TbPieChart<TItem>.OnSliceClick.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.ChartPoint<TItem>!>
+Trailblazor.TbPieChart<TItem>.OnSliceClick.set -> void
+Trailblazor.TbPieChart<TItem>.TbPieChart() -> void
+Trailblazor.TbPieChart<TItem>.TelemetryName.get -> string?
+Trailblazor.TbPieChart<TItem>.TelemetryName.set -> void
+Trailblazor.TbPieChart<TItem>.Title.get -> string?
+Trailblazor.TbPieChart<TItem>.Title.set -> void
+Trailblazor.TbPieChart<TItem>.Value.get -> System.Func<TItem, object?>?
+Trailblazor.TbPieChart<TItem>.Value.set -> void
+const Trailblazor.TbStrings.ChartDonut = "Chart.Donut" -> string!
+const Trailblazor.TbStrings.ChartPie = "Chart.Pie" -> string!
+const Trailblazor.TbStrings.ChartShare = "Chart.Share" -> string!
+const Trailblazor.TbStrings.ChartSlice = "Chart.Slice" -> string!
+const Trailblazor.TbStrings.ChartValue = "Chart.Value" -> string!
+const Trailblazor.TbStrings.ChartValueAndShare = "Chart.ValueAndShare" -> string!
+override Trailblazor.PieChartLabels.Equals(object? obj) -> bool
+override Trailblazor.PieChartLabels.GetHashCode() -> int
+override Trailblazor.PieChartLabels.ToString() -> string!
+override Trailblazor.TbPieChart<TItem>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbPieChart<TItem>.OnParametersSet() -> void
+static Trailblazor.PieChartLabels.operator !=(Trailblazor.PieChartLabels? left, Trailblazor.PieChartLabels? right) -> bool
+static Trailblazor.PieChartLabels.operator ==(Trailblazor.PieChartLabels? left, Trailblazor.PieChartLabels? right) -> bool
+~override Trailblazor.TbPieChart<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

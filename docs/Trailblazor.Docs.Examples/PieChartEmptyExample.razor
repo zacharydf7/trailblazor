@@ -1,0 +1,8 @@
+<TbPieChart Items="Closures" Label="closure => closure.Cause" Value="closure => closure.Days"
+            Title="Days closed by cause" Labels="@(new() { Empty = "No closures so far this year" })" />
+
+@code {
+    private static readonly Closure[] Closures = [];
+
+    private sealed record Closure(string Cause, int Days);
+}

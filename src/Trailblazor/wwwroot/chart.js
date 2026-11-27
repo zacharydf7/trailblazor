@@ -17,6 +17,8 @@ export function attachChart(plot, events, point, noValue, activates) {
     const crosshair = plot.querySelector(':scope > .tb-chart__crosshair');
     const tooltip = plot.querySelector(':scope > .tb-chart__tooltip');
     const proxies = [...plot.querySelectorAll(':scope > .tb-chart__focus')];
+    // A pie's places are its slices, set around a circle and not in order along the chart.
+    const round = plot.hasAttribute('data-round');
     let model = null;
     let active = null;
     let pointer = null;
@@ -33,6 +35,7 @@ export function attachChart(plot, events, point, noValue, activates) {
         const at = plot.dataset.at === undefined ? places.map((_, place) => (place + 0.5) / places.length)
             : plot.dataset.at.split(' ').map(x => x / 10000);
         const series = [...plot.querySelectorAll('.tb-chart__marks [data-series]')].map(element => ({
+            element,
             number: Number(element.dataset.number),
             name: element.dataset.series,
             color: viewOf(plot).getComputedStyle(element).getPropertyValue('--_tb-chart-series'),
@@ -62,7 +65,7 @@ export function attachChart(plot, events, point, noValue, activates) {
     // The line at a place and every series' value there.
     function show(place, seriesIndex) {
         const { places, series } = read();
-        if (!series.length || place >= places.length) {
+        if (!series.length || place < 0 || place >= places.length) {
             hide();
             return;
         }
@@ -74,12 +77,15 @@ export function attachChart(plot, events, point, noValue, activates) {
             const row = element('div', 'tb-chart__tooltip-row');
             row.toggleAttribute('data-active', index === seriesIndex);
             const key = element('span', 'tb-chart__tooltip-key');
-            // The key is the color of the mark it stands for: its own tone's, or else its series'.
+            // The key is the color of the mark it stands for: its own tone's, a pie slice's own, or else its
+            // series'.
             const tone = one.tones?.[place];
+            const slice = round && one.element.querySelector(`[data-place="${place}"]`);
             if (tone && tone !== '-') {
                 key.classList.add(`tb-chart__tone--${tone}`);
             } else {
-                key.style.setProperty('--_tb-chart-series', one.color);
+                key.style.setProperty('--_tb-chart-series', slice
+                    ? viewOf(plot).getComputedStyle(slice).getPropertyValue('--_tb-chart-series') : one.color);
             }
             row.append(key, element('span', 'tb-chart__tooltip-name', one.name),
                 element('strong', 'tb-chart__tooltip-value', one.values[place] || options.noValue));
@@ -89,6 +95,9 @@ export function attachChart(plot, events, point, noValue, activates) {
         // The tooltip sits on the side of the line that has more room.
         tooltip.style.left = x < 0.5 ? `calc(${x * 100}% + 0.75rem)` : '';
         tooltip.style.right = x < 0.5 ? '' : `calc(${(1 - x) * 100}% + 0.75rem)`;
+        // A pie's tooltip is level with the middle of its slice.
+        const middle = round && series[0].points[place];
+        tooltip.style.top = middle ? `${middle.y * 100}%` : '';
         tooltip.hidden = false;
     }
 
@@ -114,7 +123,7 @@ export function attachChart(plot, events, point, noValue, activates) {
     // along the chart, or else the nearest place along the chart.
     const placeOf = event => {
         const mark = event.target.closest?.('.tb-chart__marks [data-place]');
-        return mark ? Number(mark.dataset.place) : placeAt(event.clientX);
+        return mark ? Number(mark.dataset.place) : round ? -1 : placeAt(event.clientX);
     };
 
     // A press within this many pixels of a point is on that point: a marker's size.
@@ -150,10 +159,16 @@ export function attachChart(plot, events, point, noValue, activates) {
         return band >= 0 && away(series[nearest].points[place]) > onPoint ? band : nearest;
     };
 
-    // One update a frame, for the last place the pointer was at.
+    // One update a frame, for the last place the pointer was at. Off a pie's slices the pointer is at no place, and
+    // the tooltip goes back to the slice that has focus, if one does.
     const frame = frames(plot, () => {
         if (pointer && read().places.length) {
-            show(placeOf(pointer), null);
+            const place = placeOf(pointer);
+            if (place < 0 && active && plot.contains(page.activeElement)) {
+                show(active.place, active.series);
+            } else {
+                show(place, null);
+            }
         }
     });
 
@@ -197,6 +212,10 @@ export function attachChart(plot, events, point, noValue, activates) {
         }
 
         const place = placeOf(event);
+        if (place < 0) {
+            return;
+        }
+
         const seriesIndex = seriesAt(place, event);
         if (seriesIndex >= 0) {
             callDotNet(events, 'OnActivate', read().series[seriesIndex].number, place, 'pointer');
@@ -326,9 +345,10 @@ export function attachChart(plot, events, point, noValue, activates) {
         const forward = mirrored() ? 'ArrowLeft' : 'ArrowRight';
         const back = mirrored() ? 'ArrowRight' : 'ArrowLeft';
         let { series: seriesIndex, place: placeIndex } = active;
-        if (event.key === forward) {
+        // A pie has one series, so Down and Up move around it as the other arrows do.
+        if (event.key === forward || (round && event.key === 'ArrowDown')) {
             placeIndex = along(seriesIndex, placeIndex, 1);
-        } else if (event.key === back) {
+        } else if (event.key === back || (round && event.key === 'ArrowUp')) {
             placeIndex = along(seriesIndex, placeIndex, -1);
         } else if (event.key === 'ArrowDown') {
             seriesIndex = upOrDown(seriesIndex, placeIndex, 1);

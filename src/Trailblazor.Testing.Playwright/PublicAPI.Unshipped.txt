@@ -749,3 +749,11 @@ Trailblazor.Testing.Playwright.TrailblazorPage.Chart(string? name = null) -> Tra
 Trailblazor.Testing.Playwright.TbChartLocator.HideSeriesAsync(string! series) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbChartLocator.IsSeriesHiddenAsync(string! series) -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.Playwright.TbChartLocator.ShowSeriesAsync(string! series) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbPieChartLocator
+Trailblazor.Testing.Playwright.TbPieChartLocator.Chart.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbPieChartLocator.ClickSliceAsync(string! slice) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbPieChartLocator.ShareAsync(string! slice) -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TbPieChartLocator.SlicesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbPieChartLocator.TbPieChartLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TbPieChartLocator.ValueAsync(string! slice) -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TrailblazorPage.PieChart(string? name = null) -> Trailblazor.Testing.Playwright.TbPieChartLocator!

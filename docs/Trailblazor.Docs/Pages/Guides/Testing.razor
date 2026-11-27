@@ -388,8 +388,17 @@
                             the chart's series, hidden ones too, and its places, and
                             <code>Value(series, place)</code> reads a value as the
                             chart's data table writes it. <code>HideSeriesAsync(series)</code> and
-                            <code>ShowSeriesAsync(series)</code> press a legend button, and
-                            <code>IsSeriesHidden(series)</code> reads whether a series is hidden.
+                            <code>ShowSeriesAsync(series)</code> press a legend button,
+                            <code>IsSeriesHidden(series)</code> reads whether a series is hidden, and
+                            <code>Tone(series, place)</code> reads a mark's tone.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>PieChart(name).ClickSliceAsync(slice)</code></th>
+                        <td>
+                            Activates a slice as a click on it does. <code>Slices</code> lists the items' labels,
+                            and <code>Value(slice)</code> and <code>Share(slice)</code> read an item's value and its
+                            share as the chart's data table writes them.
                         </td>
                     </tr>
                     <tr>
@@ -1863,8 +1872,13 @@
             + "run; `SeriesAsync()` and `PlacesAsync()` list the chart's series, hidden ones too, and its places, "
             + "and `ValueAsync(series, place)` "
             + "reads a value as the chart's data table writes it. `HideSeriesAsync(series)` and "
-            + "`ShowSeriesAsync(series)` press a legend button and wait until the app's `HiddenChanged` has run, "
-            + "and `IsSeriesHiddenAsync(series)` reads whether a series is hidden."),
+            + "`ShowSeriesAsync(series)` press a legend button and wait until the app's `HiddenChanged` has run; "
+            + "`IsSeriesHiddenAsync(series)` reads whether a series is hidden, and `ToneAsync(series, place)` "
+            + "reads a mark's tone."),
+        new("Pie chart", "Its Title or AriaLabel, or none for the only one", "`PieChart(name)."
+            + "ClickSliceAsync(slice)` clicks a slice once the page is interactive and waits until the app's "
+            + "`OnSliceClick` has run; `SlicesAsync()` lists the items' labels, and `ValueAsync(slice)` and "
+            + "`ShareAsync(slice)` read an item's value and its share as the chart's data table writes them."),
         new("Chip", "Its text", "`Chip(text).ClickAsync()` clicks it once the page is interactive and waits until "
             + "the app's handlers have run; `RemoveAsync()` presses its remove button and waits for `OnRemove`, and "
             + "`SelectedAsync()` reads whether it's selected. `ChipGroup(name)` finds a group by its `AriaLabel`, "

@@ -38,7 +38,7 @@ public class DriverParityTests
         ["TbVirtualList"] = "VirtualList", ["TbOverlay"] = "Overlay", ["TbHotkeysHelp"] = "Dialog",
         ["TbFab"] = "Button",
         ["TbTimePicker"] = "TimePicker", ["TbChip"] = "Chip", ["TbChipGroup"] = "ChipGroup",
-        ["TbChart"] = "Chart", ["TbCarousel"] = "Carousel", ["TbChat"] = "Chat", ["TbAiPrompt"] = "AiPrompt", ["TbKanban"] = "Kanban",
+        ["TbChart"] = "Chart", ["TbPieChart"] = "PieChart", ["TbCarousel"] = "Carousel", ["TbChat"] = "Chat", ["TbAiPrompt"] = "AiPrompt", ["TbKanban"] = "Kanban",
         ["TbCascader"] = "Cascader", ["TbMenubar"] = "Menubar", ["TbLightbox"] = "Lightbox", ["TbForm"] = "Form",
         ["TbMarkdownEditor"] = "MarkdownEditor", ["TbMentionInput"] = "MentionInput", ["TbTour"] = "Tour",
         ["TbTooltip"] = "Tooltip", ["TbDrawer"] = "Dialog",

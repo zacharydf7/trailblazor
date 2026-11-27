@@ -77,6 +77,26 @@ public static class TbStrings
     /// <see cref="ChartSummary"/>.</summary>
     public const string ChartBarsAndLines = "Chart.BarsAndLines";
 
+    /// <summary>"Pie chart": the kind of a pie chart without a hole, in <see cref="ChartSummary"/>.</summary>
+    public const string ChartPie = "Chart.Pie";
+
+    /// <summary>"Donut chart": the kind of a pie chart with a hole, in <see cref="ChartSummary"/>.</summary>
+    public const string ChartDonut = "Chart.Donut";
+
+    /// <summary>"{0}: {1}, {2} of {3}": what screen readers hear for a pie chart's slice the keys are on, with its
+    /// label, its value and share, its position among the items and how many items there are.</summary>
+    public const string ChartSlice = "Chart.Slice";
+
+    /// <summary>"{0} ({1})": a pie chart slice's value and its share, in the tooltip and in the slice's name.
+    /// </summary>
+    public const string ChartValueAndShare = "Chart.ValueAndShare";
+
+    /// <summary>"Value": heads the column of values in a pie chart's data table.</summary>
+    public const string ChartValue = "Chart.Value";
+
+    /// <summary>"Share": heads the column of shares in a pie chart's data table.</summary>
+    public const string ChartShare = "Chart.Share";
+
     /// <summary>"Message": names the box a chat's user types in.</summary>
     public const string ChatMessage = "Chat.Message";
 
@@ -2094,6 +2114,12 @@ public static class TbStrings
         [ChartAreas] = "Area chart",
         [ChartScatter] = "Scatter chart",
         [ChartBarsAndLines] = "Bar and line chart",
+        [ChartPie] = "Pie chart",
+        [ChartDonut] = "Donut chart",
+        [ChartSlice] = "{0}: {1}, {2} of {3}",
+        [ChartValueAndShare] = "{0} ({1})",
+        [ChartValue] = "Value",
+        [ChartShare] = "Share",
         [ChatMessage] = "Message",
         [ChatSend] = "Send",
         [ChatAttach] = "Attach files",

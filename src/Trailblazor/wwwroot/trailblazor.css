@@ -11760,7 +11760,8 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         }
     }
     /* A chart's markup holds every position as a share of the plot, so these rules size it and nothing is measured. */
-    .tb-chart {
+    .tb-chart,
+    .tb-pie {
         display: grid;
         gap: var(--tb-space-2);
         margin: 0;
@@ -12111,6 +12112,64 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         transform: none;
     }
 
+    /* A pie is a square beside its legend, which drops under it where there is no room. */
+    .tb-pie__body {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--tb-space-4);
+    }
+
+    .tb-pie__plot {
+        flex: none;
+        inline-size: min(100%, var(--tb-pie-diameter, 16rem));
+        aspect-ratio: 1;
+    }
+
+    /* A line in the surface's color parts the slices. Browsers disagree on where such a line is for the pointer, so
+       only a slice's fill responds to the pointer. */
+    .tb-pie__slice {
+        fill: var(--_tb-chart-series);
+        stroke: var(--tb-color-surface);
+        stroke-width: 2;
+        stroke-linejoin: round;
+        vector-effect: non-scaling-stroke;
+        pointer-events: fill;
+    }
+
+    /* What an app puts in a donut's hole is centered in it, and the pointer passes through to the plot. */
+    .tb-pie__center {
+        position: absolute;
+        inset: 22%;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        pointer-events: none;
+    }
+
+    /* The legend takes the room beside the pie, where a long label wraps, and goes under it with less than 12rem. */
+    .tb-pie__legend {
+        flex: 1 1 12rem;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        min-inline-size: 0;
+    }
+
+    .tb-pie__share {
+        margin-inline-start: var(--tb-space-1);
+        color: var(--tb-color-text-muted);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* A pie shows no line at the place, and its tooltip is level with the middle of the slice it is for. */
+    .tb-pie__plot > .tb-chart__crosshair {
+        display: none;
+    }
+
+    .tb-pie__plot > .tb-chart__tooltip {
+        translate: 0 -50%;
+    }
+
     .tb-chart__table > summary {
         inline-size: fit-content;
         color: var(--tb-color-text-muted);
@@ -12183,6 +12242,32 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         .tb-chart__series--4 > .tb-chart__bar,
         .tb-chart__series--8 > .tb-chart__bar {
             fill: Canvas;
+            stroke-dasharray: 1 3;
+        }
+
+        /* A pie's slices differ as bars do: filled, hollow, dashed or dotted, each outlined in the text color. */
+        .tb-pie__slice {
+            fill: CanvasText;
+            stroke: Canvas;
+        }
+
+        .tb-chart__series--2.tb-pie__slice,
+        .tb-chart__series--6.tb-pie__slice {
+            fill: Canvas;
+            stroke: CanvasText;
+        }
+
+        .tb-chart__series--3.tb-pie__slice,
+        .tb-chart__series--7.tb-pie__slice {
+            fill: Canvas;
+            stroke: CanvasText;
+            stroke-dasharray: 4 3;
+        }
+
+        .tb-chart__series--4.tb-pie__slice,
+        .tb-chart__series--8.tb-pie__slice {
+            fill: Canvas;
+            stroke: CanvasText;
             stroke-dasharray: 1 3;
         }
 

@@ -1,0 +1,22 @@
+<TbStack Gap="3">
+    <TbPieChart TItem="Cause" Items="Causes" Label="cause => cause.Name" Value="cause => cause.Rescues"
+                Title="Rescues by cause" OnSliceClick="Show" />
+    <TbText>@(_picked ?? "Pick a cause to see what the rangers advise.")</TbText>
+</TbStack>
+
+@code {
+    private static readonly Cause[] Causes =
+    [
+        new("Lost", 14, "Carry a map, and tell someone your route."),
+        new("Injury", 9, "Wear boots that hold your ankles."),
+        new("Weather", 5, "Check the forecast at the hut before you set out."),
+        new("Exhaustion", 4, "Turn back while you still have half your water."),
+    ];
+
+    private string? _picked;
+
+    private void Show(ChartPoint<Cause> point) =>
+        _picked = $"{point.Series}: {point.Value} rescues. {point.Item.Advice}";
+
+    private sealed record Cause(string Name, int Rescues, string Advice);
+}

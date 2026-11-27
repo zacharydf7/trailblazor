@@ -1,0 +1,12 @@
+<TbPieChart Items="Outcomes" Label="outcome => outcome.Name" Value="outcome => outcome.Hikers"
+            Title="Summit attempts this season" Format="N0" />
+
+@code {
+    private static readonly Outcome[] Outcomes =
+    [
+        new("Reached the summit", 1840), new("Turned back at the hut", 310),
+        new("Turned back at the ford because the river was too high to cross", 12), new("Rescued", 0),
+    ];
+
+    private sealed record Outcome(string Name, int Hikers);
+}

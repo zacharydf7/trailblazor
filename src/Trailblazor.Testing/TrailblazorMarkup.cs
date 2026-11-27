@@ -616,6 +616,13 @@ public sealed class TrailblazorMarkup
         .Where(chart => name is null || name == (chart.GetAttribute("aria-label")
             ?? chart.QuerySelector(":scope > [data-part=title]")?.TextContent)).ToList(), "chart", name), _scripts);
 
+    /// <summary>The <c>TbPieChart</c> with this <c>Title</c> or <c>AriaLabel</c>, or the only one in the markup when
+    /// no name is given.</summary>
+    public TbPieChartDriver PieChart(string? name = null) => new(() => Only(_findAll("figure.tb-pie")
+        .Where(chart => name is null || name == (chart.GetAttribute("aria-label")
+            ?? chart.QuerySelector(":scope > [data-part=title]")?.TextContent)).ToList(), "pie chart", name),
+        _scripts);
+
     /// <summary>The <c>TbCarousel</c> with this <c>AriaLabel</c>, or the only one in the markup when no name is
     /// given.</summary>
     public TbCarouselDriver Carousel(string? name = null) => new(() => Only(_findAll("section.tb-carousel")
@@ -6673,4 +6680,52 @@ public sealed class TbChartDriver
     }
 
     private static string Text(IElement element) => element.TextContent;
+}
+
+/// <summary>A <c>TbPieChart</c>, found by its <c>Title</c> or <c>AriaLabel</c>.</summary>
+public sealed class TbPieChartDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
+
+    internal TbPieChartDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+
+    /// <summary>The labels of the chart's items, in order, those that have no slice too.</summary>
+    public IReadOnlyList<string> Slices =>
+        [.. _find().QuerySelectorAll("[data-part=table] tbody th").Select(heading => heading.TextContent)];
+
+    /// <summary>This item's value, as the chart's data table writes it, or an empty string where it has none. A
+    /// label the chart doesn't have throws.</summary>
+    public string Value(string slice) => Cell(slice, 0);
+
+    /// <summary>This item's share of the total, as the chart's data table writes it, such as "60%", or an empty
+    /// string where the item has no slice. A label the chart doesn't have throws.</summary>
+    public string Share(string slice) => Cell(slice, 1);
+
+    /// <summary>Activates this item's slice, as a click on it does, and waits for the app's <c>OnSliceClick</c> to
+    /// run. A label the chart doesn't have throws, and so do an item with no slice and a chart with no
+    /// <c>OnSliceClick</c>.</summary>
+    public async Task ClickSliceAsync(string slice)
+    {
+        var plot = _find().QuerySelector(":scope > .tb-pie__body > [data-part=plot]")!;
+        if (!plot.HasAttribute("data-activates"))
+        {
+            throw new InvalidOperationException("The chart has no OnSliceClick, so a click on a slice does nothing.");
+        }
+
+        if (Share(slice).Length == 0)
+        {
+            throw new InvalidOperationException($"\"{slice}\" has no slice.");
+        }
+
+        var events = _scripts.Chart(plot.Id);
+        await _scripts.InvokeAsync(() => events.OnActivate(0, Row(slice), "pointer"));
+    }
+
+    private int Row(string slice) => Slices.ToList().IndexOf(slice) is >= 0 and var row ? row
+        : throw new InvalidOperationException($"The chart has no item labeled \"{slice}\".");
+
+    // The text of one of the two cells the data table has for this item: its value, then its share.
+    private string Cell(string slice, int column) =>
+        _find().QuerySelectorAll("[data-part=table] tbody tr")[Row(slice)].QuerySelectorAll("td")[column].TextContent;
 }

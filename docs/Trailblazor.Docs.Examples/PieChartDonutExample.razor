@@ -1,0 +1,9 @@
+<TbPieChart Items="Huts" Label="hut => hut.State" Value="hut => hut.Count" Title="Huts by booking" Donut>
+    <strong>@Huts.Sum(hut => hut.Count)</strong> huts
+</TbPieChart>
+
+@code {
+    private static readonly Hut[] Huts = [new("Booked", 18), new("Free", 9), new("Closed for repair", 3)];
+
+    private sealed record Hut(string State, int Count);
+}

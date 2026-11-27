@@ -969,10 +969,11 @@ public static class ExampleCatalog
                 "When readers need exact values more than the shape, use a [table](components/table) or a "
                     + "[data grid](components/data-grid).",
                 "For how far along one task is, use a [progress bar](components/progress).",
+                "For how one total splits into a few parts, use a [pie chart](components/pie-chart).",
                 "Don't give one chart two series with different units: it has one value axis, and two charts read "
                     + "better than two scales. A scatter's second measure runs along the chart, as its `X`.",
             ],
-            Related = ["table", "data-grid", "progress", "async-content"],
+            Related = ["pie-chart", "table", "data-grid", "progress", "async-content"],
             Sections =
             [
                 new("basic", "Bars", "`Items` is the list the chart draws, one place along the chart for each item in "
@@ -1316,6 +1317,203 @@ public static class ExampleCatalog
                     + "`keyboard` or `pointer` each time a point is clicked or chosen with Enter or Space, when the "
                     + "chart has an `OnPointClick`. A legend button counts the action `hide` or `show`. Moving "
                     + "over the chart or between its points isn't counted, and what it shows is never recorded.",
+            ],
+        },
+        new("pie-chart", "Pie chart", ExampleCategory.Content,
+            "A pie or a donut of a few parts of one whole, such as passes sold by kind, with each part's share in "
+                + "a legend beside it, a tooltip for its value and every value in a table under it.")
+        {
+            WhenToUse =
+            [
+                "Use it for how one total splits into a few parts, such as trails by condition, when the shares "
+                    + "matter more than the exact amounts.",
+                "Use a donut when the total itself is worth showing, in its middle.",
+            ],
+            WhenNotToUse =
+            [
+                "For more than five or six parts, or parts of nearly the same size, use a [chart](components/chart) "
+                    + "of bars: lengths are easier to compare than angles.",
+                "For how shares change over time, use stacked bars or areas in a [chart](components/chart), not a "
+                    + "row of pies.",
+                "For values that don't add up to a whole, such as averages, or values below zero, use bars.",
+                "For how far along one task is, use a [progress bar](components/progress).",
+            ],
+            Related = ["chart", "progress", "table"],
+            Sections =
+            [
+                new("basic", "Pie", "`Items` is the list the chart draws, a slice for each item, clockwise from the "
+                    + "top in the order given. `Label` says what each item is called, and `Value` gives its amount, "
+                    + "which can be any number type. A slice's angle is its value's share of the total. The legend "
+                    + "names each slice and gives its share, and `Title` names the chart and shows above it. On an "
+                    + "interactive page, a tooltip shows the value and the share of the slice the pointer is over, "
+                    + "and the arrow keys move between the slices.", typeof(PieChartExample)),
+                new("donut", "Donut", "`Donut` leaves a hole in the middle, and what is inside the component shows "
+                    + "there, such as the total. Keep it to a few words: it has about half the pie's width.",
+                    typeof(PieChartDonutExample)),
+                new("tones", "Tones", "Slices take the theme's eight series colors in the order of the items. "
+                    + "`ItemTone` gives single items a tone's color in place of that, such as danger for closed "
+                    + "trails. The legend names the slice, so the tone is never the only thing that tells it apart.",
+                    typeof(PieChartToneExample)),
+                new("click", "Acting on a slice", "`OnSliceClick` is raised with the item, its label and its value "
+                    + "when the user clicks or taps a slice, or presses Enter or Space while it has focus.",
+                    typeof(PieChartClickExample)),
+                new("small", "Small and missing shares", "An item whose value is zero, or missing, has no slice "
+                    + "and no legend entry, and stays in the data table: here no one was rescued. A share under 1% "
+                    + "shows one decimal, and its slice is a sliver that the arrow keys still reach. A long label "
+                    + "wraps in the legend.", typeof(PieChartSmallExample)),
+                new("empty", "No data", "A chart with no items, or with no value above zero, says so in place of "
+                    + "the pie. `Labels.Empty` rewords it for what the chart shows.", typeof(PieChartEmptyExample)),
+                new("card", "In a card", "Where a heading beside the chart already names it, leave `Title` out and "
+                    + "name the chart for screen readers with `AriaLabel`. `Diameter` sets how wide the pie is.",
+                    typeof(PieChartCardExample)),
+            ],
+            Api = [typeof(TbPieChart<>), typeof(ChartPoint<>), typeof(PieChartLabels), typeof(ChartClasses)],
+            Anatomy = """
+                <TbPieChart Items="…" Label="…" Value="…" Title="…" Donut>
+                    …
+                </TbPieChart>
+                """,
+            Keyboard =
+            [
+                new(["Right", "Down"], "Moves to the next slice, passing over an item that has none.")
+                    { When = "On the pie" },
+                new(["Left", "Up"], "Moves to the previous slice.") { When = "On the pie" },
+                new(["Home", "End"], "Moves to the first or the last slice.") { When = "On the pie" },
+                new(["Enter", "Space"], "Raises `OnSliceClick` for the slice, when the chart has one.")
+                    { When = "On the pie" },
+                new(["Escape"], "Hides the tooltip and leaves focus where it is.")
+                    { When = "While the tooltip shows" },
+                new(["Enter", "Space"], "Opens or closes the data table.") { When = "On \"Data table\"" },
+            ],
+            RightToLeftKeys = "Left moves to the next slice and Right to the previous one, as the pie is mirrored "
+                + "and its slices run counterclockwise.",
+            Announcements =
+            [
+                "As focus moves to a slice, it is read by its label, its value, its share and its position, as in "
+                    + "\"Week: 260 (33%), 2 of 3\". `Labels.Slice` rewords it.",
+                "Choosing a slice announces nothing by itself; what the app then shows is the app's to announce.",
+            ],
+            Labeling =
+            [
+                "The chart is a figure named by its `Title`, which shows above it. Without a title, `AriaLabel` "
+                    + "names it; use that when a heading beside the chart already says what it shows. The data table "
+                    + "takes the same name. With neither, the figure and its table have no name.",
+                "The drawing is an image named by its kind and its slices, such as \"Pie chart: Day, Week, "
+                    + "Season\". `Labels.Summary` rewords it, and `Labels.Pie` and `Labels.Donut` reword the kind.",
+                "Each item's `Label` shows in the legend with its share, and heads its row of the data table.",
+            ],
+            Accessibility =
+            [
+                "Every value and share is in a table under the chart, in a disclosure anyone can open, so nothing "
+                    + "is only in the drawing.",
+                "The legend beside the pie names each slice and gives its share, so no one has to hover to read the "
+                    + "chart, and a slice is never told apart by its color alone.",
+                "Screen readers hear the drawing as one image, then reach the legend and the table. On an "
+                    + "interactive page the slice that has the tab stop is a second image, named for the slice.",
+                "What an app puts in a donut's middle is read after the drawing and before the legend, so keep it "
+                    + "to words that stand alone, such as \"30 huts\".",
+                "On an interactive page the pie is one tab stop, on the slice last visited or else the first. The "
+                    + "focus ring is drawn in the middle of the slice, and the tooltip shows its value and share.",
+                "The tooltip shows on hover and on focus, stays for as long as the pointer is over a slice or a "
+                    + "slice has focus, and never times out. After a tap it stays until a tap elsewhere. Escape "
+                    + "hides it wherever focus is, and a dialog around the chart stays open for that press. "
+                    + "Everything it shows is in the data table too.",
+                "A thin slice is a small target for a pointer, since only the slice itself takes a click. The arrow "
+                    + "keys reach every slice, and the legend and the data table give every share.",
+                "A line in the surface's color parts the slices, and the eight series colors each have 3:1 contrast "
+                    + "against the surface in both themes.",
+                "In forced-colors mode, such as Windows high contrast, slices are filled, hollow, dashed or dotted "
+                    + "in the system's text color, with the legend's keys drawn the same way. There are only "
+                    + "four styles, so a fifth slice looks like the first, and a slice with a tone looks like any "
+                    + "other.",
+            ],
+            AppDuties =
+            [
+                "Give the chart a `Title` or an `AriaLabel`.",
+                "Keep to five or six items. Fold the smallest ones into one item, such as \"Other\", before you "
+                    + "give them to the chart.",
+                "Give the items in an order that means something: largest first, or the order the states come in.",
+                "Say what matters about the chart in the text beside it, such as \"Two thirds of the huts are "
+                    + "booked\", since a drawing's point is easy to miss and screen readers hear only its kind and "
+                    + "its slices.",
+                "A change to the data isn't announced. Say what changed in text near the chart when it matters.",
+                "With `OnSliceClick`, say in text near the chart what choosing a slice does, as in \"Pick a cause "
+                    + "to see what the rangers advise\": a slice reads as an image, with nothing to say it can be "
+                    + "chosen.",
+            ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
+            BeforeInteractive =
+            [
+                "The pie, its legend and its data table are markup, so they render the same before the page is "
+                    + "interactive, at any width, with nothing measured in script. The data table opens without "
+                    + "script too.",
+                "The tooltip, the keys between slices and `OnSliceClick` start once the page is interactive; until "
+                    + "then, and on a static page, the pie takes no focus and shows no pointer cursor.",
+            ],
+            Notes =
+            [
+                new("While `Items` is null or empty the chart says \"No data\", which is wrong for data that is "
+                    + "still loading. Put a chart that loads its data in an [async content]"
+                    + "(components/async-content), which shows the loading and the failed load.") { Pitfall = true },
+                new("An item whose value is null, zero, below zero or not finite has no slice and no legend entry, "
+                    + "and the drawing's name leaves it out. It stays in the data table with no share, and with "
+                    + "its value unless that is null or not finite. A value that isn't a number throws, naming "
+                    + "its item."),
+                new("Shares are written as whole percents, so they may not add up to exactly 100%. A share under "
+                    + "1% shows one decimal."),
+                new("Slices take the theme's eight series colors by their item's place in `Items`, so an item "
+                    + "keeps its color when another's value drops to zero. A ninth item starts over at the first "
+                    + "color, which is one more reason to keep to a few.") { Pitfall = true },
+                new("In the light theme some tones are close to a series color: info to the first slice's blue, "
+                    + "warning to the second's amber and success to the fourth's green. A slice with such a tone "
+                    + "is hard to tell from the slice that has that color, so pick another tone. Success and "
+                    + "danger are hard to tell apart for people with red-green color blindness, so don't set one "
+                    + "against the other unless the labels say which is which.") { Pitfall = true },
+                new("`Diameter` sets how wide and high the pie is, 16rem by default, and `--tb-pie-diameter` sets "
+                    + "it for every pie under an element. The pie is never wider than its container, and the "
+                    + "legend drops under it where there is no room beside it."),
+                new("`Format` writes the values in the tooltip, the data table and a slice's name for screen "
+                    + "readers, as a .NET number format such as `\"N0\"`, in the current culture."),
+                new("Right to left, the pie is mirrored: its first slice starts at the top and runs "
+                    + "counterclockwise."),
+            ],
+            Target = new("figure", "Passes sold this season"),
+            Ready = new("[data-part=plot]", "the plot"),
+            Blocks = ["tb-pie", "tb-chart", "tb-table"],
+            DataParts =
+            [
+                new("title", "The chart's title."),
+                new("plot", "The square the pie is drawn in, or the message when there is nothing to draw."),
+                new("center", "What the app puts in the middle of a donut."),
+                new("legend", "The list of the slices' labels with their keys and shares."),
+                new("tooltip", "The value and the share of the slice the pointer or the keys are on."),
+                new("table", "The disclosure that holds the data table."),
+            ],
+            Scenario = new("click", "it reads a cause's value and share, clicks its slice, and checks what the app "
+                + "shows for it."),
+            TestingTips =
+            [
+                "`cut.Tb().PieChart(\"Rescues by cause\")` in bUnit and `page.Tb().PieChart(\"Rescues by cause\")` "
+                    + "in Playwright find a pie chart by its `Title` or `AriaLabel`.",
+                "`Slices` lists the items' labels, those with no slice too. `Value(slice)` and `Share(slice)` read "
+                    + "an item's value and share as the data table writes them (`SlicesAsync()`, "
+                    + "`ValueAsync(slice)` and `ShareAsync(slice)` in Playwright).",
+                "`ClickSliceAsync(slice)` clicks a slice and returns once the app's `OnSliceClick` has run. It "
+                    + "throws for a chart with no `OnSliceClick` and for an item that has no slice.",
+                "Without the helpers, find a chart with `GetByRole(AriaRole.Figure, new() { Name = \"Passes sold "
+                    + "this season\" })` and its drawing with `GetByRole(AriaRole.Img, new() { Name = \"Pie chart: "
+                    + "Day, Week, Season\" })`; the slice that has the tab stop is an image too.",
+                "A slice is a `path.tb-pie__slice` with `data-place` set to its item's number, from zero. A slice "
+                    + "with a tone has a class such as `tb-chart__tone--danger`, and its value's cell in the data "
+                    + "table has `data-tone=\"danger\"`.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"passes-by-kind\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders, and `trailblazor.control.used` with the action `activate` and the input "
+                    + "`keyboard` or `pointer` each time a slice is clicked or chosen with Enter or Space, when the "
+                    + "chart has an `OnSliceClick`. Moving over the pie or between its slices isn't counted, and "
+                    + "what it shows is never recorded.",
             ],
         },
         new("carousel", "Carousel", ExampleCategory.Content,

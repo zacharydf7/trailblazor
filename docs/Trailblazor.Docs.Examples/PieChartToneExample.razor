@@ -1,0 +1,8 @@
+<TbPieChart Items="Trails" Label="trail => trail.State" Value="trail => trail.Count" Title="Trails by condition"
+            ItemTone="@(trail => trail.State == "Closed" ? Tone.Danger : null)" />
+
+@code {
+    private static readonly Trail[] Trails = [new("Open", 31), new("Open with care", 12), new("Closed", 5)];
+
+    private sealed record Trail(string State, int Count);
+}

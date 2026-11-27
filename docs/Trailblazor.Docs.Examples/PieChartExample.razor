@@ -1,0 +1,7 @@
+<TbPieChart Items="Passes" Label="pass => pass.Kind" Value="pass => pass.Sold" Title="Passes sold this season" />
+
+@code {
+    private static readonly Pass[] Passes = [new("Day", 420), new("Week", 260), new("Season", 120)];
+
+    private sealed record Pass(string Kind, int Sold);
+}

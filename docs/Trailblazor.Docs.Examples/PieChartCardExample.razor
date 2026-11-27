@@ -1,0 +1,10 @@
+<TbCard Title="Beds tonight" Subtitle="Huts on the ridge loop" Style="max-inline-size: 28rem">
+    <TbPieChart Items="Beds" Label="bed => bed.State" Value="bed => bed.Count" AriaLabel="Beds tonight"
+                Diameter="10rem" />
+</TbCard>
+
+@code {
+    private static readonly Bed[] Beds = [new("Booked", 62), new("Free", 21), new("Held for rangers", 7)];
+
+    private sealed record Bed(string State, int Count);
+}

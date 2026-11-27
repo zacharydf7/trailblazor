@@ -684,3 +684,9 @@ Trailblazor.Testing.TrailblazorMarkup.Chart(string? name = null) -> Trailblazor.
 Trailblazor.Testing.TbChartDriver.HideSeriesAsync(string! series) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbChartDriver.IsSeriesHidden(string! series) -> bool
 Trailblazor.Testing.TbChartDriver.ShowSeriesAsync(string! series) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbPieChartDriver
+Trailblazor.Testing.TbPieChartDriver.ClickSliceAsync(string! slice) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbPieChartDriver.Share(string! slice) -> string!
+Trailblazor.Testing.TbPieChartDriver.Slices.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbPieChartDriver.Value(string! slice) -> string!
+Trailblazor.Testing.TrailblazorMarkup.PieChart(string? name = null) -> Trailblazor.Testing.TbPieChartDriver!
