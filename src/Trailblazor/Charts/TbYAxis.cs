@@ -39,6 +39,18 @@ public sealed class TbYAxis : ComponentBase, IDisposable
     [Parameter]
     public double? Step { get; set; }
 
+    /// <summary>Whether the axis is logarithmic, for values that span several powers of ten, such as counts that run
+    /// from 3 to 40,000. Equal steps up the axis are equal ratios, and it marks the powers of ten, such as 1, 10, 100
+    /// and 1,000. An end that <see cref="Min"/> or <see cref="Max"/> doesn't set is the power of ten that holds the
+    /// values above zero, and with bars the axis starts at the power of ten just below the lowest value, so the
+    /// lowest bar has some height. A value of zero or below has no place on it: a line has a gap there, a bar or a
+    /// reference line isn't drawn, and the data table still writes the value. Bars and areas rise from the axis's low
+    /// end, and <see cref="Step"/> isn't used. A chart that stacks to <see cref="ChartStacking.Percent"/> throws.
+    /// Say in the axis's <see cref="Title"/>, or beside the chart, that its scale is logarithmic. False by default.
+    /// </summary>
+    [Parameter]
+    public bool Logarithmic { get; set; }
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -51,6 +63,12 @@ public sealed class TbYAxis : ComponentBase, IDisposable
         {
             throw new InvalidOperationException(
                 $"{nameof(TbYAxis)} needs a {nameof(Step)} above zero and a {nameof(Min)} below its {nameof(Max)}.");
+        }
+
+        if (Logarithmic && (Min <= 0 || Max <= 0))
+        {
+            throw new InvalidOperationException(
+                $"A {nameof(Logarithmic)} {nameof(TbYAxis)} needs a {nameof(Min)} and a {nameof(Max)} above zero.");
         }
 
         Axes.Set(this);

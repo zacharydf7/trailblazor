@@ -1,8 +1,9 @@
 namespace Trailblazor;
 
 // The values a number axis marks, which are the multiples of its step between its ends. An axis the chart picks has
-// a step of 1, 2 or 5 times a power of ten and its ends on marks; an app may set a step or an end of its own.
-internal readonly record struct ChartTicks(double Min, double Max, double Step)
+// a step of 1, 2 or 5 times a power of ten and its ends on marks; an app may set a step or an end of its own. A
+// logarithmic axis marks the powers of ten between its ends, which are above zero, and has no step.
+internal readonly record struct ChartTicks(double Min, double Max, double Step, bool Log = false)
 {
     // Float division lands a hair off a whole number of steps, such as 0.3 / 0.1; this much is taken as on it.
     internal const double Slack = 1e-9;
@@ -10,9 +11,9 @@ internal readonly record struct ChartTicks(double Min, double Max, double Step)
     // A step the app sets that would give more than about this many marks is passed over for the chart's own.
     internal const int MostSteps = 50;
 
-    // The digits after the decimal point that the step has, so labels neither round a tick nor pad it: 1 for a step
-    // of 2.5, and 2 for one of 0.25.
-    public int Decimals => DecimalsOf(Step);
+    // The digits after the decimal point that the step has, or on a logarithmic axis its low end, so labels neither
+    // round a tick nor pad it: 1 for a step of 2.5, and 2 for one of 0.25.
+    public int Decimals => Log ? Math.Max(0, (int)-Math.Floor(Math.Log10(Min) + Slack)) : DecimalsOf(Step);
 
     // Each tick is a whole number of steps, not a running sum, so a long axis doesn't drift. An end that isn't on a
     // step has no tick.
@@ -20,6 +21,15 @@ internal readonly record struct ChartTicks(double Min, double Max, double Step)
     {
         get
         {
+            if (Log)
+            {
+                var (lowest, highest) = ((int)Math.Ceiling(Math.Log10(Min) - Slack),
+                    (int)Math.Floor(Math.Log10(Max) + Slack));
+                // Dividing one by an exact power of ten gives the nearest double to a power below one.
+                return [.. Enumerable.Range(lowest, Math.Max(0, highest - lowest + 1))
+                    .Select(power => power < 0 ? 1 / Math.Pow(10, -power) : Math.Pow(10, power))];
+            }
+
             var decimals = Decimals;
             var step = Step;
             var first = (long)Math.Ceiling(Min / Step - Slack);
@@ -34,8 +44,18 @@ internal readonly record struct ChartTicks(double Min, double Max, double Step)
         }
     }
 
-    // Where a value sits between the axis's ends: 0 at the low end and 1 at the high one.
-    public double Share(double value) => (value - Min) / (Max - Min);
+    // Where a value sits between the axis's ends: 0 at the low end and 1 at the high one. On a logarithmic axis a
+    // value of zero or below is put at the low end, which bars and areas rise from.
+    public double Share(double value) => !Log ? (value - Min) / (Max - Min)
+        : value > 0 ? (Math.Log10(value) - Math.Log10(Min)) / (Math.Log10(Max) - Math.Log10(Min)) : 0;
+
+    // The powers of ten that hold the values from lowest to highest, both above zero, on a logarithmic axis.
+    public static ChartTicks Powers(double lowest, double highest)
+    {
+        var (min, max) = (Math.Pow(10, Math.Floor(Math.Log10(lowest) + Slack)),
+            Math.Pow(10, Math.Ceiling(Math.Log10(highest) - Slack)));
+        return new(min, max > min ? max : min * 10, 0, true);
+    }
 
     // About `count` steps that cover the values from lowest to highest, with the ends on ticks.
     public static ChartTicks Cover(double lowest, double highest, int count = 5)

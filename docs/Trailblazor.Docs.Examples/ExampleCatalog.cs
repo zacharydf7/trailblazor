@@ -1112,6 +1112,11 @@ public static class ExampleCatalog
                     + "it. In a stack, values below zero pile downward from zero, so a series that changes sign "
                     + "moves from one pile to the other: use bars, not areas, for values of mixed signs.",
                     typeof(ChartBelowZeroExample)),
+                new("log", "Logarithmic axis", "For values that span several powers of ten, such as downloads that "
+                    + "grow from 40 to more than 100,000, `Logarithmic` on the `TbYAxis` marks the powers of ten and "
+                    + "makes each step up the axis the same ratio, so steady growth is a straight line and the early "
+                    + "months aren't flat along the bottom. Its ends are the powers of ten that hold the values, "
+                    + "unless `Min` and `Max` set them.", typeof(ChartLogExample)),
                 new("long", "Many points", "An axis shows only the labels it has room for, evenly spaced, and shows "
                     + "more as the chart gets wider, or taller for the names down a horizontal chart. A line of "
                     + "more than 30 points has no markers. `Height` sets the height of the plot, and the chart is "
@@ -1163,7 +1168,7 @@ public static class ExampleCatalog
             Anatomy = """
                 <TbChart Items="…" X="…" Title="…">
                     <TbXAxis Title="…" Format="…" Scale="…" Zoomable @bind-View="…" />
-                    <TbYAxis Title="…" Format="…" />
+                    <TbYAxis Title="…" Format="…" Logarithmic />
                     <TbBarSeries Name="…" Value="…" />
                     <TbLineSeries Name="…" Value="…" />
                     <TbLineSeries SplitBy="…" Value="…" />
@@ -1286,6 +1291,8 @@ public static class ExampleCatalog
             AppDuties =
             [
                 "Give the chart a `Title` or an `AriaLabel`.",
+                "Say that a logarithmic value axis is one, in its `Title` or beside the chart, as \"Downloads (log "
+                    + "scale)\": it is easily read as linear.",
                 "Name each series for what it measures, with its unit where that isn't plain, as in \"Rainfall "
                     + "(mm)\".",
                 "Say what matters about the chart in the text beside it, such as \"Bookings peak on Saturday\", "
@@ -1443,6 +1450,11 @@ public static class ExampleCatalog
                 new("`TbXAxis` throws when it is `Zoomable` with a scale that isn't `Continuous`, and when its "
                     + "`View` has a `From` that isn't before its `To`. The chart throws for a `View` of dates on a "
                     + "scale of numbers, or of numbers on a scale of dates."),
+                new("On a logarithmic axis a value of zero or below has no place: a line has a gap there, as in "
+                    + "the example's month without downloads, a bar or a reference line isn't drawn, and the data "
+                    + "table still writes it. Bars and areas rise from the axis's low end, which for bars is the "
+                    + "power of ten just below the lowest value, so the lowest bar has some height. Stacking to "
+                    + "percent throws, and so does a `Min` or a `Max` of zero or below."),
                 new("A reference throws when it has no `Name`; when it has a value that isn't finite, a band's "
                     + "`From` not below its `To`, neither or both of a value and a place, or only one of a band's "
                     + "two values or places; when its place on a continuous scale isn't a date on a scale of dates "

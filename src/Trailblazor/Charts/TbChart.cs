@@ -340,7 +340,12 @@ public partial class TbChart<TItem>
             new ChartSeriesValues(part.Name, part.Bars, part.Line, [.. _rows.Select(part.ValueAt)], part.IsHidden,
                 part.Filled, EdgeValue(part, edges?.Before, true, stacked),
                 EdgeValue(part, edges?.After, false, stacked), part.HasMarkers ?? items.Count <= MostMarkers))]);
-        var axis = Axes.Y is { } y ? new ChartValueAxis(y.Min, y.Max, y.Step, y.Format) : default;
+        var axis = Axes.Y is { } y ? new ChartValueAxis(y.Min, y.Max, y.Step, y.Format, y.Logarithmic) : default;
+        if (axis.Log && Stacking == ChartStacking.Percent)
+        {
+            throw new InvalidOperationException($"A {nameof(TbYAxis.Logarithmic)} {nameof(TbYAxis)} can't show a "
+                + $"chart that stacks to {nameof(ChartStacking.Percent)}.");
+        }
         var bars = series.Any(one => one.Bars && !one.Hidden);
         // A scatter's marks sit clear of the plot's edges where they can: its axis runs between round values, as the
         // value axis does. Bars already have room at each end.
@@ -668,8 +673,10 @@ public partial class TbChart<TItem>
         .Where(one => one.Values is not null || one.Places is not null).Select(one =>
     {
         var band = one is TbReferenceBand;
+        // On a logarithmic axis a value of zero or below has no place, so a line there is listed and not drawn.
+        double Place(double value) => plan.Ticks.Log && value <= 0 ? -1 : plan.Ticks.Share(value);
         var (from, to, low, high) = one.Values is { } values
-            ? (plan.Ticks.Share(values.Low), plan.Ticks.Share(values.High), plan.ReferenceText(values.Low),
+            ? (Place(values.Low), Place(values.High), plan.ReferenceText(values.Low),
                 plan.ReferenceText(values.High))
             : AlongItems(plan, one, band);
         // A line's wording has no place for the second value, which is the same as its first.

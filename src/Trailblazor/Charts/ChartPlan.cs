@@ -12,7 +12,8 @@ internal sealed record ChartSeriesValues(string Name, bool Bars, ChartCurve Curv
     bool Hidden = false, bool Filled = false, double? Before = null, double? After = null, bool Marked = false);
 
 // The value axis as the app set it; null leaves a choice to the chart.
-internal readonly record struct ChartValueAxis(double? Min, double? Max, double? Step, string? Format);
+internal readonly record struct ChartValueAxis(double? Min, double? Max, double? Step, string? Format,
+    bool Log = false);
 
 // A bar as shares of the plot, from its left and top. Its value end is the one that gets rounded corners; a bar
 // inside a stack has none, nor has one cut off at the plot's edge, and Up says which way it grows from the bar
@@ -111,6 +112,18 @@ internal sealed class ChartPlan
         IReadOnlyList<double>? alsoReach = null, int most = 0)
     {
         along ??= ChartAlong.Even(places.Count);
+        // On a logarithmic axis a value of zero or below has no place: it is drawn as a gap, and the data table still
+        // writes it.
+        var given = series;
+        static double? Placed(double? value) => value > 0 ? value : null;
+        if (axis.Log)
+        {
+            series = [.. series.Select(one => one with
+            {
+                Values = [.. one.Values.Select(Placed)], Before = Placed(one.Before), After = Placed(one.After),
+            })];
+        }
+
         // Bars pile with bars and areas with areas.
         var bars = series.Where(one => one.Bars && !one.Hidden).ToList();
         var areas = series.Where(one => one.Filled && !one.Hidden).ToList();
@@ -133,9 +146,11 @@ internal sealed class ChartPlan
             .ToList();
         reached.AddRange(alsoReach ?? []);
         var shares = stacking == ChartStacking.Percent && bars.Count + areas.Count > 0;
-        var ticks = TicksFor(reached, axis, shares);
+        var ticks = TicksFor(reached, axis, shares, bars.Count > 0);
 
-        var format = axis.Format ?? (shares ? "P0" : "N" + ticks.Decimals);
+        // A logarithmic axis writes each power of ten with only the decimals it needs: 0.01, 0.1, 1 and 10.
+        var format = axis.Format ?? (shares ? "P0"
+            : ticks.Log ? "#,0." + new string('#', Math.Max(1, ticks.Decimals)) : "N" + ticks.Decimals);
         var valueTicks = ticks.Values
             .Select(value => (1 - ticks.Share(value), value.ToString(format, culture), value == 0)).ToList();
 
@@ -152,9 +167,10 @@ internal sealed class ChartPlan
             [.. keep.Select(place => points[place])];
 
         var planned = new List<ChartSeriesPlan>(series.Count);
-        foreach (var one in series)
+        for (var index = 0; index < series.Count; index++)
         {
-            var text = one.Values.Select(value => value?.ToString(valueFormat, culture)).ToList();
+            var one = series[index];
+            var text = given[index].Values.Select(value => value?.ToString(valueFormat, culture)).ToList();
             if (one.Hidden)
             {
                 planned.Add(new(one.Name, one.Bars, "", [], [], text, Hidden: true));
@@ -196,8 +212,25 @@ internal sealed class ChartPlan
                 .ToArray())]
             : ChartStack.Pile(series, stacking == ChartStacking.Percent);
 
-    private static ChartTicks TicksFor(List<double> reached, ChartValueAxis axis, bool shares)
+    private static ChartTicks TicksFor(List<double> reached, ChartValueAxis axis, bool shares, bool bars)
     {
+        if (axis.Log)
+        {
+            // Only values above zero have a place, and an axis with none runs from 1 to 10. With bars the axis starts
+            // at the power of ten just below the lowest value, so the lowest bar has some height, as a bar from zero
+            // would.
+            List<double> above = [.. reached.Where(value => value > 0)];
+            var least = above.Count == 0 ? 1 : above.Min();
+            least = bars ? Math.Pow(10, Math.Ceiling(Math.Log10(least) - ChartTicks.Slack) - 1) : least;
+            var powers = ChartTicks.Powers(axis.Min ?? least, axis.Max ?? (above.Count == 0 ? 10 : above.Max()));
+            var (low, high) = (axis.Min ?? powers.Min, axis.Max ?? powers.Max);
+            // An end the app set beyond every value still needs an axis with some height: the other end moves a
+            // power of ten.
+            return high > low ? powers with { Min = low, Max = high }
+                : axis.Max is null ? powers with { Min = low, Max = low * 10 }
+                : powers with { Min = high / 10, Max = high };
+        }
+
         var lowest = axis.Min ?? (reached.Count == 0 ? 0 : reached.Min());
         var highest = axis.Max ?? (shares ? 1 : reached.Count == 0 ? 1 : reached.Max());
         // An end left to the chart sits on a multiple of the step, the app's or the chart's own. An end the app set

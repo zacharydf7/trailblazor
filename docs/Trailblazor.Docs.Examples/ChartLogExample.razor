@@ -1,0 +1,16 @@
+<TbChart Items="Months" X="month => month.Start" Title="Trail map downloads a month">
+    <TbXAxis Format="MMM yy" />
+    <TbYAxis Logarithmic Title="Downloads (log scale)" />
+    <TbLineSeries Name="Downloads" Value="month => month.Downloads" />
+</TbChart>
+
+@code {
+    // Two years of a trail app's downloads, growing about half again each month: on a linear axis the first year
+    // would be a flat line along the bottom. The store was down in May 2025, so that month has none, which a
+    // logarithmic axis has no place for.
+    private static readonly Month[] Months = [.. Enumerable.Range(0, 24).Select(month =>
+        new Month(new DateOnly(2025, 1, 1).AddMonths(month),
+            month == 4 ? 0 : (int)Math.Round(40 * Math.Pow(1.45, month))))];
+
+    private sealed record Month(DateOnly Start, int Downloads);
+}
