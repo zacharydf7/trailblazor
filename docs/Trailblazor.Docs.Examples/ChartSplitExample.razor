@@ -1,0 +1,19 @@
+<TbChart Items="Counts" X="count => count.Day" Title="Hikers a day by trail">
+    <TbXAxis Format="ddd" />
+    <TbLineSeries SplitBy="count => count.Trail" Value="count => count.Hikers" />
+</TbChart>
+
+@code {
+    // Rows as a trail counter sends them: one for each trail on each day, with no row for the lake trail on Wednesday,
+    // when its counter was down.
+    private static readonly Count[] Counts =
+    [
+        new(new(2026, 6, 1), "Ridge", 42), new(new(2026, 6, 1), "Lake", 65), new(new(2026, 6, 1), "Summit", 18),
+        new(new(2026, 6, 2), "Ridge", 38), new(new(2026, 6, 2), "Lake", 71), new(new(2026, 6, 2), "Summit", 22),
+        new(new(2026, 6, 3), "Ridge", 45), new(new(2026, 6, 3), "Summit", 25),
+        new(new(2026, 6, 4), "Ridge", 51), new(new(2026, 6, 4), "Lake", 80), new(new(2026, 6, 4), "Summit", 31),
+        new(new(2026, 6, 5), "Ridge", 77), new(new(2026, 6, 5), "Lake", 112), new(new(2026, 6, 5), "Summit", 48),
+    ];
+
+    private sealed record Count(DateOnly Day, string Trail, int Hikers);
+}

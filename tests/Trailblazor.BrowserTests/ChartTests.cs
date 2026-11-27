@@ -674,6 +674,24 @@ public class ChartTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SplitSeries_ShouldDrawALineForEachTrailAndHideOne_WhenItsLegendButtonIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chart/split");
+        var chart = page.Tb().Chart("Hikers a day by trail");
+        var lines = chart.Chart.Locator("path.tb-chart__line[data-series]");
+
+        Assert.Equal(["Ridge", "Lake", "Summit"], await chart.SeriesAsync());
+        await Expect(lines).ToHaveCountAsync(3);
+        Assert.Equal("", await chart.ValueAsync("Lake", "Wed"));
+
+        await chart.HideSeriesAsync("Lake");
+        await Expect(lines).ToHaveCountAsync(2);
+        Assert.True(await chart.IsSeriesHiddenAsync("Lake"));
+        await chart.ShowSeriesAsync("Lake");
+        await Expect(lines).ToHaveCountAsync(3);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Legend_ShouldHideAndShowASeries_WhenItsButtonIsPressedWithTheKeys(string browser)
     {
         var page = await OpenAsync(browser, "/examples/chart/lines");

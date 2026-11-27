@@ -11,6 +11,7 @@ public abstract class TbChartSeries<TItem> : ComponentBase, IDisposable
     private object? _shown;
     private Func<TItem, object?>? _value;
     private Func<TItem, Tone?>? _itemTone;
+    private Func<TItem, object?>? _splitBy;
     private bool _hidden;
     private bool _hiddenGiven;
 
@@ -18,9 +19,21 @@ public abstract class TbChartSeries<TItem> : ComponentBase, IDisposable
     private TbChart<TItem>? Chart { get; set; }
 
     /// <summary>What the series is called in the legend, the data table and what screen readers hear, such as
-    /// "Completed". Required.</summary>
-    [Parameter, EditorRequired]
+    /// "Completed". Required unless the series has a <see cref="SplitBy"/>, whose series are named by its values.
+    /// </summary>
+    [Parameter]
     public string Name { get; set; } = "";
+
+    /// <summary>A field of the items, such as <c>row => row.Trail</c>, that makes this one series a series for each
+    /// of its values: one line for each trail, from rows that each hold a date, a trail and a count. Each is named by
+    /// its value, in the order the values first appear among the items, and takes the next of the chart's colors.
+    /// The chart then has a place for each value of its <c>X</c>, and each value's series shows, at each place, the
+    /// first item with that value; a series without a <c>SplitBy</c> shows the first item at each place. An item
+    /// whose field is null is left out, and <see cref="Name"/> isn't used, so give two split series' values names
+    /// that differ. Each value's legend entry hides and shows its series, and <see cref="Hidden"/> hides them all;
+    /// showing one of them while the split series is hidden shows the split series with only that value.</summary>
+    [Parameter]
+    public Func<TItem, object?>? SplitBy { get; set; }
 
     /// <summary>An item's value in this series, such as <c>month => month.Completed</c>. Required. Any number type
     /// works; null, or a value that isn't finite, leaves a gap. A value that isn't a number throws. When what the
@@ -80,9 +93,7 @@ public abstract class TbChartSeries<TItem> : ComponentBase, IDisposable
     internal virtual bool ShowsValues => false;
 
     // The component's name as markup writes it, without the mark of its type parameter.
-    private string Kind => GetType().Name.Split('`')[0];
-
-    internal double? ValueOf(TItem item) => ChartValues.Number(Value!(item), Name);
+    internal string Kind => GetType().Name.Split('`')[0];
 
     internal async Task SetHiddenAsync(bool hidden)
     {
@@ -104,30 +115,40 @@ public abstract class TbChartSeries<TItem> : ComponentBase, IDisposable
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (string.IsNullOrWhiteSpace(Name) || Value is null)
+        if ((string.IsNullOrWhiteSpace(Name) && SplitBy is null) || Value is null)
         {
-            throw new InvalidOperationException($"{Kind} needs a {nameof(Name)} and a {nameof(Value)}.");
+            throw new InvalidOperationException(
+                $"{Kind} needs a {nameof(Name)}, or a {nameof(SplitBy)}, and a {nameof(Value)}.");
         }
 
         if (Hidden != _hiddenGiven)
         {
+            // A bound Hidden that comes back with what the user chose isn't the app's own change.
+            var echo = Hidden == _hidden;
             _hiddenGiven = _hidden = Hidden;
+            if (!echo)
+            {
+                Chart!.HiddenGiven(this);
+            }
         }
 
         // The chart draws before its series take their parameters, so a series that changed has it draw again.
-        object shown = (Name, Value.Method, Color, Tone, ItemTone?.Method, Line, HasMarkers, IsHidden, ShowsValues);
+        object shown = (Name, Value.Method, Color, Tone, ItemTone?.Method, Line, HasMarkers, IsHidden, ShowsValues,
+            SplitBy?.Method);
         if (!shown.Equals(_shown))
         {
             _shown = shown;
             Chart!.SeriesChanged();
         }
-        else if (!ReferenceEquals(Value, _value) || !ReferenceEquals(ItemTone, _itemTone))
+        else if (!ReferenceEquals(Value, _value) || !ReferenceEquals(ItemTone, _itemTone)
+            || !ReferenceEquals(SplitBy, _splitBy))
         {
             Chart!.FunctionChanged();
         }
 
         _value = Value;
         _itemTone = ItemTone;
+        _splitBy = SplitBy;
     }
 
     /// <summary>Takes the series out of its chart.</summary>

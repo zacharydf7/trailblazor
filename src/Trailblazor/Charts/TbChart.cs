@@ -25,6 +25,15 @@ public partial class TbChart<TItem>
     private readonly string _plotId = $"tb-chart-{Guid.NewGuid():N}-plot";
     private readonly List<TbChartSeries<TItem>> _series = [];
     private IReadOnlyList<TItem> _items = [];
+
+    // The items at each place: one each, or, when a series has a SplitBy, every item with the place's X value.
+    private List<IReadOnlyList<TItem>> _rows = [];
+
+    // The series as the chart draws them, with a split series' own series in its place.
+    private List<ChartPart<TItem>> _parts = [];
+
+    // The split series' own series that the user hid from the legend, by series and value.
+    private readonly HashSet<(TbChartSeries<TItem> Series, object Key)> _hiddenParts = [];
     private ElementReference _plot;
     private IJSObjectReference? _handle;
     private DotNetObjectReference<ChartEvents>? _events;
@@ -196,8 +205,9 @@ public partial class TbChart<TItem>
     // arrives after the data changed may name a point that is gone, and is passed over.
     private async Task OnActivateAsync(int series, int place, string input)
     {
-        if (series < 0 || series >= _series.Count || place < 0 || place >= _items.Count || _series[series].IsHidden
-            || _series[series].ValueOf(_items[place]) is not { } value)
+        if (series < 0 || series >= _parts.Count || place < 0 || place >= _rows.Count || _parts[series].IsHidden
+            || _parts[series].IndexAt(_rows[place]) is not (>= 0 and var row)
+            || _parts[series].ValueAt(_rows[place]) is not { } value)
         {
             return;
         }
@@ -205,7 +215,7 @@ public partial class TbChart<TItem>
         Telemetry.Used(TelemetryName, "activate", input == "keyboard" ? "keyboard" : "pointer");
         try
         {
-            await OnPointClick.InvokeAsync(new(_items[place], _series[series].Name, value));
+            await OnPointClick.InvokeAsync(new(_rows[place][row], _parts[series].Name, value));
         }
         finally
         {
@@ -215,14 +225,37 @@ public partial class TbChart<TItem>
         }
     }
 
-    // The legend's button for a series: the app hears the change when it has bound the series' Hidden.
-    private async Task ToggleAsync(TbChartSeries<TItem> series)
+    // The legend's button for a series: the app hears the change when it has bound the series' Hidden. The chart
+    // itself hides one of a split series' own series and leaves the split series' Hidden as it is. Shown while the
+    // split series is hidden, that one shows alone: the split series shows, with its other values hidden.
+    private async Task ToggleAsync(ChartPart<TItem> part)
     {
-        var hidden = !series.IsHidden;
+        var hidden = !part.IsHidden;
         Telemetry.Used(TelemetryName, hidden ? "hide" : "show");
         try
         {
-            await series.SetHiddenAsync(hidden);
+            if (part.Key is { } key && !hidden && part.Source.IsHidden)
+            {
+                _hiddenParts.UnionWith(_parts.Where(other => other.Source == part.Source && other.Key is not null
+                    && !Equals(other.Key, key)).Select(other => (part.Source, other.Key!)));
+                _hiddenParts.Remove((part.Source, key));
+                await part.Source.SetHiddenAsync(false);
+            }
+            else if (part.Key is { } shownKey)
+            {
+                if (hidden)
+                {
+                    _hiddenParts.Add((part.Source, shownKey));
+                }
+                else
+                {
+                    _hiddenParts.Remove((part.Source, shownKey));
+                }
+            }
+            else
+            {
+                await part.Source.SetHiddenAsync(hidden);
+            }
         }
         finally
         {
@@ -236,6 +269,9 @@ public partial class TbChart<TItem>
         _series.Add(series);
         SeriesChanged();
     }
+
+    // The app gave a split series a new Hidden, which takes the place of what the user hid of its values.
+    internal void HiddenGiven(TbChartSeries<TItem> series) => _hiddenParts.RemoveWhere(part => part.Series == series);
 
     internal void RemoveSeries(TbChartSeries<TItem> series)
     {
@@ -275,7 +311,7 @@ public partial class TbChart<TItem>
         if (Horizontal && _series.FirstOrDefault(one => !one.Bars) is { } other)
         {
             throw new InvalidOperationException($"A {nameof(TbChart<>)} that is {nameof(Horizontal)} draws bar "
-                + $"series only, and \"{other.Name}\" isn't one.");
+                + $"series only, and \"{(other.Name.Length > 0 ? other.Name : other.Kind)}\" isn't one.");
         }
 
         var all = Items as IReadOnlyList<TItem> ?? [.. Items ?? []];
@@ -290,25 +326,38 @@ public partial class TbChart<TItem>
                 + "items' X values are: numbers for numbers, dates for dates.");
         }
 
-        var items = _items = view is null ? all : [.. all.Where(item => InView(X!(item), view))];
+        var shown = view is null ? all : [.. all.Where(item => InView(X!(item), view))];
+        // With a split series, the items that share an X value share a place.
+        var split = _series.Any(one => one.SplitBy is not null);
+        _rows = split ? [.. shown.GroupBy(item => X!(item)).Select(place => (IReadOnlyList<TItem>)[.. place])]
+            : [.. shown.Select(item => (IReadOnlyList<TItem>)[item])];
+        var items = _items = [.. _rows.Select(rows => rows[0])];
+        _parts = [.. _series.SelectMany(one => Parts(one, all, culture))];
         List<string> places = [.. items.Select(item => ChartValues.Text(X!(item), Axes.X?.Format, culture))];
-        var edges = view is null ? null : Edges(all, view);
+        var edges = view is null ? null : Edges(all, view, split);
         var stacked = Stacking != ChartStacking.None;
-        List<ChartSeriesValues> series = StackedEdges([.. _series.Select(one =>
-            new ChartSeriesValues(one.Name, one.Bars, one.Line, [.. items.Select(one.ValueOf)], one.IsHidden,
-                one.Filled, EdgeValue(one, edges?.Before, true, stacked),
-                EdgeValue(one, edges?.After, false, stacked), one.HasMarkers ?? items.Count <= MostMarkers))]);
+        List<ChartSeriesValues> series = StackedEdges([.. _parts.Select(part =>
+            new ChartSeriesValues(part.Name, part.Bars, part.Line, [.. _rows.Select(part.ValueAt)], part.IsHidden,
+                part.Filled, EdgeValue(part, edges?.Before, true, stacked),
+                EdgeValue(part, edges?.After, false, stacked), part.HasMarkers ?? items.Count <= MostMarkers))]);
         var axis = Axes.Y is { } y ? new ChartValueAxis(y.Min, y.Max, y.Step, y.Format) : default;
         var bars = series.Any(one => one.Bars && !one.Hidden);
         // A scatter's marks sit clear of the plot's edges where they can: its axis runs between round values, as the
         // value axis does. Bars already have room at each end.
-        var round = !bars && _series.Any(one => one.Dots && !one.IsHidden);
+        var round = !bars && _parts.Any(one => one.Dots && !one.IsHidden);
         var along = Axes.X is { Scale: ChartScale.Continuous } x ? ChartAlong.Continuous([.. items.Select(X!)], bars,
             x.Format, x.MarkFormat, culture, new(view?.From ?? x.Min, view?.To ?? x.Max, x.Step, round)) : null;
         List<double> alsoReach = [.. References.All.Select(one => one.Values).OfType<(double Low, double High)>()
             .SelectMany(values => new[] { values.Low, values.High })];
         return ChartPlan.Build(places, series, Stacking, axis, culture, along, alsoReach, MaxDrawnPoints);
     }
+
+    // A series as the chart draws it, or a split series' own series: one for each value of its field, in the order
+    // the values first appear among all the items, so each keeps its color as the view or the data changes.
+    private IEnumerable<ChartPart<TItem>> Parts(TbChartSeries<TItem> series, IReadOnlyList<TItem> all,
+        CultureInfo culture) => series.SplitBy is not { } by ? [new(series, null, series.Name, series.IsHidden)]
+        : all.Select(by).OfType<object>().Distinct().Select(key => new ChartPart<TItem>(series, key,
+            Convert.ToString(key, culture) ?? "", series.IsHidden || _hiddenParts.Contains((series, key))));
 
     // The whole of a zoomable scale: its first and last positions, widened to the axis's ends where the app set
     // them, the room between the closest two items, and an item's X value, whose type a view's ends take. Null with
@@ -334,7 +383,7 @@ public partial class TbChart<TItem>
     // At each end of a zoomed view, the item just outside it, the nearest item inside, and how far the plot's edge
     // lies along the way between them, from 0 at the outside item to 1 at the inside one. Only items given in order
     // along the scale get edges, and an end that falls on an item needs none.
-    private (ChartEdge? Before, ChartEdge? After)? Edges(IReadOnlyList<TItem> all, ChartView view)
+    private (ChartEdge? Before, ChartEdge? After)? Edges(IReadOnlyList<TItem> all, ChartView view, bool split)
     {
         double[] at = [.. all.Select(item => ChartAlong.Position(X!(item)))];
         if (at.Zip(at.Skip(1), (one, next) => next < one).Any(backward => backward))
@@ -350,13 +399,16 @@ public partial class TbChart<TItem>
             return null;
         }
 
+        // The items at the place of this one: every one with its X value when a series is split.
+        IReadOnlyList<TItem> Rows(int index) => split
+            ? [.. all.Where((_, other) => at[other] == at[index])] : [all[index]];
         ChartEdge? Edge(int outside, int inside, double end) => outside < 0 || outside >= at.Length
             || at[inside] == end ? null
-            : new(all[outside], all[inside], (end - at[outside]) / (at[inside] - at[outside]));
+            : new(Rows(outside), Rows(inside), (end - at[outside]) / (at[inside] - at[outside]));
         return (Edge(first - 1, first, from), Edge(last + 1, last, to));
     }
 
-    private readonly record struct ChartEdge(TItem Outside, TItem Inside, double Share);
+    private readonly record struct ChartEdge(IReadOnlyList<TItem> Outside, IReadOnlyList<TItem> Inside, double Share);
 
     // A stack of areas runs on to an edge only where each of its areas has a value there, so no area's floor drops
     // to zero, and not when it stacks to percent, whose shares don't change in a straight line between two items.
@@ -378,10 +430,10 @@ public partial class TbChart<TItem>
     // A line's or an area's value at the plot's edge: along the straight line between the two items, or, for a
     // stepped line, the value of the item before the edge. A stacked area that changes sign there has none, since
     // values above and below zero pile apart.
-    private static double? EdgeValue(TbChartSeries<TItem> series, ChartEdge? edge, bool start, bool stacked)
+    private static double? EdgeValue(ChartPart<TItem> series, ChartEdge? edge, bool start, bool stacked)
     {
         if (series.Bars || series.Dots || edge is not { } cut
-            || series.ValueOf(cut.Outside) is not { } outside || series.ValueOf(cut.Inside) is not { } inside
+            || series.ValueAt(cut.Outside) is not { } outside || series.ValueAt(cut.Inside) is not { } inside
             || (stacked && series.Filled && Math.Sign(outside) * Math.Sign(inside) < 0))
         {
             return null;
@@ -531,10 +583,10 @@ public partial class TbChart<TItem>
         }
 
         List<ValueLabel> labels = [];
-        for (var index = 0; index < _series.Count; index++)
+        for (var index = 0; index < _parts.Count; index++)
         {
             var drawn = plan.Series[index];
-            if (!_series[index].ShowsValues || drawn.Hidden)
+            if (!_parts[index].ShowsValues || drawn.Hidden)
             {
                 continue;
             }
@@ -721,7 +773,7 @@ public partial class TbChart<TItem>
 
     // A series' classes: the color its position gives it, and its tone's color in place of that when it has one.
     private string Slot(int index) =>
-        ClassNames.Join($"tb-chart__series--{index % Slots + 1}", ToneClass(_series[index].Tone));
+        ClassNames.Join($"tb-chart__series--{index % Slots + 1}", ToneClass(_parts[index].Tone));
 
     private static string? ToneClass(Tone? tone) =>
         tone is { } one ? ClassNames.Modifier("tb-chart__tone", one) : null;
@@ -730,9 +782,10 @@ public partial class TbChart<TItem>
 
     // The tone each item's mark has in each series: nothing for a series that gives its marks none, or whose line
     // has no markers to show one, and none where the series has no value.
-    private List<Tone?[]?> ItemTones(ChartPlan plan, bool markers) => [.. _series.Select((one, index) =>
-        one.ItemTone is { } tone && (one.Bars || one.Dots || (one.HasMarkers ?? markers))
-            ? _items.Select((item, place) => plan.Series[index].Text[place] is null ? null : tone(item)).ToArray()
+    private List<Tone?[]?> ItemTones(ChartPlan plan, bool markers) => [.. _parts.Select((one, index) =>
+        one.Source.ItemTone is { } tone && (one.Bars || one.Dots || (one.HasMarkers ?? markers))
+            ? _rows.Select((rows, place) => plan.Series[index].Text[place] is null ? null
+                : tone(rows[one.IndexAt(rows)])).ToArray()
             : null)];
 
     // Each place's tone, for the script's tooltip to give its key: a dash where the mark keeps its series' color,
@@ -742,9 +795,9 @@ public partial class TbChart<TItem>
 
     // Which shape a scatter series' marks have: its place among the chart's scatter series, hidden ones too, so the
     // first four always differ and none changes shape as others hide.
-    private int ShapeOf(int index) => _series.Take(index).Count(one => one.Dots);
+    private int ShapeOf(int index) => _parts.Take(index).Count(one => one.Dots);
 
-    private string? Color(int index) => _series[index].Color is { } color ? $"--_tb-chart-series: {color}" : null;
+    private string? Color(int index) => _parts[index].Color is { } color ? $"--_tb-chart-series: {color}" : null;
 
     // A bar's end that shows its value is rounded: the top or the bottom, or, on a bar that runs across, the end
     // toward the higher values or the start toward the lower ones.
@@ -833,7 +886,7 @@ public partial class TbChart<TItem>
     // Completed, Failed".
     private string Summary()
     {
-        var shown = _series.Where(one => !one.IsHidden).ToList();
+        var shown = _parts.Where(one => !one.IsHidden).ToList();
         // Any other mix of lines, areas and scatters reads as a line chart, and anything beside bars as a bar and
         // line chart.
         var kind = shown.All(one => one.Bars) ? Labels.Bars ?? Localizer[TbStrings.ChartBars]

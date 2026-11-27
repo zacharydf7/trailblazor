@@ -1116,6 +1116,13 @@ public static class ExampleCatalog
                     + "more as the chart gets wider, or taller for the names down a horizontal chart. A line of "
                     + "more than 30 points has no markers. `Height` sets the height of the plot, and the chart is "
                     + "as wide as its container.", typeof(ChartLongExample)),
+                new("split", "A series for each value", "Data often comes as rows of a place, a category and a "
+                    + "value, such as a count for each trail on each day. `SplitBy` on a series makes a series for "
+                    + "each value of a field, each named by its value and in the order the values first appear, so "
+                    + "there is no "
+                    + "need to pivot the rows first. The chart then has a place for each value of its `X`, and a "
+                    + "place without a row for a series, as the lake trail on Wednesday here, is a gap.",
+                    typeof(ChartSplitExample)),
                 new("thin", "Very long series", "A line or an area of more than 1,000 points is drawn through about "
                     + "1,000 of them, chosen to keep its peaks and dips, as the floods in this river's 2,900 readings show. "
                     + "The tooltip, the keys and the data table still have every reading, and zooming in draws the "
@@ -1159,6 +1166,7 @@ public static class ExampleCatalog
                     <TbYAxis Title="…" Format="…" />
                     <TbBarSeries Name="…" Value="…" />
                     <TbLineSeries Name="…" Value="…" />
+                    <TbLineSeries SplitBy="…" Value="…" />
                     <TbAreaSeries Name="…" Value="…" />
                     <TbScatterSeries Name="…" Value="…" />
                     <TbReferenceLine Value="…" Name="…" Tone="…" />
@@ -1215,8 +1223,8 @@ public static class ExampleCatalog
                     + "`Labels.Areas`, `Labels.Scatter` and `Labels.BarsAndLines` reword the kind. Any other mix of "
                     + "lines, areas and scatters reads as a line chart, and anything beside bars as a bar and line "
                     + "chart.",
-                "Each series' `Name` shows in the legend and heads its column of the data table. It names the "
-                    + "series' legend button too.",
+                "Each series' `Name`, or for a split series each of its values, shows in the legend and heads its "
+                    + "column of the data table. It names the series' legend button too.",
                 "The drawing's name lists only the series that show.",
                 "A zoomable chart's icon buttons are named \"Move back\", \"Zoom out\", \"Zoom in\" and \"Move "
                     + "forward\", which `Labels.MoveBack`, `Labels.ZoomOut`, `Labels.ZoomIn` and "
@@ -1443,6 +1451,15 @@ public static class ExampleCatalog
                     + "are still in the page's markup for the tooltip and the data table, so a chart of tens of "
                     + "thousands of items makes a large page. Draw a summary, such as a value a day in place of one "
                     + "a minute."),
+                new("With a `SplitBy`, each value's series shows, at each place, the first item with that X and "
+                    + "that value of the field. An item whose field is null is left out, a split series' `Name` "
+                    + "isn't used, and its `Tone` or `Color` goes to every one of its values' series, so leave those "
+                    + "out of a split series to keep the series apart."),
+                new("A series without a `SplitBy` beside a split one shows the first item at each place, not a "
+                    + "total: give such a series items of its own, summed beforehand, or leave it out.")
+                    { Pitfall = true },
+                new("A split series' legend entries each hide and show their own value's series, and its "
+                    + "`Hidden` hides all of them; `HiddenChanged` isn't raised for one value's series."),
                 new("A thinned stack of areas is drawn through every place any of its areas keeps, so its areas "
                     + "still meet, and a line broken by gaps keeps each run's ends; both can be drawn through more "
                     + "than `MaxDrawnPoints` points. A series with markers is drawn through every point, so each "
@@ -1522,14 +1539,16 @@ public static class ExampleCatalog
                 "Without the helpers, press a zoom button by name, as `GetByRole(AriaRole.Button, new() { Name = "
                     + "\"Zoom in\" })`, or by `[data-part=zoom-in]` and the like, which hold when `Labels` rewords "
                     + "the names. The text after them is `[data-part=view]`, and a zoomed plot has `data-zoomed`.",
+                "The series a split series makes are named by its field's values: `Series` lists them, and "
+                    + "`Value(\"Lake\", place)` and `HideSeriesAsync(\"Lake\")` take one by its value.",
                 "A thinned line's `path` goes through fewer points than it has items. Read values with "
                     + "`Value(series, place)` or `Places`, which keep every item.",
                 "`Places` lists only the items in a zoomed view. Set `View` to show a part of the scale in a test "
                     + "without pressing the buttons.",
-                "A series' marks are under an element with `data-series` set to its `Name`: a `g` of `rect` bars, "
-                    + "the `path` of a line or of an area's line, or a `g` of a scatter's marks. An area's fill is a "
-                    + "`path.tb-chart__area` in `svg.tb-chart__fills`, outside its series' element. A hidden series "
-                    + "has none.",
+                "A series' marks are under an element with `data-series` set to its `Name`, or its value for a "
+                    + "split series: a `g` of `rect` bars, the `path` of a line or of an area's line, or a `g` of a "
+                    + "scatter's marks. A hidden series has none.",
+                "An area's fill is a `path.tb-chart__area` in `svg.tb-chart__fills`, outside its series' element.",
             ],
             Telemetry =
             [

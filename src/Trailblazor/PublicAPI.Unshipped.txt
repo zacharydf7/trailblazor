@@ -8703,3 +8703,5 @@ static Trailblazor.ChartView.operator !=(Trailblazor.ChartView? left, Trailblazo
 static Trailblazor.ChartView.operator ==(Trailblazor.ChartView? left, Trailblazor.ChartView? right) -> bool
 Trailblazor.TbChart<TItem>.MaxDrawnPoints.get -> int
 Trailblazor.TbChart<TItem>.MaxDrawnPoints.set -> void
+Trailblazor.TbChartSeries<TItem>.SplitBy.get -> System.Func<TItem, object?>?
+Trailblazor.TbChartSeries<TItem>.SplitBy.set -> void

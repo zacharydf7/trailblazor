@@ -23,7 +23,7 @@
        and text is HTML around the plot. *@
     @{
         var plan = Plan();
-        var series = _series;
+        var series = _parts;
         var empty = plan.Places.Count == 0 || series.Count == 0;
         // With every series hidden there is nothing to draw, and the legend and the table stay.
         var blank = empty || plan.Series.All(one => one.Hidden);
