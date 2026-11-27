@@ -15,10 +15,13 @@ An issue is done when all of these hold:
   `TRAILBLAZOR_BROWSERS=chromium` narrows a local run the same way. If five minutes pass with no test finishing, the run
   stops and writes a hang dump and a `TestResults/*_hang.log` that lists the tests still running.
   `TRAILBLAZOR_RENDER_MODE=webassembly` (or `auto`) runs the test host's pages in that render mode instead of on the
-  server; the circuit tests still need the server. `TRAILBLAZOR_POPPED=1` runs each test that opens an interactive page
-  against that page inside a dock panel that shows in a browser window of its own. CI runs the suites listed in
-  `ci.yml` that way, in the browsers of the run, and a test in them that can't run there skips itself with
-  `Assert.SkipWhen(Popped, ...)` and one of the reasons in `BrowserTest`.
+  server; a class whose tests need the server, as the circuit tests do, overrides `NeedsTheServer`, and a single test
+  that needs it opens its page with `?mode=server`. The weekly run, and one started by hand, also run the browser tests
+  in Chromium in each of those modes, and in WebKit on macOS, which is closer to Safari; `TRAILBLAZOR_BROWSERS=webkit`
+  on a Mac runs that leg locally. `TRAILBLAZOR_POPPED=1` runs each test that opens an interactive page against that
+  page inside a dock panel that shows in a browser window of its own. CI runs the suites listed in `ci.yml` that way,
+  in the browsers of the run, and a test in them that can't run there skips itself with `Assert.SkipWhen(Popped, ...)`
+  and one of the reasons in `BrowserTest`.
 - CI's browsers run on Linux, where a few things differ. The system's font is wider there (DejaVu Sans), so a test or
   an example must not count on how wide its text runs: a box that has to hold some text gets a width in `ch`, or room
   to spare. While one page of Firefox holds a mouse button down, clicks and moves meant for the browser's other pages

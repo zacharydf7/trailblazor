@@ -84,7 +84,7 @@ public class TbRootTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.EvaluateAsync("""
             () => new Promise(loaded => {
                 Blazor.addEventListener('enhancedload', loaded, { once: true });
-                Blazor.navigateTo(location.pathname);
+                Blazor.navigateTo(location.pathname + location.search);
             })
             """);
         session.TrySetResult();

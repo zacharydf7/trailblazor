@@ -83,14 +83,21 @@ jobs:
           TRAILBLAZOR_POPPED: 1
       # Once a week, and on a run started by hand, the browser tests run again in Chromium under the strict policy
       # from the docs' Content Security Policy guide, and a test fails on any violation the library's scripts cause.
+      # It runs through dotnet test for the hang dump, which names the tests still running when one stalls.
       - if: >-
           ${{ !cancelled() && steps.tests.conclusion != 'skipped'
           && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
         timeout-minutes: 60
-        run: dotnet tests/Trailblazor.BrowserTests/bin/Release/net10.0/Trailblazor.BrowserTests.dll
+        run: dotnet test --configuration Release --no-build --project tests/Trailblazor.BrowserTests
         env:
           TRAILBLAZOR_BROWSERS: chromium
           TRAILBLAZOR_CSP: strict
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hang-logs
+          path: TestResults/*_hang.log
+          if-no-files-found: ignore
 
   # TypeScript's checker reads the library's scripts, with the settings in jsconfig.json, and writes nothing. It's a job
   # of its own, so a type error doesn't keep the tests from running.
@@ -99,6 +106,46 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - run: npx --yes --package typescript@7.0.2 tsc -p jsconfig.json
+
+  # Once a week, and on a run started by hand, the browser tests run in Chromium in the other two render modes, and in
+  # WebKit on macOS, which is closer to Safari than WebKit on Linux. A failure in one leg doesn't stop the others.
+  legs:
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    name: ${{ matrix.leg }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { leg: webassembly, os: ubuntu-24.04, browser: chromium, mode: webassembly }
+          - { leg: auto, os: ubuntu-24.04, browser: chromium, mode: auto }
+          # Pinned, as Ubuntu is above: the WebKit build Playwright installs depends on the macOS release.
+          - { leg: webkit-macos, os: macos-15, browser: webkit, mode: "" }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    env:
+      TRAILBLAZOR_BROWSERS: ${{ matrix.browser }}
+      TRAILBLAZOR_RENDER_MODE: ${{ matrix.mode }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - run: dotnet build --configuration Release
+      - run: >-
+          pwsh tests/Trailblazor.BrowserTests/bin/Release/net10.0/playwright.ps1 install --with-deps
+          ${{ matrix.browser }}
+      # Through dotnet test for the hang dump, as in the strict policy step.
+      - run: dotnet test --configuration Release --no-build --project tests/Trailblazor.BrowserTests
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hang-logs-${{ matrix.leg }}
+          path: TestResults/*_hang.log
+          if-no-files-found: ignore
 
   # The testing packages promise the lowest versions in Directory.Packages.props, so the bUnit tests run against them.
   minimums:

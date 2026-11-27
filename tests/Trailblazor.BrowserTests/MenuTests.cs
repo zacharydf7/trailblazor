@@ -1354,7 +1354,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.SkipWhen(Popped, ThePageFailsToRender);
         var from = Fixture.ServerLogs.GetSnapshot().Count;
 
-        await OpenAsync(browser, "/menu-bare-trigger");
+        await OpenAsync(browser, "/menu-bare-trigger?mode=server");
 
         // The script's error ends the circuit, and the server logs it once the menu attaches.
         var said = false;

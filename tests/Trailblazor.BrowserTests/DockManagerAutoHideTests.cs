@@ -177,7 +177,8 @@ public class DockManagerAutoHideTests(BrowserFixture fixture) : DockManagerPage(
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Strip_ShouldLeaveTheWindowInFrontAlone_WhenItKeepsAPanelHiddenOrSlidOut(string browser)
     {
-        var page = await OpenDockAsync(browser);
+        // The raises are counted on the circuit's socket, so the page runs on the server.
+        var page = await OpenDockAsync(browser, "?mode=server");
         var dock = page.Tb().Dock();
         await dock.FloatAsync("Weather");
         await dock.FloatAsync("Notes");

@@ -6,6 +6,8 @@ namespace Trailblazor.BrowserTests;
 
 public class DockConnectionTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool NeedsTheServer => true;
+
     private const string Lost = "The page lost its connection to the server. This panel works again when the page "
         + "reconnects.";
 

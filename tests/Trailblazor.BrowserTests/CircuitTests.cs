@@ -10,6 +10,8 @@ public sealed class CircuitDrops;
 [Collection(nameof(CircuitDrops))]
 public class CircuitTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool NeedsTheServer => true;
+
     // Each page is left mid-interaction: a select's list open, a tree row expanded, a grid cell focused.
     [Theory]
     [InlineData("/select")]

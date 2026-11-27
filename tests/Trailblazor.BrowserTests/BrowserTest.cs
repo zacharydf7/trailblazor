@@ -18,6 +18,9 @@ public abstract partial class BrowserTest(BrowserFixture fixture) : IAsyncDispos
     // should and doesn't.
     protected virtual bool HoldsTheMouse => false;
 
+    // A class that drops or watches the circuit says so here, and its pages run on the server in every render mode.
+    protected virtual bool NeedsTheServer => false;
+
     // Runs before a page opens anything, for a test class that sets up every page the same way.
     protected virtual Task PreparePageAsync(IPage page) => Task.CompletedTask;
 
@@ -194,12 +197,13 @@ public abstract partial class BrowserTest(BrowserFixture fixture) : IAsyncDispos
         return page;
     }
 
-    // TRAILBLAZOR_RENDER_MODE=webassembly or auto runs the host's pages that way, unless a test names its own ?mode=.
+    // TRAILBLAZOR_RENDER_MODE=webassembly or auto runs the host's pages that way, unless a test names its own ?mode= or
+    // its class needs the server.
     private Uri HostAddress(string path)
     {
         var address = new Uri(Fixture.BaseAddress, path);
         var mode = Environment.GetEnvironmentVariable("TRAILBLAZOR_RENDER_MODE");
-        if (string.IsNullOrEmpty(mode) || QueryHelpers.ParseQuery(address.Query).ContainsKey("mode"))
+        if (NeedsTheServer || string.IsNullOrEmpty(mode) || QueryHelpers.ParseQuery(address.Query).ContainsKey("mode"))
         {
             return address;
         }
