@@ -214,12 +214,15 @@
             <code>--tb-color-primary</code> wherever it is set: on the page, in a palette, or in an element's
             <code>style</code>. So one color re-themes a part of a page, states included. You can still set any of the
             derived tokens yourself, on the same element as the primary. The secondary's hover, pressed, subtle and
-            text colors follow <code>--tb-color-secondary</code> the same way.
+            text colors follow <code>--tb-color-secondary</code> the same way, and each status color's follow
+            <code>--tb-color-success</code>, <code>--tb-color-warning</code>, <code>--tb-color-danger</code> or
+            <code>--tb-color-info</code>.
         </TbText>
         <CodeBlock Label="A primary for part of a page" Code="@RegionPrimary" />
         <DocsCallout Tone="Tone.Warning" Title="A primary set from a class">
-            If you set the primary from a class in your stylesheet instead of <code>style</code>, also put an empty
-            <code>data-tb-palette</code> attribute on that element so its states follow.
+            If you set the primary, the secondary or a status color from a class in your stylesheet instead of
+            <code>style</code>, also put an empty <code>data-tb-palette</code> attribute on that element so its states
+            follow.
         </DocsCallout>
 
         <DocsHeading Id="restyle" Text="Restyle one component" Class="docs-section" />
@@ -317,18 +320,21 @@
             Give a palette a few seed colors and <code>TbThemeHead</code> writes its CSS, so the app needs none of its
             own. <code>Primary</code> is required. <code>Neutral</code> tints the backgrounds, text, borders and the
             neutral tone, keeping the built-in grays' lightness in both modes. <code>PrimaryDark</code>,
-            <code>Secondary</code> and <code>SecondaryDark</code> are optional; when a dark color is left out,
-            Trailblazor uses a lighter form of the light one. Each seed is a hex color or an <code>oklch()</code> color.
+            <code>Secondary</code> and <code>SecondaryDark</code> are optional, and so are the status colors
+            <code>Success</code>, <code>Warning</code>, <code>Danger</code> and <code>Info</code> and their dark forms;
+            a status color left out keeps the stylesheet's. When a dark color is left out, Trailblazor uses a lighter
+            form of the light one, except for a warning: choose a light warning that takes dark text, as amber does, and
+            it serves dark mode too. Each seed is a hex color or an <code>oklch()</code> color.
             Under a Content Security Policy, the palette's <code>&lt;style&gt;</code> takes <code>TbThemeHead</code>'s
             <code>Nonce</code>, as the <a href="guides/security">Content Security Policy</a> guide shows.
         </TbText>
         <CodeBlock Label="Program.cs" Code="@SeededPalette" />
         <TbText>
-            The hover, pressed, subtle and text colors of the primary and secondary, and the focus ring, follow from the
-            seeds as they do for a built-in palette. Text on a filled button is white or near-black, whichever reads
-            better. Trailblazor checks the result once per app, in both modes, and logs a warning naming the tokens and
-            the ratio for each text color under 4.5:1 against its background, and for the strong border, the primary or
-            the focus ring under 3:1 against the page background. To warn only in Development, set
+            The focus ring and the hover, pressed, subtle and text colors of the primary, the secondary and each status
+            color follow from the seeds as they do for a built-in palette. Text on a filled button is white or
+            near-black, whichever reads better. Trailblazor checks the result once per app, in both modes, and logs a
+            warning naming the tokens and the ratio for each text color under 4.5:1 against its background, and for the
+            strong border, the primary or the focus ring under 3:1 against the page background. To warn only in Development, set
             <code>WarnAboutContrast</code> to <code>builder.Environment.IsDevelopment()</code>.
         </TbText>
         <DocsCallout Tone="Tone.Info" Title="In a standalone WebAssembly app">
@@ -339,8 +345,9 @@
         <TbText>
             A palette is a block of color tokens for one value of <code>data-tb-palette</code>. Use
             <code>light-dark()</code> so each color has its light and dark value, and set the background, surface, text,
-            border, primary, secondary and neutral tokens. The primary's and secondary's states follow from those colors,
-            and the focus ring from the primary. The
+            border, primary, secondary and neutral tokens, and the four status colors with the text on them, such as
+            <code>--tb-color-danger</code> and <code>--tb-color-on-danger</code>. The states of the primary, the
+            secondary and the status colors follow from those colors, and the focus ring from the primary. The
             built-in palettes in <code>trailblazor.css</code> list every token a palette sets.
         </TbText>
         <CodeBlock Label="A custom palette" Code="@CustomPalette" Language="CodeLanguage.Css" />
@@ -414,8 +421,9 @@
 
 @code {
     private static string TokenValue(string value) =>
-        value.Contains("from var(--tb-color-primary)") ? "From the primary"
-        : value.Contains("from var(--tb-color-secondary)") ? "From the secondary" : value;
+        new[] { "primary", "secondary", "success", "warning", "danger", "info" }
+            .FirstOrDefault(tone => value.Contains($"from var(--tb-color-{tone})")) is { } source
+            ? source is "primary" or "secondary" ? $"From the {source}" : $"From the {source} color" : value;
 
     private const string DefaultBrand = "#0f766e";
 
@@ -576,7 +584,7 @@
             --tb-color-on-primary: light-dark(white, #0f1a14);
             --tb-color-secondary: light-dark(#7a4e14, #e8b46a);
             --tb-color-on-secondary: light-dark(white, #0f1a14);
-            /* ...and the remaining surface, border and neutral tokens. */
+            /* ...and the remaining surface, border, neutral and status tokens. */
         }
         """;
 }

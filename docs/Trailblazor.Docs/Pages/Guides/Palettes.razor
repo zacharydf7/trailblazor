@@ -15,7 +15,8 @@
     <Header>
         <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Palettes</TbText>
         <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
-            Every built-in palette, light and dark, on real components. Choose one with <code>data-tb-palette</code>,
+            Every built-in palette, light and dark, on real components. The palettes differ in their secondary, status
+            colors and grays, not only their primary. Choose one with <code>data-tb-palette</code>,
             as the <a href="guides/theming#palettes">theming guide</a> shows, or with the palette switcher at the top
             of this site.
         </TbText>
@@ -50,6 +51,12 @@
                                 <TbChip Text="Open" Selected SelectedChanged="(bool _) => { }" />
                                 <TbChip Text="Closed" SelectedChanged="(bool _) => { }" />
                                 <TbChip Text="Field notes" Tone="Tone.Secondary" />
+                            </TbStack>
+                            <TbStack Row Gap="2" Wrap>
+                                <TbChip Text="Dry" Tone="Tone.Success" />
+                                <TbChip Text="Muddy" Tone="Tone.Warning" />
+                                <TbChip Text="Washed out" Tone="Tone.Danger" />
+                                <TbChip Text="New trail" Tone="Tone.Info" />
                             </TbStack>
                             <TbStack Row Gap="4" Wrap>
                                 <TbCheckbox Label="Share with team" @bind-Value="_share" />

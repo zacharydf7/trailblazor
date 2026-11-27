@@ -661,6 +661,37 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(declared.Distinct().Order(), Palettes.Order());
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task StatusColors_ShouldBeTheRegionsPalettes_WhenARegionHasAPaletteOfItsOwn(string browser)
+    {
+        var page = await OpenAsync(browser, "/tokens");
+
+        // A danger fill with its text, read in a region of the given palette on a page of another.
+        var colors = await page.EvaluateAsync<string[]>("""
+            () => {
+                const read = (page, palette) => {
+                    document.documentElement.dataset.tbPalette = page;
+                    const region = document.createElement('div');
+                    region.dataset.tbPalette = palette;
+                    const probe = document.createElement('div');
+                    probe.style.color = 'var(--tb-color-on-danger)';
+                    probe.style.backgroundColor = 'var(--tb-color-danger-subtle)';
+                    probe.style.borderColor = 'var(--tb-color-danger)';
+                    region.append(probe);
+                    document.querySelector('main').append(region);
+                    const style = getComputedStyle(probe);
+                    const colors = `${style.color} ${style.backgroundColor} ${style.borderTopColor}`;
+                    region.remove();
+                    return colors;
+                };
+                return [read('cobalt', 'graphite'), read('graphite', 'graphite'), read('graphite', 'cobalt')];
+            }
+            """);
+
+        Assert.Equal(colors[1], colors[0]);
+        Assert.NotEqual(colors[1], colors[2]);
+    }
+
     [Theory, MemberData(nameof(BrowsersAndThemes))]
     public async Task Palettes_ShouldKeepPrimaryAndSecondaryApartFromTheStatusColors_WhenTheyAreColored(
         string browser, string theme)

@@ -4,7 +4,8 @@ using System.Text;
 namespace Trailblazor;
 
 // A palette built from seeds the way the built-in palettes are made: grays from the neutral seed on the same steps as
-// the stylesheet's, mapped to the same tokens. The primary's and secondary's states stay derived in CSS.
+// the stylesheet's, mapped to the same tokens. The states of the primary, the secondary and the status colors stay
+// derived in CSS.
 internal sealed class SeededPalette
 {
     // The stylesheet's gray scale: each step's lightness, and its chroma for a neutral of chroma GrayChroma.
@@ -14,6 +15,15 @@ internal sealed class SeededPalette
         [400] = (0.71, 0.015), [500] = (0.62, 0.017), [600] = (0.52, 0.018), [700] = (0.47, 0.018),
         [800] = (0.4, 0.017), [900] = (0.33, 0.015), [925] = (0.27, 0.014), [950] = (0.25, 0.013),
         [960] = (0.23, 0.012), [975] = (0.19, 0.011), [985] = (0.16, 0.01),
+    };
+
+    // The stylesheet's status colors in light and dark mode, from its 600 and 400 shades, and amber's 400 for both.
+    private static readonly Dictionary<string, (OklchColor Light, OklchColor Dark)> StylesheetStatuses = new()
+    {
+        ["success"] = (new(0.52, 0.17, 150), new(0.71, 0.14, 150)),
+        ["warning"] = (new(0.71, 0.14, 75), new(0.71, 0.14, 75)),
+        ["danger"] = (new(0.52, 0.17, 27), new(0.71, 0.14, 27)),
+        ["info"] = (new(0.52, 0.17, 222), new(0.71, 0.14, 222)),
     };
 
     private const double GrayChroma = 0.018;
@@ -53,6 +63,19 @@ internal sealed class SeededPalette
             tokens.AddRange(Accent("secondary", secondary, Parse(seeds.SecondaryDark) ?? Lighter(secondary)));
         }
 
+        // Each status color is the seed's or else the stylesheet's, so a region with this palette never takes another
+        // palette's. A warning takes dark text in both modes, so its light color serves dark mode too.
+        foreach (var (status, light, dark) in new[] { ("success", seeds.Success, seeds.SuccessDark),
+            ("warning", seeds.Warning, seeds.WarningDark), ("danger", seeds.Danger, seeds.DangerDark),
+            ("info", seeds.Info, seeds.InfoDark) })
+        {
+            var (fallbackLight, fallbackDark) = StylesheetStatuses[status];
+            var seeded = Parse(light);
+            var darkColor = Parse(dark) ?? (seeded is not { } color ? fallbackDark
+                : status == "warning" ? color : Lighter(color));
+            tokens.AddRange(Accent(status, seeded ?? fallbackLight, darkColor));
+        }
+
         Tokens = tokens;
     }
 
@@ -86,9 +109,11 @@ internal sealed class SeededPalette
         foreach (var dark in new[] { false, true })
         {
             var colors = Tokens.ToDictionary(token => token.Name, token => dark ? token.Dark : token.Light);
-            foreach (var accent in new[] { "primary", "secondary" }.Where(accent => colors.ContainsKey(Color(accent))))
+            foreach (var accent in Accents.Where(accent => colors.ContainsKey(Color(accent))))
             {
-                foreach (var (state, color) in States(colors[Color(accent)], dark))
+                var states = accent == "warning" ? WarningStates(colors[Color(accent)], dark)
+                    : States(colors[Color(accent)], dark);
+                foreach (var (state, color) in states)
                 {
                     colors[Color($"{accent}-{state}")] = color;
                 }
@@ -120,7 +145,7 @@ internal sealed class SeededPalette
 
         yield return (Color("text-muted"), Color("background"), TextMinimum);
         yield return (Color("text-muted"), Color("surface"), TextMinimum);
-        foreach (var tone in new[] { "primary", "secondary", "neutral" }.Where(tone => colors.ContainsKey(Color(tone))))
+        foreach (var tone in Accents.Append("neutral").Where(tone => colors.ContainsKey(Color(tone))))
         {
             foreach (var fill in new[] { tone, $"{tone}-hover", $"{tone}-active" })
             {
@@ -134,6 +159,21 @@ internal sealed class SeededPalette
         yield return ("--tb-border-strong", Color("background"), NonTextMinimum);
         yield return (Color("primary"), Color("background"), NonTextMinimum);
         yield return ("--tb-focus-ring-color", Color("background"), NonTextMinimum);
+    }
+
+    private static readonly string[] Accents = ["primary", "secondary", "success", "warning", "danger", "info"];
+
+    // The stylesheet's steps for a warning: the primary's subtle fill and text, and a hover and press that get lighter
+    // in both modes, since dark text sits on it.
+    private static IEnumerable<(string State, OklchColor Color)> WarningStates(OklchColor color, bool dark)
+    {
+        var (l, c) = (color.L, color.C);
+        yield return ("hover", color.With(Math.Min(l + 0.1, 0.95), c * 0.72));
+        yield return ("active", color.With(Math.Min(l + 0.18, 0.97), c * 0.48));
+        foreach (var state in States(color, dark).Where(state => state.State is "subtle" or "text"))
+        {
+            yield return state;
+        }
     }
 
     // The same steps as the stylesheet's rules for a primary's hover, press, subtle fill and text.

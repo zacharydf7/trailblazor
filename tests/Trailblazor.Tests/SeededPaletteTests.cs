@@ -11,17 +11,25 @@ public partial class SeededPaletteTests
     [Fact]
     public void Tokens_ShouldMatchTheBuiltInCobalt_WhenSeededWithItsColors()
     {
-        var cobalt = Seeded(new() { Primary = Scale("blue", 600), PrimaryDark = Scale("blue", 400),
-            Secondary = Scale("teal", 600), SecondaryDark = Scale("teal", 400) });
+        var cobalt = Seeded(new()
+        {
+            Primary = Scale("blue", 600), PrimaryDark = Scale("blue", 400),
+            Secondary = Scale("rose", 600), SecondaryDark = Scale("rose", 400),
+            Success = "oklch(0.52 0.17 155)", SuccessDark = "oklch(0.71 0.14 155)", Warning = "oklch(0.71 0.14 80)",
+            Danger = "oklch(0.52 0.17 30)", DangerDark = "oklch(0.71 0.14 30)",
+            Info = "oklch(0.52 0.17 220)", InfoDark = "oklch(0.71 0.14 220)",
+        });
         var block = Regex.Match(Css, @"\[data-tb-palette=""cobalt""\] \{(.*?)\}", RegexOptions.Singleline)
             .Groups[1].Value;
 
         foreach (var token in cobalt.Tokens.Where(token => !token.Name.StartsWith("--tb-color-on-")))
         {
-            var declared = Regex.Match(block, $@"{token.Name}: light-dark\((.+?), (.+?)\);");
+            // A built-in warning is one color for both modes.
+            var declared = Regex.Match(block, $@"{token.Name}: (?:light-dark\((.+?), (.+?)\)|(oklch\([^)]*\)));");
             Assert.True(declared.Success, token.Name);
-            Assert.Equal((Resolve(declared.Groups[1].Value), Resolve(declared.Groups[2].Value)),
-                (token.Light.ToCss(), token.Dark.ToCss()));
+            var (light, dark) = declared.Groups[3].Success ? (declared.Groups[3].Value, declared.Groups[3].Value)
+                : (declared.Groups[1].Value, declared.Groups[2].Value);
+            Assert.Equal((Resolve(light), Resolve(dark)), (token.Light.ToCss(), token.Dark.ToCss()));
         }
     }
 
@@ -56,6 +64,59 @@ public partial class SeededPaletteTests
             { Mode: "light", Foreground: "--tb-color-primary", Background: "--tb-color-background" });
         Assert.Equal(("brand", 3), (problem.Palette, problem.Minimum));
         Assert.InRange(problem.Ratio, 1, 2);
+    }
+
+    [Fact]
+    public void ContrastProblems_ShouldBeNone_WhenSeededWithEachBuiltInPalettesStatusColors()
+    {
+        // The default palette reads the stylesheet's shades, and the others give their own colors.
+        foreach (var block in Regex.Matches(Css, @"\[data-tb-palette=""[a-z]+""\] \{(.*?)\}", RegexOptions.Singleline)
+            .Select(match => match.Groups[1].Value)
+            .Where(block => block.Contains("--tb-color-success: light-dark(oklch")))
+        {
+            string Light(string status) =>
+                Regex.Match(block, $@"--tb-color-{status}: (?:light-dark\()?(oklch\([^)]*\))").Groups[1].Value;
+            string Dark(string status) =>
+                Regex.Match(block, $@"--tb-color-{status}: light-dark\(oklch\([^)]*\), (oklch\([^)]*\))")
+                    .Groups[1].Value;
+            var palette = Seeded(new()
+            {
+                Primary = "#1F5FAD", Success = Light("success"), SuccessDark = Dark("success"),
+                Warning = Light("warning"), Danger = Light("danger"), DangerDark = Dark("danger"),
+                Info = Light("info"), InfoDark = Dark("info"),
+            });
+
+            Assert.Empty(palette.ContrastProblems());
+        }
+    }
+
+    [Fact]
+    public void Tokens_ShouldKeepTheWarningForDarkModeAndLightenTheOthers_WhenNoDarkFormsAreSeeded()
+    {
+        var palette = Seeded(new()
+        {
+            Primary = "#1F5FAD", Warning = "oklch(0.75 0.15 70)", Danger = "oklch(0.5 0.2 30)",
+        });
+
+        var warning = palette.Tokens.Single(token => token.Name == "--tb-color-warning");
+        var danger = palette.Tokens.Single(token => token.Name == "--tb-color-danger");
+        Assert.Equal(warning.Light, warning.Dark);
+        Assert.Equal(0.69, danger.Dark.L, 0.001);
+        Assert.Equal(OklchColor.White, palette.Tokens.Single(token => token.Name == "--tb-color-on-danger").Light);
+        Assert.NotEqual(OklchColor.White, palette.Tokens.Single(token => token.Name == "--tb-color-on-warning").Light);
+        // A status left out keeps the stylesheet's color, so a region with this palette doesn't take another's.
+        var success = palette.Tokens.Single(token => token.Name == "--tb-color-success");
+        Assert.Equal((new OklchColor(0.52, 0.17, 150), new OklchColor(0.71, 0.14, 150)), (success.Light, success.Dark));
+    }
+
+    [Fact]
+    public void ContrastProblems_ShouldNameTheWarningsPress_WhenTheWarningIsTooDarkForDarkText()
+    {
+        // White text reads on this dark warning, but its hover and press get lighter, as a warning's do.
+        var palette = Seeded(new() { Primary = "#1F5FAD", Warning = "oklch(0.55 0.15 70)" });
+
+        Assert.Contains(palette.ContrastProblems(), problem => problem is
+            { Mode: "light", Foreground: "--tb-color-on-warning", Background: "--tb-color-warning-active" });
     }
 
     [Fact]

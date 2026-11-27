@@ -21,40 +21,41 @@ public sealed record Palette
     /// none of its own.</summary>
     public PaletteSeeds? Seeds { get; init; }
 
-    /// <summary>Near-monochrome grays with ink-colored primary actions. The default.</summary>
+    /// <summary>Near-monochrome grays with ink-colored primary actions and a blue secondary. The default.</summary>
     public static Palette Graphite { get; } = new("graphite");
 
-    /// <summary>Cool grays with blue primary actions.</summary>
+    /// <summary>Cool grays with blue primary actions and a rose secondary.</summary>
     public static Palette Cobalt { get; } = new("cobalt");
 
-    /// <summary>Blue-tinted grays with slate ink for primary actions.</summary>
+    /// <summary>Blue-tinted grays with slate ink for primary actions and a teal secondary.</summary>
     public static Palette Slate { get; } = new("slate");
 
-    /// <summary>Warm, earthy grays with brown-black ink for primary actions.</summary>
+    /// <summary>Warm, earthy grays on a warm off-white, with brown-black ink for primary actions and a moss green
+    /// secondary.</summary>
     public static Palette Sand { get; } = new("sand");
 
-    /// <summary>Cool grays with deep indigo.</summary>
+    /// <summary>Cool grays with deep indigo and a fuchsia secondary.</summary>
     public static Palette Indigo { get; } = new("indigo");
 
-    /// <summary>Lilac-tinted grays with violet.</summary>
+    /// <summary>Lilac-tinted grays with violet and a moss green secondary.</summary>
     public static Palette Violet { get; } = new("violet");
 
-    /// <summary>Lilac-tinted grays with a dusky, muted purple.</summary>
+    /// <summary>Lilac-tinted grays with a dusky, muted purple and a teal secondary.</summary>
     public static Palette Plum { get; } = new("plum");
 
-    /// <summary>Lilac-tinted grays with a vivid, saturated fuchsia.</summary>
+    /// <summary>Lilac-tinted grays with a vivid, saturated fuchsia and a violet secondary.</summary>
     public static Palette Fuchsia { get; } = new("fuchsia");
 
-    /// <summary>Warm grays with rose pink.</summary>
+    /// <summary>Warm grays with rose pink and a plum secondary.</summary>
     public static Palette Rose { get; } = new("rose");
 
-    /// <summary>Warm, earthy grays with a muted terracotta.</summary>
+    /// <summary>Warm, earthy grays on a warm off-white, with a muted terracotta and an indigo secondary.</summary>
     public static Palette Clay { get; } = new("clay");
 
-    /// <summary>Green-tinted grays with an earthy olive green.</summary>
+    /// <summary>Green-tinted grays with an earthy olive green and a terracotta secondary.</summary>
     public static Palette Moss { get; } = new("moss");
 
-    /// <summary>Green-tinted grays with teal.</summary>
+    /// <summary>Green-tinted grays with teal and an indigo secondary.</summary>
     public static Palette Teal { get; } = new("teal");
 
     /// <summary>Every built-in palette, starting with the default.</summary>
