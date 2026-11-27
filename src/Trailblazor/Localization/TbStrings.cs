@@ -81,6 +81,25 @@ public static class TbStrings
     /// <c>{1}</c> and <c>{2}</c> the values or places it runs between, as in "Normal: 20 to 40".</summary>
     public const string ChartReferenceBand = "Chart.ReferenceBand";
 
+    /// <summary>"Zoom in": names the button that zooms in on a zoomable chart.</summary>
+    public const string ChartZoomIn = "Chart.ZoomIn";
+
+    /// <summary>"Zoom out": names the button that zooms out on a zoomable chart.</summary>
+    public const string ChartZoomOut = "Chart.ZoomOut";
+
+    /// <summary>"Move back": names the button that moves a zoomed chart's view back along its scale.</summary>
+    public const string ChartMoveBack = "Chart.MoveBack";
+
+    /// <summary>"Move forward": names the button that moves a zoomed chart's view forward along its scale.</summary>
+    public const string ChartMoveForward = "Chart.MoveForward";
+
+    /// <summary>"Show all": the button that shows all of a zoomed chart's scale again.</summary>
+    public const string ChartShowAll = "Chart.ShowAll";
+
+    /// <summary>"Showing {0} to {1}": says what part of a zoomable chart's scale is shown. <c>{0}</c> and <c>{1}</c>
+    /// are its ends, written as the items are, as in "Showing Jun 8 to Jun 20".</summary>
+    public const string ChartView = "Chart.View";
+
     /// <summary>"Bar and line chart": the kind of a chart with bars beside lines, areas or scatters, in
     /// <see cref="ChartSummary"/>.</summary>
     public const string ChartBarsAndLines = "Chart.BarsAndLines";
@@ -2134,6 +2153,12 @@ public static class TbStrings
         [ChartScatter] = "Scatter chart",
         [ChartReferenceLine] = "{0}: {1}",
         [ChartReferenceBand] = "{0}: {1} to {2}",
+        [ChartZoomIn] = "Zoom in",
+        [ChartZoomOut] = "Zoom out",
+        [ChartMoveBack] = "Move back",
+        [ChartMoveForward] = "Move forward",
+        [ChartShowAll] = "Show all",
+        [ChartView] = "Showing {0} to {1}",
         [ChartBarsAndLines] = "Bar and line chart",
         [ChartPie] = "Pie chart",
         [ChartDonut] = "Donut chart",

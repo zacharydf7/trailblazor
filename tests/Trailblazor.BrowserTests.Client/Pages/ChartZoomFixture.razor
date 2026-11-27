@@ -1,0 +1,25 @@
+@page "/chart-zoom"
+
+@* Zoomable charts of known width, with a point at every whole number from 0 to 20, whose views the page shows. *@
+<div style="width: 30rem">
+    <TbChart TItem="int" Items="Enumerable.Range(0, 21)" X="number => number" Title="Readings" Height="12rem"
+             OnPointClick="@(point => _clicked++)">
+        <TbXAxis Scale="ChartScale.Continuous" Zoomable @bind-View="_view" />
+        <TbLineSeries Name="Level" Value="@(number => number % 5)" />
+    </TbChart>
+    <TbChart TItem="int" Items="Enumerable.Range(0, 21)" X="number => number" Title="Rungs" Height="16rem" Horizontal>
+        <TbXAxis Scale="ChartScale.Continuous" Zoomable @bind-View="_turned" />
+        <TbBarSeries Name="Width" Value="@(number => number % 5 + 1)" />
+    </TbChart>
+</div>
+<output data-testid="view">@Text(_view)</output>
+<output data-testid="turned">@Text(_turned)</output>
+<output data-testid="clicked">@_clicked</output>
+
+@code {
+    private ChartView? _view;
+    private ChartView? _turned;
+    private int _clicked;
+
+    private static string Text(ChartView? view) => view is null ? "all" : $"{view.From} to {view.To}";
+}

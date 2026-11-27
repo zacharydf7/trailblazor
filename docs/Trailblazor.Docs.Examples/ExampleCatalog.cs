@@ -1093,6 +1093,14 @@ public static class ExampleCatalog
                     + "the summit hut's one free bed shows. In a horizontal chart a label past a bar's end needs the "
                     + "bar to be a line of text thick.",
                     typeof(ChartValuesExample)),
+                new("zoom", "Zoom and move", "`Zoomable` on a `TbXAxis` with a `Continuous` scale lets people look at "
+                    + "part of a long series. The buttons above the plot zoom in and out around the middle of what "
+                    + "is shown, move back and forward by a quarter of it, and show all of it again. The text after "
+                    + "them says what part is shown. On the plot, + and - zoom, 0 shows all, and Shift with the "
+                    + "arrows along the chart moves back or forward; a drag moves along the scale, and Ctrl with the "
+                    + "wheel zooms around the pointer. The chart then shows only the items in view, and its value "
+                    + "axis and data table follow them. `@bind-View` reads and sets the part shown, a `ChartView`; "
+                    + "the text under the chart reads it here.", typeof(ChartZoomExample)),
                 new("gaps", "Missing values", "A null value leaves a gap: no bar, as on Thursday here, and a break "
                     + "in a line, as in the forecast on Wednesday. An area breaks as a line does, fill and all, and "
                     + "in a stack a missing value takes no room, so the bands above it drop at that place. The "
@@ -1137,11 +1145,11 @@ public static class ExampleCatalog
                 typeof(TbChart<>), typeof(TbLineSeries<>), typeof(TbAreaSeries<>), typeof(TbScatterSeries<>),
                 typeof(TbBarSeries<>), typeof(TbXAxis), typeof(TbYAxis), typeof(TbReferenceLine),
                 typeof(TbReferenceBand), typeof(ChartPoint<>), typeof(ChartStacking), typeof(ChartCurve),
-                typeof(ChartScale), typeof(ChartLabels), typeof(ChartClasses),
+                typeof(ChartScale), typeof(ChartView), typeof(ChartLabels), typeof(ChartClasses),
             ],
             Anatomy = """
                 <TbChart Items="…" X="…" Title="…">
-                    <TbXAxis Title="…" Format="…" Scale="…" />
+                    <TbXAxis Title="…" Format="…" Scale="…" Zoomable @bind-View="…" />
                     <TbYAxis Title="…" Format="…" />
                     <TbBarSeries Name="…" Value="…" />
                     <TbLineSeries Name="…" Value="…" />
@@ -1168,17 +1176,28 @@ public static class ExampleCatalog
                     { When = "On the plot" },
                 new(["Escape"], "Hides the tooltip and leaves focus where it is.")
                     { When = "While the tooltip shows" },
+                new(["+", "=", "-"], "Zooms in, or out with -, around the middle of what is shown.")
+                    { When = "On a zoomable chart's plot" },
+                new(["0"], "Shows all of the scale.") { When = "On a zoomable chart's plot" },
+                new(["Shift+Right", "Shift+Left"], "Moves forward or back along the scale by a quarter of what is "
+                    + "shown. The keys swap on a right-to-left page, and a horizontal chart takes Shift+Down and "
+                    + "Shift+Up.")
+                    { When = "On a zoomable chart's plot" },
                 new(["Enter", "Space"], "Hides or shows the series.") { When = "On a legend button" },
                 new(["Enter", "Space"], "Opens or closes the data table.") { When = "On \"Data table\"" },
             ],
             RightToLeftKeys = "Left moves to the next point and Right to the previous one, as the chart runs from "
-                + "the right. On a horizontal chart, Left moves to the next series and Right to the previous one.",
+                + "the right. On a horizontal chart, Left moves to the next series and Right to the previous one. "
+                + "On a zoomable chart, Shift+Left moves forward along the scale and Shift+Right back.",
             Announcements =
             [
                 "As focus moves to a point, it is read by its place, its series, its value and its position, as in "
                     + "\"Jul 2, Valley: 24, 2 of 10\". `Labels.Point` rewords it.",
                 "Choosing a point announces nothing by itself; what the app then shows is the app's to announce.",
                 "A legend button reads as pressed while its series shows and as not pressed once it is hidden.",
+                "On a zoomable chart the text after the zoom buttons is a status, so screen readers hear what part "
+                    + "of the scale is shown, such as \"Showing Mar 9 to Apr 7\", each time it changes. "
+                    + "`Labels.View` rewords it.",
             ],
             Labeling =
             [
@@ -1193,11 +1212,21 @@ public static class ExampleCatalog
                 "Each series' `Name` shows in the legend and heads its column of the data table. It names the "
                     + "series' legend button too.",
                 "The drawing's name lists only the series that show.",
+                "A zoomable chart's icon buttons are named \"Move back\", \"Zoom out\", \"Zoom in\" and \"Move "
+                    + "forward\", which `Labels.MoveBack`, `Labels.ZoomOut`, `Labels.ZoomIn` and "
+                    + "`Labels.MoveForward` reword. \"Show all\" is the text of its button, which `Labels.ShowAll` "
+                    + "rewords.",
             ],
             Accessibility =
             [
                 "Every value is in a table under the chart, in a disclosure anyone can open, so nothing is only in "
-                    + "the drawing. Its rows are the items and its columns the series.",
+                    + "the drawing. Its rows are the items and its columns the series. A zoomed chart's table holds "
+                    + "the items in view, and the text after its zoom buttons says what part is shown.",
+                "On a zoomable chart the buttons do with a click or a tap what a drag or the wheel does, and the "
+                    + "keys do it from the plot. A button that can't act is marked disabled and keeps its tab stop. "
+                    + "Ctrl with the wheel over the plot zooms the chart, not the page, and Ctrl with + still zooms "
+                    + "the page. A finger's drag along the plot moves the chart, sideways or down a horizontal one, "
+                    + "and a drag across it scrolls the page.",
                 "A reference line's or band's text, such as \"Flood warning: 70 cm\", is read after the "
                     + "drawing, and every reference is in a list after the data table, inside its disclosure. A "
                     + "reference that isn't drawn, such as one beyond an end the axis was given or at a place the "
@@ -1272,6 +1301,9 @@ public static class ExampleCatalog
                 "The legend's entries are plain text until the page is interactive, and on a static page. A series "
                     + "whose `Hidden` is set is left out of the drawing either way, and its legend entry is struck "
                     + "through.",
+                "A zoomable chart's buttons aren't there, and its keys, drags and wheel don't work, until the page "
+                    + "is interactive. Until then, and on a static page, it shows the `View` the app sets, or all of "
+                    + "its scale.",
             ],
             Notes =
             [
@@ -1376,6 +1408,21 @@ public static class ExampleCatalog
                     + "at one place. Show values on one series of such a chart.") { Pitfall = true },
                 new("With `ChartStacking.Percent` a label writes the value, as the data table does, not its share "
                     + "of the total."),
+                new("Zooming in stops at a view twice as wide as the room between the closest two items, and at "
+                    + "least four days or four whole numbers wide for `DateOnly` or whole-number items, so a move by "
+                    + "a quarter of it moves by at least one day or number. A view people choose never reaches past "
+                    + "the scale's ends: the first and last items, or `Min` and `Max` where they lie beyond them. "
+                    + "When they choose all of the scale, `View` goes back to null. An app's `View` is shown as "
+                    + "given."),
+                new("A chart whose items have fewer than two different X values has no zoom buttons and doesn't "
+                    + "zoom."),
+                new("Where items are spread unevenly, a view can fall between them. The chart then says it has no "
+                    + "data, and its buttons stay to move along or show all."),
+                new("Only Ctrl with the wheel zooms; the wheel alone scrolls the page, as over any other content, "
+                    + "and a vertical swipe on a touch screen scrolls it too."),
+                new("`TbXAxis` throws when it is `Zoomable` with a scale that isn't `Continuous`, and when its "
+                    + "`View` has a `From` that isn't before its `To`. The chart throws for a `View` of dates on a "
+                    + "scale of numbers, or of numbers on a scale of dates."),
                 new("A reference throws when it has no `Name`; when it has a value that isn't finite, a band's "
                     + "`From` not below its `To`, neither or both of a value and a place, or only one of a band's "
                     + "two values or places; when its place on a continuous scale isn't a date on a scale of dates "
@@ -1398,6 +1445,7 @@ public static class ExampleCatalog
                     + "horizontal chart."),
                 new("tooltip", "The values at the place the pointer or the keys are on."),
                 new("values", "The labels of the values written on marks, with `ShowValues`."),
+                new("zoom", "A zoomable chart's buttons, with the text that says what part of the scale is shown."),
                 new("reference", "A reference line's or band's name and values, written over the plot."),
                 new("table", "The disclosure that holds the data table."),
                 new("references", "The list of the reference lines and bands under the data table."),
@@ -1440,6 +1488,13 @@ public static class ExampleCatalog
                 "Without the helpers, find a chart with `GetByRole(AriaRole.Figure, new() { Name = \"Hikers by "
                     + "month\" })` and its drawing with `GetByRole(AriaRole.Img, new() { Name = \"Bar chart: "
                     + "Hikers\" })`; the point that has the tab stop is an image too.",
+                "On a zoomable chart, press its buttons by name: `GetByRole(AriaRole.Button, new() { Name = \"Zoom "
+                    + "in\" })`, or `[aria-label='Zoom in']` in bUnit, and the same for \"Zoom out\", \"Move back\" "
+                    + "and \"Move forward\". In bUnit, find \"Show all\" by its text.",
+                "The text in `[data-part=zoom] [role=status]` says what part of the scale is shown, such as "
+                    + "\"Showing Mar 9 to Apr 7\".",
+                "`Places` lists only the items in a zoomed view. Set `View` to show a part of the scale in a test "
+                    + "without pressing the buttons. While zoomed, the plot has `data-zoomed`.",
                 "A series' marks are under an element with `data-series` set to its `Name`: a `g` of `rect` bars, "
                     + "the `path` of a line or of an area's line, or a `g` of a scatter's marks. An area's fill is a "
                     + "`path.tb-chart__area` in `svg.tb-chart__fills`, outside its series' element. A hidden series "
@@ -1450,8 +1505,10 @@ public static class ExampleCatalog
                 "With a `TelemetryName`, such as `\"hikers-by-month\"`, it counts `trailblazor.control.shown` as it "
                     + "first renders, and `trailblazor.control.used` with the action `activate` and the input "
                     + "`keyboard` or `pointer` each time a point is clicked or chosen with Enter or Space, when the "
-                    + "chart has an `OnPointClick`. A legend button counts the action `hide` or `show`. Moving "
-                    + "over the chart or between its points isn't counted, and what it shows is never recorded.",
+                    + "chart has an `OnPointClick`. A legend button counts the action `hide` or `show`, and a zoomable "
+                    + "chart counts `zoom`, with the input `keyboard` or `pointer`, each time its buttons, keys, a "
+                    + "drag or the wheel change what it shows. "
+                    + "Moving over the chart or between its points isn't counted, and what it shows is never recorded.",
             ],
         },
         new("pie-chart", "Pie chart", ExampleCategory.Content,

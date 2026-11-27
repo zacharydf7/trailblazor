@@ -8663,3 +8663,41 @@ Trailblazor.TbBarSeries<TItem>.ShowValues.get -> bool
 Trailblazor.TbBarSeries<TItem>.ShowValues.set -> void
 Trailblazor.TbLineSeries<TItem>.ShowValues.get -> bool
 Trailblazor.TbLineSeries<TItem>.ShowValues.set -> void
+Trailblazor.ChartLabels.MoveBack.get -> string?
+Trailblazor.ChartLabels.MoveBack.init -> void
+Trailblazor.ChartLabels.MoveForward.get -> string?
+Trailblazor.ChartLabels.MoveForward.init -> void
+Trailblazor.ChartLabels.ShowAll.get -> string?
+Trailblazor.ChartLabels.ShowAll.init -> void
+Trailblazor.ChartLabels.View.get -> string?
+Trailblazor.ChartLabels.View.init -> void
+Trailblazor.ChartLabels.ZoomIn.get -> string?
+Trailblazor.ChartLabels.ZoomIn.init -> void
+Trailblazor.ChartLabels.ZoomOut.get -> string?
+Trailblazor.ChartLabels.ZoomOut.init -> void
+Trailblazor.ChartView
+Trailblazor.ChartView.<Clone>$() -> Trailblazor.ChartView!
+Trailblazor.ChartView.ChartView(object! From, object! To) -> void
+Trailblazor.ChartView.Deconstruct(out object! From, out object! To) -> void
+Trailblazor.ChartView.Equals(Trailblazor.ChartView? other) -> bool
+Trailblazor.ChartView.From.get -> object!
+Trailblazor.ChartView.From.init -> void
+Trailblazor.ChartView.To.get -> object!
+Trailblazor.ChartView.To.init -> void
+Trailblazor.TbXAxis.View.get -> Trailblazor.ChartView?
+Trailblazor.TbXAxis.View.set -> void
+Trailblazor.TbXAxis.ViewChanged.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.ChartView?>
+Trailblazor.TbXAxis.ViewChanged.set -> void
+Trailblazor.TbXAxis.Zoomable.get -> bool
+Trailblazor.TbXAxis.Zoomable.set -> void
+const Trailblazor.TbStrings.ChartMoveBack = "Chart.MoveBack" -> string!
+const Trailblazor.TbStrings.ChartMoveForward = "Chart.MoveForward" -> string!
+const Trailblazor.TbStrings.ChartShowAll = "Chart.ShowAll" -> string!
+const Trailblazor.TbStrings.ChartView = "Chart.View" -> string!
+const Trailblazor.TbStrings.ChartZoomIn = "Chart.ZoomIn" -> string!
+const Trailblazor.TbStrings.ChartZoomOut = "Chart.ZoomOut" -> string!
+override Trailblazor.ChartView.Equals(object? obj) -> bool
+override Trailblazor.ChartView.GetHashCode() -> int
+override Trailblazor.ChartView.ToString() -> string!
+static Trailblazor.ChartView.operator !=(Trailblazor.ChartView? left, Trailblazor.ChartView? right) -> bool
+static Trailblazor.ChartView.operator ==(Trailblazor.ChartView? left, Trailblazor.ChartView? right) -> bool

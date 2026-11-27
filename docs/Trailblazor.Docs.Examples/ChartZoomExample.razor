@@ -1,0 +1,23 @@
+<TbStack Gap="2">
+    <TbChart Items="Days" X="day => day.Date" Title="Hikers a day this spring">
+        <TbXAxis Scale="ChartScale.Continuous" Format="MMM d" Zoomable @bind-View="_view" />
+        <TbLineSeries Name="Hikers" Value="day => day.Hikers" />
+    </TbChart>
+    <output>
+        @(_view is null ? "The whole spring is shown." : $"The app reads the view: {_view.From} to {_view.To}.")
+    </output>
+</TbStack>
+
+@code {
+    private ChartView? _view;
+
+    // A count for each day from March to May, higher at the weekends and climbing toward summer.
+    private static readonly Day[] Days = [.. Enumerable.Range(0, 92).Select(day =>
+    {
+        var date = new DateOnly(2026, 3, 1).AddDays(day);
+        var weekend = date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+        return new Day(date, 40 + day + day * 7 % 23 + (weekend ? 60 : 0));
+    })];
+
+    private sealed record Day(DateOnly Date, int Hikers);
+}

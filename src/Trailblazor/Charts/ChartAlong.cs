@@ -127,7 +127,7 @@ internal sealed class ChartAlong
             var pattern = markFormat ?? format ?? "F" + ticks.Decimals;
             // A format such as "D4" suits whole-number types only, so a whole mark of such items is written as a
             // whole number: a long, which holds any mark that an axis of smaller types has.
-            var whole = Type.GetTypeCode(values[0]!.GetType()) is >= TypeCode.SByte and <= TypeCode.UInt64;
+            var whole = IsWhole(values[0]!);
             marks = [.. ticks.Values.Select(value => ((value - first) / span,
                 whole && value == Math.Floor(value) && Math.Abs(value) < long.MaxValue
                     ? ((long)value).ToString(pattern, culture) : value.ToString(pattern, culture)))];
@@ -185,6 +185,35 @@ internal sealed class ChartAlong
         "Y" => culture.DateTimeFormat.YearMonthPattern.Replace("MMMM", "MMM", StringComparison.Ordinal),
         _ => kind,
     };
+
+    // Where a value lies along a continuous scale, as the scale counts: a date in ticks, a number as itself.
+    internal static double Position(object? value) => Number(value);
+
+    // The value at a position along a continuous scale, of the kind a sample of the scale's values is: a date of
+    // the sample's type, on the nearest whole day for a DateOnly, the nearest whole number as a long for whole-number
+    // items, or else a double.
+    internal static object ValueAt(double position, object sample) => sample switch
+    {
+        DateTime moment => new DateTime((long)Math.Round(position), moment.Kind),
+        DateTimeOffset moment => new DateTimeOffset(new DateTime((long)Math.Round(position)), moment.Offset),
+        DateOnly => DateOnly.FromDateTime(new DateTime((long)Whole(position / TimeSpan.TicksPerDay)
+            * TimeSpan.TicksPerDay)),
+        _ when IsWhole(sample) => (long)Whole(position),
+        _ => position,
+    };
+
+    // The smallest step between the values ValueAt gives: a day for a DateOnly, one for whole-number items, and
+    // none otherwise.
+    internal static double Unit(object sample) => sample is DateOnly ? TimeSpan.TicksPerDay : IsWhole(sample) ? 1 : 0;
+
+    // Whether two values can share a continuous scale: both dates or both numbers.
+    internal static bool Alike(object value, object other) =>
+        IsTime(other) ? IsTime(value) : ChartValues.IsNumber(value) && ChartValues.IsNumber(other);
+
+    private static double Whole(double value) => Math.Round(value, MidpointRounding.AwayFromZero);
+
+    private static bool IsWhole(object value) =>
+        Type.GetTypeCode(value.GetType()) is >= TypeCode.SByte and <= TypeCode.UInt64;
 
     // A date counts in ticks, so dates and numbers are placed the same way.
     private static double Number(object? value) => value switch

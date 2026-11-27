@@ -63,4 +63,28 @@ public sealed record ChartLabels
     /// <c>{2}</c> for the values or places it runs between. Leave it null for the app's text for
     /// <see cref="TbStrings.ChartReferenceBand"/>.</summary>
     public string? ReferenceBand { get; init; }
+
+    /// <summary>Names the button that zooms in on a zoomable chart. Leave it null for the app's text for
+    /// <see cref="TbStrings.ChartZoomIn"/>.</summary>
+    public string? ZoomIn { get; init; }
+
+    /// <summary>Names the button that zooms out. Leave it null for the app's text for
+    /// <see cref="TbStrings.ChartZoomOut"/>.</summary>
+    public string? ZoomOut { get; init; }
+
+    /// <summary>Names the button that moves the view back along the scale. Leave it null for the app's text for
+    /// <see cref="TbStrings.ChartMoveBack"/>.</summary>
+    public string? MoveBack { get; init; }
+
+    /// <summary>Names the button that moves the view forward along the scale. Leave it null for the app's text for
+    /// <see cref="TbStrings.ChartMoveForward"/>.</summary>
+    public string? MoveForward { get; init; }
+
+    /// <summary>The text of the button that shows all of the scale again. Leave it null for the app's text for
+    /// <see cref="TbStrings.ChartShowAll"/>.</summary>
+    public string? ShowAll { get; init; }
+
+    /// <summary>Says what part of the scale is shown, with <c>{0}</c> and <c>{1}</c> for its ends. Leave it null for
+    /// the app's text for <see cref="TbStrings.ChartView"/>.</summary>
+    public string? View { get; init; }
 }

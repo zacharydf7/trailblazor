@@ -18,6 +18,9 @@ Familiar apps: Excel and Google Sheets charts, Grafana panels, Highcharts' acces
 - [x] Escape hides a tooltip the pointer shows while focus is elsewhere, and a dialog around the chart stays open for that press. `ChartTests.Escape_ShouldHideTheTooltipAndLeaveTheDialogOpen_WhenTheChartIsInADialog`
 - [x] Escape goes first to a field being edited in the same dialog, even while the pointer shows the tooltip. `ChartTests.Escape_ShouldCancelAnEditFirst_WhenThePointerRestsOnAChartInTheSameDialog`
 - [x] Tab reaches each legend button, and Enter or Space hides or shows its series, with focus left on the button. `ChartTests.Legend_ShouldHideAndShowASeries_WhenItsButtonIsPressedWithTheKeys`
+- [x] On a zoomable chart's plot, + or = zooms in and - zooms out around the middle of what is shown, 0 shows all of the scale, and Shift with Right or Left moves forward or back by a quarter of what is shown, the other way around on a right-to-left page; focus stays on the plot. `ChartZoomTests.Keys_ShouldZoomMoveAndShowAll_WhenThePlotHasFocusAndThePageRunsEitherWay`
+- [x] On a horizontal zoomable chart, Shift with Down or Up moves forward or back along the scale. `ChartZoomTests.HorizontalChart_ShouldMoveDownItsScale_WhenShiftDownIsPressedOrItsMarksAreDraggedUp`
+- [x] A zoom button that can't act is marked disabled and has no `disabled` attribute, so it keeps its tab stop. `TbChartZoomTests.Buttons_ShouldShowTheWholeScaleAndOnlyZoomingInCanBeDone_WhenNothingIsZoomed`, `TbChartZoomTests.MoveButtons_ShouldMoveByAQuarterInWholeNumbersAndStopAtTheEnds_WhenClicked`
 - [x] Tab reaches the data table's disclosure, and Enter or Space opens it. `ChartTests.Table_ShouldOpenFromTheKeyboard_WhenItsDisclosureHasFocus`
 
 ## Pointer
@@ -93,11 +96,22 @@ Familiar apps: Excel and Google Sheets charts, Grafana panels, Highcharts' acces
 - [x] Values are in the text color on a patch of the surface color, and leave the pointer to the marks. `ChartValueTests.Values_ShouldBeInTheTextColorAndLeaveThePointerToTheMarks_WhenDrawn`
 - [x] A hidden series, or one without `ShowValues`, writes no values, and the chart draws again when a series starts showing them. `TbChartValueTests.Values_ShouldBeLeftOut_WhenTheSeriesDoesNotShowThemOrIsHidden`, `TbChartValueTests.Values_ShouldBeDrawnAgain_WhenASeriesStartsShowingThem`
 - [x] The chart draws again when a reference's value, place or tone changes, or when it leaves, and a chart with no items shows and lists no reference. `TbChartReferenceTests.References_ShouldDrawAgain_WhenOneChangesOrLeaves`, `TbChartReferenceTests.ReferenceAlongTheItems_ShouldDrawAgain_WhenItsPlaceChanges`, `TbChartReferenceTests.References_ShouldBeLeftOut_WhenTheChartHasNothingToDraw`
+- [x] A zoomable chart's buttons zoom in and out around the middle of what is shown, move back and forward by a quarter of it, stopping at the scale's ends, and show all of it again; the chart then shows only the items in view. `TbChartZoomTests.ZoomIn_ShouldShowHalfTheScaleAroundItsMiddleAndOnlyItsItems_WhenClicked`, `TbChartZoomTests.MoveButtons_ShouldMoveByAQuarterInWholeNumbersAndStopAtTheEnds_WhenClicked`, `TbChartZoomTests.ZoomOutAndShowAll_ShouldWidenTheViewAndClearIt_WhenClicked`
+- [x] Zooming in stops at a view twice as wide as the room between the closest two items, and at least four days or four whole numbers wide for `DateOnly` or whole-number items, which move by whole days or whole numbers. `TbChartZoomTests.ZoomIn_ShouldStopAtTwiceTheRoomBetweenTheClosestItems_WhenTheItemsAreNotWholeNumbers`, `TbChartZoomTests.ZoomIn_ShouldStopAtFourWholeNumbers_WhenTheItemsAreWholeNumbersOneApart`, `TbChartZoomTests.View_ShouldBeWholeDays_WhenTheScaleIsOfDateOnlyItems`
+- [x] A view that falls between unevenly spread items shows no items and keeps its buttons, so "Show all" brings them back. `TbChartZoomTests.Buttons_ShouldStayToShowAllAgain_WhenTheViewFallsBetweenItems`
+- [x] A drag along a zoomable plot moves the marks with the pointer and then what is shown, which moves the other way on a right-to-left page; the click that ends the drag activates no point. On a horizontal chart, dragging the marks up moves forward. `ChartZoomTests.Drag_ShouldMoveTheViewWithTheMarksAndNotClickAPoint_WhenThePageRunsEitherWay`, `ChartZoomTests.HorizontalChart_ShouldMoveDownItsScale_WhenShiftDownIsPressedOrItsMarksAreDraggedUp`
+- [x] Ctrl with the wheel zooms around the place under the pointer, a notch at a time however finely the wheel turns, and the wheel alone leaves the view alone. `ChartZoomTests.CtrlWheel_ShouldZoomAroundThePointerANotchAtATime_WhenTurnedEitherWay`
+- [x] A zoomed chart's marks are cut off at the plot's sides. `trailblazor.css`
+- [x] An app's `View` is shown without being echoed through `ViewChanged`; what people choose holds while the app gives the same view again, and a new view from the app replaces it. `TbChartZoomTests.View_ShouldBeTheAppsUntilPeopleChangeIt_WhenTheAppSetsIt`
+- [x] A chart that isn't zoomable has no zoom buttons, and on a static page a zoomable chart has none either and shows the app's `View`. `TbChartZoomTests.Buttons_ShouldBeLeftOut_WhenTheChartIsNotZoomable`, `TbChartZoomTests.Buttons_ShouldBeLeftOutAndTheAppsViewShown_WhenThePageIsStatic`
+- [x] A zoomable axis on a scale that isn't continuous, a backward `View` and a `View` of the wrong kind throw. `TbChartZoomTests.Axis_ShouldThrow_WhenZoomableOnAnEvenScaleOrGivenABackwardView`, `TbChartZoomTests.Chart_ShouldThrow_WhenTheViewIsOfDatesAndTheItemsAreNumbers`
+- [x] With a `TelemetryName`, each change of the view counts `zoom`, with the input `keyboard` for a key or a button pressed with Enter or Space, and `pointer` otherwise. `TelemetryNameTests.Chart_ShouldCountZoomsWithTheirInput_WhenItIsZoomableAndHasATelemetryName`
 
 ## Touch
 
 - [x] A tap on the plot shows the tooltip for the nearest place and activates a point as a click there does, and the tooltip stays until a tap elsewhere. `ChartTests.Tap_ShouldShowTheTooltipAndPickThePoint_WhenThePlotIsTouched`
 - [ ] A vertical swipe that starts on the plot scrolls the page. UNCONFIRMED #332
+- [ ] A swipe along a zoomable plot, sideways or down a horizontal chart, moves what is shown, as a drag does, and a pinch still zooms the page. UNCONFIRMED #332
 
 ## Focus
 
@@ -110,15 +124,16 @@ Familiar apps: Excel and Google Sheets charts, Grafana panels, Highcharts' acces
 - [x] In a legend without buttons, a hidden series' entry reads "(hidden)" to screen readers. `TbChartLegendTests.Legend_ShouldHaveNoButtons_WhenSeriesCannotBeHiddenOrThePageIsStatic`
 - [x] A legend button is pressed while its series shows, and the drawing's name lists only the series that show. `TbChartLegendTests.Legend_ShouldHideItsSeriesAndFitTheAxisToTheRest_WhenItsButtonIsPressed`
 - [ ] A screen reader speaks that name as focus moves between points. UNCONFIRMED #332
+- [x] A zoomable chart's text after its buttons, a status, says what part of the scale is shown, such as "Showing Jun 3 to Jun 7", written with the axis's `Format`. `TbChartZoomTests.View_ShouldBeWholeDays_WhenTheScaleIsOfDateOnlyItems`, `TbChartZoomTests.Status_ShouldBeWrittenWithTheAxisFormat_WhenTheFormatSuitsWholeNumbersOnly`
+- [ ] A screen reader speaks that text when the view changes. UNCONFIRMED #332
 - [x] A click with no position on the point that has focus, as a screen reader sends, activates that point. `ChartTests.Point_ShouldTellTheApp_WhenClickedOrChosenWithTheKeys`
 - [ ] A screen reader's own command for activating the point reaches it. UNCONFIRMED #332
-- [x] The data table under the chart holds every value. `TbChartTests.Render_ShouldHoldEveryValueInATableUnderTheChart_WhenDrawn`
+- [x] The data table under the chart holds every value, or every value in view while the chart is zoomed. `TbChartTests.Render_ShouldHoldEveryValueInATableUnderTheChart_WhenDrawn`, `TbChartZoomTests.ZoomIn_ShouldShowHalfTheScaleAroundItsMiddleAndOnlyItsItems_WhenClicked`
 - [x] On a static page the chart draws and its table opens. `ChartTests.Chart_ShouldDrawAndOpenItsTable_WhenThePageIsStatic`
 - [x] The drawing is one image named by its kind and its series, inside a figure named by the chart's title. `TbChartTests.Render_ShouldNameTheFigureByItsTitleAndTheDrawingByItsKindAndSeries_WhenGivenATitle`
 - [x] On an interactive page the point that has the tab stop is the only other image, and a point focus has left is no longer one. `ChartTests.Keys_ShouldMoveBetweenNamedPoints_WhenThePlotHasFocus`
 
 ## Not applicable
 
-- Zooming and panning: not in the first release; when they come, they will have buttons and keys as well as dragging.
 - Selecting several points: a chart reports the point activated, and an app keeps what is selected.
 - A context menu: the chart has none of its own.

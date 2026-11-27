@@ -17,6 +17,7 @@ public class ValueContractTests : BunitContext
     [
         "TbTreeItem`1.Expanded", "TbNavGroup.Expanded", "TbSplitterPane.Size", "TbSplitterPane.Collapsed",
         "TbLineSeries`1.Hidden", "TbBarSeries`1.Hidden", "TbAreaSeries`1.Hidden", "TbScatterSeries`1.Hidden",
+        "TbXAxis.View",
     ];
 
     // Files come only from the browser, so there is no sample to set.

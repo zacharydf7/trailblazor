@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using Trailblazor.Primitives;
 
@@ -159,7 +160,9 @@ public partial class TbChart<TItem>
         }
 
         _sent = ScriptSettings();
-        _events = DotNetObjectReference.Create(new ChartEvents(DispatchExceptionAsync, OnActivateAsync, _plotId));
+        _events = DotNetObjectReference.Create(new ChartEvents(DispatchExceptionAsync, OnActivateAsync, _plotId,
+            (action, at) => ZoomAsync(action, at, at is null ? "keyboard" : "pointer"),
+            share => MoveAsync(share, "pointer")));
         var handle = await module.InvokeAsync<IJSObjectReference?>("attachChart", _plot, _events, _sent.Point,
             _sent.NoValue, _sent.Activates);
         if (_disposed && handle is not null)
@@ -262,7 +265,19 @@ public partial class TbChart<TItem>
                 + $"series only, and \"{other.Name}\" isn't one.");
         }
 
-        var items = _items = Items as IReadOnlyList<TItem> ?? [.. Items ?? []];
+        var all = Items as IReadOnlyList<TItem> ?? [.. Items ?? []];
+        // A zoomable chart shows the items in its view, and the scale's ends are the view's.
+        var zoomable = Axes.X is { Zoomable: true } axisX ? axisX : null;
+        _extent = zoomable is null ? null : Extent(all, zoomable);
+        var view = _extent is null ? null : zoomable?.CurrentView;
+        if (view is not null && !(ChartAlong.Alike(view.From, _extent!.Value.Sample)
+            && ChartAlong.Alike(view.To, _extent.Value.Sample)))
+        {
+            throw new InvalidOperationException($"{nameof(TbXAxis)} needs a {nameof(TbXAxis.View)} of the kind its "
+                + "items' X values are: numbers for numbers, dates for dates.");
+        }
+
+        var items = _items = view is null ? all : [.. all.Where(item => InView(X!(item), view))];
         List<string> places = [.. items.Select(item => ChartValues.Text(X!(item), Axes.X?.Format, culture))];
         List<ChartSeriesValues> series = [.. _series.Select(one =>
             new ChartSeriesValues(one.Name, one.Bars, one.Line, [.. items.Select(one.ValueOf)], one.IsHidden,
@@ -273,10 +288,139 @@ public partial class TbChart<TItem>
         // value axis does. Bars already have room at each end.
         var round = !bars && _series.Any(one => one.Dots && !one.IsHidden);
         var along = Axes.X is { Scale: ChartScale.Continuous } x ? ChartAlong.Continuous([.. items.Select(X!)], bars,
-            x.Format, x.MarkFormat, culture, new(x.Min, x.Max, x.Step, round)) : null;
+            x.Format, x.MarkFormat, culture, new(view?.From ?? x.Min, view?.To ?? x.Max, x.Step, round)) : null;
         List<double> alsoReach = [.. References.All.Select(one => one.Values).OfType<(double Low, double High)>()
             .SelectMany(values => new[] { values.Low, values.High })];
         return ChartPlan.Build(places, series, Stacking, axis, culture, along, alsoReach);
+    }
+
+    // The whole of a zoomable scale: its first and last positions, widened to the axis's ends where the app set
+    // them, the room between the closest two items, and an item's X value, whose type a view's ends take. Null with
+    // fewer than two places.
+    private readonly record struct ChartExtent(double First, double Last, double Closest, object Sample);
+
+    private ChartExtent? _extent;
+
+    private ChartExtent? Extent(IReadOnlyList<TItem> items, TbXAxis axis)
+    {
+        double[] positions = [.. items.Select(item => ChartAlong.Position(X!(item))).Distinct().Order()];
+        if (positions.Length < 2)
+        {
+            return null;
+        }
+
+        var closest = positions.Zip(positions.Skip(1), (one, next) => next - one).Min();
+        var first = axis.Min is { } min ? Math.Min(ChartAlong.Position(min), positions[0]) : positions[0];
+        var last = axis.Max is { } max ? Math.Max(ChartAlong.Position(max), positions[^1]) : positions[^1];
+        return new(first, last, closest, X!(items[0])!);
+    }
+
+    private static bool InView(object? x, ChartView view) => ChartAlong.Position(x) >= ChartAlong.Position(view.From)
+        && ChartAlong.Position(x) <= ChartAlong.Position(view.To);
+
+    // The part of the scale shown, as positions along it: the view, or the whole scale.
+    private (double From, double To)? Shown => _extent is not { } extent ? null
+        : Axes.X?.CurrentView is { } view ? (ChartAlong.Position(view.From), ChartAlong.Position(view.To))
+        : (extent.First, extent.Last);
+
+    // A zoom shows at least twice the room between the closest two items, and four days or four whole numbers on a
+    // scale of them, so a quarter of it moves by at least one.
+    private static double Narrowest(ChartExtent extent) => Math.Min(extent.Last - extent.First,
+        Math.Max(extent.Closest * 2, ChartAlong.Unit(extent.Sample) * 4));
+
+    private bool CanZoomIn => Shown is { } shown && _extent is { } extent
+        && shown.To - shown.From > Narrowest(extent) * (1 + ChartTicks.Slack);
+
+    private bool CanZoomOut => _extent is not null && Axes.X?.CurrentView is not null;
+
+    private bool CanMoveBack => Shown is { } shown && shown.From > _extent!.Value.First;
+
+    private bool CanMoveForward => Shown is { } shown && shown.To < _extent!.Value.Last;
+
+    // What the zoom buttons say is shown, written as the items are.
+    private string ViewText()
+    {
+        var (from, to) = Shown!.Value;
+        var sample = _extent!.Value.Sample;
+        string Text(double position) =>
+            ChartValues.Text(ChartAlong.ValueAt(position, sample), Axes.X?.Format, CultureInfo.CurrentCulture);
+        return string.Format(CultureInfo.CurrentCulture, Labels.View ?? Localizer[TbStrings.ChartView], Text(from),
+            Text(to));
+    }
+
+    // Zooms in or out around a share of the plot, its middle unless the pointer gives one, moves back or forward by
+    // a quarter of what is shown, or shows all of the scale. A view never reaches past the scale's ends.
+    private async Task ZoomAsync(string action, double? at, string input)
+    {
+        if (Shown is not { } shown || _extent is not { } extent)
+        {
+            return;
+        }
+
+        if (action is "back" or "forward")
+        {
+            await MoveAsync(action == "back" ? -0.25 : 0.25, input);
+            return;
+        }
+
+        var span = shown.To - shown.From;
+        (double From, double To)? next = action switch
+        {
+            "in" => Around(shown, Math.Max(span / 2, Narrowest(extent)), at),
+            "out" => Around(shown, Math.Min(span * 2, extent.Last - extent.First), at),
+            "all" => null,
+            _ => shown,
+        };
+        await ShowAsync(next, input);
+    }
+
+    // Moves what is shown by a share of it, as a drag does: by whole days or whole numbers on a scale of them, so
+    // the view keeps its width.
+    private async Task MoveAsync(double share, string input)
+    {
+        if (Shown is { } shown)
+        {
+            var (by, unit) = ((shown.To - shown.From) * share, ChartAlong.Unit(_extent!.Value.Sample));
+            by = unit > 0 ? Math.Round(by / unit, MidpointRounding.AwayFromZero) * unit : by;
+            await ShowAsync(Within((shown.From + by, shown.To + by)), input);
+        }
+    }
+
+    // How a zoom button was pressed: a click has a count, and Enter or Space has none.
+    private static string Input(MouseEventArgs args) => args.Detail > 0 ? "pointer" : "keyboard";
+
+    // A view `span` wide around the place a share `at` of the way along what is shown, which stays where it was on
+    // the plot.
+    private (double From, double To) Around((double From, double To) shown, double span, double? at)
+    {
+        var anchor = shown.From + Math.Clamp(at ?? 0.5, 0, 1) * (shown.To - shown.From);
+        var from = anchor - (anchor - shown.From) * span / (shown.To - shown.From);
+        return Within((from, from + span));
+    }
+
+    // A view moved back inside the scale's ends where it reaches past one.
+    private (double From, double To) Within((double From, double To) view)
+    {
+        var (first, last) = (_extent!.Value.First, _extent.Value.Last);
+        var span = Math.Min(view.To - view.From, last - first);
+        return view.From < first ? (first, first + span) : view.To > last ? (last - span, last) : view;
+    }
+
+    private async Task ShowAsync((double From, double To)? next, string input)
+    {
+        var extent = _extent!.Value;
+        // A view of the whole scale is no view.
+        ChartView? view = next is not { } shown || (shown.From <= extent.First && shown.To >= extent.Last) ? null
+            : new(ChartAlong.ValueAt(shown.From, extent.Sample), ChartAlong.ValueAt(shown.To, extent.Sample));
+        if (Equals(view, Axes.X!.CurrentView))
+        {
+            return;
+        }
+
+        Telemetry.Used(TelemetryName, "zoom", input);
+        await Axes.X.SetViewAsync(view);
+        _commits++;
+        StateHasChanged();
     }
 
     // Where a value's label sits against its spot: over a bar's end, under the end of a bar that hangs down, in the

@@ -21,6 +21,8 @@ export function attachChart(plot, events, point, noValue, activates) {
     const round = plot.hasAttribute('data-round');
     // A horizontal chart's places run down it. The app may turn a chart while the page is up.
     const horizontal = () => plot.hasAttribute('data-horizontal');
+    // A zoomable chart's keys, drags and wheel tell .NET which part of the scale to show.
+    const zoomable = () => plot.hasAttribute('data-zoomable');
     let model = null;
     let active = null;
     let pointer = null;
@@ -186,8 +188,89 @@ export function attachChart(plot, events, point, noValue, activates) {
     });
 
     const onPointerMove = event => {
+        if (drag?.moving) {
+            return;
+        }
+
         pointer = event;
         frame.request();
+    };
+
+    // A drag along a zoomable plot moves what it shows. The marks follow the pointer while it moves, and .NET hears
+    // the move as it ends, as a share of the plot: dragging the marks toward the scale's end shows what is before
+    // them. A drag shorter than a few pixels is a click.
+    let drag = null;
+    let dragged = false;
+    const moved = event => (horizontal() ? event.clientY - drag.y : event.clientX - drag.x);
+    const following = () => [...plot.querySelectorAll(':scope > .tb-chart__marks, :scope > .tb-chart__values')];
+
+    const onDragStart = event => {
+        // A touch drag ends with no click, so the flag from the last drag can still be up.
+        dragged = false;
+        if (zoomable() && event.button === 0 && event.isPrimary) {
+            drag = { id: event.pointerId, x: event.clientX, y: event.clientY, moving: false };
+        }
+    };
+
+    const onDragMove = event => {
+        if (!drag || event.pointerId !== drag.id) {
+            return;
+        }
+
+        const by = moved(event);
+        if (!drag.moving && Math.abs(by) > 6) {
+            drag.moving = true;
+            plot.setPointerCapture?.(event.pointerId);
+            hide();
+        }
+
+        if (drag.moving) {
+            for (const part of following()) {
+                part.style.translate = horizontal() ? `0 ${by}px` : `${by}px 0`;
+            }
+        }
+    };
+
+    const onDragEnd = event => {
+        if (!drag || event.pointerId !== drag.id) {
+            return;
+        }
+
+        if (drag.moving && event.type === 'pointerup') {
+            const box = plot.getBoundingClientRect();
+            const share = moved(event) / (horizontal() ? box.height : box.width);
+            dragged = true;
+            callDotNet(events, 'OnMove', horizontal() || !mirrored() ? -share : share);
+        }
+
+        for (const part of following()) {
+            part.style.translate = '';
+        }
+
+        drag = null;
+    };
+
+    // Ctrl with the wheel, or a trackpad's pinch, zooms around the place under the pointer.
+    // A smooth wheel or a trackpad sends many small turns, which add up to a zoom a notch at a time; a wheel that
+    // turns by lines or pages zooms each turn.
+    let wheeled = 0;
+    const onWheel = event => {
+        if (!zoomable() || !event.ctrlKey || event.deltaY === 0) {
+            return;
+        }
+
+        event.preventDefault();
+        const turn = event.deltaMode === 0 ? event.deltaY : Math.sign(event.deltaY) * 100;
+        wheeled = Math.sign(wheeled) === Math.sign(turn) ? wheeled + turn : turn;
+        if (Math.abs(wheeled) < 100) {
+            return;
+        }
+
+        const box = plot.getBoundingClientRect();
+        const at = horizontal() ? (event.clientY - box.top) / box.height
+            : across((event.clientX - box.left) / box.width);
+        callDotNet(events, 'OnZoom', wheeled < 0 ? 'in' : 'out', at);
+        wheeled = 0;
     };
 
     // A finger leaves the plot as it lifts, before the frame that shows its tooltip, and the tooltip stays until a
@@ -210,6 +293,12 @@ export function attachChart(plot, events, point, noValue, activates) {
     };
 
     const onClick = event => {
+        // The click that ends a drag is the drag's.
+        if (dragged) {
+            dragged = false;
+            return;
+        }
+
         if (!options.activates || !read().places.length) {
             return;
         }
@@ -350,7 +439,25 @@ export function attachChart(plot, events, point, noValue, activates) {
         }
     };
 
+    // On a zoomable chart, + or = and - zoom in and out, 0 shows all of the scale, and Shift with the arrows along
+    // the chart moves back and forward.
+    const zoomKey = event => {
+        const [right, left] = mirrored() ? ['ArrowLeft', 'ArrowRight'] : ['ArrowRight', 'ArrowLeft'];
+        const [forward, back] = horizontal() ? ['ArrowDown', 'ArrowUp'] : [right, left];
+        return event.ctrlKey || event.metaKey || event.altKey ? null
+            : event.key === '+' || event.key === '=' ? 'in' : event.key === '-' ? 'out' : event.key === '0' ? 'all'
+            : event.shiftKey && event.key === back ? 'back' : event.shiftKey && event.key === forward ? 'forward'
+            : null;
+    };
+
     const onKeyDown = event => {
+        const zoom = zoomable() && !isComposing(event) ? zoomKey(event) : null;
+        if (zoom) {
+            event.preventDefault();
+            callDotNet(events, 'OnZoom', zoom, null);
+            return;
+        }
+
         if (!active || !proxies.includes(event.target)) {
             return;
         }
@@ -429,6 +536,11 @@ export function attachChart(plot, events, point, noValue, activates) {
     plot.addEventListener('pointermove', onPointerMove);
     plot.addEventListener('pointerdown', onPointerMove);
     plot.addEventListener('pointerleave', onPointerLeave);
+    plot.addEventListener('pointerdown', onDragStart);
+    plot.addEventListener('pointermove', onDragMove);
+    plot.addEventListener('pointerup', onDragEnd);
+    plot.addEventListener('pointercancel', onDragEnd);
+    plot.addEventListener('wheel', onWheel, { passive: false });
     plot.addEventListener('click', onClick);
     plot.addEventListener('focusin', onFocusIn);
     plot.addEventListener('focusout', onFocusOut);
@@ -454,6 +566,11 @@ export function attachChart(plot, events, point, noValue, activates) {
             plot.removeEventListener('pointermove', onPointerMove);
             plot.removeEventListener('pointerdown', onPointerMove);
             plot.removeEventListener('pointerleave', onPointerLeave);
+            plot.removeEventListener('pointerdown', onDragStart);
+            plot.removeEventListener('pointermove', onDragMove);
+            plot.removeEventListener('pointerup', onDragEnd);
+            plot.removeEventListener('pointercancel', onDragEnd);
+            plot.removeEventListener('wheel', onWheel, { passive: false });
             plot.removeEventListener('click', onClick);
             plot.removeEventListener('focusin', onFocusIn);
             plot.removeEventListener('focusout', onFocusOut);

@@ -210,6 +210,39 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public async Task Chart_ShouldCountZoomsWithTheirInput_WhenItIsZoomableAndHasATelemetryName()
+    {
+        var cut = Render<TbChart<int>>(parameters => parameters.Add(chart => chart.Items, Enumerable.Range(0, 21))
+            .Add(chart => chart.X, number => number).Add(chart => chart.Title, "Readings")
+            .Add(chart => chart.TelemetryName, "readings")
+            .Add(chart => chart.ChildContent, builder =>
+            {
+                builder.OpenComponent<TbXAxis>(0);
+                builder.AddComponentParameter(1, nameof(TbXAxis.Scale), ChartScale.Continuous);
+                builder.AddComponentParameter(2, nameof(TbXAxis.Zoomable), true);
+                builder.CloseComponent();
+                builder.OpenComponent<TbLineSeries<int>>(3);
+                builder.AddComponentParameter(4, nameof(TbLineSeries<int>.Name), "Level");
+                builder.AddComponentParameter(5, nameof(TbLineSeries<int>.Value), (Func<int, object?>)(_ => 1));
+                builder.CloseComponent();
+            }));
+        var events = ((DotNetObjectReference<ChartEvents>)JSInterop.Invocations["attachChart"].First()
+            .Arguments[1]!).Value;
+
+        await cut.Find("[aria-label='Zoom in']").ClickAsync(new() { Detail = 1 });
+        await cut.Find("[aria-label='Move forward']").ClickAsync(new());
+        await cut.InvokeAsync(() => events.OnZoom("in", null));
+        await cut.InvokeAsync(() => events.OnMove(-0.25));
+        // A zoom that changes nothing isn't counted.
+        await cut.InvokeAsync(() => events.OnZoom("all", 0.5));
+        await cut.InvokeAsync(() => events.OnZoom("all", 0.5));
+
+        Assert.Equal(Enumerable.Repeat<(object?, object?, object?)>(("readings", "TbChart", "zoom"), 5), Uses());
+        Assert.Equal(["pointer", "keyboard", "keyboard", "pointer", "pointer"],
+            _used.GetMeasurementSnapshot().Select(measurement => measurement.Tags.GetValueOrDefault("trailblazor.input")));
+    }
+
+    [Fact]
     public async Task QueryBuilder_ShouldCountEachKindOfChange_WhenItHasATelemetryName()
     {
         var cut = Render<TbQueryBuilder>(parameters => parameters.Add(builder => builder.Label, "Trail search")

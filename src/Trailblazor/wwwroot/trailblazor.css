@@ -11898,6 +11898,36 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         grid-template-columns: fit-content(40%) minmax(0, 1fr);
     }
 
+    /* A zoomable chart's buttons sit in a row above the plot, with what it shows after them. */
+    .tb-chart__zoom {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--tb-space-1);
+    }
+
+    .tb-chart__view {
+        margin-inline-start: var(--tb-space-2);
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    /* A zoomable plot is dragged along with the pointer, and a finger's drag along it moves it rather than the
+       page, while a pinch still zooms the page. A zoomed chart's marks are cut off at the plot's sides, which bars at
+       the view's ends would otherwise run past. */
+    .tb-chart__plot[data-zoomable] {
+        cursor: grab;
+        touch-action: pan-y pinch-zoom;
+    }
+
+    .tb-chart__plot[data-zoomable][data-horizontal] {
+        touch-action: pan-x pinch-zoom;
+    }
+
+    .tb-chart__plot[data-zoomed] .tb-chart__marks {
+        clip-path: inset(-100vh 0);
+    }
+
     /* A chart that writes values on its marks keeps room for a line of text above the plot, and below it when a
        bar hangs down, for the labels of the marks that reach the plot's ends. In a horizontal chart the room is
        along the plot, as wide as the longest label. */

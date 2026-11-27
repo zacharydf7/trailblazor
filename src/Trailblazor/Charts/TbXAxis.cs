@@ -6,6 +6,9 @@ namespace Trailblazor;
 /// without one, the axis shows each item's <see cref="TbChart{TItem}.X"/> value as it reads by default.</summary>
 public sealed class TbXAxis : ComponentBase, IDisposable
 {
+    private ChartView? _view;
+    private ChartView? _viewGiven;
+    private object? _shown;
     [CascadingParameter]
     private ChartAxes? Axes { get; set; }
 
@@ -54,6 +57,31 @@ public sealed class TbXAxis : ComponentBase, IDisposable
     [Parameter]
     public double? Step { get; set; }
 
+    /// <summary>Whether people can zoom into part of a <see cref="ChartScale.Continuous"/> scale and move along it:
+    /// with buttons above the plot, with keys on it, by dragging it, and with Ctrl and the mouse wheel. The chart
+    /// then shows only the items in its <see cref="View"/>. False by default.</summary>
+    [Parameter]
+    public bool Zoomable { get; set; }
+
+    /// <summary>The part of the scale a <see cref="Zoomable"/> chart shows, or null for all of it. Bind it to
+    /// follow or set what people zoom to; what they choose holds until the app gives this a new value.</summary>
+    [Parameter]
+    public ChartView? View { get; set; }
+
+    /// <summary>Raised with the new view when people zoom or move along the chart, and with null when they show all
+    /// of it.</summary>
+    [Parameter]
+    public EventCallback<ChartView?> ViewChanged { get; set; }
+
+    // The part of the scale shown: what people last chose, or what the app last set if that came later.
+    internal ChartView? CurrentView => Zoomable ? _view : null;
+
+    internal async Task SetViewAsync(ChartView? view)
+    {
+        _view = view;
+        await ViewChanged.InvokeAsync(view);
+    }
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -68,7 +96,32 @@ public sealed class TbXAxis : ComponentBase, IDisposable
                 $"{nameof(TbXAxis)} needs a {nameof(Step)} above zero and a {nameof(Min)} below its {nameof(Max)}.");
         }
 
-        Axes.Set(this);
+        if (Zoomable && Scale != ChartScale.Continuous)
+        {
+            throw new InvalidOperationException(
+                $"A {nameof(Zoomable)} {nameof(TbXAxis)} needs a {nameof(ChartScale.Continuous)} {nameof(Scale)}.");
+        }
+
+        if (View is { } view && (!ChartAlong.InOrder(view.From, view.To) || Equals(view.From, view.To)))
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbXAxis)} needs a {nameof(View)} whose {nameof(ChartView.From)} is before its "
+                + $"{nameof(ChartView.To)}.");
+        }
+
+        if (!Equals(View, _viewGiven))
+        {
+            _viewGiven = _view = View;
+        }
+
+        // A view is an object, which Blazor counts as changed on every render of the chart, so the axis has the
+        // chart draw again only when something it shows has changed, or the chart would draw again and again.
+        object shown = (Title, Format, MarkFormat, Scale, Min, Max, Step, Zoomable, _view);
+        if (!shown.Equals(_shown))
+        {
+            _shown = shown;
+            Axes.Set(this);
+        }
     }
 
     /// <summary>Takes the axis's settings out of its chart.</summary>
