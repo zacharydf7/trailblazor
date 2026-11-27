@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -227,6 +228,177 @@ public class TbChartZoomTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=zoom]"));
         Assert.False(cut.Find("[data-part=plot]").HasAttribute("data-zoomable"));
     }
+
+    [Fact]
+    public void Line_ShouldRunOnToThePlotsEdgesAlongItself_WhenTheViewCutsItBetweenItems()
+    {
+        var cut = RenderEdged<TbLineSeries<double>>(Numbers.Select(number => (double)number), new ChartView(4.25, 14.5));
+
+        // From the plot's start to its end, with the first and last stretches as steep as their neighbors, while only
+        // the items in view have places.
+        var path = Path(cut, "path.tb-chart__line");
+        Assert.Equal(0, path.Start.X);
+        Assert.Equal(ChartPath.Grid, path.Steps.Sum(step => step.X));
+        Assert.Equal(Slope(path.Steps[1]), Slope(path.Steps[0]), 0.01);
+        Assert.Equal(Slope(path.Steps[^2]), Slope(path.Steps[^1]), 0.01);
+        Assert.Equal([.. Enumerable.Range(5, 10).Select(number => number.ToString(CultureInfo.CurrentCulture))],
+            cut.Tb().Chart("Readings").Places);
+        Assert.Equal(10, cut.Find("path.tb-chart__line").GetAttribute("data-points")!.Split(' ').Length);
+    }
+
+    [Fact]
+    public void SteppedLine_ShouldStartAtTheValueBeforeThePlot_WhenTheViewCutsItBetweenItems()
+    {
+        var cut = RenderEdged<TbLineSeries<double>>(Numbers.Select(number => (double)number), new ChartView(4.25, 14.5),
+            stepped: true);
+
+        // Across at 4, the value before the plot, then up to 5 at the first item: a step as high as the next one. At
+        // the end it stays level at 14, the last item's value, to the plot's edge.
+        var steps = Regex.Matches(cut.Find("path.tb-chart__line").GetAttribute("d")!, @"v(-?\d+)")
+            .Select(match => int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture)).ToList();
+        Assert.Equal(steps[1], steps[0]);
+        Assert.Equal(0, steps[^1]);
+    }
+
+    [Fact]
+    public void SmoothLine_ShouldKeepItsSlopeAtTheEdges_WhenTheViewEndsOnItems()
+    {
+        var cut = RenderEdged<TbLineSeries<double>>(Numbers.Select(number => (double)number), new ChartView(5d, 15d),
+            curve: ChartCurve.Smooth);
+
+        // The first item is at the plot's start, and the curve leaves it rising, as it does unzoomed.
+        var d = cut.Find("path.tb-chart__line").GetAttribute("d")!;
+        var first = Regex.Match(d, @"c(-?\d+) (-?\d+)");
+        Assert.StartsWith("M0 ", d);
+        Assert.NotEqual(0, Whole(first.Groups[1].Value));
+        Assert.True(Whole(first.Groups[2].Value) < 0, d);
+    }
+
+    [Fact]
+    public void Area_ShouldBeFilledToThePlotsEdges_WhenTheViewCutsItBetweenItems()
+    {
+        var cut = RenderEdged<TbAreaSeries<double>>(Numbers.Select(number => (double)number), new ChartView(4.5, 14.5));
+
+        var fill = Path(cut, "path.tb-chart__area");
+        Assert.Equal(0, fill.Start.X);
+        Assert.Equal(ChartPath.Grid, fill.Steps.TakeWhile(step => step.X > 0).Sum(step => step.X));
+    }
+
+    [Fact]
+    public void Line_ShouldStartAtItsFirstItemInView_WhenTheItemsAreNotInOrder()
+    {
+        // 2 and 10 swap places, so the line runs from 1 to 10 and back.
+        var swapped = Numbers.Select(number => number switch { 2 => 10d, 10 => 2d, _ => number });
+        var cut = RenderEdged<TbLineSeries<double>>(swapped, new ChartView(4.5, 14.5));
+
+        Assert.NotEqual(0, Path(cut, "path.tb-chart__line").Start.X);
+    }
+
+    [Theory]
+    [InlineData(ChartStacking.Stacked, 500, ChartPath.Grid)]
+    [InlineData(ChartStacking.Percent, 500, 9500)]
+    public void StackedAreas_ShouldRunOnOnlyWhereEveryAreaHasAValue_WhenTheViewCutsThem(ChartStacking stacking,
+        int start, int end)
+    {
+        // The lower area has no value at 4, just before the view, so the stack starts at its first item, 5.
+        var cut = Render<TbChart<double>>(parameters => parameters
+            .Add(chart => chart.Items, Numbers.Select(number => (double)number))
+            .Add(chart => chart.X, number => number).Add(chart => chart.Title, "Readings")
+            .Add(chart => chart.Stacking, stacking)
+            .Add(chart => chart.ChildContent, builder =>
+            {
+                builder.OpenComponent<TbXAxis>(0);
+                builder.AddComponentParameter(1, nameof(TbXAxis.Scale), ChartScale.Continuous);
+                builder.AddComponentParameter(2, nameof(TbXAxis.Zoomable), true);
+                builder.AddComponentParameter(3, nameof(TbXAxis.View), new ChartView(4.5, 14.5));
+                builder.CloseComponent();
+                builder.OpenComponent<TbAreaSeries<double>>(4);
+                builder.AddComponentParameter(5, nameof(TbAreaSeries<double>.Name), "Low");
+                builder.AddComponentParameter(6, nameof(TbAreaSeries<double>.Value),
+                    (Func<double, object?>)(number => number == 4 ? null : 2d));
+                builder.CloseComponent();
+                builder.OpenComponent<TbAreaSeries<double>>(7);
+                builder.AddComponentParameter(8, nameof(TbAreaSeries<double>.Name), "High");
+                builder.AddComponentParameter(9, nameof(TbAreaSeries<double>.Value), (Func<double, object?>)(n => n));
+                builder.CloseComponent();
+            }));
+
+        // After the view, both areas have values, so a stack runs on to the end; a stack to percent doesn't.
+        foreach (var area in cut.FindAll("path.tb-chart__line"))
+        {
+            var d = area.GetAttribute("d")!;
+            var started = Whole(Regex.Match(d, @"^M(-?\d+)").Groups[1].Value);
+            var reached = started + Regex.Matches(d, @"l(-?\d+) ").Sum(step => Whole(step.Groups[1].Value));
+            Assert.Equal((start, end), (started, reached));
+        }
+    }
+
+    [Fact]
+    public void StackedAreas_ShouldStartAtTheFirstItemInView_WhenAnAreaChangesSignJustBeforeIt()
+    {
+        // The lower area goes from below zero at 4 to above it at 5, so the stack has no edge before 5.
+        var cut = Render<TbChart<double>>(parameters => parameters
+            .Add(chart => chart.Items, Numbers.Select(number => (double)number))
+            .Add(chart => chart.X, number => number).Add(chart => chart.Title, "Readings")
+            .Add(chart => chart.Stacking, ChartStacking.Stacked)
+            .Add(chart => chart.ChildContent, builder =>
+            {
+                builder.OpenComponent<TbXAxis>(0);
+                builder.AddComponentParameter(1, nameof(TbXAxis.Scale), ChartScale.Continuous);
+                builder.AddComponentParameter(2, nameof(TbXAxis.Zoomable), true);
+                builder.AddComponentParameter(3, nameof(TbXAxis.View), new ChartView(4.5, 14.5));
+                builder.CloseComponent();
+                builder.OpenComponent<TbAreaSeries<double>>(4);
+                builder.AddComponentParameter(5, nameof(TbAreaSeries<double>.Name), "Low");
+                builder.AddComponentParameter(6, nameof(TbAreaSeries<double>.Value),
+                    (Func<double, object?>)(number => number - 4.6));
+                builder.CloseComponent();
+                builder.OpenComponent<TbAreaSeries<double>>(7);
+                builder.AddComponentParameter(8, nameof(TbAreaSeries<double>.Name), "High");
+                builder.AddComponentParameter(9, nameof(TbAreaSeries<double>.Value), (Func<double, object?>)(_ => 1d));
+                builder.CloseComponent();
+            }));
+
+        Assert.All(cut.FindAll("path.tb-chart__line"),
+            area => Assert.StartsWith("M500 ", area.GetAttribute("d")!));
+    }
+
+    private static double Slope((int X, int Y) step) => (double)step.Y / step.X;
+
+    // A path's start and its straight steps, as whole offsets on the path's grid.
+    private static ((int X, int Y) Start, List<(int X, int Y)> Steps) Path<T>(IRenderedComponent<TbChart<T>> cut,
+        string selector)
+    {
+        var d = cut.Find(selector).GetAttribute("d")!;
+        var start = Regex.Match(d, @"^M(-?\d+) (-?\d+)");
+        return ((Whole(start.Groups[1].Value), Whole(start.Groups[2].Value)), [.. Regex.Matches(d, @"l(-?\d+) (-?\d+)")
+            .Select(step => (Whole(step.Groups[1].Value), Whole(step.Groups[2].Value)))]);
+    }
+
+    private static int Whole(string text) => int.Parse(text, CultureInfo.InvariantCulture);
+
+    // A chart of the values along the items, with one series of this kind, showing the view the app gives.
+    private IRenderedComponent<TbChart<double>> RenderEdged<TSeries>(IEnumerable<double> items, ChartView view,
+        bool stepped = false, ChartCurve? curve = null) where TSeries : TbChartSeries<double> =>
+        Render<TbChart<double>>(parameters => parameters.Add(chart => chart.Items, items)
+            .Add(chart => chart.X, number => number).Add(chart => chart.Title, "Readings")
+            .Add(chart => chart.ChildContent, builder =>
+            {
+                builder.OpenComponent<TbXAxis>(0);
+                builder.AddComponentParameter(1, nameof(TbXAxis.Scale), ChartScale.Continuous);
+                builder.AddComponentParameter(2, nameof(TbXAxis.Zoomable), true);
+                builder.AddComponentParameter(3, nameof(TbXAxis.View), view);
+                builder.CloseComponent();
+                builder.OpenComponent<TSeries>(4);
+                builder.AddComponentParameter(5, nameof(TbLineSeries<double>.Name), "Level");
+                builder.AddComponentParameter(6, nameof(TbLineSeries<double>.Value), (Func<double, object?>)(n => n));
+                if (stepped || curve is not null)
+                {
+                    builder.AddComponentParameter(7, nameof(TbLineSeries<double>.Curve), curve ?? ChartCurve.Stepped);
+                }
+
+                builder.CloseComponent();
+            }));
 
     private static string Status<T>(IRenderedComponent<TbChart<T>> cut) =>
         cut.Find("[data-part=zoom] [role=status]").TextContent;

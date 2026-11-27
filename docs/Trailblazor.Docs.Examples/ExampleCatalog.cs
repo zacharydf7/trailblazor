@@ -1099,8 +1099,9 @@ public static class ExampleCatalog
                     + "them says what part is shown. On the plot, + and - zoom, 0 shows all, and Shift with the "
                     + "arrows along the chart moves back or forward; a drag moves along the scale, and Ctrl with the "
                     + "wheel zooms around the pointer. The chart then shows only the items in view, and its value "
-                    + "axis and data table follow them. `@bind-View` reads and sets the part shown, a `ChartView`; "
-                    + "the text under the chart reads it here.", typeof(ChartZoomExample)),
+                    + "axis and data table follow them; its lines run on to the plot's edges, toward the items just "
+                    + "outside. `@bind-View` reads and sets the part shown, a `ChartView`; the text under the chart "
+                    + "reads it here.", typeof(ChartZoomExample)),
                 new("gaps", "Missing values", "A null value leaves a gap: no bar, as on Thursday here, and a break "
                     + "in a line, as in the forecast on Wednesday. An area breaks as a line does, fill and all, and "
                     + "in a stack a missing value takes no room, so the bands above it drop at that place. The "
@@ -1416,6 +1417,12 @@ public static class ExampleCatalog
                     + "given."),
                 new("A chart whose items have fewer than two different X values has no zoom buttons and doesn't "
                     + "zoom."),
+                new("A zoomed line or area runs on to the plot's edges, toward the items just outside the view, "
+                    + "when the items are given in order along the scale; a stepped line keeps the value of the item "
+                    + "before each edge. The tooltip, the keys and the data table keep to the items in view. With the "
+                    + "items out of order, a line starts and ends at its first and last items in view. A stack of "
+                    + "areas runs on to an edge only where each of its areas has a value just outside it with the same "
+                    + "sign as inside, and not when it stacks to percent."),
                 new("Where items are spread unevenly, a view can fall between them. The chart then says it has no "
                     + "data, and its buttons stay to move along or show all."),
                 new("Only Ctrl with the wheel zooms; the wheel alone scrolls the page, as over any other content, "

@@ -279,9 +279,11 @@ public partial class TbChart<TItem>
 
         var items = _items = view is null ? all : [.. all.Where(item => InView(X!(item), view))];
         List<string> places = [.. items.Select(item => ChartValues.Text(X!(item), Axes.X?.Format, culture))];
-        List<ChartSeriesValues> series = [.. _series.Select(one =>
+        var edges = view is null ? null : Edges(all, view);
+        var stacked = Stacking != ChartStacking.None;
+        List<ChartSeriesValues> series = StackedEdges([.. _series.Select(one =>
             new ChartSeriesValues(one.Name, one.Bars, one.Line, [.. items.Select(one.ValueOf)], one.IsHidden,
-                one.Filled))];
+                one.Filled, EdgeValue(one, edges?.Before, true, stacked), EdgeValue(one, edges?.After, false, stacked)))]);
         var axis = Axes.Y is { } y ? new ChartValueAxis(y.Min, y.Max, y.Step, y.Format) : default;
         var bars = series.Any(one => one.Bars && !one.Hidden);
         // A scatter's marks sit clear of the plot's edges where they can: its axis runs between round values, as the
@@ -313,6 +315,66 @@ public partial class TbChart<TItem>
         var first = axis.Min is { } min ? Math.Min(ChartAlong.Position(min), positions[0]) : positions[0];
         var last = axis.Max is { } max ? Math.Max(ChartAlong.Position(max), positions[^1]) : positions[^1];
         return new(first, last, closest, X!(items[0])!);
+    }
+
+    // At each end of a zoomed view, the item just outside it, the nearest item inside, and how far the plot's edge
+    // lies along the way between them, from 0 at the outside item to 1 at the inside one. Only items given in order
+    // along the scale get edges, and an end that falls on an item needs none.
+    private (ChartEdge? Before, ChartEdge? After)? Edges(IReadOnlyList<TItem> all, ChartView view)
+    {
+        double[] at = [.. all.Select(item => ChartAlong.Position(X!(item)))];
+        if (at.Zip(at.Skip(1), (one, next) => next < one).Any(backward => backward))
+        {
+            return null;
+        }
+
+        var (from, to) = (ChartAlong.Position(view.From), ChartAlong.Position(view.To));
+        var first = Array.FindIndex(at, place => place >= from);
+        var last = Array.FindLastIndex(at, place => place <= to);
+        if (first < 0 || last < first)
+        {
+            return null;
+        }
+
+        ChartEdge? Edge(int outside, int inside, double end) => outside < 0 || outside >= at.Length
+            || at[inside] == end ? null
+            : new(all[outside], all[inside], (end - at[outside]) / (at[inside] - at[outside]));
+        return (Edge(first - 1, first, from), Edge(last + 1, last, to));
+    }
+
+    private readonly record struct ChartEdge(TItem Outside, TItem Inside, double Share);
+
+    // A stack of areas runs on to an edge only where each of its areas has a value there, so no area's floor drops
+    // to zero, and not when it stacks to percent, whose shares don't change in a straight line between two items.
+    private List<ChartSeriesValues> StackedEdges(List<ChartSeriesValues> series)
+    {
+        if (Stacking == ChartStacking.None)
+        {
+            return series;
+        }
+
+        var areas = series.Where(one => one.Filled && !one.Hidden).ToList();
+        var percent = Stacking == ChartStacking.Percent;
+        var (before, after) = (!percent && areas.All(one => one.Before is not null),
+            !percent && areas.All(one => one.After is not null));
+        return [.. series.Select(one => one.Filled
+            ? one with { Before = before ? one.Before : null, After = after ? one.After : null } : one)];
+    }
+
+    // A line's or an area's value at the plot's edge: along the straight line between the two items, or, for a
+    // stepped line, the value of the item before the edge. A stacked area that changes sign there has none, since
+    // values above and below zero pile apart.
+    private static double? EdgeValue(TbChartSeries<TItem> series, ChartEdge? edge, bool start, bool stacked)
+    {
+        if (series.Bars || series.Dots || edge is not { } cut
+            || series.ValueOf(cut.Outside) is not { } outside || series.ValueOf(cut.Inside) is not { } inside
+            || (stacked && series.Filled && Math.Sign(outside) * Math.Sign(inside) < 0))
+        {
+            return null;
+        }
+
+        return series.Line == ChartCurve.Stepped ? (start ? outside : inside)
+            : outside + (inside - outside) * cut.Share;
     }
 
     private static bool InView(object? x, ChartView view) => ChartAlong.Position(x) >= ChartAlong.Position(view.From)

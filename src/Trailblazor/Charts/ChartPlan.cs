@@ -5,9 +5,10 @@ namespace Trailblazor;
 
 // One series as a chart was given it: a value for each place along the chart, null where there is none. A hidden
 // series isn't drawn and has no say in the axis, and its values are still written for the data table. A filled one
-// is an area: a line with what is under it filled.
+// is an area: a line with what is under it filled. Before and After are a line's values at the plot's start and end
+// where a zoomed view cuts it between two items, so it runs on to the plot's edges.
 internal sealed record ChartSeriesValues(string Name, bool Bars, ChartCurve Curve, IReadOnlyList<double?> Values,
-    bool Hidden = false, bool Filled = false);
+    bool Hidden = false, bool Filled = false, double? Before = null, double? After = null);
 
 // The value axis as the app set it; null leaves a choice to the chart.
 internal readonly record struct ChartValueAxis(double? Min, double? Max, double? Step, string? Format);
@@ -110,14 +111,22 @@ internal sealed class ChartPlan
         // Bars pile with bars and areas with areas.
         var bars = series.Where(one => one.Bars && !one.Hidden).ToList();
         var areas = series.Where(one => one.Filled && !one.Hidden).ToList();
-        var (piled, filled) = (Pile(bars, stacking), Pile(areas, stacking));
+        // A line or an area with values at the plot's edges is drawn out to them, before its first place and after
+        // its last; only its places have points.
+        var edged = series.Any(one => one.Before is not null || one.After is not null);
+        IReadOnlyList<double?> Drawn(ChartSeriesValues one) =>
+            edged ? [one.Before, .. one.Values, one.After] : one.Values;
+        double At(int index) =>
+            !edged ? along.At[index] : index == 0 ? 0 : index > places.Count ? 1 : along.At[index - 1];
+        IReadOnlyList<(double X, double Y)?> Kept((double X, double Y)?[] points) => edged ? points[1..^1] : points;
+        var (piled, filled) = (Pile([.. bars.Select(one => one.Values)], stacking),
+            Pile([.. areas.Select(Drawn)], stacking));
 
         // Bars and areas are read from zero, so their axis has to reach it; lines alone may start wherever the values
         // do.
         var reached = piled.Concat(filled).SelectMany(one => one).OfType<(double From, double To)>()
             .SelectMany(part => new[] { part.From, part.To })
-            .Concat(series.Where(one => !one.Bars && !one.Filled && !one.Hidden).SelectMany(one => one.Values)
-                .OfType<double>())
+            .Concat(series.Where(one => !one.Bars && !one.Filled && !one.Hidden).SelectMany(Drawn).OfType<double>())
             .ToList();
         reached.AddRange(alsoReach ?? []);
         var shares = stacking == ChartStacking.Percent && bars.Count + areas.Count > 0;
@@ -148,17 +157,17 @@ internal sealed class ChartPlan
                 // An area's line runs along the top of its part of the pile, and its floor along the bottom.
                 var parts = filled[areas.IndexOf(one)];
                 (double X, double Y)?[] points = [.. parts.Select((part, place) => part is { } at
-                    ? ((double, double)?)(along.At[place], 1 - ticks.Share(at.To)) : null)];
+                    ? ((double, double)?)(At(place), 1 - ticks.Share(at.To)) : null)];
                 (double X, double Y)?[] floor = [.. parts.Select((part, place) => part is { } at
-                    ? ((double, double)?)(along.At[place], 1 - ticks.Share(at.From)) : null)];
-                planned.Add(new(one.Name, false, ChartPath.Line(points, one.Curve), points, [], text,
+                    ? ((double, double)?)(At(place), 1 - ticks.Share(at.From)) : null)];
+                planned.Add(new(one.Name, false, ChartPath.Line(points, one.Curve), Kept(points), [], text,
                     Fill: ChartPath.Area(points, floor, one.Curve)));
             }
             else
             {
-                (double X, double Y)?[] points = [.. one.Values.Select((value, place) =>
-                    value is { } at ? ((double, double)?)(along.At[place], 1 - ticks.Share(at)) : null)];
-                planned.Add(new(one.Name, false, ChartPath.Line(points, one.Curve), points, [], text));
+                (double X, double Y)?[] points = [.. Drawn(one).Select((value, place) =>
+                    value is { } at ? ((double, double)?)(At(place), 1 - ticks.Share(at)) : null)];
+                planned.Add(new(one.Name, false, ChartPath.Line(points, one.Curve), Kept(points), [], text));
             }
         }
 
@@ -167,11 +176,11 @@ internal sealed class ChartPlan
     }
 
     // Where each value of these series starts and ends: from zero, or on top of the series before it.
-    private static (double From, double To)?[][] Pile(List<ChartSeriesValues> series, ChartStacking stacking) =>
+    private static (double From, double To)?[][] Pile(List<IReadOnlyList<double?>> series, ChartStacking stacking) =>
         stacking == ChartStacking.None
-            ? [.. series.Select(one => one.Values.Select(value => value is { } to ? ((double, double)?)(0, to) : null)
+            ? [.. series.Select(values => values.Select(value => value is { } to ? ((double, double)?)(0, to) : null)
                 .ToArray())]
-            : ChartStack.Pile([.. series.Select(one => one.Values)], stacking == ChartStacking.Percent);
+            : ChartStack.Pile(series, stacking == ChartStacking.Percent);
 
     private static ChartTicks TicksFor(List<double> reached, ChartValueAxis axis, bool shares)
     {
