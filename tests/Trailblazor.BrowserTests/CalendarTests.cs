@@ -193,6 +193,24 @@ public class CalendarTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Today_ShouldBeUnderlined_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/calendar", new() { ForcedColors = ForcedColors.Active });
+
+        var lines = await page.EvaluateAsync<string[]>("""
+            () => {
+                const days = [...document.querySelectorAll('main .tb-calendar__cell[data-part=day]')]
+                    .filter(day => !day.matches('.tb-calendar__cell--selected'));
+                const today = days.find(day => day.matches('.tb-calendar__cell--today'));
+                const other = days.find(day => !day.matches('.tb-calendar__cell--today'));
+                return [getComputedStyle(today).textDecorationLine, getComputedStyle(other).textDecorationLine];
+            }
+            """);
+
+        Assert.Equal(["underline", "none"], lines);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ChooseAsync_ShouldStopAtTheMonth_WhenTheCalendarPicksMonths(string browser)
     {
         var page = await OpenAsync(browser, "/calendar");

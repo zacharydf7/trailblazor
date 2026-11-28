@@ -33,6 +33,7 @@ Familiar apps: the date ranges on flight and hotel booking sites, Google Analyti
 - [x] The month buttons page the calendar and leave a day in the tab order. `TbDateRangePickerTests.PreviousMonth_ShouldKeepADayInTheTabOrder_WhenPagingPastTheEarliestDate`
 - [x] A preset commits its range and closes. `DateRangePickerTests.Preset_ShouldCommitItsRangeAndClose_WhenChosen`
 - [x] Clicking elsewhere or the calendar button again closes without changing the range, rather than reopening. `DateRangePickerTests.Calendar_ShouldCloseAndKeepTheRange_WhenItsButtonIsClickedAgain`, `DateRangePickerTests.Calendar_ShouldCloseAndKeepTheRange_WhenClickedOutside`, `DateRangePickerTests.Calendar_ShouldCloseAndKeepTheRange_WhenItsButtonIsTappedAgain`
+- [x] In forced-colors mode, today is underlined, since every day's border takes the text color, and is struck through as well when it can't be chosen. `DateRangePickerTests.Today_ShouldBeUnderlined_WhenColorsAreForced`, `DateRangePickerTests.Today_ShouldBeUnderlinedAndStruckThrough_WhenItCantBeChosenAndColorsAreForced`
 
 ## Touch
 

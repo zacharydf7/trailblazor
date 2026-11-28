@@ -527,6 +527,32 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Today_ShouldBeUnderlined_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser, "Next trip", new() { ForcedColors = ForcedColors.Active });
+
+        await Expect(Calendar(page).Locator("[aria-current=date]")).ToHaveCSSAsync("text-decoration-line", "underline");
+        await Expect(Calendar(page).Locator("[data-part=day]:not([aria-current])").First)
+            .ToHaveCSSAsync("text-decoration-line", "none");
+    }
+
+    // Trip dates opens on June 2026 and closes every 25th; the picker reads the browser's today as its script loads.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Today_ShouldBeUnderlinedAndStruckThrough_WhenItCantBeChosenAndColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/date-range", new() { ForcedColors = ForcedColors.Active });
+        await page.Clock.SetFixedTimeAsync(new DateTime(2026, 6, 25, 12, 0, 0));
+        await page.ReloadAsync();
+        var trigger = Picker(page, "Trip dates").GetByRole(AriaRole.Button, new() { Name = "Choose dates" });
+        await Expect(trigger).ToHaveAttributeAsync("data-ready", "");
+        await trigger.ClickAsync();
+
+        var today = Calendar(page).Locator("[aria-current=date]");
+        await Expect(today).ToHaveAttributeAsync("data-date", "2026-06-25");
+        await Expect(today).ToHaveCSSAsync("text-decoration-line", "underline line-through");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Preset_ShouldCommitItsRangeAndClose_WhenChosen(string browser)
     {
         var page = await OpenWithCalendarAsync(browser);

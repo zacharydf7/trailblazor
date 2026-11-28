@@ -24,6 +24,7 @@ Familiar apps: the month view beside a booking form, a phone's calendar app jump
 - [x] A read-only calendar can be browsed but not changed, and a disabled one turns every button off. `TbCalendarTests.Click_ShouldMoveFocusButKeepTheDate_WhenReadOnly`, `TbCalendarTests.Render_ShouldTurnOffEveryButton_WhenDisabled`
 - [x] A date left alone keeps its time of day; a picked one is midnight. `TbCalendarTests.Click_ShouldKeepTheTimeOfDayOnlyOnTheSameDay_WhenTheValueIsADateTime`
 - [x] In forced-colors mode, the chosen day takes the system's highlight. `CalendarTests.Calendar_ShouldDrawTheChosenDayInTheSystemHighlight_WhenColorsAreForced`
+- [x] In forced-colors mode, today is underlined, since every cell's border takes the text color. `CalendarTests.Today_ShouldBeUnderlined_WhenColorsAreForced`
 
 ## Touch
 

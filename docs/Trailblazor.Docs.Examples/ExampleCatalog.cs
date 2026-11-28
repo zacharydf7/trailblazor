@@ -10670,7 +10670,7 @@ public static class ExampleCatalog
             ],
             Accessibility =
             [
-                "In forced-colors mode, such as Windows high contrast, the chosen day takes the system's highlight.",
+                "In forced-colors mode, such as Windows high contrast, the chosen day takes the system's highlight, and today, or this month or year, is underlined.",
             ],
             AppDuties =
             [
@@ -11194,7 +11194,7 @@ public static class ExampleCatalog
                     + "reachable.",
                 "In forced-colors mode, such as Windows high contrast, the range's days take the system's highlight, "
                     + "its first and last days add an outline, and the range previewed up to the pointer or focus has "
-                    + "only a dashed outline, so it can't be taken for a chosen range.",
+                    + "only a dashed outline, so it can't be taken for a chosen range. Today is underlined.",
             ],
             AppDuties =
             [
