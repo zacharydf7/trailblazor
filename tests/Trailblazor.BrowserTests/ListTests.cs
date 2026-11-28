@@ -11,6 +11,19 @@ public class ListTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static ILocator Site(IPage page, string name) =>
         Campsites(page).GetByRole(AriaRole.Button, new() { NameRegex = new Regex($"^{name}") });
 
+    // The focus ring and the selection's outline sit in the same place, so focus has to change the outline's shape.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SelectedItem_ShouldDoubleItsOutline_WhenFocusedWithColorsForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/list", new() { ForcedColors = ForcedColors.Active });
+        var pine = Site(page, "Pine Hollow");
+        await Expect(pine).ToHaveAttributeAsync("aria-current", "true");
+
+        await pine.FocusAsync();
+
+        await Expect(pine).ToHaveCSSAsync("outline-style", "double");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task List_ShouldMarkTheChosenItemCurrent_WhenItIsClicked(string browser)
     {

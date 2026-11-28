@@ -24,6 +24,23 @@ public class GridCellsTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.Locator("td[aria-selected=true]")).ToHaveCountAsync(0);
     }
 
+    // The focus ring and the range's outline sit in the same place, so focus has to change the outline's shape.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeCell_ShouldDoubleItsOutline_WhenFocusedWithColorsForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-cells", new() { ForcedColors = ForcedColors.Active });
+        await Expect(page.Locator("[data-part=grid]")).ToHaveAttributeAsync("data-ready", "");
+        var grid = page.Tb().Grid("Hikes");
+        await (await grid.CellAsync("Pine Hollow", "Name")).FocusAsync();
+
+        await page.Keyboard.PressAsync("Shift+ArrowDown");
+
+        var cell = await grid.CellAsync("Eagle Ridge", "Name");
+        await Expect(cell).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(cell).ToBeFocusedAsync();
+        await Expect(cell).ToHaveCSSAsync("outline-style", "double");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Arrow_ShouldClearTheRange_WhenPressedWithoutShift(string browser)
     {

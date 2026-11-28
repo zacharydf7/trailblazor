@@ -369,6 +369,23 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
         await Expect(trail).ToContainTextAsync("Ridge loop");
     }
 
+    // The sweep over the docs examples doesn't open popups, so this checks that a disabled option in one is GrayText.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task DisabledOption_ShouldBeGrayText_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/select-items", new() { ForcedColors = ForcedColors.Active });
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Long trail", Exact = true });
+        await Expect(trail).ToHaveAttributeAsync("data-ready", "");
+
+        await trail.FocusAsync();
+        await trail.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("End");
+
+        var closed = page.GetByRole(AriaRole.Option, new() { Name = "Trail 999", Exact = true });
+        await Expect(closed).ToHaveAttributeAsync("aria-disabled", "true");
+        await Expect(closed).ToHaveCSSAsync("color", await SystemColorAsync(page, "GrayText"));
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldReachOptionsOutOfThePageByKey_WhenItsLongListIsVirtualized(string browser)
     {

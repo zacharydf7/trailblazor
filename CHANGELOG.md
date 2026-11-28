@@ -105,6 +105,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-27
 
+- In forced colors, focus doubles the outline of the current `TbList` item, of a cell in a `TbDataGrid`'s selected range and of a batch grid's pressed Delete button, as it does on a selected tab or tree item. Before, the focus ring sat on the outline those already had, or moved it by 2px.
 - In forced colors, `TbCalendar` and `TbDateRangePicker` underline today, or the current month or year in the calendar's grids, since every cell's border takes the text color there and the stronger border they had looked like the rest.
 - In forced colors, `--tb-color-text-disabled` is the system's `GrayText`, so disabled controls such as an option, tree row, tab or accordion header read as disabled, whatever the palette; before, forced colors repainted it in the ordinary text color.
 - In forced colors, a hovered or keyboard-focused separator in `TbSplitter` and `TbDockManager` is a 3px highlight-colored line where it was 1px. A focused selected tab of a soft or filled `TbTabs`, or a focused selected `TbTreeView` item, shows a double highlight-colored outline, since its single outline was the same with or without focus.
