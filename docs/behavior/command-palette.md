@@ -37,6 +37,7 @@ Familiar apps: VS Code's command palette, GitHub's and Linear's Ctrl+K search, S
 - [x] Focus is trapped in the palette while it's open, as in any modal dialog. `dialog.js`
 - [x] In forced colors, the palette has a border on every side, which sets it off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`
 - [x] In forced colors, the active command keeps its outline. `CommandPaletteTests.ActiveCommand_ShouldKeepItsOutline_WhenColorsAreForced`
+- [x] With reduced motion, nothing on it moves: its transitions and animations take no time, apart from an animation that only fades. `ReducedMotionTests.Example_ShouldHaveNoMotion_WhenMotionIsReduced`, `AccessibilityStatusTests.Stylesheet_ShouldOverrideEveryOtherDuration_WhenMotionIsReduced`
 
 ## Not applicable
 

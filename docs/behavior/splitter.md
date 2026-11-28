@@ -59,6 +59,7 @@ Familiar apps: VS Code's sidebar and panel, the navigation pane in File Explorer
 - [x] A collapsed pane's content stays out of reach and hidden, even in an open accordion inside it. `HiddenContentTests.HiddenContent_ShouldBeSkippedByTab_WhenLoadingOrInACollapsedPane`, `HiddenContentTests.HiddenContent_ShouldHideAnOpenAccordionsPanel_WhenLoadingOrInACollapsedPane`, `TbSplitterTests.Render_ShouldGiveACollapsedPanesShareToTheOthers_WhenOneIsCollapsed`
 - [x] While the panes are side by side or `Vertical`, collapsing the pane that holds focus, from a button inside it, moves focus to the separator after it, or before it for the last pane. `SplitterTests.Splitter_ShouldMoveFocusToTheSeparatorAfterThePane_WhenCollapsedFromInsideIt`, `SplitterTests.Splitter_ShouldMoveFocusToTheSeparatorAfterIt_WhenAMiddlePaneCollapsesFromInside`, `SplitterTests.Splitter_ShouldMoveFocusToTheSeparatorBeforeTheLastPane_WhenCollapsedFromInsideIt`
 - [x] Collapsing a pane leaves focus alone when focus is outside that pane. `SplitterTests.Splitter_ShouldLeaveFocusAlone_WhenAnotherPaneCollapses`
+- [x] With reduced motion, nothing on it moves: its transitions and animations take no time, apart from an animation that only fades. `ReducedMotionTests.Example_ShouldHaveNoMotion_WhenMotionIsReduced`, `AccessibilityStatusTests.Stylesheet_ShouldOverrideEveryOtherDuration_WhenMotionIsReduced`
 
 ## Not applicable
 

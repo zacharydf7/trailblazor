@@ -31,6 +31,7 @@ Familiar apps: the sidebar and top bar of a mail app, and of a cloud provider's 
 - [x] Screen readers hear a banner, a navigation landmark named "Main" and the main content, plus a skip link before them. `TbAppShellTests.Render_ShouldLayOutTheLandmarksAndASkipLink_WhenGivenEachPart`
 - [x] The current page's link has `aria-current="page"`, and group and menu buttons say whether they're open with `aria-expanded`. `TbNavMenuTests.Render_ShouldListItsLinksAndMarkTheCurrentPage_WhenCalled`, `TbAppShellTests.MenuButton_ShouldOpenTheNavigationInADrawer_WhenPressed`
 - [x] In forced-colors mode, the current link takes the system's highlight. `AppShellTests.AppShell_ShouldHighlightTheCurrentLink_WhenColorsAreForced`
+- [x] With reduced motion, nothing on it moves: its transitions and animations take no time, apart from an animation that only fades. `ReducedMotionTests.Example_ShouldHaveNoMotion_WhenMotionIsReduced`, `AccessibilityStatusTests.Stylesheet_ShouldOverrideEveryOtherDuration_WhenMotionIsReduced`
 
 ## Not applicable
 

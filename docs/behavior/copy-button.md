@@ -32,3 +32,4 @@ Nothing of its own: a tap presses it, as any button.
 - [x] With a `TelemetryName` it counts copies, never what was copied. `TbCopyButtonTests.Telemetry_ShouldCountCopies_WhenNamed`
 - [x] A button that goes away while it copies says nothing and leaves nothing running. `TbCopyButtonTests.CopyAsync_ShouldLeaveNothingRunning_WhenTheButtonGoesAwayMidCopy`
 - [x] In forced colors, the button keeps a border. `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`
+- [x] With reduced motion, nothing on it moves: its transitions and animations take no time, apart from an animation that only fades. `ReducedMotionTests.Example_ShouldHaveNoMotion_WhenMotionIsReduced`, `AccessibilityStatusTests.Stylesheet_ShouldOverrideEveryOtherDuration_WhenMotionIsReduced`

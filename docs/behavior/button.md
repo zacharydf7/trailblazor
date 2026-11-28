@@ -57,6 +57,7 @@ Familiar apps: the buttons in any native dialog, Gmail's and GitHub's action but
 - [x] `FocusAsync` moves focus to it. `TbButtonTests.FocusAsync_ShouldFocusTheButton_WhenCalled`
 - [x] In forced colors, each variant keeps a border. `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`
 - [x] In forced colors, the busy spinner keeps its gap, so it can be seen turning. `ForcedColorsTests.Spinner_ShouldKeepItsGap_WhenColorsAreForced`
+- [x] With reduced motion, nothing on it moves: its transitions and animations take no time, apart from an animation that only fades. `ReducedMotionTests.Example_ShouldHaveNoMotion_WhenMotionIsReduced`, `AccessibilityStatusTests.Stylesheet_ShouldOverrideEveryOtherDuration_WhenMotionIsReduced`
 
 ## Not applicable
 

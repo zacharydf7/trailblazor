@@ -44,6 +44,7 @@ Familiar apps: Word's text alignment and its bold, italic and underline buttons
 - [x] Until focus has been inside the group, the tab stop follows a value set from code. `roving-focus.js`
 - [x] A focused item is lifted over its neighbors, so all of its ring shows. `ToggleItemsTests.Item_ShouldLiftAFocusedOneOverItsNeighbors_WhenJoined`
 - [x] Keyboard focus shows the name of an item that has only an icon. `ToggleItemsTests.Item_ShouldShowItsName_WhenTheKeysMoveFocusToAnIconOnlyItem`
+- [x] With reduced motion, nothing on it moves: its transitions and animations take no time, apart from an animation that only fades. `ReducedMotionTests.Example_ShouldHaveNoMotion_WhenMotionIsReduced`, `AccessibilityStatusTests.Stylesheet_ShouldOverrideEveryOtherDuration_WhenMotionIsReduced`
 
 ## Not applicable
 

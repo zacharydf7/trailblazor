@@ -29,6 +29,7 @@ Familiar apps: the toggles in phone settings, Windows Settings and macOS System 
 - [x] It shows a focus ring for keyboard focus. `trailblazor.css`
 - [x] A read-only switch stays focusable. `TbCheckbox.razor`
 - [x] A disabled switch can't take focus. `TbCheckbox.razor`
+- [x] With reduced motion, nothing on it moves: its transitions and animations take no time, apart from an animation that only fades. `ReducedMotionTests.Example_ShouldHaveNoMotion_WhenMotionIsReduced`, `AccessibilityStatusTests.Stylesheet_ShouldOverrideEveryOtherDuration_WhenMotionIsReduced`
 
 ## Not applicable
 

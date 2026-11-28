@@ -33,6 +33,7 @@ Nothing of its own: it holds no gestures, only its Retry button.
 - [x] On a static page it loads as the page renders and shows no Retry; while a page prerenders it waits, so the load runs once. `TbAsyncContentTests.Render_ShouldLoadAndOfferNoRetry_WhenThePageIsStatic`, `TbAsyncContent.cs`
 - [x] With a `TelemetryName` it records each load's time, without the spinner's hold, and counts failures and retries. `TbAsyncContentTests.Telemetry_ShouldCountTheLoadsFailuresAndRetries_WhenNamed`
 - [x] With a `TelemetryName`, each `Load` call runs in a `TbAsyncContent load` span from the `Trailblazor` source. `TelemetrySpanTests.AsyncContent_ShouldTraceItsLoad_WhenSomeoneListens`
+- [x] With reduced motion, nothing on it moves: its transitions and animations take no time, apart from an animation that only fades. `ReducedMotionTests.Example_ShouldHaveNoMotion_WhenMotionIsReduced`, `AccessibilityStatusTests.Stylesheet_ShouldOverrideEveryOtherDuration_WhenMotionIsReduced`
 
 ## Not applicable
 

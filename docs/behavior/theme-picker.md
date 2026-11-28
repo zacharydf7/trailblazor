@@ -31,6 +31,7 @@ Familiar apps: the Light, Dark and System choice in GitHub's appearance settings
 - [x] Keyboard focus shows a choice's name. `ToggleItemsTests.ThemePicker_ShouldShowTheNextChoicesName_WhenTheKeysMoveFocus`
 - [x] `Labels` renames the choices. `TbThemePickerTests.Labels_ShouldNameTheButtons_WhenGiven`
 - [x] In forced colors, each choice keeps a border, and the chosen one takes the system's highlight, as a toggle group's pressed item does. `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`, `ToggleGroupTests.ToggleGroup_ShouldFillThePressedItemWithTheHighlight_WhenColorsAreForced`
+- [x] With reduced motion, nothing on it moves: its transitions and animations take no time, apart from an animation that only fades. `ReducedMotionTests.Example_ShouldHaveNoMotion_WhenMotionIsReduced`, `AccessibilityStatusTests.Stylesheet_ShouldOverrideEveryOtherDuration_WhenMotionIsReduced`
 
 ## Not applicable
 

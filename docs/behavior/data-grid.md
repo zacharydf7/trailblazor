@@ -160,6 +160,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] In forced colors, a selected row is outlined in the system's highlight color. `GridSelectTests.SelectedRow_ShouldBeOutlinedInTheHighlight_WhenColorsAreForced`
 - [x] In forced colors, a changed cell in a batch grid has a dashed outline, which sets it apart from the focus ring's solid one; the marks where a dragged row or column would drop take the system's highlight, and the reason a drop is refused has a border. `GridBatchTests.ChangedCell_ShouldHaveADashedOutline_WhenColorsAreForced`, `trailblazor.css`
 - [x] In forced colors, a filtered column's filter button has a border in the system's highlight, since the color that marks it is repainted there. `DataGridKeysTests.FilteredColumn_ShouldOutlineItsFilterButtonInTheHighlight_WhenColorsAreForced`
+- [x] With reduced motion, nothing on it moves: its transitions and animations take no time, apart from an animation that only fades. `ReducedMotionTests.Example_ShouldHaveNoMotion_WhenMotionIsReduced`, `AccessibilityStatusTests.Stylesheet_ShouldOverrideEveryOtherDuration_WhenMotionIsReduced`
 
 ## Not applicable
 

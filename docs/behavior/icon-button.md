@@ -35,6 +35,7 @@ Familiar apps: the icon bars in Gmail and Google Docs, GitHub's issue actions
 - [x] A focusable disabled one stays in the tab order, and a loading one keeps focus. `TbButtonBase.razor`
 - [x] A disabled one with a `DisabledReason` stays in the tab order, is described by the reason, and with `ShowTooltip` shows its name and the reason in one tooltip. `DisabledReasonTests.Render_ShouldShowTheNameAndTheReasonInOneTooltip_WhenAnIconButtonIsDisabledWithAReason`
 - [x] In forced colors, each variant keeps a border. `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`
+- [x] With reduced motion, nothing on it moves: its transitions and animations take no time, apart from an animation that only fades. `ReducedMotionTests.Example_ShouldHaveNoMotion_WhenMotionIsReduced`, `AccessibilityStatusTests.Stylesheet_ShouldOverrideEveryOtherDuration_WhenMotionIsReduced`
 
 ## Not applicable
 
