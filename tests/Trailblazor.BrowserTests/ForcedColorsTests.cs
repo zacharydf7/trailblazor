@@ -131,6 +131,9 @@ public class ForcedColorsTests(BrowserFixture fixture) : BrowserTest(fixture)
     [InlineData("toolbar")]
     [InlineData("insert-divider")]
     [InlineData("theme-picker")]
+    [InlineData("speech-to-text")]
+    [InlineData("smart-paste")]
+    [InlineData("viewport")]
     public async Task Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced(string example)
     {
         var page = await OpenAsync("chromium", $"/examples/{example}", new() { ForcedColors = ForcedColors.Active });
@@ -160,6 +163,7 @@ public class ForcedColorsTests(BrowserFixture fixture) : BrowserTest(fixture)
     [InlineData("ai-prompt", ".tb-ai-prompt__input", "top right bottom left")]
     [InlineData("accordion", ".tb-accordion__item", "bottom")]
     [InlineData("table", ".tb-table :is(th, td)", "bottom")]
+    [InlineData("viewport", ".tb-viewport__surface", "top right bottom left")]
     public async Task Example_ShouldKeepEachPartsBorders_WhenColorsAreForced(string example, string selector,
         string sides)
     {

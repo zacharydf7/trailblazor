@@ -237,6 +237,24 @@ public abstract class DataGridKeysTests(BrowserFixture fixture) : BrowserTest(fi
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FilteredColumn_ShouldOutlineItsFilterButtonInTheHighlight_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-in-form", new() { ForcedColors = ForcedColors.Active });
+        var menu = page.GetByRole(AriaRole.Dialog, new() { Name = "Filter Trail" });
+        await Expect(page.Locator("[data-part=grid]").Nth(1)).ToHaveAttributeAsync("data-ready", "");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Filter Trail", Exact = true }).ClickAsync();
+        await menu.GetByLabel("Value").PressSequentiallyAsync("cedar");
+        await page.Keyboard.PressAsync("Enter");
+        // Away from the pointer and focus, which a browser may draw in a system color of its own.
+        await page.Mouse.MoveAsync(1, 1);
+        await page.EvaluateAsync("() => document.activeElement?.blur()");
+
+        var button = page.Locator("[data-filtered] .tb-data-grid__filter-menu .tb-icon-button");
+        await Expect(button).ToHaveCSSAsync("border-top-color", await SystemColorAsync(page, "Highlight"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Filters_ShouldApplyWithoutSubmittingThePagesForm_WhenEnterIsPressedInThem(string browser)
     {
         var page = await OpenAsync(browser, "/grid-in-form");

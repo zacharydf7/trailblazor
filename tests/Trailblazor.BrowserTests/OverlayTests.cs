@@ -170,6 +170,23 @@ public class OverlayTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(overlay).ToHaveCountAsync(0);
     }
 
+    // Forced colors keep a fill's alpha, so the scrim still dims the page in the system's own page color.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Scrim_ShouldStaySeeThrough_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/overlay", new() { ForcedColors = ForcedColors.Active });
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Show page overlay" }).ClickAsync();
+        await Expect(Overlay(page)).ToHaveAttributeAsync("data-ready", "");
+
+        // When a computed color has an alpha, it's the last number before the closing parenthesis, after a comma or
+        // a slash.
+        var alpha = await Overlay(page).Locator("[data-part=scrim]").EvaluateAsync<double>("""
+            scrim => Number(getComputedStyle(scrim).backgroundColor.match(/[,/]\s*([\d.]+)\)$/)?.[1])
+            """);
+        Assert.InRange(alpha, 0.1, 0.9);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Overlay_ShouldCloseOnAClickOnTheScrimOrEscape_WhenCloseOnClickIsSet(string browser)
     {

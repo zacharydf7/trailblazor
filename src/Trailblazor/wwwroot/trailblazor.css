@@ -10520,6 +10520,17 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         .tb-data-grid__delete-button[aria-pressed="true"]:focus-visible {
             outline: 6px double Highlight;
         }
+
+        /* Forced colors repaint the line where a dragged column would land, and the color that marks a filtered
+           column's filter button, so both take the system's highlight. */
+        .tb-data-grid__table th[data-drop]::before {
+            forced-color-adjust: none;
+            background: Highlight;
+        }
+
+        .tb-data-grid__header[data-filtered] .tb-data-grid__filter-menu .tb-icon-button {
+            border-color: Highlight;
+        }
     }
 
     .tb-tree {
@@ -11860,6 +11871,11 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
         .tb-sortable__item[data-drop-refused] {
             border-style: dashed;
+        }
+
+        /* The reason floats over the list, and forced colors drop the fill and shadow that were its edge. */
+        .tb-sortable__reason {
+            border: 1px solid CanvasText;
         }
     }
 

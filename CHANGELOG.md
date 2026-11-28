@@ -105,6 +105,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-28
 
+- In forced colors, the reason `TbSortable` and `TbDataGrid` show for a refused drop has a border, since forced colors drop the fill and shadow that were its edge. In `TbDataGrid`, the line where a dragged column would land takes the system's highlight, and a filtered column's filter button has a border in it; before, both were lost there.
 - In forced colors, a menu item whose submenu is open, in `TbMenu`, `TbContextMenu` and `TbMenubar`, takes the system's highlight colors, since forced colors drop its tint; before, nothing marked it once focus moved into the submenu.
 - `TbCascader` outlines the active option, as the select does; before, nothing showed it, since focus stays in the field. In forced colors, each open option on the path takes the system's highlight colors, since forced colors drop its tint.
 

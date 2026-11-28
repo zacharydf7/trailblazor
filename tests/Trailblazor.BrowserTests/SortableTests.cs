@@ -45,6 +45,27 @@ public class SortableTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RefusedDrop_ShouldShowADashedMarkAndABorderedReason_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenReadyAsync(browser, new() { ForcedColors = ForcedColors.Active });
+        var from = (await Handle(page, "Catch-all").BoundingBoxAsync())!;
+        var to = (await Item(page, "Block spam").BoundingBoxAsync())!;
+
+        await page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(to.X + to.Width / 2, to.Y + to.Height * 0.25f, new() { Steps = 10 });
+
+        var rules = page.Locator(".tb-sortable",
+            new() { Has = page.GetByRole(AriaRole.List, new() { Name = "Rules" }) });
+        var reason = rules.Locator("[data-part=drop-reason]");
+        await Expect(Item(page, "Block spam")).ToHaveCSSAsync("border-top-style", "dashed");
+        await Expect(reason).ToBeVisibleAsync();
+        await Expect(reason).ToHaveCSSAsync("border-top-style", "solid");
+        await Expect(reason).ToHaveCSSAsync("border-top-width", "1px");
+        await page.Mouse.UpAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task List_ShouldShowWhereToDropAndTakeAnItemOnItsEmptyContent_WhenItHasNoItems(string browser)
     {
         var page = await OpenAsync(browser, "/examples/sortable");
@@ -307,9 +328,9 @@ public class SortableTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     // The lists and the grids hear drags and keys once their scripts have attached.
-    private async Task<IPage> OpenReadyAsync(string browser)
+    private async Task<IPage> OpenReadyAsync(string browser, BrowserNewContextOptions? options = null)
     {
-        var page = await OpenAsync(browser, "/sortable");
+        var page = await OpenAsync(browser, "/sortable", options);
         await Expect(page.Locator(".tb-sortable:not([data-ready]), [data-part=grid]:not([data-ready])"))
             .ToHaveCountAsync(0);
         return page;

@@ -42,6 +42,7 @@ Familiar apps: File Explorer's and Finder's list views with folders, Microsoft P
 - [x] `ScrollToAsync` opens the rows a row is nested under before going to it. `TbDataGridTreeTests.ScrollToAsync_ShouldOpenTheRowsAboveTheRow_WhenTheyAreClosed`
 - [x] A row is `aria-busy` while its children load, its button shows a spinner, and closing it cancels the load. `TbDataGridLazyTreeTests.Toggle_ShouldCancelTheLoadAndMarkTheRowBusyMeanwhile_WhenTheRowClosesFirst`
 - [x] A load that fails is announced and raised on `OnLoadFailed`, and the row closes, so opening it tries again, also while a filter applies. `TbDataGridLazyTreeTests.Toggle_ShouldCloseTheRowAndSaySo_WhenTheLoadFails`, `TbDataGridLazyTreeTests.Toggle_ShouldCloseTheRow_WhenTheLoadFailsWhileFiltersApply`
+- [x] In forced colors, rows, cells and marks look as they do in a data grid, which a tree grid is. `GridSelectTests.SelectedRow_ShouldBeOutlinedInTheHighlight_WhenColorsAreForced`, `GridBatchTests.ChangedCell_ShouldHaveADashedOutline_WhenColorsAreForced`
 
 ## Not applicable
 

@@ -158,6 +158,8 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] A `DateTimeOffset` column shows, filters and exports in the shared time zone, so a date filter matches the day the cell shows. `TbTimestampTests.GridColumn_ShouldShowADateTimeOffsetInTheCascadedTimeZone_WhenOneIsCascaded`, `TbTimestampTests.GridColumn_ShouldFilterAndExportADateTimeOffsetByItsShownDay_WhenAZoneIsCascaded`
 - [x] In forced-colors mode, focus doubles the outline of a cell in the selected range and of a pressed Delete button, since the ring would otherwise sit on that outline or barely move. `GridCellsTests.RangeCell_ShouldDoubleItsOutline_WhenFocusedWithColorsForced`, `GridBatchDeleteTests.DeleteButton_ShouldDoubleItsOutline_WhenPressedAndFocusedWithColorsForced`
 - [x] In forced colors, a selected row is outlined in the system's highlight color. `GridSelectTests.SelectedRow_ShouldBeOutlinedInTheHighlight_WhenColorsAreForced`
+- [x] In forced colors, a changed cell in a batch grid has a dashed outline, which sets it apart from the focus ring's solid one; the marks where a dragged row or column would drop take the system's highlight, and the reason a drop is refused has a border. `GridBatchTests.ChangedCell_ShouldHaveADashedOutline_WhenColorsAreForced`, `trailblazor.css`
+- [x] In forced colors, a filtered column's filter button has a border in the system's highlight, since the color that marks it is repainted there. `DataGridKeysTests.FilteredColumn_ShouldOutlineItsFilterButtonInTheHighlight_WhenColorsAreForced`
 
 ## Not applicable
 

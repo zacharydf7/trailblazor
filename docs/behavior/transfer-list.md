@@ -38,3 +38,4 @@ Familiar apps: the "Customize toolbar" and "Choose columns" dialogs in desktop a
 - [x] Right to left, the lists swap sides and the move arrows turn around to point at their lists. `TransferListTests.TransferList_ShouldTurnItsArrowsAround_WhenTheTextIsRightToLeft`
 - [x] Disabled or read-only, no button moves anything. `TbTransferListTests.Render_ShouldOfferNoMoves_WhenDisabledOrReadOnly`
 - [x] A chosen item loaded again matches its item through `Comparer`. `TbTransferListTests.Value_ShouldMatchItsItems_WhenTheComparerSaysTheyAreTheSame`
+- [x] In forced colors, a selected option's box takes the system's highlight. `TransferListTests.SelectedOption_ShouldFillItsBoxWithTheHighlight_WhenColorsAreForced`

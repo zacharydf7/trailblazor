@@ -41,6 +41,7 @@ Familiar apps: loading scrims over a card or a page, the shade behind a lightbox
 - [x] Of two `Blocking` page overlays opened close together, the later one stays usable. `OverlayTests.Overlay_ShouldLeaveTheLaterOverlayUsable_WhenTwoBlockingOverlaysOpenTogether`, `TbOverlayTests.Render_ShouldGiveTheOverlayALaterOpenOrder_WhenItIsClosedAndShownAgain`
 - [x] A contained overlay opened after a `Blocking` page overlay stays inert, since it is drawn below. `OverlayTests.Overlay_ShouldKeepALaterContainedOverlayInert_WhenAPageOverlayIsBlockingAboveIt`
 - [x] Dialogs, toasts and announcements stay usable above a `Blocking` overlay. `overlay.js`
+- [x] In forced colors, the scrim takes the system's page color but stays see-through, so it still dims the page. `OverlayTests.Scrim_ShouldStaySeeThrough_WhenColorsAreForced`
 
 ## Not applicable
 

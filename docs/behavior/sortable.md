@@ -56,6 +56,7 @@ Familiar apps: Trello's lists, Jira's backlog, a mail app's filter rules
 - [x] In a list with a `Group`, `Labels.GroupHint` words the handle's key hint. `TbSortableGroupTests.Labels_ShouldWordTheHandlesHint_WhenTheListIsInAGroup`
 - [x] After a move to another list, screen readers hear that list's name with the item's place there. `TbSortableGroupTests.ListKey_ShouldMoveTheItemToTheSamePlaceInTheListBesideAndSaySo_WhenPressed`
 - [x] `Labels` replaces the handle's name and description, its menu's items and the announcement after a move. `TbSortableTests.Labels_ShouldWordTheHandlesTheirMenuAndTheMove_WhenGiven`
+- [x] In forced colors, a refused drop's mark is dashed, and the reason why has a border, since forced colors drop the fill and shadow that were its edge. `SortableTests.RefusedDrop_ShouldShowADashedMarkAndABorderedReason_WhenColorsAreForced`
 
 ## Not applicable
 

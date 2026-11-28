@@ -44,6 +44,25 @@ public class GridBatchTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(name).ToBeFocusedAsync();
     }
 
+    // Forced colors drop the changed cell's tint, so its mark is a dashed outline, which sets it apart from the focus
+    // ring's solid one.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ChangedCell_ShouldHaveADashedOutline_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenReadyAsync(browser, new() { ForcedColors = ForcedColors.Active });
+        var name = page.Locator("tr[data-key='1'] td[data-column=Name]");
+        await name.FocusAsync();
+
+        await page.Keyboard.TypeAsync("Pine loop");
+        await Expect(name.Locator("input")).ToHaveValueAsync("Pine loop");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(name).ToHaveAttributeAsync("data-changed", "");
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await Expect(name).Not.ToBeFocusedAsync();
+        await Expect(name).ToHaveCSSAsync("outline-style", "dashed");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Changes_ShouldBeMarkedThenSavedTogether_WhenEditedFromTheKeyboard(string browser)
     {
@@ -233,9 +252,9 @@ public class GridBatchTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(name).ToHaveAttributeAsync("data-changed", "");
     }
 
-    private async Task<IPage> OpenReadyAsync(string browser)
+    private async Task<IPage> OpenReadyAsync(string browser, BrowserNewContextOptions? options = null)
     {
-        var page = await OpenAsync(browser, "/grid-batch");
+        var page = await OpenAsync(browser, "/grid-batch", options);
         await Expect(page.Locator("[data-part=grid]")).ToHaveAttributeAsync("data-ready", "");
         return page;
     }

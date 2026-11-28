@@ -5,9 +5,9 @@ namespace Trailblazor.BrowserTests;
 
 public class TransferListTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
-    private async Task<IPage> OpenCrewAsync(string browser)
+    private async Task<IPage> OpenCrewAsync(string browser, BrowserNewContextOptions? options = null)
     {
-        var page = await OpenAsync(browser, "/examples/transfer-list");
+        var page = await OpenAsync(browser, "/examples/transfer-list", options);
         var crew = page.GetByRole(AriaRole.Group, new() { Name = "Trip crew" });
         foreach (var list in await crew.GetByRole(AriaRole.Listbox).AllAsync())
         {
@@ -54,6 +54,20 @@ public class TransferListTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(move).ToBeFocusedAsync();
         await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "On this trip" }).GetByRole(AriaRole.Option))
             .ToHaveTextAsync(["Blake", "Casey", "Emery"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SelectedOption_ShouldFillItsBoxWithTheHighlight_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenCrewAsync(browser, new() { ForcedColors = ForcedColors.Active });
+        var avery = page.GetByRole(AriaRole.Listbox, new() { Name = "Hikers" })
+            .GetByRole(AriaRole.Option, new() { Name = "Avery" });
+
+        await avery.ClickAsync();
+
+        await Expect(avery).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(avery.Locator(".tb-select__box"))
+            .ToHaveCSSAsync("background-color", await SystemColorAsync(page, "Highlight"));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

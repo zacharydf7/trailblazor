@@ -27,6 +27,7 @@ Familiar apps: Google Maps, Figma's and Miro's canvases, a PDF reader's zoom, Wi
 ## Focus
 
 - [x] The box is a stop for Tab even when its content has nothing focusable. `TbViewportTests.Render_ShouldShowTheContentInANamedBoxUnderItsControls_WhenGivenALabel`
+- [x] In forced colors, the surface and the zoom buttons keep their borders. `ForcedColorsTests.Example_ShouldKeepEachPartsBorders_WhenColorsAreForced`, `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`
 
 ## Not applicable
 

@@ -37,3 +37,4 @@ Familiar apps: paste-to-fill buttons on contact and address forms that read a si
 - [x] The box takes focus in its text area when it opens and gives it back to the button when it closes. `SmartPasteTests.SmartPaste_ShouldAskForTheTextAndGiveFocusBack_WhenTheBrowserRefusesTheClipboard`
 - [x] "Filling the form" and the result are announced and shown beside the button, unless `Labels` words them. `TbSmartPasteTests.PasteAsync_ShouldFillEachFieldTheModelFound_WhenGivenText`, `TbSmartPasteTests.Labels_ShouldWordTheButtonBoxAndStatus_WhenGiven`
 - [x] The button is off on a static page and in a disabled form. `TbSmartPasteTests.Render_ShouldTurnTheButtonOff_WhenThePageIsStatic`, `TbSmartPasteTests.Render_ShouldTurnTheButtonOff_WhenTheFormIsDisabled`
+- [x] In forced colors, the button and the text box keep their borders. `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`, `trailblazor.css`
