@@ -5668,6 +5668,15 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
             color: GrayText;
         }
 
+        /* Forced colors drop the tint of an item whose submenu is open, its only mark once focus moves into the
+           submenu, so it takes the system's highlight colors. */
+        .tb-menu__item[aria-expanded="true"] {
+            forced-color-adjust: none;
+            outline-color: HighlightText;
+            background: Highlight;
+            color: HighlightText;
+        }
+
         .tb-menu__separator {
             background: CanvasText;
         }

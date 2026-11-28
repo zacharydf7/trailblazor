@@ -27,6 +27,7 @@ Familiar apps: the File, Edit and View menus of desktop apps, Google Docs' menus
 
 - [x] Only one trigger is in the tab order, and a menu that goes away passes the tab stop on. `MenubarTests.Menubar_ShouldKeepOneTabStop_WhenTheMenuHoldingItGoesAway`
 - [x] Before the page is interactive, every trigger is in the tab order. `TbMenubarTests.Render_ShouldLeaveEveryTriggerInTheTabOrder_WhenTheScriptHasNotRun`
+- [x] In forced colors, an open menu has a border on every side, which sets it off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`
 
 ## Not applicable
 

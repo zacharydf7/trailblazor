@@ -212,6 +212,18 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static readonly Dictionary<string, Opening[]> Opened = new()
     {
         ["menu"] = [new(new("menu", "Actions"), page => Button(page, "Actions").ClickAsync())],
+        ["context-menu"] = [new(new("menu", "Map actions"), async page =>
+        {
+            await Expect(page.Locator(".tb-context-menu:not([data-ready])")).ToHaveCountAsync(0);
+            await page.GetByRole(AriaRole.Region, new() { Name = "Trail map" })
+                .ClickAsync(new() { Button = MouseButton.Right });
+        })],
+        ["menubar"] = [new(new("menuitem", "New trail"), async page =>
+        {
+            var bar = page.GetByRole(AriaRole.Menubar, new() { Name = "Trail editor", Exact = true });
+            await Expect(bar).ToHaveAttributeAsync("data-ready", "");
+            await bar.GetByRole(AriaRole.Menuitem, new() { Name = "File", Exact = true }).ClickAsync();
+        })],
         ["floating-action-button"] = [new(new("menu", "Add"), page => ClickWhenReadyAsync(Button(page, "Add")))],
         ["label"] =
         [

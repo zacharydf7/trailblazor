@@ -354,6 +354,22 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldHighlightTheItemThatOpenedIt_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu", new() { ForcedColors = ForcedColors.Active });
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = "More options" });
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
+        await trigger.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(Item(page, "Share")).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(Item(page, "Email")).ToBeFocusedAsync();
+        await Expect(Item(page, "Share")).ToHaveCSSAsync("background-color", await SystemColorAsync(page, "Highlight"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task SubMenu_ShouldKeepTheKeysWithinEachList_WhenOpenedAndClosedWithTheArrowKeys(string browser)
     {
         var page = await OpenAsync(browser, "/examples/menu");

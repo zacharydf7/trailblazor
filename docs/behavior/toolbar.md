@@ -49,6 +49,7 @@ Familiar apps: Google Docs' toolbar and its overflow menu, the editor actions in
 - [x] Controls in a popup inside the toolbar aren't part of its keys. `ToolbarTests.ToggleGroup_ShouldKeepItsOwnKeys_WhenInAPopupInsideAToolbar`
 - [x] Keyboard focus on an icon button shows its text, which isn't read twice. `ToolbarTests.Toolbar_ShouldNotDescribeAnIconButtonByItsOwnName_WhenItsTooltipRepeatsIt`
 - [x] When the focused button moves into the More menu, or the More button goes away as the toolbar widens, focus moves to a control still in view. `ToolbarTests.Toolbar_ShouldMoveFocusToItsMenu_WhenTheFocusedButtonMovesIntoIt`, `ToolbarTests.Toolbar_ShouldMoveFocusToItsLastControl_WhenItsFocusedMenuGoesAway`
+- [x] In forced colors, each button keeps a border. `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`
 
 ## Not applicable
 

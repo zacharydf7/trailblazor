@@ -26,7 +26,7 @@ Nothing of its own: a tap follows a link, as any link.
 - [x] A form message with the same text as a field's still shows. `TbValidationSummaryTests.TbValidationSummary_ShouldKeepAFormMessage_WhenAFieldShowsTheSameText`
 - [x] On a static page it lists the messages the page renders with. `TbValidationSummaryTests.Render_ShouldListTheMessages_WhenThePageIsStatic`
 - [x] Outside a form it throws. `TbValidationSummaryTests.Render_ShouldThrow_WhenOutsideAForm`
-- [x] In forced colors, the summary keeps its border. `ForcedColorsTests.Example_ShouldBorderEachMessage_WhenColorsAreForced`
+- [x] In forced colors, the summary keeps its border. `ForcedColorsTests.Example_ShouldKeepEachPartsBorders_WhenColorsAreForced`
 
 ## Not applicable
 

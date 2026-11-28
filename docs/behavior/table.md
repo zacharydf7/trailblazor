@@ -22,6 +22,7 @@ Nothing of its own. It is a native table with no keys, and links or buttons writ
 - [x] The table itself takes no focus. `TbTable.razor`
 - [x] A link or button in a row scrolls clear of a sticky header when it takes focus, at any `Size` and wherever `--tb-table-sticky-top` puts it. `TableTests.Table_ShouldScrollAFocusedLinkClearOfTheHeader_WhenItLandsBehindIt`
 - [x] Items in a row's menu get no room for the header, since the menu scrolls on its own. `TableTests.Table_ShouldLeaveAMenusItemsOutOfTheHeadersRoom_WhenARowHoldsAMenu`
+- [x] In forced colors, each cell keeps the border under it, so the rows stay apart. `ForcedColorsTests.Example_ShouldKeepEachPartsBorders_WhenColorsAreForced`
 
 ## Not applicable
 

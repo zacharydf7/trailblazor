@@ -29,6 +29,7 @@ Familiar apps: the add-block button in Notion, the insert handles between rows i
 
 - [x] Keyboard focus shows the line and button. `InsertDividerTests.InsertDivider_ShouldShowItsButtonOnlyOnHoverOrFocus_WhenThePointerCanHover`
 - [x] A disabled divider's button is out of the tab order. `TbInsertDividerTests.Render_ShouldTurnTheButtonOff_WhenDisabled`
+- [x] In forced colors, the button keeps a border. The line is drawn as a border, so forced colors keep it too. `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`, `trailblazor.css`
 
 ## Not applicable
 

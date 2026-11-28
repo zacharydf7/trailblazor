@@ -72,6 +72,7 @@ Familiar apps: Windows and macOS menus, VS Code's and Google Docs' menus
 - [x] A menu that closes and opens again before the browser has reported either, as two calls from code in one task do, takes focus on its first item again. `MenuTests.Menu_ShouldFocusItsFirstItemAgain_WhenItClosesAndOpensBeforeTheBrowserReportsEither`
 - [x] A letter typed on an item to jump to another has its default prevented, as the menu's other keys do, so a single-letter shortcut of the app's doesn't also run. `MenuTests.Menu_ShouldKeepALetterFromThePagesOwnShortcuts_WhenItJumpsToAnItem`
 - [x] In forced colors, the open menu has a border on every side, which sets it off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`
+- [x] In forced colors, the item whose submenu is open takes the system's highlight colors, so it stays marked once focus moves into the submenu. `MenuTests.SubMenu_ShouldHighlightTheItemThatOpenedIt_WhenColorsAreForced`
 
 ## Not applicable
 

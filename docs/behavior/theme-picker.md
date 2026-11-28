@@ -30,6 +30,7 @@ Familiar apps: the Light, Dark and System choice in GitHub's appearance settings
 - [x] Focus stays on the chosen item after a pick. `TbThemePicker.razor`
 - [x] Keyboard focus shows a choice's name. `ToggleItemsTests.ThemePicker_ShouldShowTheNextChoicesName_WhenTheKeysMoveFocus`
 - [x] `Labels` renames the choices. `TbThemePickerTests.Labels_ShouldNameTheButtons_WhenGiven`
+- [x] In forced colors, each choice keeps a border, and the chosen one takes the system's highlight, as a toggle group's pressed item does. `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`, `ToggleGroupTests.ToggleGroup_ShouldFillThePressedItemWithTheHighlight_WhenColorsAreForced`
 
 ## Not applicable
 

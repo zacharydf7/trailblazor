@@ -128,6 +128,9 @@ public class ForcedColorsTests(BrowserFixture fixture) : BrowserTest(fixture)
     [InlineData("floating-action-button")]
     [InlineData("back-to-top")]
     [InlineData("surface")]
+    [InlineData("toolbar")]
+    [InlineData("insert-divider")]
+    [InlineData("theme-picker")]
     public async Task Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced(string example)
     {
         var page = await OpenAsync("chromium", $"/examples/{example}", new() { ForcedColors = ForcedColors.Active });
@@ -147,15 +150,18 @@ public class ForcedColorsTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Empty(borderless);
     }
 
-    // A tinted message loses its tint in forced colors, so its edges have to be borders: every side of an alert, a
-    // validation summary, a chat message and a prompt box, and the bottom of a banner, which spans the page.
+    // Forced colors drop tints, so what sets a part apart has to be a border: every side of an alert, a validation
+    // summary, a chat message and a prompt box, and the bottom of a banner, an accordion item and a table cell.
     [Theory]
     [InlineData("alert", ".tb-alert", "top right bottom left")]
     [InlineData("banner", ".tb-banner", "bottom")]
     [InlineData("validation-summary", ".tb-validation-summary", "top right bottom left")]
     [InlineData("chat", ".tb-chat__message", "top right bottom left")]
     [InlineData("ai-prompt", ".tb-ai-prompt__input", "top right bottom left")]
-    public async Task Example_ShouldBorderEachMessage_WhenColorsAreForced(string example, string selector, string sides)
+    [InlineData("accordion", ".tb-accordion__item", "bottom")]
+    [InlineData("table", ".tb-table :is(th, td)", "bottom")]
+    public async Task Example_ShouldKeepEachPartsBorders_WhenColorsAreForced(string example, string selector,
+        string sides)
     {
         var page = await OpenAsync("chromium", $"/examples/{example}", new() { ForcedColors = ForcedColors.Active });
         await Expect(page.Locator($"main {selector}").First).ToBeVisibleAsync();
