@@ -2147,9 +2147,16 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
             await AnsweredAsync(() => found.Locator("[data-part=tree-toggle]").ClickAsync());
         }
 
-        // A row that loaded no children has no aria-expanded at all.
-        await (expanded ? Assertions.Expect(found).Not.ToHaveAttributeAsync("aria-expanded", "false")
-            : Assertions.Expect(found).ToHaveAttributeAsync("aria-expanded", wanted));
+        if (!expanded)
+        {
+            await Assertions.Expect(found).ToHaveAttributeAsync("aria-expanded", wanted);
+            return;
+        }
+
+        // A lazy row is busy while its children load, and one that loaded none has no aria-expanded at all. The busy
+        // check waits for the click's render first, or it could pass before the load starts.
+        await Assertions.Expect(found).Not.ToHaveAttributeAsync("aria-expanded", "false");
+        await Assertions.Expect(found).Not.ToHaveAttributeAsync("aria-busy", "true");
     }
 
     /// <summary>Moves the row with a cell whose text is exactly <paramref name="row"/> to <paramref name="index"/>

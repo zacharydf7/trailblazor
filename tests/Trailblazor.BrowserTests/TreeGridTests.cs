@@ -45,9 +45,21 @@ public class TreeGridTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task ExpandAsync_ShouldReturn_WhenALazyRowLoadsNoChildren(string browser)
+    public Task ExpandAsync_ShouldReturn_WhenALazyRowLoadsNoChildren(string browser) =>
+        ExpandsALazyRowWithNoChildrenAsync(browser, "/grid-lazy-tree");
+
+    // In WebAssembly the grid's count of answers reached the helper's mark before the row's children had loaded, so the
+    // helper also waits for the row to stop being busy. The slow link only slows the circuit, which this page lacks.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public Task ExpandAsync_ShouldReturn_WhenALazyRowLoadsNoChildrenInWebAssembly(string browser)
     {
-        var page = await OpenAsync(browser, "/grid-lazy-tree");
+        Assert.SkipWhen(GetType() != typeof(TreeGridTests), "A WebAssembly page has no circuit for the slow link.");
+        return ExpandsALazyRowWithNoChildrenAsync(browser, "/grid-lazy-tree?mode=webassembly");
+    }
+
+    private async Task ExpandsALazyRowWithNoChildrenAsync(string browser, string path)
+    {
+        var page = await OpenAsync(browser, path);
         var grid = page.Tb().Grid("Folders");
 
         await grid.ExpandAsync("Docs");
