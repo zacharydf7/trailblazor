@@ -74,7 +74,8 @@ public class SlowLinkTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task UseSlowLinkAsync_ShouldHoldBackWhatThePageSends_WhenCalled(string browser)
     {
-        var page = await OpenAsync(browser, "/examples/toggle-group");
+        // What the page sends goes over the circuit's socket, so the page runs on the server.
+        var page = await OpenAsync(browser, "/examples/toggle-group?mode=server");
         var terrain = page.GetByRole(AriaRole.Group, new() { Name = "Map view" })
             .GetByRole(AriaRole.Button, new() { Name = "Terrain", Exact = true });
         await Expect(page.GetByText("View: Trails")).ToBeVisibleAsync();

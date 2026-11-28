@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
@@ -198,17 +199,26 @@ public abstract partial class BrowserTest(BrowserFixture fixture) : IAsyncDispos
     }
 
     // TRAILBLAZOR_RENDER_MODE=webassembly or auto runs the host's pages that way, unless a test names its own ?mode= or
-    // its class needs the server.
+    // its class needs the server. A page that runs WebAssembly also gets the host's culture, which it would otherwise
+    // take from the browser.
     private Uri HostAddress(string path)
     {
         var address = new Uri(Fixture.BaseAddress, path);
+        var query = QueryHelpers.ParseQuery(address.Query);
         var mode = Environment.GetEnvironmentVariable("TRAILBLAZOR_RENDER_MODE");
-        if (NeedsTheServer || string.IsNullOrEmpty(mode) || QueryHelpers.ParseQuery(address.Query).ContainsKey("mode"))
+        var added = new Dictionary<string, string?>();
+        if (!NeedsTheServer && !string.IsNullOrEmpty(mode) && !query.ContainsKey("mode"))
         {
-            return address;
+            added["mode"] = mode;
         }
 
-        return new Uri(QueryHelpers.AddQueryString(address.ToString(), "mode", mode));
+        var runs = query.TryGetValue("mode", out var asked) ? asked.ToString() : added.GetValueOrDefault("mode");
+        if (runs is "webassembly" or "auto" && !query.ContainsKey("culture"))
+        {
+            added["culture"] = CultureInfo.CurrentCulture.Name;
+        }
+
+        return added.Count == 0 ? address : new Uri(QueryHelpers.AddQueryString(address.ToString(), added));
     }
 
     private async Task<IBrowserContext> NewContextAsync(string browser, BrowserNewContextOptions? options)
