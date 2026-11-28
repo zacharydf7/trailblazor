@@ -103,6 +103,10 @@ they run by version. The docs site's Upgrading page is built from both.
 
 ### Markup and behavior
 
+#### 2026-11-28
+
+- `TbCascader` outlines the active option, as the select does; before, nothing showed it, since focus stays in the field. In forced colors, each open option on the path takes the system's highlight colors, since forced colors drop its tint.
+
 #### 2026-11-27
 
 - `TbSignaturePad`'s typed name sits in a field box, a `.tb-field__control` around its input, with the border, height and focus ring other fields have, and the pad's red border when it's invalid; before, the input had no edge.

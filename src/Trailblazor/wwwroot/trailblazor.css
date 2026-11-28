@@ -7614,10 +7614,21 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         border-end-end-radius: 0;
     }
 
-    .tb-select__listbox .tb-select__option[data-active] {
+    :is(.tb-select__listbox, .tb-cascader__list) .tb-select__option[data-active] {
         background: var(--tb-color-hover);
         outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
         outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
+    /* Forced colors drop a cascader's open option's tint, so it takes the system's highlight colors. After the active
+       option's rule, so an option that is both keeps the highlight under its outline. */
+    @media (forced-colors: active) {
+        .tb-cascader__list > .tb-select__option[data-open] {
+            forced-color-adjust: none;
+            outline-color: HighlightText;
+            background: Highlight;
+            color: HighlightText;
+        }
     }
 
     .tb-select__box {

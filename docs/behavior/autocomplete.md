@@ -63,6 +63,7 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 - [x] Text typed before the field turned read-only isn't committed, and the value's text comes back. `TbAutocompleteTests.Change_ShouldPutBackTheValuesText_WhenTheFieldTurnedReadOnlyWithTextTyped`
 - [x] `Start` and `End` content sit in the box before and after the input, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
 - [x] In forced colors, the open list has a border on every side, which sets it off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`
+- [x] In forced colors, the active option keeps its outline. `AutocompleteTests.ActiveOption_ShouldKeepItsOutline_WhenColorsAreForced`
 
 ## Not applicable
 

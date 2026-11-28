@@ -80,6 +80,23 @@ public class AutocompleteTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static ILocator Field(IPage page, string name) =>
         page.GetByRole(AriaRole.Combobox, new() { Name = name, Exact = true });
 
+    // Focus stays in the field, so the outline, which forced colors keep, is all that shows which option is active.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ActiveOption_ShouldKeepItsOutline_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/autocomplete", new() { ForcedColors = ForcedColors.Active });
+        var field = Field(page, "Trailhead");
+        await Expect(field).ToHaveAttributeAsync("data-ready", "");
+
+        var listbox = page.GetByRole(AriaRole.Listbox, new() { Name = "Trailhead" });
+
+        await field.PressSequentiallyAsync("ridge");
+        await Expect(listbox.GetByRole(AriaRole.Option)).ToHaveCountAsync(2);
+        await field.PressAsync("ArrowDown");
+
+        await Expect(listbox.Locator("[data-active]")).ToHaveCSSAsync("outline-style", "solid");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task OpenOnFocus_ShouldShowTheSuggestions_WhenTheFieldGetsFocus(string browser)
     {

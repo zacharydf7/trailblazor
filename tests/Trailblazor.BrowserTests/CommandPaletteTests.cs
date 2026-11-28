@@ -22,6 +22,23 @@ public class CommandPaletteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(opener).ToBeFocusedAsync();
     }
 
+    // Focus stays in the search box, so the outline, which forced colors keep, is all that shows the active command.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ActiveCommand_ShouldKeepItsOutline_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenReadyAsync(browser, new() { ForcedColors = ForcedColors.Active });
+        var search = await OpenPaletteAsync(page);
+
+        await search.PressSequentiallyAsync("tab");
+        await Expect(page.GetByRole(AriaRole.Option).Locator("[data-part=label]"))
+            .ToHaveTextAsync(["New tab", "Close tab"]);
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        var active = page.GetByRole(AriaRole.Option, new() { Name = "Close tab" });
+        await Expect(active).ToHaveAttributeAsync("data-active", "");
+        await Expect(active).ToHaveCSSAsync("outline-style", "solid");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Keys_ShouldMoveTheActiveCommandAndRunIt_WhenTheArrowsAndEnterArePressed(string browser)
     {
@@ -192,9 +209,9 @@ public class CommandPaletteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Command palette" })).ToHaveCountAsync(0);
     }
 
-    private async Task<IPage> OpenReadyAsync(string browser)
+    private async Task<IPage> OpenReadyAsync(string browser, BrowserNewContextOptions? options = null)
     {
-        var page = await OpenAsync(browser, "/command-palette");
+        var page = await OpenAsync(browser, "/command-palette", options);
         await Expect(page.Locator("[data-command-palette='Command palette'] [data-part=hotkey]"))
             .ToHaveAttributeAsync("data-ready", "Mod+K");
         return page;

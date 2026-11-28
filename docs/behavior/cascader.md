@@ -32,6 +32,8 @@ Familiar apps: the country, region and city pickers on shipping forms, Ant Desig
 - [x] A value given from code shows its path and opens its levels. `TbCascaderTests.Render_ShouldShowTheValuesPathAndOpenItsLevels_WhenGivenAValue`
 - [x] Leaving the field takes a path typed in full, and otherwise puts the value's path back. `TbCascaderTests.Change_ShouldTakeAPathTypedInFull_WhenTheFieldIsLeft`, `TbCascaderTests.Change_ShouldPutTheValuesPathBack_WhenTheTextIsNoPath`
 - [x] `Start` and `End` content sit in the box before and after the input, with `End` before the field's own buttons, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
+- [x] The active option is outlined, since focus stays in the field. `CascaderTests.ActiveOption_ShouldBeOutlined_WhenTheKeysMoveToIt`
+- [x] In forced colors, each open option on the path takes the system's highlight colors, the active option keeps its outline, also when it is the open one, and the popup keeps its border. `CascaderTests.OpenOption_ShouldTakeTheHighlight_WhenColorsAreForced`
 
 ## Not applicable
 
