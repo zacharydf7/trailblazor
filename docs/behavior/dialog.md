@@ -109,6 +109,7 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [x] Hosted content may close from any thread, as in a dialog. A host that is removed while its content is still open finishes its result as canceled. The content's title reaches the host's parent when the content changes it, and a render of the parent doesn't undo it. `TbDialogContentHostTests.Host_ShouldCloseAndTellItsParent_WhenTheContentClosesFromAnotherThread`, `TbDialogContentHostTests.Result_ShouldFinishAsCanceled_WhenTheHostGoesAwayWithItsContentOpen`, `TbDialogContentHostTests.Title_ShouldFollowTheContentAndTheParent_WhenEitherChangesIt`
 
 - [x] A prompt starts in its field. `DialogPromptTests.Prompt_ShouldStartInTheFieldAndSubmitOnEnter_WhenOpened`
+- [x] In forced colors, the dialog has a border on every side, which sets it off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`
 
 ## Not applicable
 

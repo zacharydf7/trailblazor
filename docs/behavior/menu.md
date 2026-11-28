@@ -71,6 +71,7 @@ Familiar apps: Windows and macOS menus, VS Code's and Google Docs' menus
 - [x] After an item is chosen the trigger has the focus again, with a focus ring only if the keyboard chose. That holds in WebKit on Linux too: that browser rings whatever it gives the focus back to as a popover hides, but the menu has already moved the focus to the trigger by then. `MenuTests.Menu_ShouldRingItsTriggerOnlyForTheKeyboard_WhenAnItemIsChosenWhileAFieldHadFocus`
 - [x] A menu that closes and opens again before the browser has reported either, as two calls from code in one task do, takes focus on its first item again. `MenuTests.Menu_ShouldFocusItsFirstItemAgain_WhenItClosesAndOpensBeforeTheBrowserReportsEither`
 - [x] A letter typed on an item to jump to another has its default prevented, as the menu's other keys do, so a single-letter shortcut of the app's doesn't also run. `MenuTests.Menu_ShouldKeepALetterFromThePagesOwnShortcuts_WhenItJumpsToAnItem`
+- [x] In forced colors, the open menu has a border on every side, which sets it off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`
 
 ## Not applicable
 

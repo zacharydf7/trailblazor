@@ -55,6 +55,7 @@ Familiar apps: filter panels in Google Sheets and GitHub, Slack's profile cards
 - [x] Focus in a panel the pointer opened keeps it open after the pointer leaves. `PopoverTests.Popover_ShouldStayOpen_WhenTheUserWorksInAHoverOpenedPanelAndThePointerLeaves`
 - [x] A button click closing the panel from code returns focus to the trigger. `popover.js`
 - [x] Opening puts focus on a radio group's checked radio, not its first. `RadioStopsTests.Popover_ShouldTakeFocusOnTheCheckedRadio_WhenItOpens`
+- [x] In forced colors, the popover has a border on every side, which sets it off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`
 
 ## Not applicable
 

@@ -84,7 +84,7 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     // Popups aren't on the page until they open, so examples with one are also checked while open: the popup their
     // target opens, if it has an opener, and each popup listed here.
-    private sealed record Opening(TestTarget Shown, Func<IPage, Task> OpenAsync, bool ByHover = false);
+    internal sealed record Opening(TestTarget Shown, Func<IPage, Task> OpenAsync, bool ByHover = false);
 
     // Axe skips contrast on anything aria-disabled, and a list's status messages are information, so they're measured.
     private static Task MeasureStatusesAsync(IPage page) => page.EvaluateAsync(
@@ -302,7 +302,7 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         await control.ClickAsync();
     }
 
-    private static Opening[] OpeningsOf(Example example) =>
+    internal static Opening[] OpeningsOf(Example example) =>
     [
         .. example.Target is { OpenedBy: not null } target
             ? [new Opening(target, page => ExampleTargetTests.OpenAsync(page, target), target.OpenOnHover)]
@@ -318,7 +318,7 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         from theme in new[] { "light", "dark" }
         select (browser, example.Name, PopupName(opening), theme));
 
-    private static string PopupName(Opening opening) => opening.Shown.Name ?? opening.Shown.Role;
+    internal static string PopupName(Opening opening) => opening.Shown.Name ?? opening.Shown.Role;
 
     [Theory, MemberData(nameof(OpenedExamplesInBothThemes))]
     public async Task Example_ShouldHaveNoAccessibilityViolations_WhenOpenInTheme(string browser, string example,

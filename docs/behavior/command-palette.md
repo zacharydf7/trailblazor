@@ -35,6 +35,7 @@ Familiar apps: VS Code's command palette, GitHub's and Linear's Ctrl+K search, S
 - [x] Opening moves focus to the search box, which starts empty each time. `CommandPaletteTests.Shortcut_ShouldOpenThePaletteWithItsSearchFocused_WhenPressedAnywhere`, `TbCommandPaletteTests.Open_ShouldStartWithAnEmptySearch_WhenOpenedAgain`
 - [x] The palette closes before `OnChoose` runs, so a dialog the command opens returns focus to where the user was, not to the closed palette. `TbCommandPaletteTests.Click_ShouldCloseTheDialogThenRaiseOnChooseAndGoToItsPage_WhenACommandIsChosen`
 - [x] Focus is trapped in the palette while it's open, as in any modal dialog. `dialog.js`
+- [x] In forced colors, the palette has a border on every side, which sets it off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`
 
 ## Not applicable
 

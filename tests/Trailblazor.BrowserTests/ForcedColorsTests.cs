@@ -129,6 +129,73 @@ public class ForcedColorsTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Empty(open);
     }
 
+    // The speed dial's list has no edge of its own, since each action floats by itself; the next test checks the
+    // actions.
+    // Back to top, the validation summary and the focus scope open nothing that floats, nor do a ribbon's key tips,
+    // which label its own tabs, or its peeked commands, which drop below it across its width with a border under them.
+    public static TheoryData<string, string> Popups => new(
+        from example in ExampleCatalog.All
+        where example.Name is not ("floating-action-button" or "back-to-top" or "validation-summary" or "focus-scope")
+        from opening in AxeTests.OpeningsOf(example)
+        let name = AxeTests.PopupName(opening)
+        where !(example.Name == "ribbon" && name is "Rapids" or "Add a picture")
+        select (example.Name, name));
+
+    [Fact]
+    public async Task SpeedDial_ShouldBorderEachAction_WhenColorsAreForced()
+    {
+        var page = await OpenAsync("chromium", "/examples/floating-action-button",
+            new() { ForcedColors = ForcedColors.Active });
+        var menu = page.GetByRole(AriaRole.Menu, new() { Name = "Add" });
+        var plus = page.GetByRole(AriaRole.Button, new() { Name = "Add" });
+        await Expect(plus).ToHaveAttributeAsync("data-ready", "");
+
+        await plus.ClickAsync();
+
+        await Expect(menu).ToBeVisibleAsync();
+        var parts = menu.Locator("[role=menuitem] > :is([data-part=icon], [data-part=label])");
+        Assert.NotEqual(0, await parts.CountAsync());
+        foreach (var part in await parts.AllAsync())
+        {
+            foreach (var side in new[] { "top", "right", "bottom", "left" })
+            {
+                await Expect(part).ToHaveCSSAsync($"border-{side}-style", "solid");
+            }
+        }
+    }
+
+    // Forced colors drop a popup's shadow and paint it the same color as the page, so its edge has to be a border:
+    // on the popup, on what it shows (such as a toast in its region) or on any element between them. A control's own
+    // border doesn't count, since a button in a borderless popup would pass on it.
+    [Theory, MemberData(nameof(Popups))]
+    public async Task Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced(string example, string popup)
+    {
+        var page = await OpenAsync("chromium", $"/examples/{example}", new() { ForcedColors = ForcedColors.Active });
+        var opening = AxeTests.OpeningsOf(ExampleCatalog.Find(example)!)
+            .Single(each => AxeTests.PopupName(each) == popup);
+
+        await opening.OpenAsync(page);
+
+        var shown = ExampleTargetTests.Find(page, opening.Shown);
+        await Expect(shown).ToBeVisibleAsync();
+        Assert.True(await shown.EvaluateAsync<bool>("""
+            shown => {
+                const popup = shown.closest('[popover], dialog, [role=dialog]');
+                const bordered = element => ['Top', 'Right', 'Bottom', 'Left'].every(side => {
+                    const style = getComputedStyle(element);
+                    return style[`border${side}Style`] !== 'none' && parseFloat(style[`border${side}Width`]) > 0;
+                });
+                for (let element = shown; popup?.contains(element); element = element.parentElement) {
+                    if (!element.matches('button, a, input, [role=tab]') && bordered(element)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            """), $"The {popup} popup is missing a border on at least one side.");
+    }
+
     // The ring's gap is what shows it turning, and forced colors would paint a transparent border.
     [Fact]
     public async Task Spinner_ShouldKeepItsGap_WhenColorsAreForced()

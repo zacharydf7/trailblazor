@@ -26,3 +26,4 @@ Familiar apps: the first-run walkthroughs in Figma and Notion, GitHub's tours of
 - [x] Each step is a modal dialog named by its title and described by its body. `TbTourTests.Render_ShouldShowTheStepAsADialogNamedByItsTitle_WhenOpen`
 - [x] The page behind the tour is inert until it ends, so screen readers and Tab can't reach it. `TourTests.Tour_ShouldMakeThePageBehindItInert_WhenShown`
 - [x] The app hears whether the tour was completed or skipped. `TbTourTests.NextAsync_ShouldEndTheTourAsCompleted_WhenPressedOnTheLastStep`, `TbTourTests.Escape_ShouldEndTheTourAsSkipped_WhenTheScriptHearsIt`
+- [x] In forced colors, the tour's step has a border on every side, which sets it off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`

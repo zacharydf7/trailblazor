@@ -42,6 +42,7 @@ Familiar apps: Gmail's Undo bar, Android snackbars, Windows and macOS notificati
 - [x] While a dock panel is in a browser window of its own, the toasts show in the window the user is working in, with F8 and Escape working there, and go back to the page when the user works there again or that window closes. `DockManagerPopOutTests.Toast_ShouldShowInTheWindowTheUserIsWorkingIn_WhenAPanelIsInAWindowOfItsOwn`, `DockManagerPopOutTests.Toast_ShouldGoWhereTheUserWorks_WhenAPressAKeyOrTheFocusIsInAnotherWindow`, `DockManagerPopOutTests.Toast_ShouldComeBackToItsPlaceOnThePage_WhenTheWindowItShowsInCloses`
 - [x] While the toasts show in a dock panel's window, their timers pause when that window is hidden, not when the page is; CI also runs `ToastTests` inside a panel's window. `DockManagerPopOutTests.Toast_ShouldRunItsTime_WhenThePageIsHiddenAndTheUserWorksInAPanelsWindow`, `ToastTests.Toast_ShouldStayOpen_WhileThePageIsHidden`
 - [x] A toaster that changes windows forgets that the pointer or the focus was on it, so its toasts' time runs on. `DockManagerPopOutTests.Toast_ShouldRunItsTime_WhenItLeavesTheWindowWhereThePointerAndTheFocusWereOnIt`
+- [x] In forced colors, each toast has a border on every side, which sets it off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`
 
 ## Not applicable
 

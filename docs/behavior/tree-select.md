@@ -60,6 +60,7 @@ Familiar apps: the folder picker in Google Drive's move dialog, the category pic
 - [x] A required field with nothing chosen leaves the form invalid. `TbTreeSelectTests.Form_ShouldBeInvalid_WhenARequiredTreeSelectIsEmpty`
 - [x] The field is a `combobox`, so screen readers hear a required one as required, and the label names its popup. `TbTreeSelectTests.Render_ShouldBeARequiredComboboxWhoseLabelNamesThePopup_WhenRequired`, `TreeSelectTests.TreeSelect_ShouldChooseFromTheKeyboardAndReturnToTheField_WhenOpened`
 - [x] Down Arrow in the filter box has its default prevented as it moves into the tree. `TreeSelectTests.Filter_ShouldMoveToTheFirstMatch_WhenDownArrowIsPressed`
+- [x] In forced colors, the open tree has a border on every side, which sets it off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`
 
 ## Not applicable
 

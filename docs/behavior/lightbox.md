@@ -27,6 +27,7 @@ Familiar apps: photo viewers in Google Photos, GitHub's image previews, online s
 - [x] Each new image is read out with its alt text and position, as focus stays on the button. `TbLightboxTests.NextAsync_ShouldShowTheNextImageAndWrapAround_WhenPressed`, `LightboxTests.Lightbox_ShouldMoveBetweenImagesWithTheArrowKeys_WhenFocusIsInIt`
 - [x] A zoomed image's scrolling area is a `group` named by its alt text, in the tab order. `TbLightboxTests.ZoomInAsync_ShouldStepUpToFourTimesAndMakeTheStageATabStop_WhenPressed`
 - [x] Zooming back out while the image's area has focus keeps focus there, so the keys go on working. `LightboxTests.Lightbox_ShouldKeepFocusOnTheStage_WhenItsImageIsZoomedBackOut`
+- [x] In forced colors, the lightbox has a border on every side, which sets it off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`
 
 ## Not applicable
 

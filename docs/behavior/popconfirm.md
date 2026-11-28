@@ -28,6 +28,7 @@ beside a button
 - [x] A control outside the confirmation that takes focus after the confirmation starts to close keeps it, as with a popover. `popover.js`
 - [x] The confirmation is a dialog named by its question and described by its description, and its Cancel button comes first. `TbPopconfirmTests.Render_ShouldDescribeThePanelByItsDescription_WhenItHasOne`, `TbPopconfirmTests.Render_ShouldNameThePanelByItsQuestionAndPutCancelFirst_WhenCalled`
 - [x] Closing the confirmation by any answer gives focus back to the trigger. `PopconfirmTests.Popconfirm_ShouldStayOpenAndBusyUntilASlowConfirmFinishes_WhenConfirmed`, `PopconfirmTests.Popconfirm_ShouldCancelAndGiveFocusBack_WhenEscapeIsPressed`
+- [x] In forced colors, the confirmation has a border on every side, which sets it off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`
 
 ## Not applicable
 
