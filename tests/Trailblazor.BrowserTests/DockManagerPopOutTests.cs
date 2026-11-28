@@ -10,9 +10,9 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     // The page's outer dock. Its Map panel holds another one, which shows once the Map does.
     private static ILocator Workbench(IPage page) => page.GetByRole(AriaRole.Group, new() { Name = "Workbench" });
 
-    private async Task<IPage> OpenDockAsync(string browser)
+    private async Task<IPage> OpenDockAsync(string browser, string query = "")
     {
-        var page = await OpenAsync(browser, "/dock-pop-out");
+        var page = await OpenAsync(browser, "/dock-pop-out" + query);
         await Expect(Workbench(page)).ToHaveAttributeAsync("data-ready", "");
         return page;
     }
@@ -777,7 +777,8 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     public async Task Window_ShouldTakeItsPanelOnce_WhenThePanelsItemIsClickedTwiceBeforeTheDockAnswers(
         string browser)
     {
-        var page = await OpenDockAsync(browser);
+        // Only over a circuit can both clicks come before the dock answers; WebAssembly answers the first at once.
+        var page = await OpenDockAsync(browser, "?mode=server");
 
         // Both clicks come before the dock has asked for a window, and the second one's window replaces the first's.
         // The dock hears the second click after the item has become the map's, and has no window to give the map.

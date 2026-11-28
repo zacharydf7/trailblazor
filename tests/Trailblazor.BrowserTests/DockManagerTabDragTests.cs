@@ -773,7 +773,8 @@ public class DockManagerTabDragTests(BrowserFixture fixture) : DockManagerPage(f
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Strip_ShouldTakeNoDropOnThePanelThatIsStillOut_WhenAButtonIsCarriedOverItAtOnce(string browser)
     {
-        var page = await OpenDockAsync(browser, "?layout=strips");
+        // Only over a circuit does one task keep the panel out; WebAssembly slides it back as the drag starts.
+        var page = await OpenDockAsync(browser, "?layout=strips&mode=server");
         var dock = page.Tb().Dock();
         await dock.RevealAsync("Gear");
 

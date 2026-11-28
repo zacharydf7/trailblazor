@@ -276,7 +276,8 @@ public class DockManagerDragTests(BrowserFixture fixture) : DockManagerPage(fixt
     public async Task Dock_ShouldMoveAnotherSeparatorFromWhereADragHasPutThings_WhenTheAppHasNotRenderedYet(
         string browser)
     {
-        var page = await OpenDockAsync(browser);
+        // Only over a circuit can a script's key and reading have no render between them; WebAssembly renders at once.
+        var page = await OpenDockAsync(browser, "?mode=server");
         var box = (await Separator(page, "Resize Trails").BoundingBoxAsync())!;
         var (x, y) = (box.X + box.Width / 2, box.Y + box.Height / 2);
         await page.Mouse.MoveAsync(x, y);
