@@ -8,6 +8,10 @@ they run by version. The docs site's Upgrading page is built from both.
 
 ### Renamed and removed
 
+#### 2026-11-27
+
+- Chrome or Edge 123 to 132 → Chrome or Edge 133 or later, since before it the hover, pressed, subtle and text forms of the primary, secondary and status colors fall back to the text color, and a theme's own relative color from a plain color can crash the tab
+
 #### 2026-11-26
 
 - Trailblazor.Testing with bUnit 2.8.6 to 2.12.4 → bUnit 2.12.5 or later, since before it the file upload helpers' waits can miss the render that ends an upload

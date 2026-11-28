@@ -24,7 +24,7 @@ is also published as Markdown, listed in https://trailblazor.dev/llms.txt (or al
 llms-full.txt).
 
 Trailblazor works in static server rendering and in the Server, WebAssembly and Auto render modes. Blazor Hybrid,
-such as .NET MAUI, isn't tested yet. It needs at least Chrome or Edge 123, Firefox 128 or Safari 17.5, for CSS
+such as .NET MAUI, isn't tested yet. It needs at least Chrome or Edge 133, Firefox 128 or Safari 17.5, for CSS
 `light-dark()`, relative colors and the Popover API; newer features, such as `@scope`, are used only where the
 browser has them.
 
