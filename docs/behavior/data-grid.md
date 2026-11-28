@@ -157,6 +157,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] Scrolling to a row a virtualized grid hasn't drawn yet leaves the row clear of the header, even when the grid redraws its rows after measuring them, as on a slow link. Scrolling away stops the grid from pulling the row back. `GridScrollTests.VirtualRows_ShouldScrollToARowClearOfTheHeader_WhenItIsntDrawnYet`, `GridScrollTests.VirtualRows_ShouldLeaveTheScrollToThePerson_WhenTheyScrollAwayFromARowScrolledTo`, `data-grid.js`
 - [x] A `DateTimeOffset` column shows, filters and exports in the shared time zone, so a date filter matches the day the cell shows. `TbTimestampTests.GridColumn_ShouldShowADateTimeOffsetInTheCascadedTimeZone_WhenOneIsCascaded`, `TbTimestampTests.GridColumn_ShouldFilterAndExportADateTimeOffsetByItsShownDay_WhenAZoneIsCascaded`
 - [x] In forced-colors mode, focus doubles the outline of a cell in the selected range and of a pressed Delete button, since the ring would otherwise sit on that outline or barely move. `GridCellsTests.RangeCell_ShouldDoubleItsOutline_WhenFocusedWithColorsForced`, `GridBatchDeleteTests.DeleteButton_ShouldDoubleItsOutline_WhenPressedAndFocusedWithColorsForced`
+- [x] In forced colors, a selected row is outlined in the system's highlight color. `GridSelectTests.SelectedRow_ShouldBeOutlinedInTheHighlight_WhenColorsAreForced`
 
 ## Not applicable
 

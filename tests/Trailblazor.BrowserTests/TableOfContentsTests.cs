@@ -19,6 +19,18 @@ public class TableOfContentsTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static ILocator Guide(IPage page) => page.GetByRole(AriaRole.Region, new() { Name = "Ridge loop guide" });
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CurrentLink_ShouldTakeTheHighlightBorder_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenGuideAsync(browser, new() { ForcedColors = ForcedColors.Active });
+        var current = Link(page, "Getting there");
+
+        await Expect(current).ToHaveAttributeAsync("aria-current", "location");
+        await Expect(current).ToHaveCSSAsync("border-left-color", await SystemColorAsync(page, "Highlight"));
+        await Expect(Link(page, "The climb")).Not.ToHaveCSSAsync("border-left-color",
+            await SystemColorAsync(page, "Highlight"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TableOfContents_ShouldMarkTheSectionInView_WhenThePanelScrolls(string browser)
     {
         var page = await OpenGuideAsync(browser);

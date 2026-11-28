@@ -8,6 +8,19 @@ public class ListBoxTests(BrowserFixture fixture) : BrowserTest(fixture)
         page.GetByRole(AriaRole.Listbox, new() { Name = name, Exact = true });
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SelectedOption_ShouldTakeTheHighlight_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/listbox", new() { ForcedColors = ForcedColors.Active });
+        var creek = ListBox(page, "Trail").GetByRole(AriaRole.Option, new() { Name = "Creek path" });
+
+        await Expect(creek).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(creek).ToHaveCSSAsync("background-color", await SystemColorAsync(page, "Highlight"));
+        await Expect(creek).ToHaveCSSAsync("color", await SystemColorAsync(page, "HighlightText"));
+        await Expect(ListBox(page, "Trail").GetByRole(AriaRole.Option, new() { Name = "Ridge loop" }))
+            .Not.ToHaveCSSAsync("background-color", await SystemColorAsync(page, "Highlight"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ListBox_ShouldWrapALongOption_WhenItIsWiderThanTheList(string browser)
     {
         var page = await OpenAsync(browser, "/examples/listbox");

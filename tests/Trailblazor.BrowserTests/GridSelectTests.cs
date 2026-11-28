@@ -2,9 +2,9 @@ namespace Trailblazor.BrowserTests;
 
 public class GridSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
-    private async Task<IPage> OpenReadyAsync(string browser)
+    private async Task<IPage> OpenReadyAsync(string browser, BrowserNewContextOptions? options = null)
     {
-        var page = await OpenAsync(browser, "/grid-select");
+        var page = await OpenAsync(browser, "/grid-select", options);
         foreach (var grid in await page.Locator("[data-part=grid]").AllAsync())
         {
             await Expect(grid).ToHaveAttributeAsync("data-ready", "");
@@ -54,6 +54,21 @@ public class GridSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("Shift+ArrowUp");
 
         await Expect(Selected(page)).ToHaveTextAsync("Birch, Cedar");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SelectedRow_ShouldBeOutlinedInTheHighlight_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenReadyAsync(browser, new() { ForcedColors = ForcedColors.Active });
+
+        await Cell(page, "Birch").ClickAsync();
+
+        var row = Grid(page).GetByRole(AriaRole.Row, new() { Name = "Birch" });
+        await Expect(row).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(row).ToHaveCSSAsync("outline-style", "solid");
+        await Expect(row).ToHaveCSSAsync("outline-color", await SystemColorAsync(page, "Highlight"));
+        await Expect(Grid(page).GetByRole(AriaRole.Row, new() { Name = "Cedar" }))
+            .ToHaveCSSAsync("outline-style", "none");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

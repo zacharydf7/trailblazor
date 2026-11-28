@@ -25,9 +25,10 @@ public class ColorPickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     internal static ILocator Field(IPage page, string label) =>
         page.Locator(".tb-field").Filter(new() { Has = Box(page, label) });
 
-    private async Task<IPage> OpenPickerAsync(string browser, string label = "Accent")
+    private async Task<IPage> OpenPickerAsync(string browser, string label = "Accent",
+        BrowserNewContextOptions? options = null)
     {
-        var page = await OpenAsync(browser, "/color-picker");
+        var page = await OpenAsync(browser, "/color-picker", options);
         var trigger = Field(page, label).GetByRole(AriaRole.Button, new() { Name = "Choose a color" });
         await Expect(trigger).ToHaveAttributeAsync("data-ready", "");
         await trigger.ClickAsync();
@@ -91,6 +92,18 @@ public class ColorPickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(brick).ToHaveCSSAsync("border-top-width", "2px");
         await Expect(brick).ToHaveCSSAsync("box-shadow", new Regex("inset"));
         await Expect(ocean).ToHaveCSSAsync("border-top-width", "1px");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Swatch_ShouldTakeTheHighlightBorder_WhenCheckedWithColorsForced(string browser)
+    {
+        var page = await OpenPickerAsync(browser, options: new() { ForcedColors = ForcedColors.Active });
+        var ocean = Picker(page).GetByRole(AriaRole.Radio, new() { Name = "Ocean" });
+
+        await Expect(ocean).ToBeCheckedAsync();
+        await Expect(ocean).ToHaveCSSAsync("border-top-color", await SystemColorAsync(page, "Highlight"));
+        await Expect(Picker(page).GetByRole(AriaRole.Radio, new() { Name = "Brick" }))
+            .Not.ToHaveCSSAsync("border-top-color", await SystemColorAsync(page, "Highlight"));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

@@ -30,6 +30,7 @@ Familiar apps: the "On this page" panel of documentation sites, GitHub's outline
 
 - [x] Following a link moves focus to the section, so Tab goes on from there. `TableOfContentsTests.TableOfContents_ShouldScrollToTheSectionAndFocusIt_WhenANestedLinkIsFollowed`
 - [x] A focused link shows a focus ring. `trailblazor.css`
+- [x] In forced colors, the current section's link has a border in the system's highlight color. `TableOfContentsTests.CurrentLink_ShouldTakeTheHighlightBorder_WhenColorsAreForced`
 
 ## Not applicable
 

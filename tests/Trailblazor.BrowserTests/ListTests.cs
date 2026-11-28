@@ -18,6 +18,9 @@ public class ListTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, "/examples/list", new() { ForcedColors = ForcedColors.Active });
         var pine = Site(page, "Pine Hollow");
         await Expect(pine).ToHaveAttributeAsync("aria-current", "true");
+        var item = pine.Locator("..");
+        await Expect(item).ToHaveCSSAsync("outline-style", "solid");
+        await Expect(item).ToHaveCSSAsync("outline-color", await SystemColorAsync(page, "Highlight"));
 
         await pine.FocusAsync();
 

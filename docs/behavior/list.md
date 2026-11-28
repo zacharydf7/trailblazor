@@ -25,7 +25,7 @@ Nothing of its own. Items are native links and buttons, so a tap is a click.
 ## Focus
 
 - [x] A focused item shows a ring inside its edges. `trailblazor.css`
-- [x] In forced-colors mode, focus doubles the current item's outline, since its ring would sit on that outline. `ListTests.SelectedItem_ShouldDoubleItsOutline_WhenFocusedWithColorsForced`
+- [x] In forced-colors mode, the current item is outlined in the system's highlight color, and focus doubles that outline, since its ring would sit on it. `ListTests.SelectedItem_ShouldDoubleItsOutline_WhenFocusedWithColorsForced`
 - [x] The current item says so to screen readers, as the page on a link and as current on a button. `TbListTests.Render_ShouldMarkTheActionCurrent_WhenSelected`
 - [x] An item is named by its text and then its description. `ListTests.List_ShouldNameEachItemByItsTextThenItsDescription_WhenItHasOne`
 

@@ -526,6 +526,20 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Calendar(page).Locator("[aria-current=date]")).ToBeFocusedAsync();
     }
 
+    // Trip dates holds June 3 to 10.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Range_ShouldTakeTheHighlight_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser, options: new() { ForcedColors = ForcedColors.Active });
+        var highlight = await SystemColorAsync(page, "Highlight");
+
+        await Expect(Calendar(page).Locator("[data-date='2026-06-03']")).ToHaveCSSAsync("background-color", highlight);
+        await Expect(Calendar(page).Locator("[data-date='2026-06-05']")).ToHaveCSSAsync("background-color", highlight);
+        await Expect(Calendar(page).Locator("[data-date='2026-06-10']")).ToHaveCSSAsync("background-color", highlight);
+        await Expect(Calendar(page).Locator("[data-date='2026-06-12']")).Not.ToHaveCSSAsync("background-color",
+            highlight);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Today_ShouldBeUnderlined_WhenColorsAreForced(string browser)
     {
