@@ -23,10 +23,17 @@ public class SubmitButtonWaitTests(BrowserFixture fixture) : BrowserTest(fixture
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Button_ShouldReturnOnceBothItsOwnHandlerAndTheFormsHaveRun_WhenASubmitButtonHasASlowOnClick(
-        string browser)
+    public Task Button_ShouldReturnOnceBothItsOwnHandlerAndTheFormsHaveRun_WhenASubmitButtonHasASlowOnClick(
+        string browser) => SubmitsWithASlowOnClickAsync(browser, "/slow-submit");
+
+    // In WebAssembly the button's render comes inside the click, where cancelling clicks kept the form from submitting.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public Task Button_ShouldSubmitItsForm_WhenItHasASlowOnClickInWebAssembly(string browser) =>
+        SubmitsWithASlowOnClickAsync(browser, "/slow-submit?mode=webassembly");
+
+    private async Task SubmitsWithASlowOnClickAsync(string browser, string path)
     {
-        var page = await OpenAsync(browser, "/slow-submit");
+        var page = await OpenAsync(browser, path);
 
         // The button's handler takes twice as long as the form's.
         await page.Tb().Button("Save and note").ClickAsync();

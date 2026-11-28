@@ -19,6 +19,8 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     private bool _givenSize;
     // Whether a click's OnClick task is still running, whether its spinner shows, and since when.
     private bool _running;
+    // Cancels later clicks' own actions while one runs; see BlockLaterClicksAsync.
+    private bool _blocking;
     private bool _busyShown;
     private DateTimeOffset _busyShownAt;
     private ITimer? _busyTimer;
@@ -327,6 +329,7 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
         }
 
         _running = true;
+        _ = BlockLaterClicksAsync();
         SetBusyTimer(ShowBusy, Options.Busy.ShowDelay);
         try
         {
@@ -336,6 +339,7 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
         finally
         {
             _running = false;
+            _blocking = false;
             var left = _busyShownAt + Options.Busy.Minimum - Time.GetUtcNow();
             if (_busyShown && left > TimeSpan.Zero && !Cooling)
             {
@@ -346,6 +350,18 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
                 _busyTimer?.Dispose();
                 _busyShown = false;
             }
+        }
+    }
+
+    // This click's own action, such as submitting the form, runs once its handler returns, and in WebAssembly a render
+    // inside the click would come first; so later clicks are cancelled from the next task on, not from this one.
+    private async Task BlockLaterClicksAsync()
+    {
+        await Task.Yield();
+        if (_running)
+        {
+            _blocking = true;
+            StateHasChanged();
         }
     }
 

@@ -44,8 +44,9 @@ public class TbButtonBusyTests : BunitContext
         var cut = RenderSave();
 
         var first = ClickAsync(cut);
-        // While the click runs, the button stops a second one's default, so it submits no form twice either.
-        Assert.True(cut.Find("button").HasAttribute("blazor:onclick:preventDefault"));
+        // While the click runs, the button stops a second one's default, so it submits no form twice either. That
+        // starts a moment after the click, so the click's own default, such as its form's submit, still happens.
+        cut.WaitForAssertion(() => Assert.True(cut.Find("button").HasAttribute("blazor:onclick:preventDefault")));
         var second = ClickAsync(cut);
         Assert.Equal(1, _calls);
         await cut.InvokeAsync(_work.SetResult);

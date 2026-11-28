@@ -60,7 +60,7 @@
                         aria-pressed="@(Toggles ? (Mixed ? "mixed" : Pressed ? "true" : "false")
                                           : Theirs("aria-pressed"))"
                         class="@RootClass(extraClass)" style="@Style" @onclick="OnClickAsync"
-                        @onclick:preventDefault="Inert || _running">
+                        @onclick:preventDefault="Inert || _blocking">
                     @content
                     @if (CooldownLeft is { } left)
                     {
