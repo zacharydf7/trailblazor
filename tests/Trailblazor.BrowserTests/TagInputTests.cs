@@ -225,6 +225,9 @@ public class TagInputLateRenderTests(BrowserFixture fixture) : BrowserTest(fixtu
 {
     private static readonly TimeSpan Delay = TimeSpan.FromMilliseconds(400);
 
+    // Keys come before a render only when the circuit is slow; in WebAssembly each key's render comes at once.
+    protected override bool NeedsTheServer => true;
+
     protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(Delay);
 
     // The removal moves focus a round trip after its render, so the test waits a few round trips past it.

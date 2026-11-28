@@ -19,7 +19,8 @@ public abstract partial class BrowserTest(BrowserFixture fixture) : IAsyncDispos
     // should and doesn't.
     protected virtual bool HoldsTheMouse => false;
 
-    // A class that drops or watches the circuit says so here, and its pages run on the server in every render mode.
+    // A class that drops, slows or watches the circuit says so here, and its pages run on the server in every render
+    // mode.
     protected virtual bool NeedsTheServer => false;
 
     // Runs before a page opens anything, for a test class that sets up every page the same way.
