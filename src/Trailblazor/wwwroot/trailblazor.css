@@ -2062,6 +2062,13 @@
         border: 1px solid var(--tb-border-subtle);
     }
 
+    /* Forced colors drop a surface's shadow and its own background, so its edge becomes a border. */
+    @media (forced-colors: active) {
+        .tb-surface {
+            border: 1px solid CanvasText;
+        }
+    }
+
     /* A match keeps the text's own color on the theme's warning tint, and the system's highlight in forced colors. */
     .tb-highlight__match {
         background: var(--tb-color-warning-subtle);
@@ -2405,12 +2412,6 @@
     .tb-card--link:has(.tb-card__link:focus-visible) {
         outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
         outline-offset: var(--tb-focus-ring-offset);
-    }
-
-    @media (forced-colors: active) {
-        .tb-card {
-            border: 1px solid CanvasText;
-        }
     }
 
     .tb-icon {
@@ -3016,6 +3017,16 @@
         .tb-data-grid__tree-spinner,
         .tb-field__spinner {
             animation: none;
+        }
+    }
+
+    /* Forced colors would paint the ring's transparent gap, which shows it turning, in the text color. */
+    @media (forced-colors: active) {
+        .tb-button__spinner,
+        .tb-tree__spinner,
+        .tb-data-grid__tree-spinner,
+        .tb-field__spinner {
+            forced-color-adjust: none;
         }
     }
 

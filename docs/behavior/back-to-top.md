@@ -25,3 +25,4 @@ Familiar apps: the back to top button on GitHub's docs pages, Ant Design's `Floa
 ## Focus
 
 - [x] The button is named "Back to top", unless `Label` names it. `TbBackToTopTests.Render_ShouldNameTheButton_WhenCalled`
+- [x] In forced colors, the button keeps a border, though its shadow is dropped. `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`

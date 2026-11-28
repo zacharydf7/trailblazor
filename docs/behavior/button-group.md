@@ -23,6 +23,7 @@ Nothing of its own. A tap reaches each button as it does outside a group.
 
 - [x] A focused button is lifted over its neighbors, so all of its ring shows. `trailblazor.css`
 - [x] A disabled group's buttons are out of the tab order. `TbButtonGroupTests.Render_ShouldDisableEveryButton_WhenTheGroupIsDisabled`
+- [x] In forced colors, each button keeps a border. `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`
 
 ## Not applicable
 

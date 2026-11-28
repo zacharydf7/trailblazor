@@ -72,6 +72,51 @@ public class ForcedColorsTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Empty(enabledLooking);
     }
 
+    // Forced colors drop backgrounds and shadows, so a button's or a surface's edge has to be a border. A button keeps
+    // the transparent border every variant has, which forced colors draw; a surface gets one only in forced colors.
+    [Theory]
+    [InlineData("button")]
+    [InlineData("icon-button")]
+    [InlineData("copy-button")]
+    [InlineData("button-group")]
+    [InlineData("floating-action-button")]
+    [InlineData("back-to-top")]
+    [InlineData("surface")]
+    public async Task Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced(string example)
+    {
+        var page = await OpenAsync("chromium", $"/examples/{example}", new() { ForcedColors = ForcedColors.Active });
+        await Expect(page.Locator("main :is(.tb-button, .tb-surface)").First).ToBeVisibleAsync();
+
+        var borderless = await page.EvaluateAsync<string[]>("""
+            () => [...document.querySelectorAll('main :is(.tb-button, .tb-surface)')]
+                .filter(element => element.checkVisibility())
+                .filter(element => {
+                    const style = getComputedStyle(element);
+                    return style.borderTopStyle === 'none' || parseFloat(style.borderTopWidth) === 0
+                        || style.borderTopColor === 'rgba(0, 0, 0, 0)';
+                })
+                .map(element => `${element.localName}.${[...element.classList].join('.')}`)
+            """);
+
+        Assert.Empty(borderless);
+    }
+
+    // The ring's gap is what shows it turning, and forced colors would paint a transparent border.
+    [Fact]
+    public async Task Spinner_ShouldKeepItsGap_WhenColorsAreForced()
+    {
+        var page = await OpenAsync("chromium", "/button-busy", new() { ForcedColors = ForcedColors.Active });
+        var send = page.GetByRole(AriaRole.Button, new() { Name = "Send code" });
+
+        await send.ClickAsync();
+
+        var spinner = send.Locator("[data-part=spinner]");
+        await Expect(spinner).ToBeVisibleAsync();
+        var gap = await spinner.EvaluateAsync<string>("ring => getComputedStyle(ring).borderTopColor");
+
+        Assert.Equal("rgba(0, 0, 0, 0)", gap);
+    }
+
     // An app's own palette sets the token outside the library's layers, where it would win over a rule inside them.
     [Fact]
     public async Task DisabledText_ShouldStayGrayText_WhenAnAppsOwnPaletteSetsIt()

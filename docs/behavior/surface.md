@@ -21,6 +21,7 @@ Nothing of its own. It only holds content.
 ## Focus
 
 - [x] It takes no focus, and the tab order follows its content. `TbSurface.cs`
+- [x] In forced colors, a surface has a border in the text color, since its shadow and background are dropped there. `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`
 
 ## Not applicable
 

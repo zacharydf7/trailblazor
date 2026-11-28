@@ -34,6 +34,7 @@ Familiar apps: the icon bars in Gmail and Google Docs, GitHub's issue actions
 - [x] Focus left by a click doesn't bring the tooltip back. `TooltipTests.Tooltip_ShouldStayClosed_WhenFocusReturnsToTheTriggerAfterAClickElsewhere`
 - [x] A focusable disabled one stays in the tab order, and a loading one keeps focus. `TbButtonBase.razor`
 - [x] A disabled one with a `DisabledReason` stays in the tab order, is described by the reason, and with `ShowTooltip` shows its name and the reason in one tooltip. `DisabledReasonTests.Render_ShouldShowTheNameAndTheReasonInOneTooltip_WhenAnIconButtonIsDisabledWithAReason`
+- [x] In forced colors, each variant keeps a border. `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`
 
 ## Not applicable
 

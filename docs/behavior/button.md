@@ -55,6 +55,8 @@ Familiar apps: the buttons in any native dialog, Gmail's and GitHub's action but
 - [x] A disabled button with a `DisabledReason` stays in the tab order and is described by the reason, which a tooltip shows on hover, keyboard focus and a tap. A press does nothing but count `pressed_off`, and an enabled button ignores the reason. `ButtonTests.Button_ShouldSayWhyItIsOff_WhenHoveredFocusedOrTapped`, `DisabledReasonTests.Render_ShouldDescribeTheButtonWithItsReason_WhenDisabled`, `DisabledReasonTests.Click_ShouldStayFocusableAndCountThePress_WhenDisabledWithAReason`, `DisabledReasonTests.Render_ShouldIgnoreTheReason_WhenEnabled`
 - [x] A loading button keeps focus while the work runs. `TbButtonTests.Click_ShouldNotInvokeOnClickButStayFocusable_WhenLoading`
 - [x] `FocusAsync` moves focus to it. `TbButtonTests.FocusAsync_ShouldFocusTheButton_WhenCalled`
+- [x] In forced colors, each variant keeps a border. `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`
+- [x] In forced colors, the busy spinner keeps its gap, so it can be seen turning. `ForcedColorsTests.Spinner_ShouldKeepItsGap_WhenColorsAreForced`
 
 ## Not applicable
 

@@ -31,3 +31,4 @@ Nothing of its own: a tap presses it, as any button.
 - [x] Before the page is interactive it's turned off, since copying runs in the browser. `TbCopyButtonTests.Render_ShouldBeOff_WhenThePageIsStatic`
 - [x] With a `TelemetryName` it counts copies, never what was copied. `TbCopyButtonTests.Telemetry_ShouldCountCopies_WhenNamed`
 - [x] A button that goes away while it copies says nothing and leaves nothing running. `TbCopyButtonTests.CopyAsync_ShouldLeaveNothingRunning_WhenTheButtonGoesAwayMidCopy`
+- [x] In forced colors, the button keeps a border. `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`

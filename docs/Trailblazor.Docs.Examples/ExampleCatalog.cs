@@ -2810,6 +2810,8 @@ public static class ExampleCatalog
             Accessibility =
             [
                 "A plain `div` by default, with no role of its own.",
+                "In forced-colors mode, such as Windows high contrast, it has a border in the text color, since its "
+                    + "shadow and background are dropped there.",
             ],
             AppDuties =
             [

@@ -37,6 +37,7 @@ Familiar apps: Gmail's compose button, Google Calendar's create button and the n
 
 - [x] A floating button is named by its `Label`, shown as text only when `Extended`. `TbFabTests.Render_ShouldNameTheButtonByItsLabelAndShowOnlyTheIcon_WhenNotExtended`, `TbFabTests.Render_ShouldShowTheLabelAsTheButtonsText_WhenExtended`
 - [x] A speed dial's trigger is a menu button named by its `Label`, and its actions are menu items named by their text. `TbSpeedDialTests.Render_ShouldMakeTheTriggerAFloatingMenuButtonNamedByItsLabel_WhenShown`
+- [x] In forced colors, the button keeps a border, though its shadow is dropped. `ForcedColorsTests.Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced`
 
 ## Not applicable
 
