@@ -84,7 +84,7 @@ public static class AccessibilityStatusCatalog
         new("form", Tested, None, None),
         new("validation-summary", None, Tested, None),
         new("text-field", Tested, Tested, Tested),
-        new("rich-text-editor", Tested, NotYet, Tested),
+        new("rich-text-editor", Tested, Tested, Tested),
         new("markdown-editor", Tested, Tested, Tested),
         new("mention-input", Tested, Tested, Tested),
         new("number-field", Tested, Tested, Tested),

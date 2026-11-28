@@ -134,6 +134,7 @@ public class ForcedColorsTests(BrowserFixture fixture) : BrowserTest(fixture)
     [InlineData("speech-to-text")]
     [InlineData("smart-paste")]
     [InlineData("viewport")]
+    [InlineData("rich-text-editor")]
     public async Task Example_ShouldDrawABorderAroundEachButtonAndSurface_WhenColorsAreForced(string example)
     {
         var page = await OpenAsync("chromium", $"/examples/{example}", new() { ForcedColors = ForcedColors.Active });
@@ -154,7 +155,8 @@ public class ForcedColorsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     // Forced colors drop tints, so what sets a part apart has to be a border: every side of an alert, a validation
-    // summary, a chat message and a prompt box, and the bottom of a banner, an accordion item and a table cell.
+    // summary, a chat message, a prompt box and a viewport's surface, and the bottom of a banner, an accordion item, a
+    // table cell and a rich text editor's toolbar.
     [Theory]
     [InlineData("alert", ".tb-alert", "top right bottom left")]
     [InlineData("banner", ".tb-banner", "bottom")]
@@ -164,6 +166,7 @@ public class ForcedColorsTests(BrowserFixture fixture) : BrowserTest(fixture)
     [InlineData("accordion", ".tb-accordion__item", "bottom")]
     [InlineData("table", ".tb-table :is(th, td)", "bottom")]
     [InlineData("viewport", ".tb-viewport__surface", "top right bottom left")]
+    [InlineData("rich-text-editor", ".tb-rich-text-editor__toolbar", "bottom")]
     public async Task Example_ShouldKeepEachPartsBorders_WhenColorsAreForced(string example, string selector,
         string sides)
     {
