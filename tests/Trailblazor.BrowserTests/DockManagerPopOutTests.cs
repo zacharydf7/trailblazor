@@ -71,8 +71,8 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         await Expect(window.GetByTestId("entered")).ToHaveTextAsync("Entered: 1");
         await window.GetByRole(AriaRole.Combobox, new() { Name = "Size" }).ClickAsync();
         // The list is placed by its own window's size, not the page's, so it stays inside the window.
-        await window.WaitForFunctionAsync("(() => { const box = document.querySelector('[role=listbox]')"
-            + ".getBoundingClientRect(); return box.top >= 0 && box.bottom <= innerHeight; })()");
+        await window.WaitForFunctionAsync("() => { const box = document.querySelector('[role=listbox]')"
+            + ".getBoundingClientRect(); return box.top >= 0 && box.bottom <= innerHeight; }");
         await window.GetByRole(AriaRole.Option, new() { Name = "Medium" }).ClickAsync();
         await Expect(window.GetByTestId("size")).ToHaveTextAsync("Size: Medium");
     }
@@ -459,6 +459,7 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Window_ShouldApplyTheSheetsThePageApplies_WhenASheetIsSwitchedWithoutAnAttribute(string browser)
     {
+        Assert.SkipWhen(StrictPolicy, UsesInlineContent);
         var page = await OpenDockAsync(browser);
         // A linked sheet is turned off, through the sheet itself, before the window opens.
         await AddASheetAsync(page, "early", "html{text-indent:9px}");
@@ -542,6 +543,9 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     }
 
     // Adds a sheet that the page only offers as an alternate, and waits until it has loaded.
+    // A same-origin sheet from the test host, which the strict policy allows where it refuses a data: address.
+    private static string Sheet(string css) => $"slow.css?wait=0&css={Uri.EscapeDataString(css)}";
+
     private static Task AddAnAlternateAsync(IPage page, string id, string address,
         string rel = "alternate stylesheet") => page.EvaluateAsync("""
         ([id, href, rel]) => new Promise(loaded => {
@@ -562,10 +566,10 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     public async Task Window_ShouldApplyAnAlternateSheet_WhenAScriptTurnedItOnBeforeTheWindowOpened(string browser)
     {
         var page = await OpenDockAsync(browser);
-        await AddAnAlternateAsync(page, "chosen", "data:text/css,html{text-transform:uppercase}");
-        await AddAnAlternateAsync(page, "offered", "data:text/css,html{font-style:italic}");
+        await AddAnAlternateAsync(page, "chosen", Sheet("html{text-transform:uppercase}"));
+        await AddAnAlternateAsync(page, "offered", Sheet("html{font-style:italic}"));
         // A link's types count whatever case they are written in.
-        await AddAnAlternateAsync(page, "shouted", "data:text/css,html{text-indent:9px}", "Alternate StyleSheet");
+        await AddAnAlternateAsync(page, "shouted", Sheet("html{text-indent:9px}"), "Alternate StyleSheet");
         await page.EvaluateAsync(TurnOn, "chosen");
         await page.EvaluateAsync(TurnOn, "shouted");
         await Expect(page.Locator("html")).ToHaveCSSAsync("text-transform", "uppercase");
@@ -600,7 +604,7 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     public async Task Window_ShouldApplyAnAlternateSheet_WhenItsLinkLeavesTheHeadAndComesBack(string browser)
     {
         var page = await OpenDockAsync(browser);
-        await AddAnAlternateAsync(page, "chosen", "data:text/css,html{text-transform:uppercase}");
+        await AddAnAlternateAsync(page, "chosen", Sheet("html{text-transform:uppercase}"));
         await page.EvaluateAsync(TurnOn, "chosen");
         var window = await PopOutAsync(page, "Notes");
         var (pageRoot, windowRoot) = (page.Locator("html"), window.Locator("html"));
@@ -646,12 +650,12 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     public async Task Window_ShouldApplyAnAlternateSheet_WhenItsMediaFirstMatchesAfterTheWindowOpened(string browser)
     {
         var page = await OpenDockAsync(browser);
-        await AddAnAlternateAsync(page, "narrow", "data:text/css,html{text-transform:uppercase}");
+        await AddAnAlternateAsync(page, "narrow", Sheet("html{text-transform:uppercase}"));
         await page.EvaluateAsync("document.getElementById('narrow').media = '(max-width: 900px)'");
         await page.EvaluateAsync(TurnOn, "narrow");
         var window = await PopOutAsync(page, "Notes");
         await window.SetViewportSizeAsync(800, 600);
-        await window.WaitForFunctionAsync("document.querySelector('link[title=narrow]')?.sheet");
+        await window.WaitForFunctionAsync("() => document.querySelector('link[title=narrow]')?.sheet");
         // The page is too wide for the sheet's media as the window opens, so the sheet can't be asked yet whether it
         // is on.
         await Expect(page.Locator("html")).ToHaveCSSAsync("text-transform", "none");
@@ -666,6 +670,8 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     public async Task Window_ShouldLeaveAnAlternateSheetOff_WhenItComesFromAnotherOriginAndWasNeverTurnedOn(
         string browser)
     {
+        // Chromium's page crashes when the policy refuses an alternate sheet, rather than leaving the sheet out.
+        Assert.SkipWhen(StrictPolicy, "Its sheet comes from another origin, which the strict policy refuses.");
         var page = await OpenDockAsync(browser);
         // The test host under another name is another origin, so the page's scripts can't read its sheet's rules.
         var address = new UriBuilder(page.Url)
