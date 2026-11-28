@@ -117,7 +117,14 @@
     private bool ClearsOn(int star) => Clearable && !ReadOnly && Value == star;
 
     // Chromium and WebKit raise no click when Space is pressed on a checked radio, so Space takes the rating back on
-    // keyup, where the browser's own Space action is canceled so it can't choose the star again.
-    private Task SpaceAsync(KeyboardEventArgs args, int star) =>
-        args.Key == " " ? ClearAsync(star) : Task.CompletedTask;
+    // keyup, where the browser's own Space action is canceled so it can't choose the star again. The rating clears a
+    // moment later: in WebAssembly the render would otherwise come inside the keyup and lift the cancel first.
+    private async Task SpaceAsync(KeyboardEventArgs args, int star)
+    {
+        if (args.Key == " " && ClearsOn(star))
+        {
+            await Task.Yield();
+            await ClearAsync(star);
+        }
+    }
 }

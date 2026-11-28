@@ -71,13 +71,13 @@ public class TbRatingTests : BunitContext
     [InlineData(2, " ", new[] { 0 })]
     [InlineData(2, "Enter", new int[0])]
     [InlineData(3, " ", new int[0])]
-    public void KeyUp_ShouldTakeTheRatingBackOnlyWithSpaceOnTheChosenStar_WhenClearable(int star, string key,
+    public async Task KeyUp_ShouldTakeTheRatingBackOnlyWithSpaceOnTheChosenStar_WhenClearable(int star, string key,
         int[] expected)
     {
         var changes = new List<int>();
         var cut = RenderRating(2, changes, parameters => parameters.Add(rating => rating.Clearable, true));
 
-        cut.FindAll("input[type=radio]")[star - 1].KeyUp(new KeyboardEventArgs { Key = key });
+        await cut.FindAll("input[type=radio]")[star - 1].KeyUpAsync(new KeyboardEventArgs { Key = key });
 
         Assert.Equal(expected, changes);
     }

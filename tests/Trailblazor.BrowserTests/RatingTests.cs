@@ -71,9 +71,17 @@ public class RatingTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Rating_ShouldTakeTheRatingBack_WhenSpaceIsPressedOnTheChosenStar(string browser)
+    public Task Rating_ShouldTakeTheRatingBack_WhenSpaceIsPressedOnTheChosenStar(string browser) =>
+        SpaceTakesTheRatingBackAsync(browser, "/examples/rating");
+
+    // In WebAssembly a render can come inside the keyup itself, before the browser's own Space action is canceled.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public Task Rating_ShouldTakeTheRatingBack_WhenSpaceIsPressedOnTheChosenStarInWebAssembly(string browser) =>
+        SpaceTakesTheRatingBackAsync(browser, "/examples/rating?mode=webassembly");
+
+    private async Task SpaceTakesTheRatingBackAsync(string browser, string path)
     {
-        var page = await OpenAsync(browser, "/examples/rating");
+        var page = await OpenAsync(browser, path);
         var two = Ridge(page).GetByRole(AriaRole.Radio, new() { Name = "2 stars" });
         await two.CheckAsync();
         await Expect(page.GetByText("You gave it 2 of 5.")).ToBeVisibleAsync();
