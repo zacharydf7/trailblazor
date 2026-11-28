@@ -30,6 +30,8 @@ Familiar apps: the start time of a calendar event, a pickup slot in a booking fo
 - [x] A step that isn't a whole number of minutes adds seconds to the box. `TbTimePickerTests.Render_ShouldShowSeconds_WhenTheStepIsUnderAMinute`
 - [x] A static form posts the time from the browser's own time box, which carries the earliest, latest and step. `TimePickerTests.Picker_ShouldPostTheTime_WhenTheFormIsStatic`, `TbTimePickerTests.Render_ShouldBeTheBrowsersTimeBoxWithItsLimitsAndStep_WhenTheFormIsStatic`
 - [x] `Start` and `End` content sit in the box before and after the input, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
+- [x] In forced colors, the list of times has a border on every side, which sets it off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`
+- [x] In forced colors, the active time keeps its outline, since focus stays in the box. `TimePickerTests.ActiveTime_ShouldKeepItsOutline_WhenColorsAreForced`
 
 ## Not applicable
 

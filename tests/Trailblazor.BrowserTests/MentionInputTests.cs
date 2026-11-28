@@ -25,6 +25,27 @@ public class MentionInputTests(BrowserFixture fixture) : BrowserTest(fixture)
         return (page, input);
     }
 
+    // Focus stays in the field, so the outline is all that shows the active suggestion.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Suggestions_ShouldKeepTheirBorderAndTheActiveOutline_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/mention-input", new() { ForcedColors = ForcedColors.Active });
+        var input = page.Tb().MentionInput("Comment").Input;
+        await Expect(input).ToHaveAttributeAsync("data-ready", "");
+        await input.FocusAsync();
+
+        await page.Keyboard.TypeAsync("Thanks @an");
+        await Expect(Listbox(page).GetByRole(AriaRole.Option)).ToHaveCountAsync(2);
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        foreach (var side in new[] { "top", "right", "bottom", "left" })
+        {
+            await Expect(Listbox(page)).ToHaveCSSAsync($"border-{side}-style", "solid");
+        }
+
+        await Expect(Listbox(page).Locator("[data-active]")).ToHaveCSSAsync("outline-style", "solid");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task MentionInput_ShouldSuggestUnderTheTrigger_WhenItStartsAWord(string browser)
     {

@@ -35,6 +35,7 @@ Familiar apps: mentioning someone with @ in GitHub, Slack or Google Docs comment
 - [x] The field is named by its label, and so is the list of suggestions. `TbMentionInputTests.Render_ShouldBeALabeledFieldThatControlsAListOfSuggestions_WhenCalled`
 - [x] Each suggestion is named by its text and described by its description. `TbMentionInputTests.TypeAsync_ShouldSuggestTheItemsMatchingTheTextAfterTheTrigger_WhenATriggerStartsAWord`
 - [x] The app hears each mention's item while its text stays, and loses it when the text goes. `TbMentionInputTests.ChooseAsync_ShouldPutTheMentionInAndReportIt_WhenASuggestionIsChosen`, `TbMentionInputTests.TypeAsync_ShouldDropAMention_WhenItsTextIsDeleted`
+- [x] In forced colors, the suggestions have a border on every side, and the active one keeps its outline. `MentionInputTests.Suggestions_ShouldKeepTheirBorderAndTheActiveOutline_WhenColorsAreForced`
 
 ## Not applicable
 

@@ -276,6 +276,16 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
                     page => Button(page, popup.Item1).ClickAsync())),
         ],
         ["dialog"] = [new(new("dialog", "Notes on the report"), page => Button(page, "Take notes").ClickAsync())],
+        ["date-picker"] = [new(new("dialog", "Choose a date"),
+            page => ClickWhenReadyAsync(page.GetByRole(AriaRole.Button, new() { Name = "Choose a date" }).First))],
+        ["time-picker"] = [new(new("listbox", "Start time"), page => OpenTimeListAsync(page, "Start time"))],
+        ["date-time-picker"] =
+        [
+            new(new("dialog", "Choose a date"), page => ClickWhenReadyAsync(
+                page.GetByRole(AriaRole.Group, new() { Name = "Guided hike starts" })
+                    .GetByRole(AriaRole.Button, new() { Name = "Choose a date" }))),
+            new(new("listbox", "Guided hike starts Time"), page => OpenTimeListAsync(page, "Guided hike starts Time")),
+        ],
         ["autocomplete"] = [new(new("listbox", "Trailhead"), async page =>
         {
             var field = page.GetByRole(AriaRole.Combobox, new() { Name = "Trailhead" });
@@ -306,6 +316,16 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static ILocator Combobox(IPage page, string name) =>
         page.GetByRole(AriaRole.Combobox, new() { Name = name, Exact = true });
+
+    // A time box opens its list of times from the keyboard.
+    private static async Task OpenTimeListAsync(IPage page, string box)
+    {
+        var time = page.GetByRole(AriaRole.Combobox, new() { Name = box, Exact = true });
+        await Expect(time).ToHaveAttributeAsync("data-ready", "");
+        await time.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(time).ToHaveAttributeAsync("aria-expanded", "true");
+    }
 
     // A control whose script opens its popup is clicked once the script has attached.
     private static async Task ClickWhenReadyAsync(ILocator control)

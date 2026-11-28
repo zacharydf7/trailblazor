@@ -4,6 +4,23 @@ namespace Trailblazor.BrowserTests;
 
 public class TimePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    // Focus stays in the box, so the outline is all that shows the active time.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ActiveTime_ShouldKeepItsOutline_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/time-picker", new() { ForcedColors = ForcedColors.Active });
+        var start = Box(page, "Start time");
+        await Expect(start).ToHaveAttributeAsync("data-ready", "");
+        await start.FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(start).ToHaveAttributeAsync("aria-expanded", "true");
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Start time" }).Locator("[data-active]"))
+            .ToHaveCSSAsync("outline-style", "solid");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Picker_ShouldSetTheTime_WhenTheBoxIsFilled(string browser)
     {

@@ -40,6 +40,8 @@ Familiar apps: the start of a calendar event, a ride or shuttle booking
 - [x] A static page shows the browser's own date and time box, named by the label, and a static form posts the value with no offset, which Blazor reads in the server's time zone. `TbDateTimePickerTests.Render_ShouldShowTheBrowsersDateAndTimeBox_WhenStatic`, `DateTimePickerTests.ChooseAsync_ShouldPostTheValue_WhenThePickerIsStatic`
 - [x] `Start` and `End` content sit in the box before the date box and after the time box, with `End` after the field's own buttons, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
 - [x] `ShowWeekNumbers` numbers the calendar's weeks, as on the calendar. `TbDateTimePickerTests.ShowWeekNumbers_ShouldShowThemInTheCalendar_WhenSet`
+- [x] In forced colors, the calendar and the list of times each have a border on every side, which sets them off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`
+- [x] In forced colors, the chosen day takes the system's highlight, as in the calendar it shows, and the active time keeps its outline, which the time picker's list shares. `CalendarTests.Calendar_ShouldDrawTheChosenDayInTheSystemHighlight_WhenColorsAreForced`, `TimePickerTests.ActiveTime_ShouldKeepItsOutline_WhenColorsAreForced`
 
 ## Not applicable
 

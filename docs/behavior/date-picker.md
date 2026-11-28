@@ -33,6 +33,8 @@ Familiar apps: the date field of a booking or travel form, a due-date field in a
 - [x] `Start` and `End` content sit in the box before and after the input, with `End` before the field's own buttons, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
 - [x] `ShowWeekNumbers` numbers the calendar's weeks, as on the calendar. `TbDatePickerTests.ShowWeekNumbers_ShouldShowThemInTheCalendar_WhenSet`
 - [x] With `Pick`, the box reads a month in the culture's short date without its day, or a year alone, and refuses one wholly outside `Min` and `Max`; its calendar opens on the months and a month picked there shows in the box. `TbDatePickerTests.Pick_ShouldReadAMonthOrAYearInTheCulturesFormat_WhenTyped`, `TbDatePickerTests.Pick_ShouldRefuseAMonthBeforeMin_WhenTyped`, `TbDatePickerTests.Pick_ShouldRefuseAYearAfterMax_WhenTyped`, `TbDatePickerTests.Pick_ShouldShowAMonthPickedInTheCalendarInTheBox_WhenItIsMonth`, `DatePickerTests.ChooseAsync_ShouldTypeTheMonth_WhenThePickerPicksMonths`
+- [x] In forced colors, the calendar has a border on every side, which sets it off from the page. `ForcedColorsTests.Popup_ShouldHaveABorderOnEverySide_WhenColorsAreForced`
+- [x] In forced colors, the chosen day takes the system's highlight, as in the calendar it shows. `CalendarTests.Calendar_ShouldDrawTheChosenDayInTheSystemHighlight_WhenColorsAreForced`
 
 ## Not applicable
 

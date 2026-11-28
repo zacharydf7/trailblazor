@@ -40,6 +40,7 @@ Familiar apps: the topics field of a GitHub repository, the recipient field of a
 - [x] A disabled or read-only field shows its tags without remove buttons. `TbTagInputTests.Render_ShouldOfferNoWayToChangeTheTags_WhenDisabledOrReadOnly`
 - [x] A static form posts the tags. `TagInputTests.TagInput_ShouldPostItsTags_WhenUsedInAStaticForm`
 - [x] `Start` and `End` content sit in the box before the tags and after the input, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
+- [x] In forced colors, the box keeps its border and each tag keeps a chip's outline. `ForcedColorsTests.Example_ShouldBoxEachField_WhenColorsAreForced`, `ChipTests.Chip_ShouldKeepAnOutlineAndMarkTheSelectedOne_WhenColorsAreForced`
 
 ## Not applicable
 
