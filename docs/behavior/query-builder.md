@@ -29,6 +29,7 @@ Familiar apps: Jira's advanced search builder, Notion's and Airtable's filter gr
 
 - [x] A new group's Match list takes focus. `TbQueryBuilder.razor`
 - [x] Removing a group moves focus to its parent group's Add condition button. `TbQueryBuilderTests.Remove_ShouldTakeOutTheConditionOrGroupAndFocusItsGroupsAddButton_WhenClicked`
+- [x] In forced colors, each condition's fields keep their borders. `ForcedColorsTests.Example_ShouldBoxEachField_WhenColorsAreForced`
 
 ## Not applicable
 

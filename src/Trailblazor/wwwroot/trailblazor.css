@@ -7084,8 +7084,17 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         opacity: 0.6;
     }
 
-    .tb-signature-pad--invalid .tb-signature-pad__surface {
+    .tb-signature-pad--invalid :is(.tb-signature-pad__surface, .tb-signature-pad__typed > .tb-field__control) {
         border-color: var(--tb-color-danger);
+    }
+
+    /* The pad isn't a .tb-field, so its typed name's box takes the disabled and read-only looks other fields have. */
+    .tb-signature-pad--disabled .tb-signature-pad__typed > .tb-field__control {
+        opacity: var(--tb-disabled-opacity);
+    }
+
+    .tb-signature-pad__typed > .tb-field__control:has(> [readonly]) {
+        background: var(--tb-color-surface-sunken);
     }
 
     .tb-signature-pad__ink {

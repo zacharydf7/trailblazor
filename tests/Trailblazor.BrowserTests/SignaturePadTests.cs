@@ -11,6 +11,20 @@ public class SignaturePadTests(BrowserFixture fixture) : BrowserTest(fixture)
         page.GetByRole(AriaRole.Status, new() { Name = name, Exact = true });
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TypedName_ShouldSitInAFieldBox_WhenShown(string browser)
+    {
+        var page = await OpenAsync(browser, "/signature-pad", new() { ForcedColors = ForcedColors.Active });
+
+        await page.Tb().SignaturePad("Signature").TypeNameAsync("Ada Lovelace");
+
+        var box = page.Locator("[data-part=typed-name] input").Locator("..");
+        foreach (var side in new[] { "top", "right", "bottom", "left" })
+        {
+            await Expect(box).ToHaveCSSAsync($"border-{side}-style", "solid");
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Draw_ShouldAddAStrokeAndUndoTakesItBack_WhenDrawnWithTheMouse(string browser)
     {
         var page = await OpenAsync(browser, "/signature-pad");

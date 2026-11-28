@@ -23,6 +23,7 @@ Familiar apps: Visual Studio's and Figma's properties panels, a game engine's in
 ## Focus
 
 - [x] Each editor is labeled by its property's display name, or its name split into words, with its description as help text. `TbPropertyGridTests.Render_ShouldListEachVisiblePropertyWithAnEditorForItsTypeUnderItsGroup_WhenGivenAModel`
+- [x] In forced colors, each property's field keeps its border. `ForcedColorsTests.Example_ShouldBoxEachField_WhenColorsAreForced`
 
 ## Not applicable
 

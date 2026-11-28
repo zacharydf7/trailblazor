@@ -25,9 +25,11 @@
     {
         <label data-part="typed-name" class="tb-signature-pad__typed">
             <span class="tb-signature-pad__typed-label">@(Labels.TypedName ?? Localizer[TbStrings.SignaturePadTypedName])</span>
-            <input @ref="_typedInput" type="text" class="tb-field__input" value="@Value?.TypedName" disabled="@Disabled"
-                   readonly="@ReadOnly" autocomplete="name" aria-invalid="@(ShowsInvalid ? "true" : null)"
-                   @onchange="TypeAsync" />
+            <span class="tb-field__control">
+                <input @ref="_typedInput" type="text" class="tb-field__input" value="@Value?.TypedName"
+                       disabled="@Disabled" readonly="@ReadOnly" autocomplete="name"
+                       aria-invalid="@(ShowsInvalid ? "true" : null)" @onchange="TypeAsync" />
+            </span>
         </label>
     }
     else

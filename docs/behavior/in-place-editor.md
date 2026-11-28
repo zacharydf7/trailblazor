@@ -24,3 +24,4 @@ Familiar apps: the editable titles and fields in Jira, Trello and Notion
 
 - [x] The value is a button named "Edit", the label and the value or placeholder it shows. `TbInPlaceEditorTests.Render_ShouldShowTheValueInAButtonNamedForEditingIt_WhenCalled`
 - [x] The editor is a group named by the label, with buttons named Save and Cancel. `TbInPlaceEditorTests.EditAsync_ShouldShowTheEditorWithTheDraft_WhenPressed`
+- [x] In forced colors, the value keeps a border, so it reads as editable. `ForcedColorsTests.Example_ShouldBoxEachField_WhenColorsAreForced`

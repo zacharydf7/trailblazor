@@ -23,6 +23,7 @@ Familiar apps: the signature box of a parcel delivery app, and of an e-signing s
 ## Focus
 
 - [x] Screen readers hear the pad's label, and whether anything is drawn. `TbSignaturePadTests.Pad_ShouldSayNothingIsDrawn_WhenItStartsEmpty`, `TbSignaturePadTests.DrawAsync_ShouldAddTheStrokeToTheValue_WhenAStrokeIsDrawn`
+- [x] In forced colors, the drawing surface keeps its border, and the typed name sits in a field box. `ForcedColorsTests.Example_ShouldBoxEachField_WhenColorsAreForced`, `SignaturePadTests.TypedName_ShouldSitInAFieldBox_WhenShown`
 
 ## Output
 

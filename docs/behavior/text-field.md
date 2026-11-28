@@ -56,6 +56,7 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 - [x] `SelectTextAsync` moves focus and selects all the text. `FieldFocusTests.SelectTextAsync_ShouldFocusTheFieldAndSelectAllItsText_WhenCalled`
 - [x] `AutoFocus` takes focus as the field appears, unless the user is typing in another field. `FieldFocusTests.AutoFocus_ShouldLeaveFocusInTheFieldTheUserIsTypingIn_WhenAnotherFieldAppears`
 - [x] `AutoFocus` takes focus as a static page loads, with no circuit. `FieldFocusTests.AutoFocus_ShouldFocusTheField_WhenThePageIsStatic`, `FieldFocusTests.AutoFocus_ShouldFocusTheField_WhenEnhancedNavigationReachesAStaticPage`
+- [x] In forced colors, the box keeps its border. `ForcedColorsTests.Example_ShouldBoxEachField_WhenColorsAreForced`
 
 ## Not applicable
 

@@ -32,6 +32,7 @@ Familiar apps: GitHub's comment box, with its Write and Preview tabs; Reddit's a
 - [x] Screen readers hear the text area named by the field's label. `TbMarkdownEditorTests.Render_ShouldShowALabeledTextAreaAndAToolbarOfMarks_WhenCalled`
 - [x] The preview is a region named "Preview", which the Preview button controls. `TbMarkdownEditorTests.ShowPreviewAsync_ShouldShowTheMarkdownAsHtmlInPlaceOfTheText_WhenPressed`
 - [x] A link or HTML that would run script shows as text in the preview. `TbMarkdownEditorTests.ShowPreviewAsync_ShouldShowLinksAndHtmlThatRunScriptAsText_WhenTheMarkdownHasThem`
+- [x] In forced colors, the editor keeps its border. `ForcedColorsTests.Example_ShouldBoxEachField_WhenColorsAreForced`
 
 ## Not applicable
 

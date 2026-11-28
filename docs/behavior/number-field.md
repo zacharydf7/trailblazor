@@ -55,6 +55,7 @@ Familiar apps: the browser's number box, the Windows number up-down control, the
 - [x] A read-only field takes focus. `ReadOnlyTests.ReadOnlyField_ShouldKeepItsValueButTakeFocus_WhenTheUserTriesToEditIt`
 - [x] `FocusAsync` moves focus to the input. `FieldFocusTests.FocusAsync_ShouldMoveFocusToTheFieldsInput_WhenCalled`
 - [x] The whole box shows the focus ring while focus is inside it. `trailblazor.css`
+- [x] In forced colors, the box keeps its border. `ForcedColorsTests.Example_ShouldBoxEachField_WhenColorsAreForced`
 
 ## Not applicable
 

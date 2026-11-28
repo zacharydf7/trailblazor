@@ -38,6 +38,7 @@ Familiar apps: a native file input, the drop zones in GitHub and Google Drive
 - [x] `Hidden` keeps the field out of sight and out of the tab order. `TbFileUploadTests.Render_ShouldKeepTheFieldOutOfSightAndReachButShowWhyFilesWereLeftOut_WhenHidden`
 - [x] A file's cancel button becomes its retry button when the upload stops, and the reverse, so focus stays on it. `FileUploadTests.CancelAndRetry_ShouldKeepTheFocusOnTheFilesButton_WhenPressed`
 - [x] Screen readers hear when each file is sent or fails, and nothing when one is canceled or as its progress moves. `TbFileUploadSendTests.Upload_ShouldShowProgressThenUploaded_WhenTheUploadSucceeds`, `TbFileUploadSendTests.Retry_ShouldSendTheFileAgain_WhenItsUploadFailed`, `TbFileUploadSendTests.Cancel_ShouldStopTheUploadAndOfferRetry_WhenPressed`
+- [x] In forced colors, the drop zone keeps its dashed border. `ForcedColorsTests.Example_ShouldBoxEachField_WhenColorsAreForced`
 
 ## Uploading
 

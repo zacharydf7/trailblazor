@@ -72,6 +72,52 @@ public class ForcedColorsTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Empty(enabledLooking);
     }
 
+    // A field shows where to type by its box, so each text box, editable area, list, grid, drawing surface, drop zone
+    // and in-place value in a field's example must sit in a border, its own or one on any of its four nearest
+    // ancestors. A static page's file upload is left out: it shows the browser's own file input there.
+    [Theory]
+    [InlineData("text-field"), InlineData("number-field"), InlineData("code-field"), InlineData("mention-input")]
+    [InlineData("rich-text-editor"), InlineData("markdown-editor"), InlineData("signature-pad")]
+    [InlineData("tag-input"), InlineData("autocomplete")]
+    [InlineData("cascader"), InlineData("file-upload"), InlineData("date-picker"), InlineData("time-picker")]
+    [InlineData("date-time-picker"), InlineData("transfer-list"), InlineData("property-grid")]
+    [InlineData("query-builder"), InlineData("in-place-editor")]
+    public async Task Example_ShouldBoxEachField_WhenColorsAreForced(string example)
+    {
+        var page = await OpenAsync("chromium", $"/examples/{example}", new() { ForcedColors = ForcedColors.Active });
+        await Expect(page.Locator("main").Locator(Fields).Locator("visible=true").First).ToBeVisibleAsync();
+
+        var unboxed = await page.EvaluateAsync<string[]>("""
+            fields => {
+                const bordered = element => ['Top', 'Right', 'Bottom', 'Left'].every(side => {
+                    const style = getComputedStyle(element);
+                    return style[`border${side}Style`] !== 'none' && parseFloat(style[`border${side}Width`]) > 0;
+                });
+                const boxed = field => {
+                    for (let element = field, level = 0; element && level < 5; level++) {
+                        if (bordered(element)) {
+                            return true;
+                        }
+
+                        element = element.parentElement;
+                    }
+
+                    return false;
+                };
+                return [...document.querySelectorAll(`main :is(${fields})`)]
+                    .filter(field => field.checkVisibility() && field.getBoundingClientRect().width > 1)
+                    .filter(field => !boxed(field))
+                    .map(field => `${field.localName}.${[...field.classList].join('.')}`);
+            }
+            """, Fields);
+
+        Assert.Empty(unboxed);
+    }
+
+    private const string Fields = "input:not([type=checkbox], [type=radio], [type=range], [type=hidden], [type=file]), "
+        + "textarea, [contenteditable=true], [role=combobox], [role=listbox], [role=tree], [role=grid], "
+        + ".tb-signature-pad__surface, .tb-in-place-editor__display, .tb-file-upload__zone:not(:has(> [data-static]))";
+
     // Forced colors drop backgrounds and shadows, so a button's or a surface's edge has to be a border. A button keeps
     // the transparent border every variant has, which forced colors draw; a surface gets one only in forced colors.
     [Theory]

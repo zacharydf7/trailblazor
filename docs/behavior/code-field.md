@@ -26,6 +26,7 @@ Familiar apps: the sign-in code steps of banking apps, GitHub's two-factor promp
 ## Focus
 
 - [x] Clicking the label focuses the input. `TbCodeFieldTests.Render_ShouldOfferOneInputForAOneTimeCode_WhenShown`
+- [x] In forced colors, the field keeps its border around the boxes. `ForcedColorsTests.Example_ShouldBoxEachField_WhenColorsAreForced`
 
 ## Screen readers
 
