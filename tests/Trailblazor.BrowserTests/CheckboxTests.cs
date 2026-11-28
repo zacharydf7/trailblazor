@@ -1,9 +1,26 @@
 using System.Text.RegularExpressions;
+using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
 public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Switch_ShouldStayAsItIs_WhenSpaceIsPressedOnAReadOnlyOne(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/switch");
+        var twoStep = page.GetByRole(AriaRole.Switch, new() { Name = "Two-step sign-in" });
+        var before = await twoStep.IsCheckedAsync();
+        await page.Tb().InteractiveAsync();
+        await twoStep.FocusAsync();
+        await Expect(twoStep).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("Space");
+
+        await page.WaitForTimeoutAsync(300);
+        Assert.Equal(before, await twoStep.IsCheckedAsync());
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Checkbox_ShouldToggle_WhenSpaceIsPressedOrTheLabelIsClicked(string browser)
     {

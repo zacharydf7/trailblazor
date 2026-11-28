@@ -8,6 +8,22 @@ public class ButtonTests(BrowserFixture fixture) : BrowserTest(fixture)
     protected override bool HoldsTheMouse => true;
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task IconButton_ShouldTurnItsToggleOffAndOn_WhenSpaceThenEnterIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/icon-button");
+        var bell = page.GetByRole(AriaRole.Button, new() { Name = "Notifications" });
+        await Expect(bell).ToHaveAttributeAsync("aria-pressed", "true");
+        await page.Tb().InteractiveAsync();
+        await bell.FocusAsync();
+
+        await page.Keyboard.PressAsync("Space");
+        await Expect(bell).ToHaveAttributeAsync("aria-pressed", "false");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(bell).ToHaveAttributeAsync("aria-pressed", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldReturnOnceTheAppHasHandledTheClick_WhenItsOnClickTakesAWhile(string browser)
     {
         var page = await OpenAsync(browser, "/button-busy");

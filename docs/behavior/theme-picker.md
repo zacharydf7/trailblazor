@@ -8,7 +8,7 @@ Familiar apps: the Light, Dark and System choice in GitHub's appearance settings
 
 - [x] Tab enters on the pressed choice and leaves in one stop. `ToggleGroupTests.ToggleGroup_ShouldBeOneTabStopLandingOnThePressedItem_WhenTabbedThrough`
 - [x] Left, Right, Home and End move between the choices without picking one. `ToggleGroupTests.ToggleGroup_ShouldMoveFocusAndPressWithTheKeys_WhenTheArrowsHomeEndAndSpaceAreUsed`
-- [x] Enter and Space pick the focused choice. `TbThemePicker.razor`
+- [x] Enter and Space pick the focused choice. `ThemeTests.ThemePicker_ShouldPickTheFocusedMode_WhenSpaceOrEnterIsPressed`
 
 ## Pointer
 

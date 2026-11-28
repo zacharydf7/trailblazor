@@ -12,6 +12,29 @@ public class FileUploadTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static ILocator Field(IPage page, string label) =>
         page.Locator(".tb-file-upload").Filter(new() { Has = page.GetByLabel(label, new() { Exact = true }) });
 
+    public static TheoryData<string, string> BrowsersAndPickerKeys => new(
+        from browser in AllBrowsers.Names from key in new[] { "Enter", "Space" } select (browser, key));
+
+    // Reached with Tab from the top of the page, so the input has to be in the tab order, not only focusable.
+    [Theory, MemberData(nameof(BrowsersAndPickerKeys))]
+    public async Task Input_ShouldOpenTheBrowsersPicker_WhenTabbedToAndAKeyIsPressed(string browser, string key)
+    {
+        var page = await OpenAsync(browser, "/examples/file-upload");
+        var input = page.Locator("main input[type=file]").First;
+        await Expect(input).ToHaveAttributeAsync("data-ready", "");
+
+        for (var stop = 0; stop < 20 && !await input.EvaluateAsync<bool>("input => input === document.activeElement");
+            stop++)
+        {
+            await page.Keyboard.PressAsync("Tab");
+        }
+
+        await Expect(input).ToBeFocusedAsync();
+        var chooser = await page.RunAndWaitForFileChooserAsync(() => page.Keyboard.PressAsync(key));
+
+        Assert.NotNull(chooser);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Upload_ShouldSendTheFileThroughItsStream_WhenChosenOnTheServerOrInWebAssembly(string browser)
     {

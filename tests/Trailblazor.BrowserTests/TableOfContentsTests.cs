@@ -19,6 +19,32 @@ public class TableOfContentsTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static ILocator Guide(IPage page) => page.GetByRole(AriaRole.Region, new() { Name = "Ridge loop guide" });
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Links_ShouldTakeFocusInOrder_WhenTabbedThrough(string browser)
+    {
+        Assert.SkipWhen(browser == "webkit", "WebKit, as Safari does by default, leaves links out of Tab.");
+        var page = await OpenGuideAsync(browser);
+        await Link(page, "Getting there").FocusAsync();
+
+        foreach (var name in new[] { "The route", "The climb", "Along the ridge", "Water", "Camping" })
+        {
+            await page.Keyboard.PressAsync("Tab");
+            await Expect(Link(page, name)).ToBeFocusedAsync();
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Link_ShouldMoveFocusToItsSection_WhenEnterIsPressedOnIt(string browser)
+    {
+        var page = await OpenGuideAsync(browser);
+        await Link(page, "The climb").FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.Locator("#guide-climb")).ToBeFocusedAsync();
+        await Expect(Link(page, "The climb")).ToHaveAttributeAsync("aria-current", "location");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task CurrentLink_ShouldTakeTheHighlightBorder_WhenColorsAreForced(string browser)
     {
         var page = await OpenGuideAsync(browser, new() { ForcedColors = ForcedColors.Active });

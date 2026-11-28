@@ -6,7 +6,7 @@ Familiar apps: a native file input, the drop zones in GitHub and Google Drive
 
 ## Keyboard
 
-- [x] Tab reaches the file input, and Enter or Space opens the browser's picker, since it's the native input. `TbFileUpload.razor`
+- [x] Tab reaches the file input, and Enter or Space opens the browser's picker, since it's the native input. `FileUploadTests.Input_ShouldOpenTheBrowsersPicker_WhenTabbedToAndAKeyIsPressed`
 - [x] The zone shows a focus ring while the input has keyboard focus. `trailblazor.css`
 - [x] Each listed file's remove button and the clear button are reachable and named. `FileUploadTests.Upload_ShouldHaveNoAccessibilityViolations_WhenFilesAreListed`
 

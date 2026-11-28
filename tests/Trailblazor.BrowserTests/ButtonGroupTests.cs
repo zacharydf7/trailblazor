@@ -3,6 +3,20 @@ namespace Trailblazor.BrowserTests;
 public class ButtonGroupTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ButtonGroup_ShouldVisitEachButtonInTurn_WhenTabbed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/button-group");
+        var group = page.GetByRole(AriaRole.Group, new() { Name = "Text alignment" });
+        await group.GetByRole(AriaRole.Button, new() { Name = "Left" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(group.GetByRole(AriaRole.Button, new() { Name = "Center" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Tab");
+
+        await Expect(group.GetByRole(AriaRole.Button, new() { Name = "Right" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ButtonGroup_ShouldJoinAButtonAndAMenusTriggerWithOneSeam_WhenTheyAreFilled(string browser)
     {
         var page = await OpenAsync(browser, "/examples/button-group");

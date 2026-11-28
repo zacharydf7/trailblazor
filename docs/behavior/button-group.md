@@ -6,7 +6,7 @@ Familiar apps: GitHub's merge button with its menu, the Back and Forward pair in
 
 ## Keyboard
 
-- [x] Each button takes its own keys, and Tab visits each enabled one in turn. `TbButtonGroup.razor`
+- [x] Each button takes its own keys, and Tab visits each enabled one in turn. `ButtonGroupTests.ButtonGroup_ShouldVisitEachButtonInTurn_WhenTabbed`
 
 ## Pointer
 

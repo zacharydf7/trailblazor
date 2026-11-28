@@ -7,7 +7,7 @@ Familiar apps: the toggles in phone settings, Windows Settings and macOS System 
 ## Keyboard
 
 - [x] Space toggles it. `CheckboxTests.Controls_ShouldShowTheStateTheServerHolds_WhenEachUpdateIsSlowToComeBack`
-- [x] Space on a read-only switch changes nothing. `read-only.js`
+- [x] Space on a read-only switch changes nothing. `CheckboxTests.Switch_ShouldStayAsItIs_WhenSpaceIsPressedOnAReadOnlyOne`
 - [x] Fast presses leave it showing the value the server holds. `CheckboxTests.Controls_ShouldShowTheStateTheServerHolds_WhenEachUpdateIsSlowToComeBack`
 
 ## Pointer

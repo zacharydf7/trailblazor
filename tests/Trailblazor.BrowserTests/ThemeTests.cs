@@ -5,6 +5,21 @@ namespace Trailblazor.BrowserTests;
 public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ThemePicker_ShouldPickTheFocusedMode_WhenSpaceOrEnterIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/theme");
+        await page.Tb().InteractiveAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Dark" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("Space");
+        await Expect(page.Locator("html")).ToHaveAttributeAsync("data-tb-theme", "dark");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Light" }).FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.Locator("html")).ToHaveAttributeAsync("data-tb-theme", "light");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ThemeHead_ShouldStartThePageInTheAppsDefaults_WhenNothingIsRemembered(string browser)
     {
         var page = await OpenStaticAsync(browser, "/theme");

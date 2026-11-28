@@ -6,8 +6,8 @@ Familiar apps: the "On this page" panel of documentation sites, GitHub's outline
 
 ## Keyboard
 
-- [x] Tab moves through the links in order, since they are plain links. `TbTableOfContents.razor`
-- [x] Enter on a link scrolls to its section and moves focus there, as a click does. `table-of-contents.js`
+- [x] Tab moves through the links in order, since they are plain links. `TableOfContentsTests.Links_ShouldTakeFocusInOrder_WhenTabbedThrough`
+- [x] Enter on a link scrolls to its section and moves focus there, as a click does. `TableOfContentsTests.Link_ShouldMoveFocusToItsSection_WhenEnterIsPressedOnIt`
 
 ## Pointer
 
