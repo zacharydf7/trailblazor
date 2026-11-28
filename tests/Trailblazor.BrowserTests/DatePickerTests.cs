@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
@@ -105,7 +106,8 @@ public class DatePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Tb().DatePicker("Start date").ChooseAsync(new DateOnly(2026, 9, 14));
 
         await Expect(page.GetByTestId("start")).ToHaveTextAsync("2026-09-14");
-        await Expect(page.Tb().DatePicker("Start date").Input).ToHaveValueAsync("14/9/2026");
+        // WebAssembly's culture data marks the Gregorian era after the date (14/9/2026 ค.ศ.); the server's doesn't.
+        await Expect(page.Tb().DatePicker("Start date").Input).ToHaveValueAsync(new Regex(@"^14/9/2026( ค\.ศ\.)?$"));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
