@@ -105,6 +105,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-27
 
+- In forced colors, a soft or filled `TbAlert` keeps its start bar and has a border on its other sides, and a `TbTooltip` has a border, since forced colors drop the fills that were their edges; before, an alert showed only its start bar there, and a tooltip's text had no edge over the page.
 - In forced colors, every `TbSurface` has a border in the text color, since forced colors drop the shadow and the background that set it apart; before, a surface without `Outlined` had no edge there. The busy spinner of a button, field, tree or grid also keeps its gap there, which forced colors had filled in, so it no longer looks like a still ring.
 - In forced colors, focus doubles the outline of the current `TbList` item, of a cell in a `TbDataGrid`'s selected range and of a batch grid's pressed Delete button, as it does on a selected tab or tree item. Before, the focus ring sat on the outline those already had, or moved it by 2px.
 - In forced colors, `TbCalendar` and `TbDateRangePicker` underline today, or the current month or year in the calendar's grids, since every cell's border takes the text color there and the stronger border they had looked like the rest.

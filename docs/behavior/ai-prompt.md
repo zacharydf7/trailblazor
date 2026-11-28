@@ -28,6 +28,7 @@ Familiar apps: the "Ask AI" box in Notion and Google Docs, GitHub Copilot's chat
 - [x] Focus on the generate button stays put when it turns into Stop and back. `AiPromptTests.Generate_ShouldKeepFocus_WhenItTurnsIntoStopAndBack`
 - [x] A response's start, end, stop or failure is read out, not each chunk, and the response is busy while it streams. `TbAiPromptTests.Prompt_ShouldStreamTheResponseAndSayWhenItIsReady_WhenGenerated`, `TbAiPromptTests.Prompt_ShouldMarkTheResponseBusyAndOfferStop_WhenItStreams`
 - [x] A failed response says so and offers Retry, and the app's template gets the error. `TbAiPromptTests.Prompt_ShouldMarkTheResponseFailedAndKeepTheError_WhenGenerateThrows`
+- [x] In forced colors, the prompt box and each response keep their borders. `ForcedColorsTests.Example_ShouldBorderEachMessage_WhenColorsAreForced`, `AiPromptTests.Response_ShouldKeepItsBorder_WhenColorsAreForced`
 
 ## Not applicable
 

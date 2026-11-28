@@ -50,6 +50,7 @@ Familiar apps: Windows and macOS toolbar tips, VS Code's toolbar, a browser's `t
 - [x] A tooltip turned off neither shows nor describes. `TooltipTests.Tooltip_ShouldNeitherShowNorDescribe_WhileItIsTurnedOff`
 - [x] With `Describes` turned off, the tooltip takes its description back from the trigger, and gives it back when turned on again. `TooltipTests.Tooltip_ShouldTakeBackAndGiveBackItsDescription_WhenDescribesTurnsOffAndOn`
 - [x] A tooltip on a static page shows and describes its trigger. `TooltipTests.Tooltip_ShouldShowAndDescribeItsTrigger_WhenThePageIsStatic`
+- [x] In forced colors, the tooltip has a border, since its dark fill is dropped there, and no arrow, which would cut a gap in that border. `TooltipTests.Tooltip_ShouldHaveABorder_WhenColorsAreForced`, `TooltipTests.Arrow_ShouldBeHidden_WhenColorsAreForced`
 
 ## Not applicable
 

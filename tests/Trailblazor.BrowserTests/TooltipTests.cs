@@ -72,6 +72,32 @@ public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldHaveABorder_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tooltip", new() { ForcedColors = ForcedColors.Active });
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Add an item" });
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Add" }).HoverAsync();
+
+        await Expect(tooltip).ToBeVisibleAsync();
+        await Expect(tooltip).ToHaveCSSAsync("border-top-style", "solid");
+        await Expect(tooltip).ToHaveCSSAsync("border-top-width", "1px");
+    }
+
+    // The arrow would be a square in the page's color over the border.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Arrow_ShouldBeHidden_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tooltip", new() { ForcedColors = ForcedColors.Active });
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Shown at the end, with an arrow" });
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Beside" }).HoverAsync();
+
+        await Expect(tooltip).ToBeVisibleAsync();
+        await Expect(tooltip.Locator("[data-part=arrow]")).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tooltip_ShouldAppearAboveTheTrigger_WhenThePointerRestsOnIt(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tooltip");

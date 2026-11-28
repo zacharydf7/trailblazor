@@ -9,9 +9,9 @@ public class AiPromptTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static ILocator Output(IPage page) => page.Locator("[data-part=outputs] > [data-part=output]").First;
 
-    private async Task<IPage> OpenPromptAsync(string browser)
+    private async Task<IPage> OpenPromptAsync(string browser, BrowserNewContextOptions? options = null)
     {
-        var page = await OpenAsync(browser, "/ai-prompt");
+        var page = await OpenAsync(browser, "/ai-prompt", options);
         await Expect(page.GetByRole(AriaRole.Region, new() { Name = "Ask about the ridge trail" }))
             .ToHaveAttributeAsync("data-ready", "");
         return page;
@@ -32,6 +32,19 @@ public class AiPromptTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Output(page)).ToHaveAttributeAsync("data-status", "done");
         await Expect(Output(page).Locator("[data-part=prompt]")).ToHaveTextAsync("Which\ntrail");
         await Expect(box).ToHaveValueAsync("");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Response_ShouldKeepItsBorder_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenPromptAsync(browser, new() { ForcedColors = ForcedColors.Active });
+
+        await Box(page).FillAsync("How long is it");
+        await Box(page).PressAsync("Enter");
+
+        await Expect(Output(page)).ToHaveAttributeAsync("data-status", "done");
+        await Expect(Output(page)).ToHaveCSSAsync("border-top-style", "solid");
+        await Expect(Output(page)).ToHaveCSSAsync("border-top-width", "1px");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

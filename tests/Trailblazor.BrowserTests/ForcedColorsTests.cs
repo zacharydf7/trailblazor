@@ -101,6 +101,34 @@ public class ForcedColorsTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Empty(borderless);
     }
 
+    // A tinted message loses its tint in forced colors, so its edges have to be borders: every side of an alert, a
+    // validation summary, a chat message and a prompt box, and the bottom of a banner, which spans the page.
+    [Theory]
+    [InlineData("alert", ".tb-alert", "top right bottom left")]
+    [InlineData("banner", ".tb-banner", "bottom")]
+    [InlineData("validation-summary", ".tb-validation-summary", "top right bottom left")]
+    [InlineData("chat", ".tb-chat__message", "top right bottom left")]
+    [InlineData("ai-prompt", ".tb-ai-prompt__input", "top right bottom left")]
+    public async Task Example_ShouldBorderEachMessage_WhenColorsAreForced(string example, string selector, string sides)
+    {
+        var page = await OpenAsync("chromium", $"/examples/{example}", new() { ForcedColors = ForcedColors.Active });
+        await Expect(page.Locator($"main {selector}").First).ToBeVisibleAsync();
+
+        var open = await page.EvaluateAsync<string[]>("""
+            ([selector, sides]) => [...document.querySelectorAll(`main ${selector}`)]
+                .filter(element => element.checkVisibility())
+                .flatMap(element => sides.split(' ')
+                    .filter(side => {
+                        const style = getComputedStyle(element);
+                        const name = side[0].toUpperCase() + side.slice(1);
+                        return style[`border${name}Style`] === 'none' || parseFloat(style[`border${name}Width`]) === 0;
+                    })
+                    .map(side => `${element.className} ${side}`))
+            """, new[] { selector, sides });
+
+        Assert.Empty(open);
+    }
+
     // The ring's gap is what shows it turning, and forced colors would paint a transparent border.
     [Fact]
     public async Task Spinner_ShouldKeepItsGap_WhenColorsAreForced()

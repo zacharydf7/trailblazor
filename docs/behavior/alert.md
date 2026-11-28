@@ -24,6 +24,7 @@ Nothing of its own. The close button and actions are native buttons, so a tap is
 - [x] Screen readers hear a danger or warning alert at once, without focus moving. `TbAlertTests.Render_ShouldUseTheAlertRole_WhenGivenAnUrgentTone`
 - [x] Other tones are polite. `TbAlertTests.Render_ShouldBeAPoliteInfoAlertWithoutAClose_WhenNoParametersAreSet`
 - [x] The close button has a name. `TbAlertTests.Click_ShouldRaiseOnClose_WhenTheCloseButtonIsClicked`
+- [x] In forced colors, a soft or filled alert has a border on every side, since its fill is dropped there; the start bar stays. `ForcedColorsTests.Example_ShouldBorderEachMessage_WhenColorsAreForced`
 
 ## Not applicable
 

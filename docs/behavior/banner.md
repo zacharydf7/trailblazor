@@ -21,6 +21,7 @@ Nothing of its own: tapping its buttons and links does what clicking does.
 
 - [x] Screen readers find it as a region named by its title, or by `AriaLabel`, or "Notice". `TbBannerTests.Render_ShouldBeARegionNamedByItsTitle_WhenGivenATitle`, `TbBannerTests.Render_ShouldNameTheRegion_WhenItHasNoTitle`
 - [x] The close button is named "Dismiss", or by `CloseLabel`. `TbBannerTests.Close_ShouldRaiseOnClose_WhenItsButtonIsClicked`
+- [x] In forced colors, the banner keeps the border under it, which sets it off from the page once its tint is dropped. `ForcedColorsTests.Example_ShouldBorderEachMessage_WhenColorsAreForced`
 
 ## Not applicable
 

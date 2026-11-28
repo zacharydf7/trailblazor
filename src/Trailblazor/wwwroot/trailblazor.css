@@ -3918,6 +3918,14 @@
         background: none;
     }
 
+    /* Forced colors drop a soft or filled alert's background, so a border keeps its edge beside the start bar. */
+    @media (forced-colors: active) {
+        .tb-alert:not(.tb-alert--outlined) {
+            border-block: 1px solid;
+            border-inline-end: 1px solid;
+        }
+    }
+
     .tb-alert__content {
         display: flex;
         flex: 1 1 auto;
@@ -5348,6 +5356,18 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         line-height: var(--tb-line-height-normal);
         /* A popover clips by default, which would hide the bridge below. */
         overflow: visible;
+    }
+
+    /* Forced colors drop the tooltip's dark fill, which was its only edge. The arrow would turn the page's color
+       and cut a gap in the border, so it goes. */
+    @media (forced-colors: active) {
+        .tb-tooltip {
+            border: 1px solid CanvasText;
+        }
+
+        .tb-tooltip__arrow {
+            display: none;
+        }
     }
 
     /* Forced over its trigger by a narrow window, a tooltip lets a press through, and has nowhere to point an arrow. */

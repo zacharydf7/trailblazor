@@ -31,6 +31,7 @@ Familiar apps: a team chat such as Slack or Teams, a support chat on a store's s
 - [x] Who is typing shows under the messages. `TbChatTests.Typing_ShouldNameWhoIsTyping_WhenGivenAuthors`
 - [x] A message's files show as links. `TbChatTests.Attachments_ShouldShowAsLinks_WhenAMessageHasFiles`
 - [x] A message's time shows in the chat's `TimeZone`, else the shared time zone. `TbTimestampTests.Chat_ShouldShowTimesInTheCascadedTimeZone_WhenOneIsCascaded`, `TbChatTests.Time_ShouldShowInTheChatsTimeZone_WhenOneIsGiven`
+- [x] In forced colors, each message keeps its border. `ForcedColorsTests.Example_ShouldBorderEachMessage_WhenColorsAreForced`
 
 ## Not applicable
 

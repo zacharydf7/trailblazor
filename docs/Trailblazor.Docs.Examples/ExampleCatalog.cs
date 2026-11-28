@@ -6525,6 +6525,8 @@ public static class ExampleCatalog
             Accessibility =
             [
                 "Each alert keeps its role however it looks, so `Variant` doesn't change what's announced.",
+                "In forced-colors mode, such as Windows high contrast, a soft or filled alert loses its fill, so it "
+                    + "takes a border beside its start bar.",
             ],
             AppDuties =
             [
@@ -12050,6 +12052,8 @@ public static class ExampleCatalog
                 "Moving the pointer onto the tooltip keeps it open.",
                 "Only one tooltip shows at a time: showing one, by hover or focus, hides any other, including one "
                     + "shown for keyboard focus.",
+                "In forced-colors mode, such as Windows high contrast, the tooltip loses its dark fill, so it takes a "
+                    + "border.",
             ],
             Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
