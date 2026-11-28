@@ -14,10 +14,11 @@
 <TbRichTextEditor Label="Shouting" @bind-Value="_shouting" UpdateOnInput TransformPaste="Shout" />
 <output data-testid="shouting">@_shouting</output>
 
+@* The value shows below the button, so a long one, which can arrive while the button is pressed, can't move it. *@
 <TbRichTextEditor Label="Summary" @bind-Value="_summary" />
-<output data-testid="summary">@_summary</output>
 <TbButton OnClick="() => _saved = _summary">Save summary</TbButton>
 <output data-testid="saved">@_saved</output>
+<output data-testid="summary">@_summary</output>
 
 @* Its handler stores each value only after a wait, so older values come back while typing goes on. *@
 <TbRichTextEditor Label="Live" Value="@_live" ValueChanged="OnLiveChangedAsync" ValueExpression="() => _live!"
